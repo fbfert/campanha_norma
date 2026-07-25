@@ -1,0 +1,21 @@
+[Unit]
+Description=Gerenciador WhatsApp Service
+After=network.target
+
+[Service]
+Type=simple
+User=gerenciador-whatsapp
+Group=gerenciador-whatsapp
+WorkingDirectory=/opt/whatsapp-service
+EnvironmentFile=/opt/whatsapp-service/.env
+ExecStart=/usr/bin/node /opt/whatsapp-service/dist/server.js
+Restart=on-failure
+RestartSec=10
+TimeoutStopSec=30
+KillSignal=SIGTERM
+
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

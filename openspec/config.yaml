@@ -1,0 +1,22 @@
+schema: spec-driven
+
+context: |
+  Projeto: Gerenciador de Contatos e Mensagens Iniciais pelo WhatsApp.
+  Fonte inicial: projeto_gerenciador_whatsapp.md.
+  Stack recomendada: PHP 8.3+, Laravel, MySQL, Redis, Laravel Queue, Blade, Livewire, Alpine.js, Apache, cron e Supervisor ou systemd.
+  Integracao WhatsApp: servico Node.js separado para WhatsApp Web por QR Code, acessado por API privada local.
+  Regra central: automatizar somente a mensagem inicial; a continuidade da conversa deve ser manual e humana.
+  Arquitetura obrigatoria: Laravel deve depender de uma abstracao de provedor para permitir futura migracao para a API oficial do WhatsApp Business.
+  Specs aprovadas ficam em openspec/specs/ e sao a fonte de verdade do projeto.
+
+rules:
+  proposal:
+    - Nao propor automacao de conversas completas na primeira versao.
+    - Declarar explicitamente impactos em LGPD, seguranca da sessao e limites de envio quando aplicavel.
+  design:
+    - Manter a separacao entre Laravel e o servico Node.js de WhatsApp Web.
+    - Usar abstracao de provedor para qualquer integracao de envio.
+    - Proteger sessao, tokens, QR Codes e dados pessoais sensiveis.
+  tasks:
+    - Incluir validacao OpenSpec como tarefa de conclusao para alteracoes relevantes.
+    - Incluir leitura das specs aplicaveis antes de qualquer implementacao.

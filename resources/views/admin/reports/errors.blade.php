@@ -1,0 +1,3 @@
+<x-layouts.app title="Relatorio de erros" breadcrumbs="Relatorios / Erros">
+    <section class="card"><div class="table-wrap"><table><thead><tr><th>Codigo</th><th>Classificacao</th><th>Quantidade</th><th>Primeira</th><th>Ultima</th><th>Acao recomendada</th></tr></thead><tbody>@forelse($errors as $error)<tr><td>{{ $error->error_code }}</td><td>{{ $classifier->classify($error->error_code)->label() }}</td><td>{{ $error->total }}</td><td>{{ $error->first_seen }}</td><td>{{ $error->last_seen }}</td><td>Verifique lote, contato e provider antes de nova tentativa.</td></tr>@empty<tr><td colspan="6">Nenhum erro no periodo.</td></tr>@endforelse</tbody></table></div></section>
+</x-layouts.app>

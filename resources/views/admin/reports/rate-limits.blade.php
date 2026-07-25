@@ -1,0 +1,3 @@
+<x-layouts.app title="Relatorio de limites" breadcrumbs="Relatorios / Limites">
+    <section class="card"><div class="stats-grid"><div class="stat"><span>Minuto</span><strong>{{ $limits['counters']['minute'] }}/{{ $settings->max_per_minute }}</strong></div><div class="stat"><span>Hora</span><strong>{{ $limits['counters']['hour'] }}/{{ $settings->max_per_hour }}</strong></div><div class="stat"><span>Dia</span><strong>{{ $limits['counters']['day'] }}/{{ $settings->max_per_day }}</strong></div><div class="stat"><span>Proximo envio</span><strong>{{ $limits['next_at']?->format($dateTimeFormat) ?? 'Disponivel' }}</strong></div></div></section>
+</x-layouts.app>

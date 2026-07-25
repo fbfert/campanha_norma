@@ -1,0 +1,3 @@
+<x-layouts.app title="Jobs falhos" breadcrumbs="Operacao / Monitoramento / Jobs falhos">
+    <section class="card"><div class="table-wrap"><table><thead><tr><th>Fila</th><th>Job</th><th>Falhou em</th><th>Excecao</th><th>Acoes</th></tr></thead><tbody>@foreach($jobs as $job)<tr><td>{{ $job->queue }}</td><td>{{ Str::limit($job->payload, 80) }}</td><td>{{ $job->failed_at }}</td><td>{{ Str::limit($job->exception, 120) }}</td><td>@can('maintenance.run_commands')<form method="post" action="{{ route('admin.monitoring.failed-jobs.destroy', $job->uuid) }}">@csrf @method('delete')<button class="btn danger" type="submit">Excluir</button></form>@endcan</td></tr>@endforeach</tbody></table></div>{{ $jobs->links() }}</section>
+</x-layouts.app>

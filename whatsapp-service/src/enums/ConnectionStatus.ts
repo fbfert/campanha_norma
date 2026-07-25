@@ -1,0 +1,15 @@
+export enum ConnectionStatus {
+  NotInitialized = 'not_initialized',
+  Starting = 'starting',
+  GeneratingQr = 'generating_qr',
+  WaitingForQrScan = 'waiting_for_qr_scan',
+  Authenticating = 'authenticating',
+  Connected = 'connected',
+  Reconnecting = 'reconnecting',
+  Disconnecting = 'disconnecting',
+  Disconnected = 'disconnected',
+  SessionExpired = 'session_expired',
+  AuthenticationFailed = 'authentication_failed',
+  BrowserError = 'browser_error',
+  ServiceError = 'service_error',
+}

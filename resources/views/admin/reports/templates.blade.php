@@ -1,0 +1,3 @@
+<x-layouts.app title="Relatorio de modelos" breadcrumbs="Relatorios / Modelos">
+    <section class="card"><div class="table-wrap"><table><thead><tr><th>Modelo</th><th>Versao atual</th><th>Lotes no periodo</th><th>Criador</th><th>Ultima atualizacao</th></tr></thead><tbody>@foreach($templates as $template)<tr><td>{{ $template->name }}</td><td>{{ $template->version }}</td><td>{{ $template->batches_count }}</td><td>{{ $template->creator?->name }}</td><td>{{ $template->updated_at?->format($dateTimeFormat) }}</td></tr>@endforeach</tbody></table></div><p class="muted">Comparacao limitada a resultado tecnico de envio; conversao e respostas nao existem nesta etapa.</p></section>
+</x-layouts.app>
