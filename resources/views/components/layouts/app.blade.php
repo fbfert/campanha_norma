@@ -34,6 +34,7 @@
                 @endcan
                 @can('message_batches.create')
                     <a href="{{ route('admin.message-batches.create') }}" @class(['active' => request()->routeIs('admin.message-batches.create')])>Novo lote</a>
+                    <a href="{{ route('admin.campaigns.create') }}" @class(['active' => request()->routeIs('admin.campaigns.create')])>Campanha</a>
                 @endcan
                 @can('message_batches.view')
                     <a href="{{ route('admin.message-batches.index') }}" @class(['active' => request()->routeIs('admin.message-batches.*') && ! request()->routeIs('admin.message-batches.create')])>Lotes</a>

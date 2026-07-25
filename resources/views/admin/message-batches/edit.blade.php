@@ -1,4 +1,4 @@
-<x-layouts.app title="Editar lote" breadcrumbs="Inicio / Mensagens / Lotes / Editar">
+<x-layouts.app :title="$batch->is_campaign ? 'Editar campanha' : 'Editar lote'" :breadcrumbs="$batch->is_campaign ? 'Inicio / Mensagens / Campanha / Editar' : 'Inicio / Mensagens / Lotes / Editar'">
     <form method="post" action="{{ route('admin.message-batches.update', $batch) }}">
         @csrf @method('put')
         @include('admin.message-batches._form')

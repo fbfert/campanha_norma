@@ -4,10 +4,15 @@
             <h2>{{ $batch->name }}</h2>
             <div class="actions">@can('message_batches.update')@if($batch->status->value === 'draft')<a class="btn" href="{{ route('admin.message-batches.edit', $batch) }}">Editar</a><form method="post" action="{{ route('admin.message-batches.randomize', $batch) }}">@csrf <button class="btn secondary" type="submit">Regerar ordem</button></form>@endif@endcan @can('message_batches.duplicate')<form method="post" action="{{ route('admin.message-batches.duplicate', $batch) }}">@csrf <button class="btn secondary" type="submit">Duplicar</button></form>@endcan</div>
         </div>
-        <p><strong>Status:</strong> {{ $batch->status->label() }} | <strong>Tipo:</strong> {{ $batch->selection_type->label() }}</p>
+        <p><strong>Status:</strong> {{ $batch->status->label() }} | <strong>Tipo:</strong> {{ $batch->is_campaign ? 'Campanha' : $batch->selection_type->label() }}</p>
         <p><strong>Selecionados:</strong> {{ $batch->selection_total }} | <strong>Aptos:</strong> {{ $batch->eligible_total }} | <strong>Excluidos:</strong> {{ $batch->ineligible_total }}</p>
-        <p><strong>Modelo:</strong> {{ $batch->template?->name ?? 'Mensagem avulsa' }} v{{ $batch->message_template_version ?? '-' }}</p>
-        <pre style="white-space:pre-wrap;">{{ $batch->message_body_snapshot }}</pre>
+        @if($batch->is_campaign)
+            <p><strong>Campanha:</strong> {{ count($batch->campaign_templates_snapshot ?? []) }} modelos selecionados. Cada destinatario recebeu um modelo sorteado e uma posicao aleatoria.</p>
+            <div class="table-wrap"><table><thead><tr><th>Modelo</th><th>Versao</th></tr></thead><tbody>@foreach($batch->campaign_templates_snapshot ?? [] as $template)<tr><td>{{ $template['name'] ?? '-' }}</td><td>{{ $template['version'] ?? '-' }}</td></tr>@endforeach</tbody></table></div>
+        @else
+            <p><strong>Modelo:</strong> {{ $batch->template?->name ?? 'Mensagem avulsa' }} v{{ $batch->message_template_version ?? '-' }}</p>
+            <pre style="white-space:pre-wrap;">{{ $batch->message_body_snapshot }}</pre>
+        @endif
         @if($batch->status->value === 'ready')<div class="alert success">Este lote esta preparado e pode ser iniciado manualmente.</div>@endif
     </section>
     <section class="card" style="margin-top:16px;">
@@ -19,7 +24,7 @@
     </section>
     <section class="card" style="margin-top:16px;">
         <div class="actions" style="justify-content:space-between;"><h2>Destinatarios</h2><div class="actions">@can('message_batches.view_recipients')<a class="btn ghost" href="{{ route('admin.message-batches.recipients', $batch) }}">Ver todos</a>@endcan @can('message_batches.export_preview')<a class="btn ghost" href="{{ route('admin.message-batches.ineligible.export', $batch) }}">Exportar previa</a>@endcan</div></div>
-        <div class="table-wrap"><table><thead><tr><th>Posicao</th><th>Nome</th><th>Telefone</th><th>Cidade</th><th>Aptidao</th><th>Motivo</th><th>Mensagem</th></tr></thead><tbody>@foreach($recipients as $recipient)<tr><td>{{ $recipient->random_position }}</td><td>{{ $recipient->contact_name_snapshot }}</td><td>{{ $recipient->contact_phone_snapshot }}</td><td>{{ $recipient->contact_city_snapshot }}</td><td>{{ $recipient->eligibility_status->label() }}</td><td>{{ $recipient->ineligibility_reason }}</td><td><pre style="white-space:pre-wrap;">{{ $recipient->rendered_message }}</pre></td></tr>@endforeach</tbody></table></div>
+        <div class="table-wrap"><table><thead><tr><th>Posicao</th><th>Nome</th><th>Telefone</th><th>Cidade</th>@if($batch->is_campaign)<th>Modelo sorteado</th>@endif<th>Aptidao</th><th>Motivo</th><th>Mensagem</th></tr></thead><tbody>@foreach($recipients as $recipient)<tr><td>{{ $recipient->random_position }}</td><td>{{ $recipient->contact_name_snapshot }}</td><td>{{ $recipient->contact_phone_snapshot }}</td><td>{{ $recipient->contact_city_snapshot }}</td>@if($batch->is_campaign)<td>{{ $recipient->message_template_name_snapshot ?? '-' }}</td>@endif<td>{{ $recipient->eligibility_status->label() }}</td><td>{{ $recipient->ineligibility_reason }}</td><td><pre style="white-space:pre-wrap;">{{ $recipient->rendered_message }}</pre></td></tr>@endforeach</tbody></table></div>
         {{ $recipients->links() }}
     </section>
     <section class="card" style="margin-top:16px;">

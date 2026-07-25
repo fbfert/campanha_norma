@@ -19,6 +19,9 @@ class MessageBatchRecipientFactory extends Factory
         return [
             'message_batch_id' => MessageBatch::factory(),
             'contact_id' => Contact::factory(),
+            'message_template_id' => null,
+            'message_template_version' => null,
+            'message_template_name_snapshot' => null,
             'random_position' => 1,
             'eligibility_status' => MessageBatchRecipientEligibility::Eligible,
             'processing_status' => MessageRecipientProcessingStatus::Eligible,

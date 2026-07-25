@@ -180,6 +180,58 @@ class MessageAuthoringModuleTest extends TestCase
         $this->assertDatabaseHas('audit_logs', ['action' => 'message_batch.cancelled']);
     }
 
+    public function test_campanha_sorteia_modelo_por_contato_e_ordem_de_envio(): void
+    {
+        $admin = $this->userWithRole('administrador');
+        $templates = collect([
+            MessageTemplate::factory()->create(['name' => 'Campanha A', 'body' => 'Modelo A para {primeiro_nome}.']),
+            MessageTemplate::factory()->create(['name' => 'Campanha B', 'body' => 'Modelo B em {cidade}.']),
+            MessageTemplate::factory()->create(['name' => 'Campanha C', 'body' => 'Modelo C para {nome}.']),
+        ]);
+        $contacts = Contact::factory()->count(6)->sequence(
+            ['name' => 'Contato 1', 'first_name' => 'Contato1', 'city' => 'Lages'],
+            ['name' => 'Contato 2', 'first_name' => 'Contato2', 'city' => 'Lages'],
+            ['name' => 'Contato 3', 'first_name' => 'Contato3', 'city' => 'Lages'],
+            ['name' => 'Contato 4', 'first_name' => 'Contato4', 'city' => 'Lages'],
+            ['name' => 'Contato 5', 'first_name' => 'Contato5', 'city' => 'Lages'],
+            ['name' => 'Contato 6', 'first_name' => 'Contato6', 'city' => 'Lages'],
+        )->create();
+
+        $this->actingAs($admin)->get(route('admin.campaigns.create'))->assertOk()->assertSee('Nova campanha');
+        $this->actingAs($admin)->post(route('admin.message-batches.store'), $this->batchPayload([
+            'name' => 'CAMPANHA - Teste',
+            'is_campaign' => '1',
+            'message_body' => null,
+            'message_template_ids' => $templates->pluck('id')->all(),
+            'contact_ids' => $contacts->pluck('id')->all(),
+            'random_seed' => 'a',
+        ]))->assertRedirect();
+
+        $batch = MessageBatch::firstOrFail();
+        $recipients = $batch->recipients()->orderBy('contact_id')->get();
+
+        $this->assertTrue($batch->is_campaign);
+        $this->assertCount(3, $batch->campaign_templates_snapshot);
+        $this->assertSame(6, $batch->selection_total);
+        $this->assertSame(6, $batch->eligible_total);
+        $selectedTemplateIds = $recipients->pluck('message_template_id')->unique()->values();
+        $this->assertGreaterThanOrEqual(1, $selectedTemplateIds->count());
+        $this->assertEmpty($selectedTemplateIds->diff($templates->pluck('id')));
+        $this->assertSame(6, $recipients->pluck('random_position')->unique()->count());
+        $this->assertSame(range(1, 6), $recipients->pluck('random_position')->sort()->values()->all());
+
+        foreach ($recipients as $recipient) {
+            $this->assertNotNull($recipient->message_template_name_snapshot);
+            $this->assertNotNull($recipient->rendered_message);
+            $this->assertStringNotContainsString('{', $recipient->rendered_message);
+        }
+
+        $this->assertDatabaseHas('message_batch_events', [
+            'message_batch_id' => $batch->id,
+            'event_type' => 'campaign_templates_selected',
+        ]);
+    }
+
     public function test_permissoes_e_exportacao_de_previa(): void
     {
         $reader = $this->userWithRole('consulta');

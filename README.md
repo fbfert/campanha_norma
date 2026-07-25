@@ -256,6 +256,9 @@ Documentacao complementar:
 - Validacao de valores vazios nos contatos usados por placeholders.
 - Pre-visualizacao personalizada de modelo por contato.
 - Criacao de lotes em rascunho com selecao manual, todos os filtrados e amostra aleatoria.
+- Funcao `CAMPANHA` em `/admin/campaigns/create`, permitindo escolher contatos e ate 10 modelos ativos.
+- Em campanhas, a ordem de envio dos contatos e sorteada e preservada em `random_position`.
+- Em campanhas, cada destinatario recebe um modelo sorteado entre os modelos escolhidos; o modelo, a versao e a mensagem renderizada ficam congelados no destinatario.
 - Validacao backend de aptidao: ativo, nao bloqueado, nao marcado como nao contatar, telefone valido, placeholders preenchidos e mensagem dentro do tamanho permitido.
 - Geracao e preservacao de ordem aleatoria por `random_position`.
 - Snapshots de contato e mensagem renderizada em `message_batch_recipients`.

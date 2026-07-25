@@ -16,6 +16,9 @@ class MessageBatchRecipient extends Model
     protected $fillable = [
         'message_batch_id',
         'contact_id',
+        'message_template_id',
+        'message_template_version',
+        'message_template_name_snapshot',
         'random_position',
         'eligibility_status',
         'processing_status',
@@ -71,6 +74,11 @@ class MessageBatchRecipient extends Model
     public function contact(): BelongsTo
     {
         return $this->belongsTo(Contact::class);
+    }
+
+    public function template(): BelongsTo
+    {
+        return $this->belongsTo(MessageTemplate::class, 'message_template_id');
     }
 
     public function attempts(): HasMany

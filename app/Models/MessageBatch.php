@@ -17,9 +17,11 @@ class MessageBatch extends Model
     protected $fillable = [
         'name',
         'description',
+        'is_campaign',
         'message_template_id',
         'message_template_version',
         'message_body_snapshot',
+        'campaign_templates_snapshot',
         'placeholders_snapshot',
         'selection_type',
         'selection_filters',
@@ -61,7 +63,9 @@ class MessageBatch extends Model
     {
         return [
             'placeholders_snapshot' => 'array',
+            'campaign_templates_snapshot' => 'array',
             'selection_filters' => 'array',
+            'is_campaign' => 'boolean',
             'selection_type' => MessageBatchSelectionType::class,
             'status' => MessageBatchStatus::class,
             'prepared_at' => 'datetime',

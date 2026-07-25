@@ -17,7 +17,9 @@ class MessageBatchFactory extends Factory
     {
         return [
             'name' => 'Lote '.fake()->unique()->word(),
+            'is_campaign' => false,
             'message_body_snapshot' => 'Oi {primeiro_nome}.',
+            'campaign_templates_snapshot' => null,
             'placeholders_snapshot' => ['primeiro_nome'],
             'selection_type' => MessageBatchSelectionType::Manual,
             'selection_filters' => [],

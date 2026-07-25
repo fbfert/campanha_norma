@@ -28,6 +28,7 @@ class MessageBatchController extends Controller
             ->with('template', 'creator')
             ->when($request->filled('q'), fn ($query) => $query->where('name', 'like', '%'.$request->string('q').'%'))
             ->when($request->filled('status'), fn ($query) => $query->where('status', $request->string('status')))
+            ->when($request->filled('is_campaign'), fn ($query) => $query->where('is_campaign', $request->boolean('is_campaign')))
             ->when($request->filled('message_template_id'), fn ($query) => $query->where('message_template_id', $request->integer('message_template_id')))
             ->latest()
             ->paginate(20)
@@ -41,6 +42,13 @@ class MessageBatchController extends Controller
         abort_unless($request->user()->can('message_batches.create'), 403);
 
         return view('admin.message-batches.create', $this->formData($catalog));
+    }
+
+    public function createCampaign(Request $request, PlaceholderCatalogService $catalog): View
+    {
+        abort_unless($request->user()->can('message_batches.create'), 403);
+
+        return view('admin.message-batches.create', array_merge($this->formData($catalog), ['campaignMode' => true]));
     }
 
     public function store(MessageBatchRequest $request, BatchCreationService $service): RedirectResponse
