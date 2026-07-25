@@ -15,6 +15,7 @@
 /auth.json
 /node_modules
 /whatsapp-service/dist
+/whatsapp-service/.wwebjs_cache
 /whatsapp-service/node_modules
 /whatsapp-service/storage/logs
 /whatsapp-service/storage/session

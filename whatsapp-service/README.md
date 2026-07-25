@@ -69,6 +69,12 @@ Content-Type: application/json
 - `DELETE /api/session`
 - `POST /api/test-message`
 
+## Envio individual de teste
+
+O telefone pode chegar com ou sem `+`; a API remove caracteres nao numericos antes do envio. Antes de chamar `sendMessage`, o servico valida o destino com `getNumberId()` do WhatsApp Web. Se o numero nao for reconhecido, retorna `INVALID_PHONE`.
+
+Algumas versoes/estados do WhatsApp Web podem concluir o envio sem devolver um objeto de mensagem com identificador externo. Nesses casos, desde que `sendMessage` nao lance excecao, o servico retorna `sent` com `external_message_id = null`.
+
 ## Mensagens recebidas
 
 Quando `INCOMING_MESSAGE_ENABLED=true`, o servico escuta eventos do WhatsApp Web e encaminha mensagens recebidas ao Laravel:

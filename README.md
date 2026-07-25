@@ -40,6 +40,8 @@ ADMIN_PASSWORD=
 
 Se `ADMIN_PASSWORD` ficar vazio, o seeder gera uma senha temporaria segura e informa no terminal.
 
+A politica local de senha exige apenas no minimo 6 caracteres e confirmacao. Nao ha exigencia de letra maiuscula, minuscula, numero ou simbolo.
+
 Execute migrations e seeders:
 
 ```bash
@@ -191,6 +193,8 @@ contacts.require_do_not_contact_reason = true
 - Dashboard com status real do WhatsApp.
 - Permissoes `whatsapp.*` para conexao, eventos e envio de teste.
 - Envio manual de uma unica mensagem individual de teste para contato ativo, com telefone valido e sem `nao contatar`.
+- O envio pelo WhatsApp Web aceita telefone com ou sem `+`; o sistema normaliza para digitos e valida o numero pelo cliente Web antes de chamar `sendMessage`.
+- Quando o WhatsApp Web confirma o envio mas nao retorna identificador externo, o sistema registra sucesso com `external_message_id` vazio em vez de tratar como falha.
 - Idempotencia por `request_id`.
 - Exemplo de systemd e procedimento manual controlado.
 - Testes automatizados Laravel com HTTP fake e testes Node.js com runtime mockado.

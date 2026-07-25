@@ -26,7 +26,7 @@ class NewPasswordController extends Controller
         $request->validate([
             'token' => ['required'],
             'email' => ['required', 'email'],
-            'password' => ['required', 'confirmed', PasswordRule::min(10)->letters()->mixedCase()->numbers()],
+            'password' => ['required', 'confirmed', PasswordRule::min(6)],
         ]);
 
         $status = Password::reset(

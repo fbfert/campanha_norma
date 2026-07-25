@@ -21,6 +21,7 @@ type WhatsAppClient = {
   destroy(): Promise<void>;
   logout(): Promise<void>;
   sendMessage(chatId: string, message: string): Promise<{ id?: { _serialized?: string } }>;
+  getNumberId(phone: string): Promise<{ _serialized?: string } | null>;
   getState(): Promise<string | null>;
   info?: { wid?: { user?: string }; pushname?: string };
   on(event: string, callback: (...args: unknown[]) => void): void;
@@ -212,17 +213,27 @@ export class WhatsAppClientService implements WhatsAppRuntime {
     }
 
     try {
-      const result = await this.client.sendMessage(`${phone}@c.us`, payload.message);
+      const numberId = await this.client.getNumberId(phone);
+      if (!numberId?._serialized) {
+        throw new ServiceError('INVALID_PHONE', 'O telefone informado nao foi reconhecido pelo WhatsApp Web.', 422);
+      }
+
+      const result = await this.client.sendMessage(numberId._serialized, payload.message);
       this.lastActivityAt = new Date();
 
       return this.idempotency.remember({
         request_id: payload.request_id,
-        external_message_id: result.id?._serialized ?? null,
+        external_message_id: result?.id?._serialized ?? null,
         status: 'sent',
         sent_at: new Date().toISOString(),
       });
     } catch (error) {
-      logger.warn({ event: 'send_failed', request_id: payload.request_id, err: error }, 'Falha ao enviar mensagem individual de teste.');
+      if (error instanceof ServiceError) {
+        throw error;
+      }
+
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      logger.warn({ event: 'send_failed', request_id: payload.request_id, error_message: errorMessage }, 'Falha ao enviar mensagem individual de teste.');
       throw new ServiceError('SEND_FAILED', 'Falha ao enviar mensagem individual de teste.', 502);
     }
   }
