@@ -18,8 +18,11 @@ export function apiRoutes(runtime: WhatsAppRuntime) {
   router.get('/qrcode', asyncHandler(api.qrcode));
   router.post('/reconnect', asyncHandler(api.reconnect));
   router.post('/disconnect', asyncHandler(api.disconnect));
+  router.get('/diagnostics/chats', asyncHandler(api.diagnosticsChats));
   router.delete('/session', asyncHandler(api.clearSession));
   router.post('/test-message', asyncHandler(api.sendTestMessage));
+  router.get('/conversations', asyncHandler(api.conversations));
+  router.get('/conversations/:chatId/messages', asyncHandler(api.conversationMessages));
 
   return router;
 }

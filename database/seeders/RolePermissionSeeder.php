@@ -72,6 +72,7 @@ class RolePermissionSeeder extends Seeder
                 PermissionSlug::InboxArchive,
                 PermissionSlug::InboxAssociateContact,
                 PermissionSlug::InboxViewMetrics,
+                PermissionSlug::InboxSync,
             ]],
             'consulta' => ['Consulta', 'Acesso somente para consulta.', [
                 PermissionSlug::DashboardView,

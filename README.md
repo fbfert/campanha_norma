@@ -405,6 +405,33 @@ Documentacao complementar:
 
 - `docs/inbox-and-incoming-messages.md`
 
+## Escopo implementado — Etapa 8
+
+- Menu administrativo `CONVERSAS`, reaproveitando integralmente o modulo existente de inbox.
+- Rotas amigaveis `/admin/conversations` e `/admin/conversations/{conversation}`, mantendo `/admin/inbox`.
+- Interface de atendimento com lista de conversas, linha do tempo, resposta manual e painel de detalhes.
+- Badge de conversas nao lidas com escopo por permissao e cache curto.
+- Sincronizacao controlada dos chats individuais disponiveis na sessao atual do WhatsApp Web.
+- Endpoints privados Node.js `GET /api/conversations` e `GET /api/conversations/:chatId/messages`.
+- Importacao idempotente em `conversations` e `conversation_messages` usando `provider + external_message_id`.
+- Registro de execucoes em `conversation_sync_runs`.
+- Fila `whatsapp-conversation-sync`, job `SyncWhatsAppConversationsJob` e comandos `conversations:*`.
+- Permissao `inbox.sync`.
+- Configuracoes `conversations.sync_*`.
+- Documentacao operacional em `docs/conversations-and-sync.md`.
+
+Configuracoes principais:
+
+```text
+conversations.sync_enabled = true
+conversations.sync_max_chats = 100
+conversations.sync_messages_per_chat = 50
+conversations.sync_days_back = 30
+conversations.sync_include_archived = false
+conversations.sync_interval_minutes = 15
+conversations.polling_interval_seconds = 10
+```
+
 ## Nao implementado nesta etapa — Etapa 1
 
 - Contatos.
@@ -505,6 +532,20 @@ Documentacao complementar:
 - Multiplas contas.
 - API oficial da Meta.
 - CRM externo.
+
+## Nao implementado nesta etapa — Etapa 8
+
+- Chatbot.
+- Inteligencia artificial.
+- Respostas automaticas.
+- Fluxos por palavras-chave.
+- Grupos.
+- Listas de transmissao.
+- Canais.
+- Status do WhatsApp.
+- Download ou envio de midias.
+- Multiplas contas.
+- API oficial da Meta.
 
 ## Fonte do planejamento
 

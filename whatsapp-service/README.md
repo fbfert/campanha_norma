@@ -68,6 +68,8 @@ Content-Type: application/json
 - `POST /api/disconnect`
 - `DELETE /api/session`
 - `POST /api/test-message`
+- `GET /api/conversations`
+- `GET /api/conversations/:chatId/messages`
 
 ## Envio individual de teste
 
@@ -93,6 +95,17 @@ X-Webhook-Signature
 ```
 
 Mensagens de grupo sao ignoradas. Midias sao registradas apenas como metadados nesta etapa. O servico nao envia respostas automaticas.
+
+## Sincronizacao de conversas
+
+Os endpoints de conversas sao usados apenas pelo backend Laravel. Eles listam chats individuais disponiveis na sessao atual e buscam mensagens recentes de um chat especifico:
+
+```bash
+curl -H "Authorization: Bearer TOKEN_INTERNO" \
+  "http://127.0.0.1:3100/api/conversations?limit=100"
+```
+
+Grupos, canais, status e listas de transmissao sao ignorados. Midias nao sao baixadas; apenas metadados seguros sao retornados. O historico retornado depende do que o WhatsApp Web disponibiliza na sessao atual e pode ser parcial.
 
 ## Codigos de erro
 

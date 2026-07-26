@@ -46,7 +46,10 @@
                     <a href="{{ route('admin.message-settings.edit') }}" @class(['active' => request()->routeIs('admin.message-settings.*')])>Configuracoes de envio</a>
                 @endcan
                 @can('inbox.view')
-                    <a href="{{ route('admin.inbox.index') }}" @class(['active' => request()->routeIs('admin.inbox.*')])>Caixa de entrada</a>
+                    <a href="{{ route('admin.conversations.index') }}" @class(['active' => request()->routeIs('admin.inbox.*', 'admin.conversations.*')])>
+                        <span class="nav-label"><span class="nav-icon chat-icon" aria-hidden="true"></span>CONVERSAS</span>
+                        @if(($unreadConversationsCount ?? 0) > 0)<span class="nav-badge">{{ $unreadConversationsCount }}</span>@endif
+                    </a>
                 @endcan
                 @can('histories.view')
                     <a href="{{ route('admin.histories.messages.index') }}" @class(['active' => request()->routeIs('admin.histories.*')])>Historico de mensagens</a>

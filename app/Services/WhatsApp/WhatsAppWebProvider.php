@@ -51,4 +51,14 @@ class WhatsAppWebProvider implements WhatsAppProvider
     {
         return $this->client->sendMessage($phone, $message, $requestId);
     }
+
+    public function listConversations(array $options = []): array
+    {
+        return $this->client->listConversations($options);
+    }
+
+    public function fetchConversationMessages(string $externalChatId, array $options = []): array
+    {
+        return $this->client->fetchConversationMessages($externalChatId, $options);
+    }
 }

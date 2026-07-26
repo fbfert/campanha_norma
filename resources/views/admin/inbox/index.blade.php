@@ -1,12 +1,37 @@
-<x-layouts.app title="Caixa de entrada" breadcrumbs="Atendimento / Caixa de entrada">
+<x-layouts.app title="CONVERSAS" breadcrumbs="Atendimento / Conversas">
     <section class="card">
-        <form method="get" class="filters-grid">
+        <div class="actions" style="justify-content:space-between;align-items:flex-start;">
+            <div>
+                <h2 style="margin-top:0;">Conversas</h2>
+                @if($latestSync)
+                    <p class="muted">Ultima sincronizacao: {{ $latestSync->status->label() }} @if($latestSync->finished_at)em {{ $latestSync->finished_at->format($dateTimeFormat) }}@endif | chats {{ $latestSync->chats_processed }} | mensagens importadas {{ $latestSync->messages_imported }} | modo {{ data_get($latestSync->options, 'sync_mode') === 'compatibility' ? 'compatibilidade' : 'padrao' }}</p>
+                    @if($latestSync->error_code)<p class="alert error">{{ $latestSync->error_code }} - {{ $latestSync->error_message }}</p>@endif
+                @else
+                    <p class="muted">Nenhuma sincronizacao executada.</p>
+                @endif
+            </div>
+            @can('inbox.sync')
+                <form method="post" action="{{ route('admin.conversations.sync') }}" onsubmit="return confirm('Iniciar sincronizacao das conversas disponiveis na sessao atual do WhatsApp Web?')">
+                    @csrf
+                    <button class="btn" type="submit" @disabled($syncActive)>{{ $syncActive ? ($latestSync?->status?->value === 'pending' ? 'Aguardando worker...' : 'Sincronizando...') : 'Sincronizar conversas' }}</button>
+                </form>
+            @endcan
+        </div>
+        <form method="get" class="filters-grid conversation-filters">
             <label>Busca <input name="q" value="{{ request('q') }}" placeholder="Nome, telefone, cidade ou mensagem"></label>
             <label>Status
                 <select name="status">
                     <option value="">Todos</option>
                     @foreach($statuses as $status)
                         <option value="{{ $status->value }}" @selected(request('status') === $status->value)>{{ $status->label() }}</option>
+                    @endforeach
+                </select>
+            </label>
+            <label>Prioridade
+                <select name="priority">
+                    <option value="">Todas</option>
+                    @foreach($priorities as $priority)
+                        <option value="{{ $priority->value }}" @selected(request('priority') === $priority->value)>{{ $priority->label() }}</option>
                     @endforeach
                 </select>
             </label>
@@ -17,34 +42,52 @@
                     <option value="none" @selected(request('assigned') === 'none')>Sem responsavel</option>
                 </select>
             </label>
+            <label>Etiqueta
+                <select name="tag_id">
+                    <option value="">Todas</option>
+                    @foreach($tags as $tag)
+                        <option value="{{ $tag->id }}" @selected((string) request('tag_id') === (string) $tag->id)>{{ $tag->name }}</option>
+                    @endforeach
+                </select>
+            </label>
             <label><input type="checkbox" name="unread" value="1" @checked(request()->boolean('unread'))> Somente nao lidas</label>
+            <label><input type="checkbox" name="no_contact" value="1" @checked(request()->boolean('no_contact'))> Sem contato associado</label>
+            <label><input type="checkbox" name="do_not_contact" value="1" @checked(request()->boolean('do_not_contact'))> Nao contatar</label>
+            <label><input type="checkbox" name="archived" value="1" @checked(request()->boolean('archived'))> Arquivadas</label>
+            <label><input type="checkbox" name="not_archived" value="1" @checked(request()->boolean('not_archived'))> Nao arquivadas</label>
             <button class="btn" type="submit">Filtrar</button>
         </form>
     </section>
 
-    <section class="card" style="margin-top:16px;">
-        <div class="table-wrap">
-            <table>
-                <thead><tr><th>Contato</th><th>Telefone</th><th>Ultima mensagem</th><th>Status</th><th>Prioridade</th><th>Responsavel</th><th>Nao lidas</th><th>Acoes</th></tr></thead>
-                <tbody>
-                    @forelse($conversations as $conversation)
-                        @php($last = $conversation->messages->first())
-                        <tr>
-                            <td>{{ $conversation->contact?->name ?? 'Contato nao identificado' }}</td>
-                            <td>{{ $conversation->contact?->phone_normalized ? Str::mask($conversation->contact->phone_normalized, '*', 4, -4) : '-' }}</td>
-                            <td>@can('inbox.view_message_content'){{ Str::limit($last?->body, 70) }}@else Conteudo protegido @endcan</td>
-                            <td>{{ $conversation->status->label() }}</td>
-                            <td>{{ $conversation->priority->label() }}</td>
-                            <td>{{ $conversation->assignee?->name ?? 'Sem responsavel' }}</td>
-                            <td>{{ $conversation->unread_count }}</td>
-                            <td><a class="btn small" href="{{ route('admin.inbox.show', $conversation) }}">Abrir</a></td>
-                        </tr>
-                    @empty
-                        <tr><td colspan="8">Nenhuma conversa encontrada.</td></tr>
-                    @endforelse
-                </tbody>
-            </table>
+    <section class="conversation-shell" style="margin-top:16px;">
+        <div class="conversation-list">
+            @forelse($conversations as $conversation)
+                @php($last = $conversation->latestMessage)
+                @php($displayPhone = $conversation->whatsappPhoneDigits())
+                <a class="conversation-list-item {{ $conversation->unread_count > 0 ? 'unread' : '' }}" href="{{ route('admin.conversations.show', $conversation) }}">
+                    <div class="conversation-list-top">
+                        <strong>{{ $conversation->contact?->name ?? ($last?->sender_name_snapshot ?: 'Contato nao identificado') }}</strong>
+                        <span class="muted">{{ $conversation->last_message_at?->format($conversation->last_message_at->isToday() ? 'H:i' : $dateFormat) }}</span>
+                    </div>
+                    <div class="muted">
+                        {{ $conversation->contact?->phone_normalized ? Str::mask($conversation->contact->phone_normalized, '*', 4, -4) : ($displayPhone ? Str::mask($displayPhone, '*', 4, -4) : 'Telefone nao disponivel') }}
+                    </div>
+                    @if(! $displayPhone && $conversation->whatsappIdentifierForDisplay())
+                        <div class="muted">ID WhatsApp: {{ $conversation->whatsappIdentifierForDisplay() }}</div>
+                    @endif
+                    <div class="conversation-preview">@can('inbox.view_message_content'){{ Str::limit($last?->body ?: ($last?->has_media ? '[midia]' : 'Sem mensagens'), 90) }}@else Conteudo protegido @endcan</div>
+                    <div class="conversation-meta">
+                        <span class="badge">{{ $conversation->status->label() }}</span>
+                        <span class="badge">{{ $conversation->priority->label() }}</span>
+                        <span>{{ $conversation->assignee?->name ?? 'Sem responsavel' }}</span>
+                        @if($conversation->unread_count > 0)<span class="unread-pill">{{ $conversation->unread_count }}</span>@endif
+                    </div>
+                    @if($conversation->contact?->do_not_contact)<div class="conversation-warning">Nao contatar</div>@endif
+                </a>
+            @empty
+                <div class="card">Nenhuma conversa encontrada.</div>
+            @endforelse
         </div>
-        {{ $conversations->links() }}
     </section>
+    <div style="margin-top:16px;">{{ $conversations->links() }}</div>
 </x-layouts.app>

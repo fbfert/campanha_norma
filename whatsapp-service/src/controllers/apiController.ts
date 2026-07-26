@@ -10,6 +10,17 @@ const testMessageSchema = z.object({
   message: z.string().trim().min(1).max(4096),
 });
 
+const conversationListSchema = z.object({
+  limit: z.coerce.number().int().min(1).max(500).default(100),
+  include_archived: z.union([z.literal('1'), z.literal('true'), z.literal('0'), z.literal('false')]).optional(),
+});
+
+const conversationMessagesSchema = z.object({
+  chatId: z.string().trim().min(5).max(128).regex(/^[\w.-]+@(c\.us|lid)$/),
+  limit: z.coerce.number().int().min(1).max(500).default(50),
+  days: z.coerce.number().int().min(1).max(365).default(30),
+});
+
 export function controller(runtime: WhatsAppRuntime) {
   return {
     health(_req: Request, res: Response) {
@@ -36,6 +47,10 @@ export function controller(runtime: WhatsAppRuntime) {
       return ok(res, await runtime.disconnect());
     },
 
+    async diagnosticsChats(_req: Request, res: Response) {
+      return ok(res, await runtime.diagnosticsChats());
+    },
+
     async clearSession(_req: Request, res: Response) {
       return ok(res, await runtime.clearSession());
     },
@@ -47,6 +62,30 @@ export function controller(runtime: WhatsAppRuntime) {
       }
 
       return ok(res, await runtime.sendTestMessage(parsed.data), parsed.data.request_id);
+    },
+
+    async conversations(req: Request, res: Response) {
+      const parsed = conversationListSchema.safeParse(req.query);
+      if (!parsed.success) {
+        throw new ServiceError('INVALID_REQUEST', 'Parametros invalidos para listar conversas.', 422);
+      }
+
+      return ok(res, await runtime.listConversations({
+        limit: parsed.data.limit,
+        include_archived: ['1', 'true'].includes(String(parsed.data.include_archived)),
+      }));
+    },
+
+    async conversationMessages(req: Request, res: Response) {
+      const parsed = conversationMessagesSchema.safeParse({ ...req.query, chatId: req.params.chatId });
+      if (!parsed.success) {
+        throw new ServiceError('INVALID_REQUEST', 'Parametros invalidos para mensagens da conversa.', 422);
+      }
+
+      return ok(res, await runtime.fetchConversationMessages(parsed.data.chatId, {
+        limit: parsed.data.limit,
+        days: parsed.data.days,
+      }));
     },
   };
 }

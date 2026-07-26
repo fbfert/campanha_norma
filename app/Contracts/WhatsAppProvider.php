@@ -24,4 +24,8 @@ interface WhatsAppProvider
     public function sendTestMessage(string $phone, string $message, string $requestId): SendResult;
 
     public function sendMessage(string $phone, string $message, string $requestId): SendResult;
+
+    public function listConversations(array $options = []): array;
+
+    public function fetchConversationMessages(string $externalChatId, array $options = []): array;
 }

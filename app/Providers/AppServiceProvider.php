@@ -2,8 +2,10 @@
 
 namespace App\Providers;
 
+use App\Models\Conversation;
 use App\Models\User;
 use App\Services\SystemSettingService;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
@@ -106,13 +108,30 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('inbox.mark_do_not_contact', fn (User $user): bool => $user->hasPermission('inbox.mark_do_not_contact'));
         Gate::define('inbox.associate_contact', fn (User $user): bool => $user->hasPermission('inbox.associate_contact'));
         Gate::define('inbox.view_metrics', fn (User $user): bool => $user->hasPermission('inbox.view_metrics'));
+        Gate::define('inbox.sync', fn (User $user): bool => $user->hasPermission('inbox.sync'));
 
         view()->composer('*', function ($view): void {
             $settings = app(SystemSettingService::class);
+            $user = auth()->user();
+            $unreadConversationsCount = 0;
+
+            if ($user && $user->can('inbox.view')) {
+                $unreadConversationsCount = Cache::remember("inbox:unread-menu-count:user:{$user->id}", 30, function () use ($user): int {
+                    return Conversation::query()
+                        ->where('unread_count', '>', 0)
+                        ->when(! $user->can('inbox.view_all'), function ($query) use ($user): void {
+                            $query->where(function ($query) use ($user): void {
+                                $query->where('assigned_user_id', $user->id)->orWhereNull('assigned_user_id');
+                            });
+                        })
+                        ->count();
+                });
+            }
 
             $view->with('systemName', $settings->get('system.name', config('app.name')));
             $view->with('dateFormat', $settings->get('system.date_format', 'd/m/Y'));
             $view->with('dateTimeFormat', $settings->get('system.datetime_format', 'd/m/Y H:i'));
+            $view->with('unreadConversationsCount', $unreadConversationsCount);
         });
     }
 }

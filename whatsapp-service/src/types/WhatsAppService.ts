@@ -60,6 +60,64 @@ export type SendResultPayload = {
   error_message?: string | null;
 };
 
+export type ConversationListOptions = {
+  limit?: number;
+  include_archived?: boolean;
+};
+
+export type ConversationSyncMode = 'standard' | 'compatibility';
+
+export type ConversationMessagesOptions = {
+  limit?: number;
+  days?: number;
+};
+
+export type NormalizedConversation = {
+  external_chat_id: string;
+  phone: string;
+  name?: string | null;
+  is_group: boolean;
+  is_archived: boolean;
+  unread_count: number;
+  last_message_at?: string | null;
+};
+
+export type NormalizedConversationMessage = {
+  external_message_id: string;
+  external_chat_id: string;
+  direction: 'incoming' | 'outgoing';
+  is_from_me: boolean;
+  type: string;
+  body?: string | null;
+  sent_at?: string | null;
+  has_media: boolean;
+  metadata: Record<string, unknown>;
+};
+
+export type ConversationListResult = {
+  conversations: NormalizedConversation[];
+  sync_mode: ConversationSyncMode;
+  normal_mode_ok: boolean;
+  fallback_mode_ok: boolean;
+  chats_found: number;
+  chats_failed: number;
+  collection_available: boolean;
+  collection_count: number;
+};
+
+export type ConversationDiagnosticsPayload = {
+  ready: boolean;
+  state: string | null;
+  library_version: string;
+  web_version: string | null;
+  get_chats_available: boolean;
+  chat_collection_available: boolean;
+  chat_collection_count: number;
+  normal_mode_ok: boolean;
+  fallback_mode_ok: boolean;
+  sync_mode: ConversationSyncMode;
+};
+
 export interface WhatsAppRuntime {
   health(): Record<string, unknown>;
   status(): StatusPayload;
@@ -69,5 +127,8 @@ export interface WhatsAppRuntime {
   disconnect(): Promise<ConnectionResultPayload>;
   clearSession(): Promise<ConnectionResultPayload>;
   sendTestMessage(payload: SendPayload): Promise<SendResultPayload>;
+  listConversations(options: ConversationListOptions): Promise<ConversationListResult>;
+  fetchConversationMessages(chatId: string, options: ConversationMessagesOptions): Promise<{ messages: NormalizedConversationMessage[] }>;
+  diagnosticsChats(): Promise<ConversationDiagnosticsPayload>;
   shutdown(): Promise<void>;
 }

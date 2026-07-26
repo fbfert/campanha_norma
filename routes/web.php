@@ -73,6 +73,9 @@ Route::middleware(['auth', 'password.changed'])->group(function (): void {
 
         Route::get('/inbox', [InboxController::class, 'index'])->name('inbox.index');
         Route::get('/inbox/{conversation}', [InboxController::class, 'show'])->name('inbox.show');
+        Route::get('/conversations', [InboxController::class, 'index'])->name('conversations.index');
+        Route::get('/conversations/{conversation}', [InboxController::class, 'show'])->name('conversations.show');
+        Route::post('/conversations/sync', [InboxController::class, 'sync'])->name('conversations.sync');
         Route::post('/inbox/{conversation}/read', [InboxController::class, 'show'])->name('inbox.read');
         Route::post('/inbox/{conversation}/reply', [InboxController::class, 'reply'])->name('inbox.reply');
         Route::post('/inbox/{conversation}/assign', [InboxController::class, 'assign'])->name('inbox.assign');

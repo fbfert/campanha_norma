@@ -16,3 +16,5 @@ Schedule::command('reports:rebuild-metrics')->dailyAt('02:00')->withoutOverlappi
 Schedule::command('inbox:recover-stuck')->everyFiveMinutes()->withoutOverlapping();
 Schedule::command('inbox:sync-unread-counts')->hourly()->withoutOverlapping();
 Schedule::command('inbox:archive-resolved')->daily()->withoutOverlapping();
+Schedule::command('conversations:sync --queue')->everyFifteenMinutes()->withoutOverlapping();
+Schedule::command('conversations:recover-sync')->everyFiveMinutes()->withoutOverlapping();

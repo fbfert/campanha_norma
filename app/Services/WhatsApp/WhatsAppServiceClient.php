@@ -59,6 +59,18 @@ class WhatsAppServiceClient
         ]));
     }
 
+    public function listConversations(array $options = []): array
+    {
+        return $this->send('get', '/api/conversations'.($options === [] ? '' : '?'.http_build_query($options)));
+    }
+
+    public function fetchConversationMessages(string $externalChatId, array $options = []): array
+    {
+        $path = '/api/conversations/'.rawurlencode($externalChatId).'/messages';
+
+        return $this->send('get', $path.($options === [] ? '' : '?'.http_build_query($options)));
+    }
+
     private function request(): PendingRequest
     {
         $token = (string) config('whatsapp.service.token');

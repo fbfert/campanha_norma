@@ -84,6 +84,7 @@ enum PermissionSlug: string
     case InboxMarkDoNotContact = 'inbox.mark_do_not_contact';
     case InboxAssociateContact = 'inbox.associate_contact';
     case InboxViewMetrics = 'inbox.view_metrics';
+    case InboxSync = 'inbox.sync';
 
     public function label(): string
     {
@@ -168,6 +169,7 @@ enum PermissionSlug: string
             self::InboxMarkDoNotContact => 'Marcar contato como nao contatar pela conversa',
             self::InboxAssociateContact => 'Associar contato a conversa',
             self::InboxViewMetrics => 'Visualizar metricas da caixa de entrada',
+            self::InboxSync => 'Sincronizar conversas do WhatsApp',
         };
     }
 }

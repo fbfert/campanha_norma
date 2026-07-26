@@ -4,18 +4,25 @@ namespace App\Http\Controllers\Admin\Inbox;
 
 use App\Enums\ConversationPriority;
 use App\Enums\ConversationStatus;
+use App\Enums\ConversationSyncStatus;
+use App\Enums\WhatsAppConnectionStatus;
 use App\Http\Controllers\Controller;
+use App\Jobs\SyncWhatsAppConversationsJob;
 use App\Models\Contact;
 use App\Models\Conversation;
 use App\Models\ConversationNote;
+use App\Models\ConversationSyncRun;
 use App\Models\ConversationTag;
 use App\Models\User;
 use App\Services\AuditLogger;
 use App\Services\Conversations\ConversationEventService;
 use App\Services\Conversations\ManualReplyService;
 use App\Services\Conversations\ReplyInterruptionService;
+use App\Services\SystemSettingService;
+use App\Services\WhatsApp\WhatsAppProviderManager;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 
@@ -24,21 +31,30 @@ class InboxController extends Controller
     public function index(Request $request, AuditLogger $audit): View
     {
         abort_unless($request->user()->can('inbox.view'), 403);
-        $audit->log('inbox.viewed', 'Caixa de entrada visualizada.');
+        $audit->log('inbox.viewed', 'Conversas visualizadas.');
 
-        $query = Conversation::with(['contact', 'assignee', 'messages', 'tags'])
+        $query = Conversation::with(['contact', 'assignee', 'latestMessage', 'tags'])
             ->when($request->filled('status'), fn ($query) => $query->where('status', $request->string('status')))
+            ->when($request->filled('priority'), fn ($query) => $query->where('priority', $request->string('priority')))
             ->when($request->boolean('unread'), fn ($query) => $query->where('unread_count', '>', 0))
+            ->when($request->boolean('no_contact'), fn ($query) => $query->whereNull('contact_id'))
+            ->when($request->boolean('archived'), fn ($query) => $query->where('is_archived', true))
+            ->when($request->boolean('not_archived'), fn ($query) => $query->where('is_archived', false))
+            ->when($request->boolean('do_not_contact'), fn ($query) => $query->whereHas('contact', fn ($contact) => $contact->where('do_not_contact', true)))
+            ->when($request->filled('tag_id'), fn ($query) => $query->whereHas('tags', fn ($tag) => $tag->where('conversation_tags.id', $request->integer('tag_id'))))
             ->when($request->filled('assigned'), fn ($query) => $request->string('assigned')->toString() === 'me' ? $query->where('assigned_user_id', $request->user()->id) : $query->whereNull('assigned_user_id'))
             ->when($request->filled('q'), function ($query) use ($request): void {
                 $q = trim((string) $request->query('q'));
                 $digits = preg_replace('/\D+/', '', $q);
-                $query->where(function ($query) use ($q, $digits): void {
+                $query->where(function ($query) use ($request, $q, $digits): void {
                     $query->whereHas('contact', fn ($contact) => $contact->where('name', 'like', "%{$q}%")->orWhere('email', 'like', "%{$q}%")->orWhere('city', 'like', "%{$q}%"));
                     if ($digits !== '') {
                         $query->orWhereHas('contact', fn ($contact) => $contact->where('phone_normalized', 'like', "%{$digits}%"));
+                        $query->orWhere('external_chat_id', 'like', "%{$digits}%");
                     }
-                    $query->orWhereHas('messages', fn ($message) => $message->where('body', 'like', "%{$q}%"));
+                    if ($request->user()?->can('inbox.view_message_content')) {
+                        $query->orWhereHas('messages', fn ($message) => $message->where('body', 'like', "%{$q}%"));
+                    }
                 });
             })
             ->latest('last_message_at');
@@ -53,6 +69,9 @@ class InboxController extends Controller
             'conversations' => $query->paginate(20)->withQueryString(),
             'statuses' => ConversationStatus::cases(),
             'priorities' => ConversationPriority::cases(),
+            'tags' => ConversationTag::where('is_active', true)->orderBy('name')->get(),
+            'latestSync' => ConversationSyncRun::latest()->first(),
+            'syncActive' => ConversationSyncRun::whereIn('status', [ConversationSyncStatus::Pending->value, ConversationSyncStatus::Running->value])->exists(),
         ]);
     }
 
@@ -74,6 +93,50 @@ class InboxController extends Controller
             'statuses' => ConversationStatus::cases(),
             'priorities' => ConversationPriority::cases(),
         ]);
+    }
+
+    public function sync(Request $request, AuditLogger $audit, SystemSettingService $settings, WhatsAppProviderManager $providers): RedirectResponse
+    {
+        abort_unless($request->user()->can('inbox.sync'), 403);
+
+        if (! (bool) $settings->get('conversations.sync_enabled', true)) {
+            return back()->with('error', 'Sincronizacao de conversas desativada.');
+        }
+
+        try {
+            if ($providers->provider()->getStatus()->status !== WhatsAppConnectionStatus::Connected) {
+                return back()->with('error', 'Conecte o WhatsApp antes de sincronizar conversas.');
+            }
+        } catch (\Throwable) {
+            return back()->with('error', 'Nao foi possivel verificar a conexao do WhatsApp.');
+        }
+
+        if (ConversationSyncRun::whereIn('status', [ConversationSyncStatus::Pending->value, ConversationSyncStatus::Running->value])->exists()) {
+            return back()->with('error', 'Ja existe uma sincronizacao em andamento.');
+        }
+
+        $lock = Cache::lock('conversations:sync:active', 1);
+        if (! $lock->get()) {
+            return back()->with('error', 'Ja existe uma sincronizacao em andamento.');
+        }
+
+        $lock->release();
+
+        $run = ConversationSyncRun::create([
+            'status' => ConversationSyncStatus::Pending,
+            'requested_by' => $request->user()->id,
+            'options' => [
+                'limit_chats' => (int) $settings->get('conversations.sync_max_chats', 100),
+                'messages_per_chat' => (int) $settings->get('conversations.sync_messages_per_chat', 50),
+                'days' => (int) $settings->get('conversations.sync_days_back', 30),
+                'include_archived' => (bool) $settings->get('conversations.sync_include_archived', false),
+            ],
+        ]);
+
+        SyncWhatsAppConversationsJob::dispatch($run->id)->onQueue('whatsapp-conversation-sync');
+        $audit->log('conversation.sync_requested', 'Sincronizacao de conversas solicitada.', $run, null, ['run_id' => $run->id], $request->user());
+
+        return back()->with('success', 'Sincronizacao de conversas iniciada.');
     }
 
     public function reply(Request $request, Conversation $conversation, ManualReplyService $replies): RedirectResponse

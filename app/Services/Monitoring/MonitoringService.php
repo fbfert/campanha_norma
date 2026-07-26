@@ -4,6 +4,7 @@ namespace App\Services\Monitoring;
 
 use App\Enums\MonitoringHealthStatus;
 use App\Models\ConversationMessage;
+use App\Models\ConversationSyncRun;
 use App\Models\MessageBatch;
 use App\Models\MessageBatchRecipient;
 use App\Models\SchedulerHeartbeat;
@@ -30,6 +31,7 @@ class MonitoringService
             'node' => $this->node(),
             'storage' => $this->storage(),
             'stuck_messages' => $this->stuckMessages(),
+            'conversation_sync' => $this->conversationSync(),
             'inconsistent_batches' => $this->inconsistentBatches(),
         ];
     }
@@ -70,7 +72,7 @@ class MonitoringService
 
     public function queues(): array
     {
-        $queues = ['whatsapp-messages', 'whatsapp-incoming', 'whatsapp-manual-replies', 'whatsapp-maintenance'];
+        $queues = ['whatsapp-messages', 'whatsapp-incoming', 'whatsapp-manual-replies', 'whatsapp-conversation-sync', 'whatsapp-maintenance'];
         $pending = DB::table('jobs')->whereIn('queue', $queues)->count();
         $byQueue = DB::table('jobs')->selectRaw('queue, count(*) as total')->whereIn('queue', $queues)->groupBy('queue')->pluck('total', 'queue')->all();
         $failed = DB::table('failed_jobs')->count();
@@ -148,6 +150,29 @@ class MonitoringService
             ->count();
 
         return $this->item($count > 0 ? MonitoringHealthStatus::Warning : MonitoringHealthStatus::Healthy, 'Lotes inconsistentes verificados.', ['count' => $count]);
+    }
+
+    public function conversationSync(): array
+    {
+        $active = ConversationSyncRun::query()->whereIn('status', ['pending', 'running'])->latest()->first();
+        $last = ConversationSyncRun::query()->latest('finished_at')->latest('created_at')->first();
+
+        if (! $active && ! $last) {
+            return $this->item(MonitoringHealthStatus::Unknown, 'Nenhuma sincronizacao de conversas registrada.');
+        }
+
+        $stuck = $active && $active->last_heartbeat_at && $active->last_heartbeat_at->lt(now()->subMinutes(30));
+        $status = $stuck ? MonitoringHealthStatus::Warning : (($last?->status?->value === 'failed') ? MonitoringHealthStatus::Warning : MonitoringHealthStatus::Healthy);
+
+        return $this->item($status, $active ? 'Sincronizacao de conversas ativa.' : 'Ultima sincronizacao de conversas avaliada.', [
+            'active_id' => $active?->id,
+            'active_status' => $active?->status?->value,
+            'last_id' => $last?->id,
+            'last_status' => $last?->status?->value,
+            'last_finished_at' => $last?->finished_at?->format('d/m/Y H:i'),
+            'messages_imported' => $last?->messages_imported,
+            'error_code' => $last?->error_code,
+        ]);
     }
 
     private function threshold(int|float $minutes, string $warningKey, string $criticalKey): MonitoringHealthStatus

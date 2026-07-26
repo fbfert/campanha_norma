@@ -1,4 +1,4 @@
-# Caixa de entrada e mensagens recebidas
+# Conversas, caixa de entrada e mensagens recebidas
 
 ## Arquitetura
 
@@ -142,17 +142,19 @@ error_code = CONTACT_REPLIED
 
 Mensagens em processamento ou ja enviadas nao sao canceladas silenciosamente.
 
-## Caixa de entrada
+## CONVERSAS
 
 Rota:
 
 ```text
 /admin/inbox
+/admin/conversations
 ```
 
 Recursos:
 
 - filtros por status, responsavel, nao lidas e busca
+- interface em lista de conversas, linha do tempo e detalhes
 - conversa detalhada
 - leitura interna
 - atribuicao
@@ -162,6 +164,49 @@ Recursos:
 - associacao manual de contato
 - marcacao de nao contatar
 - resposta manual
+- sincronizacao controlada dos chats disponiveis na sessao atual do WhatsApp Web
+
+As rotas antigas `/admin/inbox` continuam validas por compatibilidade. A nomenclatura visivel no menu administrativo e `CONVERSAS`.
+
+## Sincronizacao do WhatsApp Web
+
+A sincronizacao usa a sessao atual do WhatsApp Web por meio do servico Node.js privado:
+
+```text
+Laravel -> WhatsAppProvider -> Node.js /api/conversations -> whatsapp-web.js getChats()
+Laravel -> WhatsAppProvider -> Node.js /api/conversations/{chatId}/messages -> chat.fetchMessages()
+```
+
+Limites padrao:
+
+```text
+conversations.sync_enabled = true
+conversations.sync_max_chats = 100
+conversations.sync_messages_per_chat = 50
+conversations.sync_days_back = 30
+conversations.sync_include_archived = false
+conversations.sync_interval_minutes = 15
+conversations.polling_interval_seconds = 10
+```
+
+Limites absolutos de backend:
+
+```text
+500 chats por execucao
+500 mensagens por chat
+365 dias retroativos
+```
+
+A sincronizacao:
+
+- importa apenas conversas individuais
+- ignora grupos, status, canais, comunidades e listas
+- importa mensagens recebidas e enviadas por outros dispositivos
+- nao baixa midias
+- nao promete recuperar todo o historico, apenas o que a sessao atual disponibilizar
+- usa idempotencia por `provider + external_message_id`
+- registra execucoes em `conversation_sync_runs`
+- usa a fila `whatsapp-conversation-sync`
 
 ## Resposta manual
 
@@ -184,6 +229,7 @@ Filas:
 ```text
 whatsapp-incoming
 whatsapp-manual-replies
+whatsapp-conversation-sync
 ```
 
 Supervisor sugerido:
@@ -214,6 +260,19 @@ stdout_logfile=/var/log/supervisor/gerenciador-whatsapp-manual-replies.log
 stopwaitsecs=180
 ```
 
+```ini
+[program:gerenciador-whatsapp-conversation-sync]
+command=php /var/www/gerenciador-mensagens/artisan queue:work redis --queue=whatsapp-conversation-sync --sleep=3 --tries=3 --timeout=300
+directory=/var/www/gerenciador-mensagens
+autostart=true
+autorestart=true
+user=www-data
+numprocs=1
+redirect_stderr=true
+stdout_logfile=/var/log/supervisor/gerenciador-whatsapp-conversation-sync.log
+stopwaitsecs=360
+```
+
 ## Comandos
 
 ```bash
@@ -222,6 +281,12 @@ php artisan inbox:recover-stuck
 php artisan inbox:sync-unread-counts
 php artisan inbox:rebuild-conversation-status
 php artisan inbox:archive-resolved
+php artisan conversations:sync
+php artisan conversations:sync --queue
+php artisan conversations:sync --chat="5549999999999@c.us"
+php artisan conversations:sync --days=7 --limit-chats=50 --messages-per-chat=100
+php artisan conversations:rebuild-unread
+php artisan conversations:recover-sync
 ```
 
 ## Scheduler
@@ -230,6 +295,8 @@ php artisan inbox:archive-resolved
 inbox:recover-stuck      a cada cinco minutos
 inbox:sync-unread-counts a cada hora
 inbox:archive-resolved   diariamente
+conversations:sync --queue a cada quinze minutos
+conversations:recover-sync a cada cinco minutos
 ```
 
 ## Monitoramento
@@ -238,7 +305,10 @@ A central de monitoramento inclui:
 
 - fila `whatsapp-incoming`
 - fila `whatsapp-manual-replies`
+- fila `whatsapp-conversation-sync`
 - respostas manuais presas
+- ultima sincronizacao de conversas
+- sincronizacao presa
 - filas e jobs falhos
 
 ## Privacidade
@@ -261,3 +331,4 @@ Mensagens completas ficam nas tabelas protegidas do modulo.
 - Mensagem nao aparece: verificar fila `whatsapp-incoming` e `failed_jobs`.
 - Resposta manual presa: executar `php artisan inbox:recover-stuck`.
 - Contador incorreto: executar `php artisan inbox:sync-unread-counts`.
+- Conversas nao sincronizam: verificar conexao WhatsApp, fila `whatsapp-conversation-sync` e ultimo registro em `conversation_sync_runs`.

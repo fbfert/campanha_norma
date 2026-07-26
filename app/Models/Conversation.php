@@ -10,7 +10,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Str;
 
 class Conversation extends Model
 {
@@ -19,6 +21,8 @@ class Conversation extends Model
     protected $fillable = [
         'contact_id',
         'connection_id',
+        'provider',
+        'external_chat_id',
         'status',
         'priority',
         'assigned_user_id',
@@ -26,6 +30,7 @@ class Conversation extends Model
         'last_message_at',
         'last_incoming_message_at',
         'last_outgoing_message_at',
+        'last_synced_at',
         'first_response_at',
         'unread_count',
         'is_archived',
@@ -44,6 +49,7 @@ class Conversation extends Model
             'last_message_at' => 'datetime',
             'last_incoming_message_at' => 'datetime',
             'last_outgoing_message_at' => 'datetime',
+            'last_synced_at' => 'datetime',
             'first_response_at' => 'datetime',
             'is_archived' => 'boolean',
             'archived_at' => 'datetime',
@@ -66,6 +72,11 @@ class Conversation extends Model
         return $this->hasMany(ConversationMessage::class)->latest('created_at');
     }
 
+    public function latestMessage(): HasOne
+    {
+        return $this->hasOne(ConversationMessage::class)->latestOfMany();
+    }
+
     public function events(): HasMany
     {
         return $this->hasMany(ConversationEvent::class)->latest('created_at');
@@ -84,5 +95,39 @@ class Conversation extends Model
     public function tags(): BelongsToMany
     {
         return $this->belongsToMany(ConversationTag::class, 'conversation_conversation_tag')->withPivot('created_by')->withTimestamps();
+    }
+
+    public function whatsappPhoneDigits(): ?string
+    {
+        if ($this->contact?->phone_normalized) {
+            return $this->contact->phone_normalized;
+        }
+
+        $externalChatId = (string) ($this->external_chat_id ?? '');
+        if ($externalChatId === '' || ! Str::contains($externalChatId, '@c.us')) {
+            return null;
+        }
+
+        $digits = preg_replace('/\D+/', '', Str::before($externalChatId, '@'));
+        if (! is_string($digits) || ! preg_match('/^\d{10,15}$/', $digits)) {
+            return null;
+        }
+
+        return $digits;
+    }
+
+    public function whatsappPhoneForDisplay(): ?string
+    {
+        $digits = $this->whatsappPhoneDigits();
+        if (! $digits) {
+            return null;
+        }
+
+        return $digits;
+    }
+
+    public function whatsappIdentifierForDisplay(): ?string
+    {
+        return $this->external_chat_id ?: null;
     }
 }

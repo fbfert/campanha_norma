@@ -19,6 +19,7 @@ class ConversationMessage extends Model
         'direction',
         'message_type',
         'provider',
+        'external_chat_id',
         'external_message_id',
         'event_id',
         'request_id',

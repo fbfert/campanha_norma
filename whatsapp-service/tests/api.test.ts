@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { createApp } from '../src/app.js';
 import { ConnectionStatus } from '../src/enums/ConnectionStatus.js';
 import { ServiceError } from '../src/errors/ServiceError.js';
-import type { ConnectionResultPayload, QrPayload, SendPayload, SendResultPayload, StatusPayload, WhatsAppRuntime } from '../src/types/WhatsAppService.js';
+import type { ConnectionResultPayload, ConversationDiagnosticsPayload, ConversationListOptions, ConversationMessagesOptions, ConversationListResult, NormalizedConversation, NormalizedConversationMessage, QrPayload, SendPayload, SendResultPayload, StatusPayload, WhatsAppRuntime } from '../src/types/WhatsAppService.js';
 
 process.env.SERVICE_TOKEN = 'token-teste';
 
@@ -13,6 +13,15 @@ class FakeRuntime implements WhatsAppRuntime {
   public connectError: ServiceError | null = null;
   public sendError: ServiceError | null = null;
   public sent = new Map<string, SendResultPayload>();
+  public conversations: NormalizedConversation[] = [
+    { external_chat_id: '5549999999999@c.us', phone: '5549999999999', name: 'Contato Teste', is_group: false, is_archived: false, unread_count: 2, last_message_at: new Date().toISOString() },
+    { external_chat_id: '5511999999999@lid', phone: '5511999999999', name: 'Contato Lid', is_group: false, is_archived: false, unread_count: 0, last_message_at: new Date().toISOString() },
+  ];
+  public messages: NormalizedConversationMessage[] = [
+    { external_message_id: 'msg-in', external_chat_id: '5549999999999@c.us', direction: 'incoming', is_from_me: false, type: 'text', body: 'Ola', sent_at: new Date().toISOString(), has_media: false, metadata: {} },
+    { external_message_id: 'msg-out', external_chat_id: '5549999999999@c.us', direction: 'outgoing', is_from_me: true, type: 'text', body: 'Resposta', sent_at: new Date().toISOString(), has_media: false, metadata: {} },
+    { external_message_id: 'msg-lid', external_chat_id: '5511999999999@lid', direction: 'incoming', is_from_me: false, type: 'text', body: 'Lid', sent_at: new Date().toISOString(), has_media: false, metadata: {} },
+  ];
 
   health() {
     return { service: 'whatsapp-service', status: 'healthy', uptime_seconds: 1, timestamp: new Date().toISOString() };
@@ -74,6 +83,49 @@ class FakeRuntime implements WhatsAppRuntime {
     return result;
   }
 
+  async listConversations(options: ConversationListOptions): Promise<ConversationListResult> {
+    if (this.state !== ConnectionStatus.Connected) {
+      throw new ServiceError('WHATSAPP_NOT_CONNECTED', 'A conta do WhatsApp nao esta conectada.', 409);
+    }
+
+    return {
+      conversations: this.conversations.slice(0, options.limit ?? 100),
+      sync_mode: 'standard',
+      normal_mode_ok: true,
+      fallback_mode_ok: false,
+      chats_found: this.conversations.length,
+      chats_failed: 0,
+      collection_available: true,
+      collection_count: this.conversations.length,
+    };
+  }
+
+  async fetchConversationMessages(chatId: string, _options: ConversationMessagesOptions): Promise<{ messages: NormalizedConversationMessage[] }> {
+    if (this.state !== ConnectionStatus.Connected) {
+      throw new ServiceError('WHATSAPP_NOT_CONNECTED', 'A conta do WhatsApp nao esta conectada.', 409);
+    }
+    if (!['5549999999999@c.us', '5511999999999@lid'].includes(chatId)) {
+      throw new ServiceError('CHAT_NOT_FOUND', 'Conversa individual nao encontrada.', 404);
+    }
+
+    return { messages: this.messages.filter((message) => message.external_chat_id === chatId) };
+  }
+
+  async diagnosticsChats(): Promise<ConversationDiagnosticsPayload> {
+    return {
+      ready: this.state === ConnectionStatus.Connected,
+      state: 'CONNECTED',
+      library_version: '1.34.7',
+      web_version: '2.3000.0',
+      get_chats_available: true,
+      chat_collection_available: true,
+      chat_collection_count: this.conversations.length,
+      normal_mode_ok: true,
+      fallback_mode_ok: false,
+      sync_mode: 'standard',
+    };
+  }
+
   async shutdown(): Promise<void> {}
 }
 
@@ -103,6 +155,15 @@ describe('api privada WhatsApp', () => {
   it('retorna status sem cliente inicializado', async () => {
     await request(app).get('/api/status').set('Authorization', 'Bearer token-teste').expect(200).expect((response) => {
       expect(response.body.data.status).toBe(ConnectionStatus.NotInitialized);
+    });
+  });
+
+  it('retorna diagnostico da sincronizacao de chats', async () => {
+    runtime.state = ConnectionStatus.Connected;
+    await request(app).get('/api/diagnostics/chats').set('Authorization', 'Bearer token-teste').expect(200).expect((response) => {
+      expect(response.body.data.ready).toBe(true);
+      expect(response.body.data.library_version).toBe('1.34.7');
+      expect(response.body.data.sync_mode).toBe('standard');
     });
   });
 
@@ -163,5 +224,28 @@ describe('api privada WhatsApp', () => {
   it('trata erro do navegador', async () => {
     runtime.connectError = new ServiceError('BROWSER_START_FAILED', 'Falha ao iniciar o navegador.', 500);
     await request(app).post('/api/connect').set('Authorization', 'Bearer token-teste').expect(500);
+  });
+
+  it('lista conversas autenticadas e bloqueia cliente desconectado', async () => {
+    await request(app).get('/api/conversations').set('Authorization', 'Bearer token-teste').expect(409);
+    runtime.state = ConnectionStatus.Connected;
+    await request(app).get('/api/conversations?limit=1').set('Authorization', 'Bearer token-teste').expect(200).expect((response) => {
+      expect(response.body.data.conversations).toHaveLength(1);
+      expect(response.body.data.conversations[0].external_chat_id).toBe('5549999999999@c.us');
+    });
+  });
+
+  it('valida chat e lista mensagens normalizadas', async () => {
+    runtime.state = ConnectionStatus.Connected;
+    await request(app).get('/api/conversations/grupo@g.us/messages').set('Authorization', 'Bearer token-teste').expect(422);
+    await request(app).get('/api/conversations/5549999999999@c.us/messages?limit=2').set('Authorization', 'Bearer token-teste').expect(200).expect((response) => {
+      expect(response.body.data.messages).toHaveLength(2);
+      expect(response.body.data.messages[0].direction).toBe('incoming');
+      expect(response.body.data.messages[1].direction).toBe('outgoing');
+    });
+    await request(app).get('/api/conversations/5511999999999@lid/messages?limit=2').set('Authorization', 'Bearer token-teste').expect(200).expect((response) => {
+      expect(response.body.data.messages).toHaveLength(1);
+      expect(response.body.data.messages[0].external_chat_id).toBe('5511999999999@lid');
+    });
   });
 });
