@@ -92,7 +92,32 @@ class WhatsAppModuleTest extends TestCase
         $admin = $this->userWithRole('administrador');
 
         $this->actingAs($admin)->post(route('admin.whatsapp.connect'))
-            ->assertSessionHasErrors('whatsapp');
+            ->assertSessionHas('error', 'A autenticacao interna com o servico do WhatsApp falhou.')
+            ->assertSessionDoesntHaveErrors();
+    }
+
+    public function test_falha_operacional_nao_e_exibida_como_erro_de_campo(): void
+    {
+        Http::fake(fn () => throw new ConnectionException('timeout'));
+
+        $admin = $this->userWithRole('administrador');
+        $message = 'O servico de conexao com o WhatsApp esta indisponivel. Verifique o processo do Node.js na VPS.';
+
+        $this->actingAs($admin)
+            ->from(route('admin.whatsapp.connection'))
+            ->post(route('admin.whatsapp.connect'))
+            ->assertRedirect(route('admin.whatsapp.connection'))
+            ->assertSessionHas('error', $message)
+            ->assertSessionDoesntHaveErrors();
+
+        $response = $this->actingAs($admin)
+            ->withSession(['error' => $message])
+            ->get(route('admin.whatsapp.connection'));
+
+        $response->assertOk()
+            ->assertDontSee('Corrija os campos destacados.');
+
+        $this->assertSame(1, substr_count($response->getContent(), $message));
     }
 
     public function test_qr_code_e_exibido_somente_para_autorizado_e_nao_salvo(): void

@@ -30,6 +30,9 @@ class WhatsAppConnectionController extends Controller
             $connection->refresh();
         } catch (WhatsAppServiceException $exception) {
             $statusError = $exception->userMessage();
+            if ($request->session()->get('error') === $statusError) {
+                $statusError = null;
+            }
         }
 
         $audit->log('whatsapp.connection_viewed', 'Tela de conexao WhatsApp visualizada.', $connection, null, null, $request->user(), $request);
@@ -57,7 +60,7 @@ class WhatsAppConnectionController extends Controller
 
             return back()->with('success', 'Inicializacao da conexao solicitada.');
         } catch (WhatsAppServiceException $exception) {
-            return back()->withErrors(['whatsapp' => $exception->userMessage()]);
+            return back()->with('error', $exception->userMessage());
         }
     }
 
@@ -75,7 +78,7 @@ class WhatsAppConnectionController extends Controller
                 'status' => $result->status->label(),
             ])->with('success', 'QR Code consultado.');
         } catch (WhatsAppServiceException $exception) {
-            return back()->withErrors(['whatsapp' => $exception->userMessage()]);
+            return back()->with('error', $exception->userMessage());
         }
     }
 
@@ -88,7 +91,7 @@ class WhatsAppConnectionController extends Controller
 
             return back()->with('success', 'Status atualizado.');
         } catch (WhatsAppServiceException $exception) {
-            return back()->withErrors(['whatsapp' => $exception->userMessage()]);
+            return back()->with('error', $exception->userMessage());
         }
     }
 
@@ -101,7 +104,7 @@ class WhatsAppConnectionController extends Controller
 
             return back()->with('success', 'Reconexao solicitada.');
         } catch (WhatsAppServiceException $exception) {
-            return back()->withErrors(['whatsapp' => $exception->userMessage()]);
+            return back()->with('error', $exception->userMessage());
         }
     }
 
@@ -114,7 +117,7 @@ class WhatsAppConnectionController extends Controller
 
             return back()->with('success', 'Desconexao solicitada.');
         } catch (WhatsAppServiceException $exception) {
-            return back()->withErrors(['whatsapp' => $exception->userMessage()]);
+            return back()->with('error', $exception->userMessage());
         }
     }
 
@@ -125,7 +128,7 @@ class WhatsAppConnectionController extends Controller
 
             return back()->with('success', 'Exclusao da sessao solicitada. Um novo QR Code sera necessario.');
         } catch (WhatsAppServiceException $exception) {
-            return back()->withErrors(['whatsapp' => $exception->userMessage()]);
+            return back()->with('error', $exception->userMessage());
         }
     }
 
@@ -138,7 +141,7 @@ class WhatsAppConnectionController extends Controller
 
             return back()->with('success', 'Mensagem individual de teste enviada.');
         } catch (WhatsAppServiceException $exception) {
-            return back()->withErrors(['whatsapp' => $exception->userMessage()]);
+            return back()->with('error', $exception->userMessage());
         }
     }
 }

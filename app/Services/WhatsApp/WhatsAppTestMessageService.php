@@ -82,6 +82,10 @@ class WhatsAppTestMessageService
             $this->connections->event('test_message_failed', $connection, $user, $request, $connection->status, 'Falha no envio da mensagem individual de teste.', $exception->errorCode, $exception->userMessage(), ['request_id' => $requestId]);
             $this->audit->log('whatsapp.test_message_failed', 'Falha no envio da mensagem individual de teste.', $testMessage, null, ['request_id' => $requestId, 'error_code' => $exception->errorCode], $user, $request);
 
+            if ($this->isOperationalServiceFailure($exception)) {
+                throw $exception;
+            }
+
             throw ValidationException::withMessages(['message' => $exception->userMessage()]);
         }
 
@@ -108,5 +112,14 @@ class WhatsAppTestMessageService
         if (blank($contact->phone_normalized)) {
             throw ValidationException::withMessages(['contact_id' => 'O contato precisa ter telefone valido para receber teste.']);
         }
+    }
+
+    private function isOperationalServiceFailure(WhatsAppServiceException $exception): bool
+    {
+        return in_array($exception->errorCode, [
+            'SERVICE_UNAVAILABLE',
+            'UNAUTHORIZED_SERVICE_REQUEST',
+            'INVALID_RESPONSE',
+        ], true);
     }
 }
