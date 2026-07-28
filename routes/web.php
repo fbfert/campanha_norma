@@ -77,6 +77,7 @@ Route::middleware(['auth', 'password.changed'])->group(function (): void {
         Route::get('/conversations/{conversation}', [InboxController::class, 'show'])->name('conversations.show');
         Route::post('/conversations/sync', [InboxController::class, 'sync'])->name('conversations.sync');
         Route::post('/inbox/{conversation}/read', [InboxController::class, 'show'])->name('inbox.read');
+        Route::get('/inbox/{conversation}/messages', [InboxController::class, 'messages'])->name('inbox.messages');
         Route::post('/inbox/{conversation}/reply', [InboxController::class, 'reply'])->name('inbox.reply');
         Route::post('/inbox/{conversation}/assign', [InboxController::class, 'assign'])->name('inbox.assign');
         Route::post('/inbox/{conversation}/unassign', [InboxController::class, 'unassign'])->name('inbox.unassign');
@@ -90,6 +91,7 @@ Route::middleware(['auth', 'password.changed'])->group(function (): void {
         Route::delete('/inbox/{conversation}/tags/{tag}', [InboxController::class, 'removeTag'])->name('inbox.tags.destroy');
         Route::post('/inbox/{conversation}/do-not-contact', [InboxController::class, 'doNotContact'])->name('inbox.do-not-contact');
         Route::post('/inbox/{conversation}/associate-contact', [InboxController::class, 'associateContact'])->name('inbox.associate-contact');
+        Route::post('/inbox/{conversation}/associate-contact/new', [InboxController::class, 'createAndAssociateContact'])->name('inbox.associate-contact.create');
 
         Route::get('/histories/messages', [MessageHistoryController::class, 'index'])->name('histories.messages.index');
         Route::get('/histories/messages/{recipient}', [MessageHistoryController::class, 'show'])->name('histories.messages.show');

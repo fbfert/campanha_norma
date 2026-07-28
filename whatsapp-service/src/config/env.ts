@@ -16,6 +16,7 @@ export const config = {
   browserHeadless: (process.env.BROWSER_HEADLESS ?? 'true') === 'true',
   browserExecutablePath: process.env.BROWSER_EXECUTABLE_PATH || undefined,
   browserNoSandbox: (process.env.BROWSER_NO_SANDBOX ?? 'false') === 'true',
+  webVersionCacheUrl: process.env.WEB_VERSION_CACHE_URL || 'https://raw.githubusercontent.com/wppconnect-team/wa-version/main/html/2.3000.1040225260-alpha.html',
   requestTimeoutMs: Number(process.env.REQUEST_TIMEOUT_MS ?? 15000),
   qrExpirationSeconds: Number(process.env.QR_EXPIRATION_SECONDS ?? 60),
   maxReconnectAttempts: Number(process.env.MAX_RECONNECT_ATTEMPTS ?? 5),

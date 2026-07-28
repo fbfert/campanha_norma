@@ -13,7 +13,7 @@ class ConversationResolverService
 {
     public function __construct(private readonly SystemSettingService $settings) {}
 
-    public function resolve(?Contact $contact, ?string $connectionId, bool $incoming = true): Conversation
+    public function resolve(?Contact $contact, ?string $connectionId, bool $incoming = true, ?string $senderPhone = null): Conversation
     {
         $query = Conversation::query()
             ->where('connection_id', $connectionId)
@@ -24,6 +24,18 @@ class ConversationResolverService
             $query->where('contact_id', $contact->id);
         } else {
             $query->whereNull('contact_id');
+
+            // Sem contato identificado, o telefone informado (bruto ou resolvido
+            // via lid) e o unico jeito de nao misturar remetentes diferentes na
+            // mesma conversa "sem contato".
+            if (filled($senderPhone)) {
+                $query->whereHas('messages', function ($messages) use ($senderPhone): void {
+                    $messages->where('sender_phone_snapshot', $senderPhone)
+                        ->orWhere('recipient_phone_snapshot', $senderPhone);
+                });
+            } else {
+                $query->whereDoesntHave('messages');
+            }
         }
 
         $conversation = $query->latest('last_message_at')->first();

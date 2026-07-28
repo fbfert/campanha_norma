@@ -1,5 +1,46 @@
 <x-layouts.app title="Conversa" breadcrumbs="Atendimento / Conversas / Conversa">
-    <div class="conversation-workspace" x-data="{ body: '', detailsOpen: false }">
+    <div class="conversation-workspace" x-data="{
+        body: '',
+        detailsOpen: false,
+        lastId: {{ $conversation->messages()->max('id') ?? 0 }},
+        timer: null,
+        refreshing: false,
+        refreshMessage: '',
+        refreshMessageTimer: null,
+        init() {
+            this.timer = setInterval(() => this.poll(), 30000);
+        },
+        showRefreshMessage(text) {
+            this.refreshMessage = text;
+            clearTimeout(this.refreshMessageTimer);
+            this.refreshMessageTimer = setTimeout(() => { this.refreshMessage = ''; }, 4000);
+        },
+        poll(manual = false) {
+            if (!manual && document.hidden) return;
+            if (manual) this.refreshing = true;
+            return fetch('{{ route('admin.inbox.messages', $conversation) }}?after_id=' + this.lastId, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                .then((response) => {
+                    if (!response.ok) throw new Error('http_' + response.status);
+                    return response.json();
+                })
+                .then((data) => {
+                    if (data.count > 0) {
+                        const timeline = document.getElementById('conversation-timeline');
+                        const atBottom = timeline.scrollHeight - timeline.scrollTop - timeline.clientHeight < 80;
+                        timeline.insertAdjacentHTML('beforeend', data.html);
+                        this.lastId = data.last_id;
+                        if (atBottom) timeline.scrollTop = timeline.scrollHeight;
+                    }
+                    if (manual) {
+                        this.showRefreshMessage(data.count > 0 ? (data.count + ' mensagem(ns) nova(s) carregada(s).') : 'Nenhuma mensagem nova.');
+                    }
+                })
+                .catch(() => {
+                    if (manual) this.showRefreshMessage('Erro ao atualizar. Tente novamente.');
+                })
+                .finally(() => { if (manual) this.refreshing = false; });
+        }
+    }">
         @php
             $displayPhone = $conversation->whatsappPhoneDigits();
         @endphp
@@ -27,38 +68,6 @@
                 <div class="alert error">Contato marcado como nao contatar. Respostas pelo sistema ficam bloqueadas.</div>
             @endif
 
-            <div class="conversation-timeline">
-                @forelse($conversation->messages()->oldest('created_at')->get() as $message)
-                    <article class="message-bubble {{ $message->direction->value }}">
-                        <div class="message-meta">
-                            <strong>{{ $message->direction->label() }}</strong>
-                            <span>{{ ($message->sent_at ?? $message->received_at ?? $message->created_at)?->format($dateTimeFormat) }}</span>
-                            <span>{{ $message->status->label() }}</span>
-                            @if($message->creator)
-                                <span>{{ $message->creator->name }}</span>
-                            @endif
-                        </div>
-                        @can('inbox.view_message_content')
-                            <p>{{ $message->body ?: ($message->has_media ? '[midia nao baixada]' : '') }}</p>
-                        @else
-                            <p class="muted">Conteudo protegido.</p>
-                        @endcan
-                        @if($message->error_code)
-                            <div class="alert error">{{ $message->error_code }} - {{ $message->error_message }}</div>
-                        @endif
-                    </article>
-                @empty
-                    <div class="empty-state">Nenhuma mensagem nesta conversa.</div>
-                @endforelse
-
-                @foreach($conversation->notes as $note)
-                    <article class="message-bubble internal_note">
-                        <div class="message-meta"><strong>Nota interna</strong><span>{{ $note->user?->name }}</span><span>{{ $note->created_at?->format($dateTimeFormat) }}</span></div>
-                        <p>{{ $note->body }}</p>
-                    </article>
-                @endforeach
-            </div>
-
             @can('inbox.reply')
                 <footer class="conversation-reply">
                     <form method="post" action="{{ route('admin.inbox.reply', $conversation) }}" x-on:submit="$el.querySelector('button[type=submit]').disabled = true">
@@ -73,12 +82,37 @@
                         @endif
                         <textarea id="reply_body" name="body" rows="4" maxlength="4096" required x-model="body" x-on:keydown.ctrl.enter="$el.form.requestSubmit()" @disabled($replyBlocked)></textarea>
                         <div class="actions" style="justify-content:space-between;align-items:center;">
-                            <span class="muted"><span x-text="body.length"></span>/4096 caracteres. Ctrl + Enter envia.</span>
-                            <button class="btn" type="submit" @disabled($replyBlocked)>Enviar resposta</button>
+                            <span class="muted" style="display:flex;align-items:center;gap:8px;">
+                                <x-emoji-picker target="reply_body" />
+                                <span><span x-text="body.length"></span>/4096 caracteres. Ctrl + Enter envia.</span>
+                            </span>
+                            <span style="display:flex;align-items:center;gap:8px;">
+                                <span class="muted" x-show="refreshMessage" x-cloak x-text="refreshMessage"></span>
+                                <button class="btn ghost" type="button" x-on:click="poll(true)" :disabled="refreshing">
+                                    <span x-show="!refreshing">Atualizar mensagens</span>
+                                    <span x-show="refreshing" x-cloak>Atualizando...</span>
+                                </button>
+                                <button class="btn" type="submit" @disabled($replyBlocked)>Enviar resposta</button>
+                            </span>
                         </div>
                     </form>
                 </footer>
             @endcan
+
+            <div class="conversation-timeline" id="conversation-timeline">
+                @forelse($conversation->messages()->oldest('created_at')->get() as $message)
+                    @include('admin.inbox._message', ['message' => $message])
+                @empty
+                    <div class="empty-state">Nenhuma mensagem nesta conversa.</div>
+                @endforelse
+
+                @foreach($conversation->notes as $note)
+                    <article class="message-bubble internal_note">
+                        <div class="message-meta"><strong>Nota interna</strong><span>{{ $note->user?->name }}</span><span>{{ $note->created_at?->format($dateTimeFormat) }}</span></div>
+                        <p>{{ $note->body }}</p>
+                    </article>
+                @endforeach
+            </div>
         </section>
 
         <aside class="conversation-details" x-bind:class="{ 'open': detailsOpen }">
@@ -131,10 +165,25 @@
                         @endif
                         <form method="post" action="{{ route('admin.inbox.associate-contact', $conversation) }}">
                             @csrf
-                            <label>Contato<select name="contact_id">@foreach($contacts as $contact)<option value="{{ $contact->id }}">{{ $contact->name }} - {{ $contact->phone_normalized }}</option>@endforeach</select></label>
+                            <label>Contato existente<select name="contact_id">@foreach($contacts as $contact)<option value="{{ $contact->id }}">{{ $contact->name }} - {{ $contact->phone_normalized }}</option>@endforeach</select></label>
                             <button class="btn">Associar</button>
                         </form>
                     </section>
+
+                    @can('contacts.create')
+                        <section class="card">
+                            <h2>Cadastrar novo contato</h2>
+                            <p class="muted">Cria o contato com os dados do WhatsApp e ja associa a esta conversa.</p>
+                            @error('name') <p class="alert error">{{ $message }}</p> @enderror
+                            @error('phone') <p class="alert error">{{ $message }}</p> @enderror
+                            <form method="post" action="{{ route('admin.inbox.associate-contact.create', $conversation) }}">
+                                @csrf
+                                <label>Nome<input name="name" required maxlength="255" value="{{ old('name', $conversation->messages()->latest()->value('sender_name_snapshot')) }}"></label>
+                                <label>Telefone<input name="phone" required maxlength="40" value="{{ old('phone', $displayPhone) }}"></label>
+                                <button class="btn">Cadastrar e associar</button>
+                            </form>
+                        </section>
+                    @endcan
                 @endcan
             @endif
 

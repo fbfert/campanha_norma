@@ -112,7 +112,7 @@ return new class extends Migration
             $table->foreignId('conversation_tag_id')->constrained()->cascadeOnDelete();
             $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
-            $table->unique(['conversation_id', 'conversation_tag_id']);
+            $table->unique(['conversation_id', 'conversation_tag_id'], 'cct_conversation_tag_uniq');
         });
 
         Schema::create('conversation_notes', function (Blueprint $table): void {

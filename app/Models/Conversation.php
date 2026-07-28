@@ -104,16 +104,24 @@ class Conversation extends Model
         }
 
         $externalChatId = (string) ($this->external_chat_id ?? '');
-        if ($externalChatId === '' || ! Str::contains($externalChatId, '@c.us')) {
-            return null;
+        if ($externalChatId !== '' && Str::contains($externalChatId, '@c.us')) {
+            $digits = preg_replace('/\D+/', '', Str::before($externalChatId, '@'));
+            if (is_string($digits) && preg_match('/^\d{10,15}$/', $digits)) {
+                return $digits;
+            }
         }
 
-        $digits = preg_replace('/\D+/', '', Str::before($externalChatId, '@'));
-        if (! is_string($digits) || ! preg_match('/^\d{10,15}$/', $digits)) {
-            return null;
+        $snapshot = $this->messages()
+            ->where(fn ($query) => $query->whereNotNull('sender_phone_snapshot')->orWhereNotNull('recipient_phone_snapshot'))
+            ->latest('id')
+            ->first();
+
+        $digits = $snapshot?->sender_phone_snapshot ?: $snapshot?->recipient_phone_snapshot;
+        if (is_string($digits) && preg_match('/^\d{10,15}$/', $digits)) {
+            return $digits;
         }
 
-        return $digits;
+        return null;
     }
 
     public function whatsappPhoneForDisplay(): ?string

@@ -16,7 +16,7 @@ return new class extends Migration
             $table->text('body');
             $table->string('status')->default('active')->index();
             $table->unsignedInteger('version')->default(1);
-            $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete()->index();
+            $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
             $table->foreignId('updated_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
             $table->softDeletes();
@@ -39,7 +39,7 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->text('description')->nullable();
-            $table->foreignId('message_template_id')->nullable()->constrained('message_templates')->nullOnDelete()->index();
+            $table->foreignId('message_template_id')->nullable()->constrained('message_templates')->nullOnDelete();
             $table->unsignedInteger('message_template_version')->nullable();
             $table->text('message_body_snapshot');
             $table->json('placeholders_snapshot')->nullable();
@@ -50,7 +50,7 @@ return new class extends Migration
             $table->unsignedInteger('ineligible_total')->default(0);
             $table->string('status')->default('draft')->index();
             $table->string('random_seed')->nullable();
-            $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete()->index();
+            $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
             $table->foreignId('updated_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamp('prepared_at')->nullable()->index();
             $table->timestamp('cancelled_at')->nullable();

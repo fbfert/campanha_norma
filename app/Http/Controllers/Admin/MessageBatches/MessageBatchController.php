@@ -6,10 +6,8 @@ use App\Enums\MessageBatchSelectionType;
 use App\Enums\MessageBatchStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\MessageBatches\MessageBatchRequest;
-use App\Models\Contact;
 use App\Models\MessageBatch;
 use App\Models\MessageTemplate;
-use App\Models\Tag;
 use App\Services\MessageBatches\BatchCreationService;
 use App\Services\MessageBatches\BatchPreviewExportService;
 use App\Services\Placeholders\PlaceholderCatalogService;
@@ -157,8 +155,6 @@ class MessageBatchController extends Controller
     {
         return [
             'templates' => MessageTemplate::query()->where('status', 'active')->orderBy('name')->get(),
-            'contacts' => Contact::query()->orderBy('name')->limit(100)->get(),
-            'tags' => Tag::query()->where('is_active', true)->orderBy('name')->get(),
             'catalog' => $catalog->all(),
             'selectionTypes' => MessageBatchSelectionType::cases(),
         ];

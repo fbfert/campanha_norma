@@ -38,4 +38,29 @@ class PhoneNormalizerService
 
         return new PhoneNormalizationResult($digits);
     }
+
+    /**
+     * Numeros moveis brasileiros podem circular com ou sem o nono digito
+     * (ex: 5549999592392 x 554999592392). Retorna a forma alternativa do
+     * numero informado para permitir casamento entre as duas variantes.
+     */
+    public function alternateBrazilianMobileDigits(string $normalized): ?string
+    {
+        if (! str_starts_with($normalized, '55') || strlen($normalized) < 12) {
+            return null;
+        }
+
+        $ddd = substr($normalized, 2, 2);
+        $local = substr($normalized, 4);
+
+        if (strlen($local) === 8) {
+            return '55'.$ddd.'9'.$local;
+        }
+
+        if (strlen($local) === 9 && $local[0] === '9') {
+            return '55'.$ddd.substr($local, 1);
+        }
+
+        return null;
+    }
 }

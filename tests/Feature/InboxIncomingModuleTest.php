@@ -507,6 +507,8 @@ class InboxIncomingModuleTest extends TestCase
             'external_chat_id' => '159031292140@lid',
             'external_message_id' => 'msg-lid-1',
             'body' => 'Teste lid',
+            'sender_phone_snapshot' => null,
+            'recipient_phone_snapshot' => null,
         ]);
 
         $this->actingAs($admin)

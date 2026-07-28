@@ -86,8 +86,21 @@ class WhatsAppServiceClient
     private function send(string $method, string $path, array $payload = []): array
     {
         try {
+            $request = $this->request();
+
+            if ($payload !== []) {
+                // json_encode()/Guzzle's default JSON encoding escapes unicode as \uXXXX,
+                // which inflates emoji-heavy bodies ~3x over the wire and can trip the
+                // whatsapp-service request size limit. Encoding it ourselves keeps the
+                // raw UTF-8 (utf8mb4) bytes instead.
+                $request = $request->withBody(
+                    json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+                    'application/json'
+                );
+            }
+
             /** @var Response $response */
-            $response = $this->request()->{$method}($path, $payload);
+            $response = $request->{$method}($path);
         } catch (ConnectionException $exception) {
             throw new WhatsAppServiceException('SERVICE_UNAVAILABLE', 'O servico de conexao com o WhatsApp esta indisponivel.', 0, [
                 'exception' => $exception::class,

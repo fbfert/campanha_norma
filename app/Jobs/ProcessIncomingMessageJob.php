@@ -64,7 +64,7 @@ class ProcessIncomingMessageJob implements ShouldQueue
         $status = $data['is_from_me'] ? ConversationMessageStatus::Sent : ConversationMessageStatus::Received;
 
         DB::transaction(function () use ($data, $contact, $direction, $status, $resolver, $events, $interruption, $audit): void {
-            $conversation = $resolver->resolve($contact, $data['connection_id'], $direction === ConversationMessageDirection::Incoming);
+            $conversation = $resolver->resolve($contact, $data['connection_id'], $direction === ConversationMessageDirection::Incoming, (string) $data['sender_phone']);
             $recipient = $this->findInitialRecipient($contact?->id, $data['sender_phone']);
 
             $message = ConversationMessage::create([

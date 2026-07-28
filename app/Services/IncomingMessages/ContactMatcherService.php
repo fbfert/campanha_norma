@@ -22,6 +22,13 @@ class ContactMatcherService
 
         $matches = Contact::withTrashed()->where('phone_normalized', $result->normalized)->get();
 
+        if ($matches->isEmpty()) {
+            $variant = $this->normalizer->alternateBrazilianMobileDigits($result->normalized);
+            if ($variant) {
+                $matches = Contact::withTrashed()->where('phone_normalized', $variant)->get();
+            }
+        }
+
         if ($matches->count() === 0) {
             return ['status' => ContactMatchStatus::NotFound, 'phone' => $result->normalized, 'contact' => null, 'matches' => $matches];
         }

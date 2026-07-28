@@ -7,14 +7,21 @@ use Illuminate\Database\Eloquent\Collection;
 
 class ContactDuplicateService
 {
+    public function __construct(private readonly PhoneNormalizerService $phones) {}
+
     public function exactPhone(?string $normalizedPhone, ?int $ignoreId = null, bool $withTrashed = false): ?Contact
     {
         if (! $normalizedPhone) {
             return null;
         }
 
+        $candidates = array_values(array_filter([
+            $normalizedPhone,
+            $this->phones->alternateBrazilianMobileDigits($normalizedPhone),
+        ]));
+
         $query = Contact::query()->when($withTrashed, fn ($query) => $query->withTrashed())
-            ->where('phone_normalized', $normalizedPhone);
+            ->whereIn('phone_normalized', $candidates);
 
         if ($ignoreId) {
             $query->where('id', '!=', $ignoreId);

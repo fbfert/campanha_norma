@@ -19,7 +19,7 @@ return new class extends Migration
             $table->timestamp('completed_at')->nullable()->after('stopped_at');
             $table->timestamp('failed_at')->nullable()->after('completed_at');
             $table->timestamp('last_dispatch_at')->nullable()->after('failed_at');
-            $table->timestamp('next_dispatch_at')->nullable()->after('last_dispatch_at')->index();
+            $table->timestamp('next_dispatch_at')->nullable()->after('last_dispatch_at');
             $table->unsignedInteger('total_pending')->default(0)->after('next_dispatch_at');
             $table->unsignedInteger('total_queued')->default(0)->after('total_pending');
             $table->unsignedInteger('total_processing')->default(0)->after('total_queued');
@@ -30,28 +30,31 @@ return new class extends Migration
             $table->unsignedInteger('processing_version')->default(1)->after('total_retrying');
             $table->string('last_error_code')->nullable()->after('processing_version');
             $table->text('last_error_message')->nullable()->after('last_error_code');
-            $table->index(['status', 'next_dispatch_at']);
+            $table->index(['status', 'next_dispatch_at'], 'mb_status_next_idx');
         });
 
         Schema::table('message_batch_recipients', function (Blueprint $table): void {
-            $table->string('processing_status')->default('eligible')->after('eligibility_status')->index();
+            $table->string('processing_status')->default('eligible')->after('eligibility_status');
             $table->unsignedInteger('attempts')->default(0)->after('processing_status');
             $table->unsignedInteger('max_attempts')->default(3)->after('attempts');
-            $table->uuid('request_id')->nullable()->after('max_attempts')->unique();
+            $table->uuid('request_id')->nullable()->after('max_attempts');
             $table->unsignedInteger('processing_version')->default(1)->after('request_id');
             $table->timestamp('queued_at')->nullable()->after('processing_version');
             $table->timestamp('processing_started_at')->nullable()->after('queued_at');
             $table->timestamp('sent_at')->nullable()->after('processing_started_at');
             $table->timestamp('failed_at')->nullable()->after('sent_at');
             $table->timestamp('cancelled_at')->nullable()->after('failed_at');
-            $table->timestamp('retry_at')->nullable()->after('cancelled_at')->index();
+            $table->timestamp('retry_at')->nullable()->after('cancelled_at');
             $table->timestamp('last_attempt_at')->nullable()->after('retry_at');
             $table->string('external_message_id')->nullable()->after('last_attempt_at');
             $table->string('error_code')->nullable()->after('external_message_id');
             $table->text('error_message')->nullable()->after('error_code');
             $table->json('technical_payload')->nullable()->after('error_message');
-            $table->index(['message_batch_id', 'processing_status']);
-            $table->index(['message_batch_id', 'random_position', 'processing_status']);
+            $table->index(['processing_status'], 'mbr_proc_status_idx');
+            $table->unique(['request_id'], 'mbr_request_id_uniq');
+            $table->index(['message_batch_id', 'processing_status'], 'mbr_batch_proc_idx');
+            $table->index(['message_batch_id', 'random_position', 'processing_status'], 'mbr_batch_pos_proc_idx');
+            $table->index(['retry_at'], 'mbr_retry_at_idx');
         });
 
         Schema::create('sending_settings', function (Blueprint $table): void {
@@ -84,24 +87,27 @@ return new class extends Migration
             $table->string('error_code')->nullable()->index();
             $table->json('metadata')->nullable();
             $table->timestamps();
-            $table->index(['message_batch_id', 'created_at']);
+            $table->index(['message_batch_id', 'created_at'], 'mpe_batch_created_idx');
         });
 
         Schema::create('message_send_attempts', function (Blueprint $table): void {
             $table->id();
             $table->foreignId('message_batch_recipient_id')->constrained()->cascadeOnDelete();
             $table->unsignedInteger('attempt_number');
-            $table->uuid('request_id')->index();
-            $table->string('status')->index();
+            $table->uuid('request_id');
+            $table->string('status');
             $table->string('provider')->default('web');
             $table->timestamp('started_at')->nullable();
             $table->timestamp('finished_at')->nullable();
             $table->string('external_message_id')->nullable();
-            $table->string('error_code')->nullable()->index();
+            $table->string('error_code')->nullable();
             $table->text('error_message')->nullable();
             $table->json('response_metadata')->nullable();
             $table->timestamps();
-            $table->unique(['message_batch_recipient_id', 'attempt_number']);
+            $table->index(['request_id'], 'msa_request_id_idx');
+            $table->index(['status'], 'msa_status_idx');
+            $table->index(['error_code'], 'msa_error_code_idx');
+            $table->unique(['message_batch_recipient_id', 'attempt_number'], 'msa_batch_attempt_uniq');
         });
     }
 

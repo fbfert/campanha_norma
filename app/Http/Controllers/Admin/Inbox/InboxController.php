@@ -18,6 +18,9 @@ use App\Services\AuditLogger;
 use App\Services\Conversations\ConversationEventService;
 use App\Services\Conversations\ManualReplyService;
 use App\Services\Conversations\ReplyInterruptionService;
+use App\Services\Contacts\ContactDataService;
+use App\Services\Contacts\ContactDuplicateService;
+use App\Services\Contacts\PhoneNormalizerService;
 use App\Services\SystemSettingService;
 use App\Services\WhatsApp\WhatsAppProviderManager;
 use Illuminate\Http\RedirectResponse;
@@ -92,6 +95,38 @@ class InboxController extends Controller
             'contacts' => Contact::orderBy('name')->limit(100)->get(),
             'statuses' => ConversationStatus::cases(),
             'priorities' => ConversationPriority::cases(),
+        ]);
+    }
+
+    public function messages(Request $request, Conversation $conversation, SystemSettingService $settings): \Illuminate\Http\JsonResponse
+    {
+        abort_unless($request->user()->can('inbox.view'), 403);
+        $this->scope($request, $conversation);
+
+        $afterId = $request->integer('after_id');
+
+        $messages = $conversation->messages()
+            ->with('creator')
+            ->where('id', '>', $afterId)
+            ->oldest('id')
+            ->get();
+
+        if ($messages->isNotEmpty()) {
+            $conversation->messages()->where('direction', 'incoming')->whereNull('read_at')->update(['read_at' => now()]);
+            $conversation->update(['unread_count' => 0]);
+        }
+
+        $dateTimeFormat = $settings->get('system.datetime_format', 'd/m/Y H:i');
+
+        $html = $messages->map(fn ($message) => view('admin.inbox._message', [
+            'message' => $message,
+            'dateTimeFormat' => $dateTimeFormat,
+        ])->render())->implode('');
+
+        return response()->json([
+            'html' => $html,
+            'last_id' => $messages->last()?->id ?? $afterId,
+            'count' => $messages->count(),
         ]);
     }
 
@@ -259,6 +294,47 @@ class InboxController extends Controller
         $events->record($conversation, 'contact_associated', 'Contato associado.', null, $request->user(), ['contact_id' => $validated['contact_id']]);
 
         return back()->with('success', 'Contato associado.');
+    }
+
+    public function createAndAssociateContact(
+        Request $request,
+        Conversation $conversation,
+        ConversationEventService $events,
+        PhoneNormalizerService $phones,
+        ContactDuplicateService $duplicates,
+        ContactDataService $contactsService,
+    ): RedirectResponse {
+        abort_unless($request->user()->can('inbox.associate_contact') && $request->user()->can('contacts.create'), 403);
+
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'phone' => ['required', 'string', 'max:40'],
+        ]);
+
+        $phoneResult = $phones->normalize($validated['phone']);
+        if (! $phoneResult->valid()) {
+            return back()->withErrors(['phone' => $phoneResult->error])->withInput();
+        }
+
+        $contact = $duplicates->exactPhone($phoneResult->normalized);
+
+        if (! $contact) {
+            try {
+                $contact = $contactsService->create([
+                    'name' => $validated['name'],
+                    'phone' => $validated['phone'],
+                    'source' => 'outro',
+                ]);
+            } catch (\Illuminate\Validation\ValidationException $exception) {
+                return back()->withErrors($exception->errors())->withInput();
+            }
+        }
+
+        $conversation->update(['contact_id' => $contact->id]);
+        $conversation->messages()->whereNull('contact_id')->update(['contact_id' => $contact->id]);
+        $events->record($conversation, 'contact_associated', 'Contato criado e associado.', null, $request->user(), ['contact_id' => $contact->id]);
+
+        return back()->with('success', 'Contato criado e associado.');
     }
 
     public function doNotContact(Request $request, Conversation $conversation, ReplyInterruptionService $interruption, ConversationEventService $events): RedirectResponse

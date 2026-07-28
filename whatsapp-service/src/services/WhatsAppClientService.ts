@@ -26,6 +26,7 @@ type WhatsAppClient = {
   getChatById(chatId: string): Promise<WhatsAppChat | null | undefined>;
   getState(): Promise<string | null>;
   getWWebVersion(): Promise<string | null>;
+  getContactLidAndPhone(userIds: string[]): Promise<Array<{ lid?: string; pn?: string }>>;
   info?: { wid?: { user?: string }; pushname?: string };
   pupPage?: {
     evaluate<T>(pageFunction: (...args: any[]) => T | Promise<T>, ...args: any[]): Promise<T>;
@@ -146,7 +147,7 @@ export class WhatsAppClientService implements WhatsAppRuntime {
     try {
       this.client = this.makeClient();
       this.attachEvents(this.client);
-      void this.client.initialize();
+      this.client.initialize().catch((error: unknown) => this.handleInitializeFailure(error));
 
       return { status: this.statusValue, message: 'Inicializacao solicitada.' };
     } catch (error) {
@@ -154,6 +155,14 @@ export class WhatsAppClientService implements WhatsAppRuntime {
       logger.error({ event: 'browser_start_failed', err: error }, 'Falha ao iniciar o navegador.');
       throw new ServiceError('BROWSER_START_FAILED', 'Falha ao iniciar o navegador.', 500);
     }
+  }
+
+  private handleInitializeFailure(error: unknown): void {
+    logger.error({ event: 'browser_start_failed', err: error }, 'Falha ao iniciar o navegador.');
+    const failedClient = this.client;
+    this.client = null;
+    this.recordError(ConnectionStatus.BrowserError, 'BROWSER_START_FAILED', 'Falha ao iniciar o navegador.');
+    void failedClient?.destroy().catch(() => undefined);
   }
 
   async qrcode(): Promise<QrPayload> {
@@ -379,6 +388,10 @@ export class WhatsAppClientService implements WhatsAppRuntime {
 
     return new Client({
       authStrategy: new LocalAuth({ dataPath: config.sessionPath }),
+      webVersionCache: {
+        type: 'remote',
+        remotePath: config.webVersionCacheUrl,
+      },
       puppeteer: {
         headless: config.browserHeadless,
         executablePath: config.browserExecutablePath,
@@ -524,8 +537,11 @@ export class WhatsAppClientService implements WhatsAppRuntime {
     }
 
     const externalId = message.id?._serialized ?? message.id?.id ?? cryptoRandomFallback();
-    const sender = (message.fromMe ? to : from).replace(/\D/g, '');
-    const recipient = (message.fromMe ? from : to).replace(/\D/g, '');
+    const senderRaw = message.fromMe ? to : from;
+    const recipientRaw = message.fromMe ? from : to;
+    const phoneMap = await this.resolvePhones([senderRaw, recipientRaw]);
+    const sender = (phoneMap.get(senderRaw) ?? senderRaw).replace(/\D/g, '');
+    const recipient = (phoneMap.get(recipientRaw) ?? recipientRaw).replace(/\D/g, '');
     const timestamp = message.timestamp ? new Date(message.timestamp * 1000).toISOString() : new Date().toISOString();
     const type = message.type ?? 'unknown';
 
@@ -599,6 +615,32 @@ export class WhatsAppClientService implements WhatsAppRuntime {
     }
   }
 
+  private async resolvePhones(rawIds: Array<string | null | undefined>): Promise<Map<string, string>> {
+    const map = new Map<string, string>();
+    if (!this.client) {
+      return map;
+    }
+
+    const lidIds = [...new Set(rawIds.filter((id): id is string => id != null && id.endsWith('@lid')))];
+    if (lidIds.length === 0) {
+      return map;
+    }
+
+    try {
+      const results = await this.client.getContactLidAndPhone(lidIds);
+      lidIds.forEach((id, index) => {
+        const digits = results[index]?.pn?.replace(/\D/g, '');
+        if (digits) {
+          map.set(id, digits);
+        }
+      });
+    } catch (error) {
+      logger.warn({ event: 'lid_phone_resolution_failed', err: sanitizeError(error) }, 'Falha ao resolver telefone real a partir do identificador lid.');
+    }
+
+    return map;
+  }
+
   private async listChatsFromCollection(limit: number, includeArchived: boolean): Promise<ChatListResult> {
     if (!this.client?.pupPage) {
       throw new ServiceError('WHATSAPP_CHAT_COLLECTION_UNAVAILABLE', 'Colecao de chats indisponivel.', 502);
@@ -642,6 +684,14 @@ export class WhatsAppClientService implements WhatsAppRuntime {
         .filter((chat) => this.isIndividualChatId(chat.external_chat_id))
         .filter((chat) => includeArchived || !chat.is_archived)
         .slice(0, limit);
+
+      const phoneMap = await this.resolvePhones(chats.map((chat) => chat.external_chat_id));
+      chats.forEach((chat) => {
+        const resolved = phoneMap.get(chat.external_chat_id);
+        if (resolved) {
+          chat.phone = resolved;
+        }
+      });
 
       return {
         chats,
@@ -729,7 +779,10 @@ export class WhatsAppClientService implements WhatsAppRuntime {
         const msgModels = chat?.msgs?.getModelsArray?.() ?? [];
         const messages = msgModels
           .filter((msg: any) => !msg?.isNotification && !msg?.isStatus)
-          .filter((msg: any) => !msg?.timestamp || Number(msg.timestamp) * 1000 >= sinceTs)
+          .filter((msg: any) => {
+            const t = msg?.t ?? msg?.timestamp;
+            return !t || Number(t) * 1000 >= sinceTs;
+          })
           .slice(-Math.max(1, Number(maxItems) || 1))
           .map((msg: any) => {
             const externalMessageId = msg?.id?._serialized ?? msg?.id?.id ?? null;
@@ -739,6 +792,7 @@ export class WhatsAppClientService implements WhatsAppRuntime {
 
             const isFromMe = Boolean(msg?.id?.fromMe ?? msg?.fromMe ?? msg?.isSentByMe);
             const type = msg?.type ?? 'unknown';
+            const t = msg?.t ?? msg?.timestamp;
             return {
               external_message_id: externalMessageId,
               external_chat_id: serializedId,
@@ -746,7 +800,7 @@ export class WhatsAppClientService implements WhatsAppRuntime {
               direction: isFromMe ? 'outgoing' : 'incoming',
               type: ['chat', 'text'].includes(type) ? 'text' : type,
               body: msg?.body ?? msg?.caption ?? null,
-              timestamp: msg?.timestamp ? new Date(Number(msg.timestamp) * 1000).toISOString() : null,
+              timestamp: t ? new Date(Number(t) * 1000).toISOString() : null,
               has_media: Boolean(msg?.hasMedia ?? msg?.mediaObject),
               metadata: {
                 type,
