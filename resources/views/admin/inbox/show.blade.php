@@ -26,10 +26,8 @@
                 .then((data) => {
                     if (data.count > 0) {
                         const timeline = document.getElementById('conversation-timeline');
-                        const atBottom = timeline.scrollHeight - timeline.scrollTop - timeline.clientHeight < 80;
-                        timeline.insertAdjacentHTML('beforeend', data.html);
+                        timeline.insertAdjacentHTML('afterbegin', data.html);
                         this.lastId = data.last_id;
-                        if (atBottom) timeline.scrollTop = timeline.scrollHeight;
                     }
                     if (manual) {
                         this.showRefreshMessage(data.count > 0 ? (data.count + ' mensagem(ns) nova(s) carregada(s).') : 'Nenhuma mensagem nova.');
@@ -100,7 +98,7 @@
             @endcan
 
             <div class="conversation-timeline" id="conversation-timeline">
-                @forelse($conversation->messages()->oldest('created_at')->get() as $message)
+                @forelse($conversation->messages()->latest('created_at')->get() as $message)
                     @include('admin.inbox._message', ['message' => $message])
                 @empty
                     <div class="empty-state">Nenhuma mensagem nesta conversa.</div>

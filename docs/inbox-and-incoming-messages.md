@@ -208,6 +208,28 @@ A sincronizacao:
 - registra execucoes em `conversation_sync_runs`
 - usa a fila `whatsapp-conversation-sync`
 
+## Atualizacao em tempo real da conversa
+
+A tela `/admin/conversations/{conversation}` busca mensagens novas sem recarregar a pagina:
+
+```text
+GET /admin/inbox/{conversation}/messages?after_id={ultimo_id_conhecido}
+```
+
+- Consulta automatica a cada 30 segundos, pausada quando a aba do navegador nao esta visivel (`document.hidden`).
+- Botao "Atualizar mensagens" para forcar a consulta a qualquer momento, sempre com retorno visivel (quantidade de mensagens novas, "nenhuma mensagem nova" ou erro).
+- Ao encontrar mensagens novas, marca as recebidas nao lidas como lidas e zera `unread_count`, igual ao comportamento de abrir a conversa.
+- Mensagens sao exibidas com as mais recentes primeiro.
+
+## Emoji
+
+O componente `<x-emoji-picker target="id_do_campo">` (`resources/views/components/emoji-picker.blade.php`) insere emojis na posicao do cursor do campo de texto indicado. Usado na resposta manual, no editor de modelos de mensagem e na mensagem avulsa de campanhas/lotes.
+
+Toda a cadeia ja suporta emoji (colunas `utf8mb4`, validacao multibyte). Dois pontos de atencao tratados:
+
+- O cliente HTTP Laravel -> servico Node codifica o corpo com `JSON_UNESCAPED_UNICODE` em `WhatsAppServiceClient::send()`, evitando que emojis inflem ~3x de tamanho ao serem escapados como `\uXXXX`.
+- O servico Node aceita corpos de requisicao ate 256kb (`express.json({ limit: '256kb' })`), suficiente mesmo para mensagens de 4096 caracteres compostas majoritariamente por emoji.
+
 ## Resposta manual
 
 A resposta manual:
@@ -332,3 +354,5 @@ Mensagens completas ficam nas tabelas protegidas do modulo.
 - Resposta manual presa: executar `php artisan inbox:recover-stuck`.
 - Contador incorreto: executar `php artisan inbox:sync-unread-counts`.
 - Conversas nao sincronizam: verificar conexao WhatsApp, fila `whatsapp-conversation-sync` e ultimo registro em `conversation_sync_runs`.
+- Mensagens de contatos diferentes aparecendo na mesma conversa sem contato: `ConversationResolverService::resolve()` escopa conversas sem `contact_id` pelo telefone do remetente (`sender_phone_snapshot`/`recipient_phone_snapshot`); sem telefone conhecido, so reaproveita conversas sem nenhuma mensagem ainda.
+- Telefone exibido na lista de conversas nao bate com a conversa: `Conversation::whatsappPhoneDigits()` so deve olhar mensagens da propria conversa; um `orWhereNotNull` fora do escopo correto ja causou vazamento do telefone de outra conversa no passado (corrigido).

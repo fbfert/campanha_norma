@@ -108,7 +108,7 @@ class InboxController extends Controller
         $messages = $conversation->messages()
             ->with('creator')
             ->where('id', '>', $afterId)
-            ->oldest('id')
+            ->latest('id')
             ->get();
 
         if ($messages->isNotEmpty()) {
@@ -125,7 +125,7 @@ class InboxController extends Controller
 
         return response()->json([
             'html' => $html,
-            'last_id' => $messages->last()?->id ?? $afterId,
+            'last_id' => $messages->max('id') ?? $afterId,
             'count' => $messages->count(),
         ]);
     }

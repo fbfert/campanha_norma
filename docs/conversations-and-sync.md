@@ -84,6 +84,10 @@ Limites absolutos:
 365 dias
 ```
 
+## Conversas removidas e resincronizacao
+
+`ConversationSyncService::syncChat()` verifica, antes de criar uma conversa, se ja existe um registro removido (soft delete) com o mesmo `provider` + `external_chat_id`. Se existir, a sincronizacao pula aquele chat em vez de recriar a conversa — evita colidir com a restricao unica da tabela e evita reviver conversas removidas intencionalmente (por exemplo, conversas vazias sem contato, sem mensagem e sem telefone identificavel, originadas por falha de resolucao de `@lid`).
+
 ## Limitações
 
 - O historico recuperado pode ser parcial.

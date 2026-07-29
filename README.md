@@ -432,6 +432,28 @@ conversations.sync_interval_minutes = 15
 conversations.polling_interval_seconds = 10
 ```
 
+## Ajustes pos-implantacao (producao)
+
+Correcoes e melhorias aplicadas apos a entrada em producao, fora do escopo formal das etapas numeradas acima.
+
+- Contorno de bug conhecido do `whatsapp-web.js` upstream que impedia o evento `ready` de disparar apos `authenticated`: `webVersionCache` fixado em uma versao compativel do WhatsApp Web.
+- Resolucao de identificadores `@lid` (dispositivos vinculados) para telefone real via `client.getContactLidAndPhone()`, usada na sincronizacao de conversas e no encaminhamento de mensagens recebidas.
+- Correcao de correspondencia de contato para o "nono digito" de celulares brasileiros: numeros com e sem o 9 adicional (`5549XXXXXXXX` e `55499XXXXXXXX`) sao tratados como o mesmo contato em `PhoneNormalizerService`, `ContactMatcherService` e `ContactDuplicateService`.
+- Correcao no `ConversationResolverService`: conversas sem contato identificado passam a ser distinguidas por telefone do remetente (nao apenas pela mais recente sem contato), evitando misturar mensagens de pessoas diferentes na mesma conversa.
+- Correcao no `Conversation::whatsappPhoneDigits()`: uma consulta com `orWhere` sem escopo podia exibir na lista de conversas o telefone de uma conversa completamente diferente. Escopo da consulta corrigido.
+- `ConversationSyncService` nao recria mais, na proxima sincronizacao, conversas removidas intencionalmente (soft delete) que nao tinham contato, mensagem ou telefone identificavel.
+- Tela de conversa (`/admin/conversations/{id}`):
+  - Atualizacao automatica a cada 30 segundos (pausada quando a aba nao esta visivel), via `GET /admin/inbox/{conversation}/messages`.
+  - Botao "Atualizar mensagens" para atualizacao sob demanda, com confirmacao visivel do resultado (mensagens novas encontradas, nenhuma novidade ou erro).
+  - Campo de resposta manual reposicionado acima da lista de mensagens.
+  - Mensagens mais recentes exibidas primeiro.
+  - Atalho para cadastrar e associar um novo contato direto na tela, quando o numero ainda nao esta na base.
+- Selecao de emoji (componente `<x-emoji-picker>`) na resposta manual, em modelos de mensagem e em campanhas/lotes.
+- Codificacao correta de emojis na comunicacao Laravel -> servico Node (`JSON_UNESCAPED_UNICODE`) e aumento do limite de corpo da requisicao no servico Node (16kb -> 256kb) para mensagens longas com muitos emojis.
+- Migalha de navegacao (breadcrumb) com links funcionais para as paginas anteriores, em todas as telas administrativas.
+- Selecao de contatos em campanhas com busca dinamica, filtros adicionais e contador ao vivo (`CampaignContactPicker`, componente Livewire), substituindo a lista estatica anterior.
+- Limpeza pontual de conversas vazias (sem contato, sem mensagem, sem telefone identificavel) criadas por sincronizacoes anteriores com resolucao de `@lid` malsucedida.
+
 ## Nao implementado nesta etapa — Etapa 1
 
 - Contatos.

@@ -141,12 +141,19 @@ class ConversationSyncService
         $messageItems = collect($messages['messages'] ?? $messages)->filter(fn ($message): bool => is_array($message));
         $run->increment('messages_found', $messageItems->count());
 
-        $conversation = DB::transaction(function () use ($chat, $contact): Conversation {
+        $conversation = DB::transaction(function () use ($chat, $contact): ?Conversation {
             $externalChatId = (string) $chat['external_chat_id'];
             $conversation = Conversation::query()
                 ->where('provider', 'web')
                 ->where('external_chat_id', $externalChatId)
                 ->first();
+
+            if (! $conversation && Conversation::onlyTrashed()->where('provider', 'web')->where('external_chat_id', $externalChatId)->exists()) {
+                // Conversa foi removida intencionalmente (ex.: limpeza de conversas vazias
+                // sem contato/mensagem). Nao recriar automaticamente via sincronizacao -
+                // isso colidiria com a restricao unica de provider+external_chat_id.
+                return null;
+            }
 
             if (! $conversation && $contact) {
                 $conversation = Conversation::query()
@@ -178,6 +185,10 @@ class ConversationSyncService
                 'unread_count' => 0,
             ]);
         });
+
+        if (! $conversation) {
+            return;
+        }
 
         if (! $conversation->contact_id && $contact) {
             $conversation->forceFill(['contact_id' => $contact->id])->save();
@@ -279,6 +290,10 @@ class ConversationSyncService
         $message = $exception instanceof WhatsAppServiceException
             ? $exception->getMessage()
             : 'Falha ao processar um chat da sincronizacao.';
+
+        if (! $exception instanceof WhatsAppServiceException) {
+            report($exception);
+        }
 
         $this->audit->log('conversation.sync_chat_failed', 'Falha em um chat durante a sincronizacao.', $run, null, [
             'error_code' => $errorCode,
