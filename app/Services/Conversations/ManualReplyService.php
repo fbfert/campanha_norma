@@ -3,6 +3,7 @@
 namespace App\Services\Conversations;
 
 use App\Enums\ConversationMessageDirection;
+use App\Enums\ConversationMessageOrigin;
 use App\Enums\ConversationMessageStatus;
 use App\Jobs\SendManualConversationReplyJob;
 use App\Models\Conversation;
@@ -44,6 +45,7 @@ class ManualReplyService
             'direction' => ConversationMessageDirection::Outgoing,
             'message_type' => 'text',
             'provider' => config('whatsapp.provider', 'web'),
+            'origin' => ConversationMessageOrigin::Manual,
             'request_id' => (string) Str::uuid(),
             'sender_phone_snapshot' => null,
             'recipient_phone_snapshot' => $conversation->contact->phone_normalized,

@@ -97,6 +97,11 @@ class Conversation extends Model
         return $this->belongsToMany(ConversationTag::class, 'conversation_conversation_tag')->withPivot('created_by')->withTimestamps();
     }
 
+    public function flowState(): HasOne
+    {
+        return $this->hasOne(ConversationFlowState::class);
+    }
+
     public function whatsappPhoneDigits(): ?string
     {
         if ($this->contact?->phone_normalized) {

@@ -85,6 +85,10 @@ enum PermissionSlug: string
     case InboxAssociateContact = 'inbox.associate_contact';
     case InboxViewMetrics = 'inbox.view_metrics';
     case InboxSync = 'inbox.sync';
+    case ConversationAutomationView = 'conversation_automation.view';
+    case ConversationAutomationManageFlows = 'conversation_automation.manage_flows';
+    case ConversationAutomationManageQuestions = 'conversation_automation.manage_questions';
+    case ConversationAutomationControl = 'conversation_automation.control';
 
     public function label(): string
     {
@@ -170,6 +174,10 @@ enum PermissionSlug: string
             self::InboxAssociateContact => 'Associar contato a conversa',
             self::InboxViewMetrics => 'Visualizar metricas da caixa de entrada',
             self::InboxSync => 'Sincronizar conversas do WhatsApp',
+            self::ConversationAutomationView => 'Visualizar pesquisa conversacional',
+            self::ConversationAutomationManageFlows => 'Gerenciar fluxos conversacionais',
+            self::ConversationAutomationManageQuestions => 'Gerenciar perguntas dos fluxos',
+            self::ConversationAutomationControl => 'Controlar automacao das conversas',
         };
     }
 }

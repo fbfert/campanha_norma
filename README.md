@@ -432,6 +432,63 @@ conversations.sync_interval_minutes = 15
 conversations.polling_interval_seconds = 10
 ```
 
+## Escopo implementado — Etapa 9A
+
+Fundacao deterministica do fluxo de pesquisa conversacional. **Sem IA, embeddings, RAG ou classificacao por similaridade nesta subetapa**: toda decisao deriva de estado persistido e de regras configuraveis.
+
+- Administracao de fluxos conversacionais com status rascunho/ativo/pausado/arquivado, texto de apresentacao ou modelo, agradecimento final, texto de recusa, limite de perguntas principais, limite de aprofundamentos (zero nesta subetapa), validade e transparencia sobre automacao.
+- Administracao de perguntas por fluxo com titulo interno, texto, categoria, peso para sorteio, ordem administrativa, status, versao e exclusao apenas logica.
+- Estado persistente por conversa em `conversation_flow_states`, com os treze estagios exigidos, contadores, motivo de encerramento, pausa, revisao humana e validade.
+- Historico completo de transicoes em `conversation_flow_transitions`, com estado anterior, novo, evento, mensagem, decisao e responsavel.
+- Registro de uso de perguntas em `conversation_flow_question_usages`, com indice unico garantindo que a mesma pergunta nunca seja sorteada duas vezes na mesma conversa.
+- Classificador deterministico de permissao (`permission_yes`, `permission_no`, `opt_out`, `ambiguous`) com normalizacao de caixa, espacos, pontuacao, acentos e emojis, prioridade absoluta para opt-out, recusa de classificacao por aproximacao em textos longos e listas de expressoes editaveis em `system_settings`.
+- Sorteio ponderado de pergunta em transacao com trava por conversa, congelamento do texto e criacao de uma unica mensagem automatica pendente.
+- Associacao opcional entre campanha/lote e fluxo, com snapshot preservado e sem alterar campanhas antigas.
+- Ativacao do estado como `waiting_permission` quando o destinatario da campanha e enviado, respeitando elegibilidade do contato.
+- Avaliacao despachada apos o commit da mensagem recebida, em filas proprias, sem atrasar o registro nem chamar servico externo dentro da transacao.
+- Opt-out reaproveitando `ContactDataService` e `ReplyInterruptionService`; recusa simples nao marca `nao contatar` por padrao.
+- Telas administrativas de fluxos, perguntas e estado das conversas, com pausar, retomar, encerrar e assumir manualmente.
+- Mensagens automaticas identificadas na linha do tempo da conversa.
+- Permissoes `conversation_automation.*`, gates, papeis e menu.
+- Testes unitarios do classificador e testes de feature dos seis criterios de aceitacao, incluindo idempotencia e regressao das etapas 1 a 8.
+
+Filas novas:
+
+```text
+conversation-automation
+conversation-automation-send
+```
+
+Configuracoes principais (desligadas por padrao ate homologacao):
+
+```text
+conversation_automation.enabled = 0
+conversation_automation.auto_send_enabled = 0
+conversation_automation.max_automated_messages = 3
+conversation_automation.default_validity_hours = 48
+conversation_automation.short_answer_max_words = 6
+conversation_automation.window_start = 08:00
+conversation_automation.window_end = 20:00
+conversation_automation.ambiguous_behavior = waiting_human
+conversation_automation.no_question_behavior = waiting_human
+conversation_automation.mark_do_not_contact_on_refusal = 0
+```
+
+Documentacao complementar:
+
+- `docs/conversation-automation.md`
+- `docs/tests/conversational-manual-etapa-9a.md`
+
+## Nao implementado nesta etapa — Etapa 9A
+
+- Classificacao por IA, embeddings, RAG ou similaridade.
+- Aprofundamento de perguntas.
+- Conversa infinita ou sem limite de turnos.
+- Analise de sentimento, sumarizacao ou geracao de texto.
+- Chatbot generico fora do fluxo especificado.
+- Grupos, listas de transmissao, canais e midias.
+- API oficial da Meta.
+
 ## Ajustes pos-implantacao (producao)
 
 Correcoes e melhorias aplicadas apos a entrada em producao, fora do escopo formal das etapas numeradas acima.

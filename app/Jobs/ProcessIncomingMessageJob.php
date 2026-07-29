@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Enums\ContactMatchStatus;
 use App\Enums\ConversationMessageDirection;
+use App\Enums\ConversationMessageOrigin;
 use App\Enums\ConversationMessageStatus;
 use App\Enums\ConversationStatus;
 use App\Models\ConversationMessage;
@@ -64,6 +65,8 @@ class ProcessIncomingMessageJob implements ShouldQueue
         $status = $data['is_from_me'] ? ConversationMessageStatus::Sent : ConversationMessageStatus::Received;
 
         DB::transaction(function () use ($data, $contact, $direction, $status, $resolver, $events, $interruption, $audit): void {
+            // A avaliacao do fluxo e despachada apenas apos o commit desta transacao,
+            // em fila propria, para nunca atrasar o registro da mensagem recebida.
             $conversation = $resolver->resolve($contact, $data['connection_id'], $direction === ConversationMessageDirection::Incoming, (string) $data['sender_phone']);
             $recipient = $this->findInitialRecipient($contact?->id, $data['sender_phone']);
 
@@ -74,6 +77,7 @@ class ProcessIncomingMessageJob implements ShouldQueue
                 'direction' => $direction,
                 'message_type' => $data['message_type'],
                 'provider' => $data['provider'],
+                'origin' => $direction === ConversationMessageDirection::Incoming ? ConversationMessageOrigin::Incoming : ConversationMessageOrigin::Sync,
                 'external_message_id' => $data['external_message_id'],
                 'event_id' => $data['event_id'],
                 'sender_phone_snapshot' => $data['sender_phone'],
@@ -123,7 +127,21 @@ class ProcessIncomingMessageJob implements ShouldQueue
                 $events->record($conversation, 'contact_match_failed', 'Contato nao identificado.', $message, null, ['phone' => $data['sender_phone']]);
                 $audit->log('incoming_message.contact_not_found', 'Mensagem recebida sem contato identificado.', $message, null, ['conversation_id' => $conversation->id]);
             }
+
+            if ($this->shouldEvaluateFlow($direction, $message)) {
+                DB::afterCommit(fn () => EvaluateConversationFlowJob::dispatch($message->id));
+            }
         });
+    }
+
+    /**
+     * Somente mensagens recebidas de texto entram na avaliacao do fluxo.
+     */
+    private function shouldEvaluateFlow(ConversationMessageDirection $direction, ConversationMessage $message): bool
+    {
+        return $direction === ConversationMessageDirection::Incoming
+            && $message->message_type === 'text'
+            && filled($message->body);
     }
 
     private function findInitialRecipient(?int $contactId, ?string $phone): ?MessageBatchRecipient

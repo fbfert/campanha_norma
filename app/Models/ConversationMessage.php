@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\ConversationMessageDirection;
+use App\Enums\ConversationMessageOrigin;
 use App\Enums\ConversationMessageStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -19,6 +20,7 @@ class ConversationMessage extends Model
         'direction',
         'message_type',
         'provider',
+        'origin',
         'external_chat_id',
         'external_message_id',
         'event_id',
@@ -44,6 +46,7 @@ class ConversationMessage extends Model
     {
         return [
             'direction' => ConversationMessageDirection::class,
+            'origin' => ConversationMessageOrigin::class,
             'status' => ConversationMessageStatus::class,
             'has_media' => 'boolean',
             'media_metadata' => 'array',

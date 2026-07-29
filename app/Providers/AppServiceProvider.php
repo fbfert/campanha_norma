@@ -109,6 +109,10 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('inbox.associate_contact', fn (User $user): bool => $user->hasPermission('inbox.associate_contact'));
         Gate::define('inbox.view_metrics', fn (User $user): bool => $user->hasPermission('inbox.view_metrics'));
         Gate::define('inbox.sync', fn (User $user): bool => $user->hasPermission('inbox.sync'));
+        Gate::define('conversation_automation.view', fn (User $user): bool => $user->hasPermission('conversation_automation.view'));
+        Gate::define('conversation_automation.manage_flows', fn (User $user): bool => $user->hasPermission('conversation_automation.manage_flows'));
+        Gate::define('conversation_automation.manage_questions', fn (User $user): bool => $user->hasPermission('conversation_automation.manage_questions'));
+        Gate::define('conversation_automation.control', fn (User $user): bool => $user->hasPermission('conversation_automation.control'));
 
         view()->composer('*', function ($view): void {
             $settings = app(SystemSettingService::class);

@@ -18,6 +18,8 @@ class MessageBatch extends Model
         'name',
         'description',
         'is_campaign',
+        'conversation_flow_id',
+        'conversation_flow_snapshot',
         'message_template_id',
         'message_template_version',
         'message_body_snapshot',
@@ -64,6 +66,7 @@ class MessageBatch extends Model
         return [
             'placeholders_snapshot' => 'array',
             'campaign_templates_snapshot' => 'array',
+            'conversation_flow_snapshot' => 'array',
             'selection_filters' => 'array',
             'is_campaign' => 'boolean',
             'selection_type' => MessageBatchSelectionType::class,
@@ -87,6 +90,11 @@ class MessageBatch extends Model
     public function template(): BelongsTo
     {
         return $this->belongsTo(MessageTemplate::class, 'message_template_id');
+    }
+
+    public function conversationFlow(): BelongsTo
+    {
+        return $this->belongsTo(ConversationFlow::class, 'conversation_flow_id');
     }
 
     public function recipients(): HasMany

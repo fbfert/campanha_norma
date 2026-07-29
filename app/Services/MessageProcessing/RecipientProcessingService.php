@@ -9,8 +9,11 @@ use App\Enums\MessageSendAttemptStatus;
 use App\Enums\WhatsAppConnectionStatus;
 use App\Exceptions\WhatsApp\WhatsAppServiceException;
 use App\Jobs\DispatchMessageBatchJob;
+use App\Models\MessageBatch;
 use App\Models\MessageBatchRecipient;
 use App\Models\MessageSendAttempt;
+use App\Services\ConversationAutomation\ConversationFlowService;
+use App\Services\Conversations\ConversationResolverService;
 use App\Services\WhatsApp\WhatsAppProviderManager;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
@@ -125,6 +128,7 @@ class RecipientProcessingService
                         'error_message' => null,
                     ])->save();
                     $this->events->record($batch, 'recipient_sent', 'Mensagem enviada.', $recipient);
+                    $this->activateConversationFlow($batch, $recipient);
                 } else {
                     $this->handleFailure($recipient, $result->errorCode ?: 'SEND_FAILED', $result->errorMessage ?: 'Falha no envio.');
                 }
@@ -137,6 +141,36 @@ class RecipientProcessingService
             $this->progress->completeIfFinished($batch);
             DispatchMessageBatchJob::dispatch($batch->id, $batch->processing_version)->onQueue('whatsapp-messages');
         });
+    }
+
+    /**
+     * Ativa o fluxo conversacional quando o lote esta vinculado a um fluxo.
+     * Falha aqui nunca invalida um envio ja concluido com sucesso.
+     */
+    private function activateConversationFlow(MessageBatch $batch, MessageBatchRecipient $recipient): void
+    {
+        if (! $batch->conversation_flow_id || ! $recipient->contact) {
+            return;
+        }
+
+        try {
+            $flow = $batch->conversationFlow;
+
+            if (! $flow) {
+                return;
+            }
+
+            $conversation = app(ConversationResolverService::class)->resolve(
+                $recipient->contact,
+                'principal',
+                false,
+                $recipient->contact->phone_normalized,
+            );
+
+            app(ConversationFlowService::class)->activateForConversation($conversation, $flow);
+        } catch (Throwable $exception) {
+            report($exception);
+        }
     }
 
     private function contactStillAllowed(MessageBatchRecipient $recipient): bool

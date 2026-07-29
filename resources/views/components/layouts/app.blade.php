@@ -51,6 +51,10 @@
                         @if(($unreadConversationsCount ?? 0) > 0)<span class="nav-badge">{{ $unreadConversationsCount }}</span>@endif
                     </a>
                 @endcan
+                @can('conversation_automation.view')
+                    <a href="{{ route('admin.conversation-automation.index') }}" @class(['active' => request()->routeIs('admin.conversation-automation.*')])>Pesquisa conversacional</a>
+                    <a href="{{ route('admin.conversation-flows.index') }}" @class(['active' => request()->routeIs('admin.conversation-flows.*')])>Fluxos conversacionais</a>
+                @endcan
                 @can('histories.view')
                     <a href="{{ route('admin.histories.messages.index') }}" @class(['active' => request()->routeIs('admin.histories.*')])>Historico de mensagens</a>
                 @endcan
@@ -126,6 +130,8 @@
                             'Mensagens / Processamento' => [null, null],
                             'Atendimento / Conversas' => [null, null],
                             'Mensagens / Processamento / Tentativas' => [null, 'admin.message-processing.index', null],
+                            'Inicio / Pesquisa conversacional / Automacao' => ['dashboard', null, null],
+                            'Inicio / Pesquisa conversacional / Automacao / Detalhes' => ['dashboard', null, 'admin.conversation-automation.index', null],
                             'Historicos / Mensagens / Detalhe' => [null, 'admin.histories.messages.index', null],
                             'Inicio / Mensagens / Modelos / Detalhes' => ['dashboard', null, 'admin.message-templates.index', null],
                             'Mensagens / Configuracoes de envio' => [null, null],
@@ -151,6 +157,12 @@
                             'Inicio / Usuarios / Detalhes' => ['dashboard', 'admin.users.index', null],
                             'Inicio / Usuarios / Editar' => ['dashboard', 'admin.users.index', null],
                             'Inicio / Usuarios / Cadastrar' => ['dashboard', 'admin.users.index', null],
+                            'Inicio / Pesquisa conversacional / Fluxos' => ['dashboard', null, null],
+                            'Inicio / Pesquisa conversacional / Fluxos / Novo' => ['dashboard', null, 'admin.conversation-flows.index', null],
+                            'Inicio / Pesquisa conversacional / Fluxos / Editar' => ['dashboard', null, 'admin.conversation-flows.index', null],
+                            'Inicio / Pesquisa conversacional / Fluxos / Detalhes' => ['dashboard', null, 'admin.conversation-flows.index', null],
+                            'Inicio / Pesquisa conversacional / Fluxos / Nova pergunta' => ['dashboard', null, 'admin.conversation-flows.index', null],
+                            'Inicio / Pesquisa conversacional / Fluxos / Editar pergunta' => ['dashboard', null, 'admin.conversation-flows.index', null],
                         ];
 
                         $breadcrumbTrail = $breadcrumbs ?? 'Inicio';

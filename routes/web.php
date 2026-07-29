@@ -5,6 +5,9 @@ use App\Http\Controllers\Admin\Contacts\ContactBulkController;
 use App\Http\Controllers\Admin\Contacts\ContactController;
 use App\Http\Controllers\Admin\Contacts\ContactImportController;
 use App\Http\Controllers\Admin\Contacts\TagController;
+use App\Http\Controllers\Admin\ConversationAutomation\ConversationFlowController;
+use App\Http\Controllers\Admin\ConversationAutomation\ConversationFlowQuestionController;
+use App\Http\Controllers\Admin\ConversationAutomation\ConversationFlowStateController;
 use App\Http\Controllers\Admin\Histories\MessageHistoryController;
 use App\Http\Controllers\Admin\Inbox\InboxController;
 use App\Http\Controllers\Admin\Maintenance\MaintenanceController;
@@ -92,6 +95,20 @@ Route::middleware(['auth', 'password.changed'])->group(function (): void {
         Route::post('/inbox/{conversation}/do-not-contact', [InboxController::class, 'doNotContact'])->name('inbox.do-not-contact');
         Route::post('/inbox/{conversation}/associate-contact', [InboxController::class, 'associateContact'])->name('inbox.associate-contact');
         Route::post('/inbox/{conversation}/associate-contact/new', [InboxController::class, 'createAndAssociateContact'])->name('inbox.associate-contact.create');
+
+        Route::get('/conversation-automation', [ConversationFlowStateController::class, 'index'])->name('conversation-automation.index');
+        Route::get('/conversation-automation/{state}', [ConversationFlowStateController::class, 'show'])->name('conversation-automation.show');
+        Route::post('/conversation-automation/{state}/pause', [ConversationFlowStateController::class, 'pause'])->name('conversation-automation.pause');
+        Route::post('/conversation-automation/{state}/resume', [ConversationFlowStateController::class, 'resume'])->name('conversation-automation.resume');
+        Route::post('/conversation-automation/{state}/finish', [ConversationFlowStateController::class, 'finish'])->name('conversation-automation.finish');
+        Route::post('/conversation-automation/{state}/take-over', [ConversationFlowStateController::class, 'takeOver'])->name('conversation-automation.take-over');
+
+        Route::get('/conversation-flows/{conversationFlow}/questions/create', [ConversationFlowQuestionController::class, 'create'])->name('conversation-flows.questions.create');
+        Route::post('/conversation-flows/{conversationFlow}/questions', [ConversationFlowQuestionController::class, 'store'])->name('conversation-flows.questions.store');
+        Route::get('/conversation-flows/{conversationFlow}/questions/{question}/edit', [ConversationFlowQuestionController::class, 'edit'])->name('conversation-flows.questions.edit');
+        Route::put('/conversation-flows/{conversationFlow}/questions/{question}', [ConversationFlowQuestionController::class, 'update'])->name('conversation-flows.questions.update');
+        Route::delete('/conversation-flows/{conversationFlow}/questions/{question}', [ConversationFlowQuestionController::class, 'destroy'])->name('conversation-flows.questions.destroy');
+        Route::resource('conversation-flows', ConversationFlowController::class)->parameters(['conversation-flows' => 'conversationFlow']);
 
         Route::get('/histories/messages', [MessageHistoryController::class, 'index'])->name('histories.messages.index');
         Route::get('/histories/messages/{recipient}', [MessageHistoryController::class, 'show'])->name('histories.messages.show');

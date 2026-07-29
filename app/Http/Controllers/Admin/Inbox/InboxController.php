@@ -15,18 +15,20 @@ use App\Models\ConversationSyncRun;
 use App\Models\ConversationTag;
 use App\Models\User;
 use App\Services\AuditLogger;
-use App\Services\Conversations\ConversationEventService;
-use App\Services\Conversations\ManualReplyService;
-use App\Services\Conversations\ReplyInterruptionService;
 use App\Services\Contacts\ContactDataService;
 use App\Services\Contacts\ContactDuplicateService;
 use App\Services\Contacts\PhoneNormalizerService;
+use App\Services\Conversations\ConversationEventService;
+use App\Services\Conversations\ManualReplyService;
+use App\Services\Conversations\ReplyInterruptionService;
 use App\Services\SystemSettingService;
 use App\Services\WhatsApp\WhatsAppProviderManager;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class InboxController extends Controller
@@ -98,7 +100,7 @@ class InboxController extends Controller
         ]);
     }
 
-    public function messages(Request $request, Conversation $conversation, SystemSettingService $settings): \Illuminate\Http\JsonResponse
+    public function messages(Request $request, Conversation $conversation, SystemSettingService $settings): JsonResponse
     {
         abort_unless($request->user()->can('inbox.view'), 403);
         $this->scope($request, $conversation);
@@ -325,7 +327,7 @@ class InboxController extends Controller
                     'phone' => $validated['phone'],
                     'source' => 'outro',
                 ]);
-            } catch (\Illuminate\Validation\ValidationException $exception) {
+            } catch (ValidationException $exception) {
                 return back()->withErrors($exception->errors())->withInput();
             }
         }

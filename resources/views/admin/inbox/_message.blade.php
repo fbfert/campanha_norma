@@ -1,6 +1,9 @@
 <article class="message-bubble {{ $message->direction->value }}" data-message-id="{{ $message->id }}">
     <div class="message-meta">
         <strong>{{ $message->direction->label() }}</strong>
+        @if($message->origin === \App\Enums\ConversationMessageOrigin::Automation)
+            <span class="badge" style="background:#5b6776;color:#fff;">Automatica</span>
+        @endif
         <span>{{ ($message->sent_at ?? $message->received_at ?? $message->created_at)?->format($dateTimeFormat) }}</span>
         <span>{{ $message->status->label() }}</span>
         @if($message->creator)
