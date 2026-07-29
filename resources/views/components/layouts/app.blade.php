@@ -55,6 +55,13 @@
                     <a href="{{ route('admin.conversation-automation.index') }}" @class(['active' => request()->routeIs('admin.conversation-automation.*')])>Pesquisa conversacional</a>
                     <a href="{{ route('admin.conversation-flows.index') }}" @class(['active' => request()->routeIs('admin.conversation-flows.*')])>Fluxos conversacionais</a>
                 @endcan
+                @can('ai_insights.view')
+                    <a href="{{ route('admin.ai-insights.index') }}" @class(['active' => request()->routeIs('admin.ai-insights.*')])>Interpretacao por IA</a>
+                    <a href="{{ route('admin.insight-topics.index') }}" @class(['active' => request()->routeIs('admin.insight-topics.*')])>Temas de insights</a>
+                @endcan
+                @can('ai_insights.view_monitoring')
+                    <a href="{{ route('admin.ai-monitoring.index') }}" @class(['active' => request()->routeIs('admin.ai-monitoring.*')])>Monitoramento de IA</a>
+                @endcan
                 @can('histories.view')
                     <a href="{{ route('admin.histories.messages.index') }}" @class(['active' => request()->routeIs('admin.histories.*')])>Historico de mensagens</a>
                 @endcan
@@ -163,6 +170,12 @@
                             'Inicio / Pesquisa conversacional / Fluxos / Detalhes' => ['dashboard', null, 'admin.conversation-flows.index', null],
                             'Inicio / Pesquisa conversacional / Fluxos / Nova pergunta' => ['dashboard', null, 'admin.conversation-flows.index', null],
                             'Inicio / Pesquisa conversacional / Fluxos / Editar pergunta' => ['dashboard', null, 'admin.conversation-flows.index', null],
+                            'Inicio / Pesquisa conversacional / Interpretacao' => ['dashboard', null, null],
+                            'Inicio / Pesquisa conversacional / Interpretacao / Detalhes' => ['dashboard', null, 'admin.ai-insights.index', null],
+                            'Inicio / Pesquisa conversacional / Temas' => ['dashboard', null, null],
+                            'Inicio / Pesquisa conversacional / Temas / Novo' => ['dashboard', null, 'admin.insight-topics.index', null],
+                            'Inicio / Pesquisa conversacional / Temas / Editar' => ['dashboard', null, 'admin.insight-topics.index', null],
+                            'Inicio / Pesquisa conversacional / Monitoramento de IA' => ['dashboard', null, null],
                         ];
 
                         $breadcrumbTrail = $breadcrumbs ?? 'Inicio';

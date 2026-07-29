@@ -2,10 +2,13 @@
 
 namespace App\Providers;
 
+use App\Events\ConversationMessageEvaluated;
+use App\Listeners\DispatchConversationInterpretation;
 use App\Models\Conversation;
 use App\Models\User;
 use App\Services\SystemSettingService;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
@@ -113,6 +116,16 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('conversation_automation.manage_flows', fn (User $user): bool => $user->hasPermission('conversation_automation.manage_flows'));
         Gate::define('conversation_automation.manage_questions', fn (User $user): bool => $user->hasPermission('conversation_automation.manage_questions'));
         Gate::define('conversation_automation.control', fn (User $user): bool => $user->hasPermission('conversation_automation.control'));
+        Gate::define('ai_insights.view', fn (User $user): bool => $user->hasPermission('ai_insights.view'));
+        Gate::define('ai_insights.view_contact_data', fn (User $user): bool => $user->hasPermission('ai_insights.view_contact_data'));
+        Gate::define('ai_insights.correct', fn (User $user): bool => $user->hasPermission('ai_insights.correct'));
+        Gate::define('ai_insights.reprocess', fn (User $user): bool => $user->hasPermission('ai_insights.reprocess'));
+        Gate::define('ai_insights.manage_taxonomy', fn (User $user): bool => $user->hasPermission('ai_insights.manage_taxonomy'));
+        Gate::define('ai_insights.view_monitoring', fn (User $user): bool => $user->hasPermission('ai_insights.view_monitoring'));
+
+        // Etapa 9B: a interpretacao observa o ponto de extensao da 9A sem que a
+        // 9A precise conhecer a camada de IA.
+        Event::listen(ConversationMessageEvaluated::class, DispatchConversationInterpretation::class);
 
         view()->composer('*', function ($view): void {
             $settings = app(SystemSettingService::class);

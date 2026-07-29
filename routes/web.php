@@ -1,5 +1,8 @@
 <?php
 
+use App\Http\Controllers\Admin\Ai\AiMonitoringController;
+use App\Http\Controllers\Admin\Ai\ConversationInsightController;
+use App\Http\Controllers\Admin\Ai\InsightTopicController;
 use App\Http\Controllers\Admin\AuditLogController;
 use App\Http\Controllers\Admin\Contacts\ContactBulkController;
 use App\Http\Controllers\Admin\Contacts\ContactController;
@@ -109,6 +112,16 @@ Route::middleware(['auth', 'password.changed'])->group(function (): void {
         Route::put('/conversation-flows/{conversationFlow}/questions/{question}', [ConversationFlowQuestionController::class, 'update'])->name('conversation-flows.questions.update');
         Route::delete('/conversation-flows/{conversationFlow}/questions/{question}', [ConversationFlowQuestionController::class, 'destroy'])->name('conversation-flows.questions.destroy');
         Route::resource('conversation-flows', ConversationFlowController::class)->parameters(['conversation-flows' => 'conversationFlow']);
+
+        Route::get('/ai-insights', [ConversationInsightController::class, 'index'])->name('ai-insights.index');
+        Route::get('/ai-insights/{insight}', [ConversationInsightController::class, 'show'])->name('ai-insights.show');
+        Route::put('/ai-insights/{insight}', [ConversationInsightController::class, 'correct'])->name('ai-insights.correct');
+        Route::post('/ai-insights/{insight}/approve', [ConversationInsightController::class, 'approve'])->name('ai-insights.approve');
+        Route::post('/ai-insights/{insight}/reprocess', [ConversationInsightController::class, 'reprocess'])->name('ai-insights.reprocess');
+        Route::get('/ai-monitoring', [AiMonitoringController::class, 'index'])->name('ai-monitoring.index');
+        Route::resource('insight-topics', InsightTopicController::class)
+            ->except('show')
+            ->parameters(['insight-topics' => 'insightTopic']);
 
         Route::get('/histories/messages', [MessageHistoryController::class, 'index'])->name('histories.messages.index');
         Route::get('/histories/messages/{recipient}', [MessageHistoryController::class, 'show'])->name('histories.messages.show');

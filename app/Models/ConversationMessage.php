@@ -8,6 +8,7 @@ use App\Enums\ConversationMessageStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ConversationMessage extends Model
 {
@@ -70,6 +71,16 @@ class ConversationMessage extends Model
     public function recipient(): BelongsTo
     {
         return $this->belongsTo(MessageBatchRecipient::class, 'message_batch_recipient_id');
+    }
+
+    public function classifications(): HasMany
+    {
+        return $this->hasMany(ConversationMessageClassification::class)->latest('id');
+    }
+
+    public function insights(): HasMany
+    {
+        return $this->hasMany(ConversationInsight::class, 'source_message_id')->latest('extraction_version');
     }
 
     public function creator(): BelongsTo

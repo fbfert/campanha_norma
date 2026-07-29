@@ -102,6 +102,16 @@ class Conversation extends Model
         return $this->hasOne(ConversationFlowState::class);
     }
 
+    public function insights(): HasMany
+    {
+        return $this->hasMany(ConversationInsight::class)->latest('id');
+    }
+
+    public function messageClassifications(): HasMany
+    {
+        return $this->hasMany(ConversationMessageClassification::class)->latest('id');
+    }
+
     public function whatsappPhoneDigits(): ?string
     {
         if ($this->contact?->phone_normalized) {

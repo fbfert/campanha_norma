@@ -114,6 +114,8 @@
         </section>
 
         <aside class="conversation-details" x-bind:class="{ 'open': detailsOpen }">
+            @include('admin.inbox._ai_panel', ['conversation' => $conversation])
+
             <section class="card">
                 <h2>Detalhes</h2>
                 <p><strong>Contato:</strong> {{ $conversation->contact?->name ?? 'Nao associado' }}</p>

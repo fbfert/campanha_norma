@@ -89,6 +89,12 @@ enum PermissionSlug: string
     case ConversationAutomationManageFlows = 'conversation_automation.manage_flows';
     case ConversationAutomationManageQuestions = 'conversation_automation.manage_questions';
     case ConversationAutomationControl = 'conversation_automation.control';
+    case AiInsightsView = 'ai_insights.view';
+    case AiInsightsViewContactData = 'ai_insights.view_contact_data';
+    case AiInsightsCorrect = 'ai_insights.correct';
+    case AiInsightsReprocess = 'ai_insights.reprocess';
+    case AiInsightsManageTaxonomy = 'ai_insights.manage_taxonomy';
+    case AiInsightsViewMonitoring = 'ai_insights.view_monitoring';
 
     public function label(): string
     {
@@ -178,6 +184,12 @@ enum PermissionSlug: string
             self::ConversationAutomationManageFlows => 'Gerenciar fluxos conversacionais',
             self::ConversationAutomationManageQuestions => 'Gerenciar perguntas dos fluxos',
             self::ConversationAutomationControl => 'Controlar automacao das conversas',
+            self::AiInsightsView => 'Visualizar interpretacao por IA',
+            self::AiInsightsViewContactData => 'Visualizar dados de contato nas telas analiticas',
+            self::AiInsightsCorrect => 'Corrigir classificacao e insights',
+            self::AiInsightsReprocess => 'Reprocessar interpretacao por IA',
+            self::AiInsightsManageTaxonomy => 'Gerenciar temas de insights',
+            self::AiInsightsViewMonitoring => 'Visualizar monitoramento de IA',
         };
     }
 }

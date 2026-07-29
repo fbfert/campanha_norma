@@ -479,6 +479,92 @@ Documentacao complementar:
 - `docs/conversation-automation.md`
 - `docs/tests/conversational-manual-etapa-9a.md`
 
+## Escopo implementado — Etapa 9B
+
+Interpretacao por IA e banco estruturado de opinioes. A IA **le, resume e categoriza**: nao conversa, nao gera texto de resposta e nao envia nada. A conversa bruta continua sendo a fonte primaria e imutavel; todo resultado de IA e derivado, versionado e reprocessavel.
+
+- Abstracao de provedor de IA independente de fornecedor (`App\Contracts\AiProvider`), com implementacao compativel com APIs de chat no formato OpenAI, provedor inerte para ambiente sem credencial, timeout, tentativas com backoff, disjuntor simples e erros sanitizados.
+- Saida JSON obrigatoriamente validada por schema no servidor, sem confiar na promessa do fornecedor: JSON parseavel, campos obrigatorios, tipos, valores enumerados, limites de tamanho e recusa de campos desconhecidos.
+- Registro auditavel de cada tentativa em `ai_runs`, com finalidade, provedor, modelo, versao de prompt, versao de schema, status, hash da requisicao, resultado, tokens, latencia, custo estimado opcional, confianca, erro sanitizado, tentativa e marcos de tempo. Nunca guarda chave, cabecalho secreto ou payload desnecessario.
+- Classificacao ampliada em treze categorias, com **precedencia estrutural** da regra deterministica da 9A: quando ela conclui, o caminho de codigo nao chega ao provedor.
+- Extracao estruturada e pesquisavel com resumo, tema principal relacional, temas secundarios em tabela pivo, problema, acao sugerida, resultado desejado, grupo afetado, localidade declarada, regiao, urgencia, sentimento descritivo, palavras-chave, confianca e sinalizacao de revisao.
+- Taxonomia administrativa de temas e subtemas com sinonimos, ordenacao, cor, ativo/inativo, tema de fallback obrigatorio e protecao contra exclusao de tema em uso. O modelo nunca cria tema.
+- Pipeline assincrono em fila propria que persiste a mensagem antes de qualquer analise e nunca chama servico externo dentro da transacao de registro.
+- Prompts versionados em arquivo (`resources/ai/prompts/`), com versao ativa por finalidade em `system_settings` e reprocessamento por versao.
+- Thresholds de confianca configuraveis e deteccao deterministica de conteudo sensivel sobre o texto original, que roda inclusive quando a IA falha.
+- Correcao humana auditada com preservacao do valor original, sem qualquer retroalimentacao automatica do modelo.
+- Contexto minimo enviado ao modelo: pergunta, mensagem truncada, poucas mensagens da mesma conversa e taxonomia. Nome, telefone, etiquetas e conversas de terceiros nunca entram no prompt.
+- Telas de fila de revisao, detalhe do insight, correcao, reprocessamento, historico de versoes, CRUD de temas e monitoramento, todas com permissoes proprias e telefone mascarado nas visoes analiticas.
+- Comandos `ai:reprocess` (exige filtro, confirma acima do limite) e `ai:prune-runs` (retencao configuravel).
+- 126 testes de feature e 15 unitarios cobrindo sucesso, matriz completa de falhas do provedor (400, 401, 403, 404, 422, 429, 500, 503, timeout, conexao indisponivel, corpo vazio, JSON invalido, schema invalido, propriedades extras, classificacao desconhecida, confianca invalida), disjuntor, idempotencia, concorrencia, isolamento de contexto, permissoes e regressao das etapas 1 a 9A.
+
+### Revisao e estabilizacao aplicadas apos a implementacao
+
+- Feature flags separadas por responsabilidade, com `ai.analysis_enabled` proprio e duas chaves reservadas para a 9C criadas ja desligadas.
+- Desacoplamento da 9A e da 9B por evento de extensao: `ConversationFlowService` deixou de referenciar qualquer classe de IA, o que torna as duas subetapas revisaveis e reversiveis em separado.
+- **Correcao de defeito da 9A**: `denuncia` estava na lista `conversation_automation.opt_out_expressions`. Quem escrevia "quero fazer uma denuncia" era marcado como nao contatar e tinha os lotes pendentes interrompidos, em vez de ser encaminhado para atendimento humano. O termo foi removido do opt-out e permanece na deteccao de conteudo sensivel da 9B.
+- Listas de opt-out completadas com variacoes ausentes: "retire meu numero", "remova meu contato", "nao quero receber mais mensagens" e outras.
+- Precedencia explicita `opt_out > permission_no > permission_yes > ambiguous`, com a negativa avaliada antes da positiva tambem na correspondencia exata.
+- **Correcao no provedor**: erros HTTP 4xx que nao sao 408 nem 429 passaram a usar o codigo `BAD_REQUEST`, nao retentavel. Antes eram tratados como indisponibilidade e repetidos tres vezes sem chance de sucesso.
+- Indices de agregacao adicionados para os recortes previsiveis da futura 9E (por tema, por fluxo e por periodo), evitando migration de indice sobre tabela cheia depois.
+- Migrations da 9A e da 9B validadas em MariaDB 10.5 real, com ciclo completo de rollback e reaplicacao.
+
+Fila nova:
+
+```text
+ai-interpretation
+```
+
+Configuracao de ambiente (chave, URL e modelo nunca vao para o banco):
+
+```env
+AI_PROVIDER=null
+AI_OPENAI_URL=https://api.openai.com/v1
+AI_OPENAI_KEY=
+AI_OPENAI_MODEL=gpt-4o-mini
+```
+
+Feature flags separadas por responsabilidade — nenhuma chave mistura motor de fluxo, analise por IA e futura geracao de respostas:
+
+```text
+conversation_automation.enabled       0   motor deterministico da 9A
+ai.enabled                            0   chave mestra da infraestrutura de IA
+ai.analysis_enabled                   0   classificacao e extracao da 9B
+ai.response_generation_enabled        0   RESERVADA para a 9C, nao implementada
+ai.auto_send_enabled                  0   RESERVADA para a 9C, nao implementada
+```
+
+Ligar a analise exige **duas** chaves: `ai.enabled` e `ai.analysis_enabled`. A 9B nao depende de `conversation_automation.enabled`, mas exige contexto valido de pesquisa (a conversa precisa ter estado de fluxo).
+
+A 9A publica o evento `ConversationMessageEvaluated` como ponto de extensao e nao referencia nenhuma classe da camada de IA. Sem ouvintes registrados, o comportamento da 9A e identico ao de antes.
+
+Configuracoes principais (desligadas por padrao ate homologacao):
+
+```text
+ai.classification_enabled = 1
+ai.extraction_enabled = 1
+ai.min_classification_confidence = 0.70
+ai.min_extraction_confidence = 0.65
+ai.max_input_chars = 2000
+ai.max_context_messages = 3
+ai.circuit_failure_threshold = 5
+ai.runs_retention_days = 90
+```
+
+Documentacao complementar:
+
+- `docs/ai-interpretation.md`
+- `docs/tests/ai-interpretation-manual-etapa-9b.md`
+
+## Nao implementado nesta etapa — Etapa 9B
+
+- Geracao de resposta contextual e autoenvio.
+- RAG, embeddings e busca por similaridade.
+- Dashboards analiticos completos.
+- Inferencia de atributo sensivel, intencao de voto ou microdirecionamento individual.
+- Treinamento ou ajuste automatico a partir de correcoes humanas.
+- Adivinhacao de cidade, regiao ou qualquer caracteristica nao declarada pelo contato.
+
 ## Nao implementado nesta etapa — Etapa 9A
 
 - Classificacao por IA, embeddings, RAG ou similaridade.

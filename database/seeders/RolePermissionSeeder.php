@@ -75,6 +75,8 @@ class RolePermissionSeeder extends Seeder
                 PermissionSlug::InboxSync,
                 PermissionSlug::ConversationAutomationView,
                 PermissionSlug::ConversationAutomationControl,
+                PermissionSlug::AiInsightsView,
+                PermissionSlug::AiInsightsCorrect,
             ]],
             'consulta' => ['Consulta', 'Acesso somente para consulta.', [
                 PermissionSlug::DashboardView,
@@ -89,6 +91,7 @@ class RolePermissionSeeder extends Seeder
                 PermissionSlug::ReportsView,
                 PermissionSlug::InboxView,
                 PermissionSlug::ConversationAutomationView,
+                PermissionSlug::AiInsightsView,
             ]],
         ];
 
