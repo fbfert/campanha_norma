@@ -3,9 +3,12 @@
 namespace App\Models;
 
 use App\Enums\ConversationFlowStatus;
+use App\Enums\KnowledgeBaseStatus;
+use App\Enums\ResponseGenerationMode;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -23,6 +26,7 @@ class ConversationFlow extends Model
         'permission_denied_text',
         'max_main_questions',
         'max_followups',
+        'response_mode',
         'validity_hours',
         'transparency_enabled',
         'transparency_text',
@@ -34,6 +38,7 @@ class ConversationFlow extends Model
     {
         return [
             'status' => ConversationFlowStatus::class,
+            'response_mode' => ResponseGenerationMode::class,
             'max_main_questions' => 'integer',
             'max_followups' => 'integer',
             'validity_hours' => 'integer',
@@ -54,6 +59,22 @@ class ConversationFlow extends Model
     public function states(): HasMany
     {
         return $this->hasMany(ConversationFlowState::class);
+    }
+
+    public function knowledgeBases(): BelongsToMany
+    {
+        return $this->belongsToMany(KnowledgeBase::class, 'conversation_flow_knowledge_base')
+            ->withPivot('priority')
+            ->withTimestamps()
+            ->orderByDesc('priority');
+    }
+
+    /**
+     * Bases que efetivamente participam de uma recuperacao para este fluxo.
+     */
+    public function retrievableKnowledgeBases(): BelongsToMany
+    {
+        return $this->knowledgeBases()->where('knowledge_bases.status', KnowledgeBaseStatus::Active->value);
     }
 
     public function batches(): HasMany

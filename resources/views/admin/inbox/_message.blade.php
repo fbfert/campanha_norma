@@ -4,6 +4,11 @@
         @if($message->origin === \App\Enums\ConversationMessageOrigin::Automation)
             <span class="badge" style="background:#5b6776;color:#fff;">Automatica</span>
         @endif
+        @if($message->generated_by_ai)
+            <span class="badge" style="background:#4f46e5;color:#fff;" title="Texto sugerido por IA{{ $message->approver ? ', aprovado por '.$message->approver->name : '' }}">
+                Sugerida por IA{{ $message->approver ? ' - aprovada por '.$message->approver->name : ' - envio automatico' }}
+            </span>
+        @endif
         <span>{{ ($message->sent_at ?? $message->received_at ?? $message->created_at)?->format($dateTimeFormat) }}</span>
         <span>{{ $message->status->label() }}</span>
         @if($message->creator)

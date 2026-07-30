@@ -77,6 +77,14 @@ class RolePermissionSeeder extends Seeder
                 PermissionSlug::ConversationAutomationControl,
                 PermissionSlug::AiInsightsView,
                 PermissionSlug::AiInsightsCorrect,
+                PermissionSlug::ReplySuggestionsView,
+                PermissionSlug::ReplySuggestionsReject,
+                PermissionSlug::ReplySuggestionsFeedback,
+                // Operador prepara a base, mas nao aprova: publicar conteudo
+                // oficial e ato de responsabilidade, nao de operacao.
+                PermissionSlug::KnowledgeView,
+                PermissionSlug::KnowledgeUploadDocuments,
+                PermissionSlug::KnowledgeTestRetrieval,
             ]],
             'consulta' => ['Consulta', 'Acesso somente para consulta.', [
                 PermissionSlug::DashboardView,
@@ -92,6 +100,8 @@ class RolePermissionSeeder extends Seeder
                 PermissionSlug::InboxView,
                 PermissionSlug::ConversationAutomationView,
                 PermissionSlug::AiInsightsView,
+                PermissionSlug::ReplySuggestionsView,
+                PermissionSlug::KnowledgeView,
             ]],
         ];
 

@@ -556,6 +556,111 @@ Documentacao complementar:
 - `docs/ai-interpretation.md`
 - `docs/tests/ai-interpretation-manual-etapa-9b.md`
 
+## Escopo implementado — Etapa 9C
+
+Geracao de respostas contextualizadas, aprovacao humana e handoff. O objetivo e **aprofundar a opiniao da propria pessoa**, com no maximo duas perguntas, sempre a partir do que ela mesma escreveu. O modo padrao e sugerir para aprovacao humana: nenhum texto gerado chega ao contato sem um operador aprovar.
+
+- Gerador de resposta por contrato independente de fornecedor, com saida JSON validada por schema, prompt versionado e execucao ligada a classificacao e ao insight da 9B.
+- Contrato com seis acoes: `suggest_reply`, `thank_and_complete`, `request_clarification`, `handoff_human`, `no_reply` e `opt_out`.
+- Validador deterministico do texto aplicado **depois** do modelo, cobrindo tamanho, quantidade de perguntas, promessa, pedido de voto, comparacao com adversarios, urgencia artificial, intimidade simulada, alegacao de leitura pessoal e coleta de dado pessoal. Texto reprovado nunca e enviado, nem por aprovacao.
+- Quatro modos de operacao (`disabled`, `draft_only`, `approval_required`, `auto_send_limited`), com o modo do fluxo podendo apenas restringir o global.
+- Caixa de aprovacao com edicao antes do envio, aprovacao individual, rejeicao, regeneracao com justificativa obrigatoria e assuncao manual. **Sem aprovacao em massa**, por decisao de projeto.
+- Protecao contra sugestao obsoleta: chegou mensagem nova, a sugestao anterior nao pode mais ser enviada. Garantia de no maximo uma sugestao viva por mensagem recebida, imposta por indice unico no banco.
+- Texto gerado e texto final armazenados separadamente: o original nunca e sobrescrito pela edicao do operador.
+- Autoenvio limitado, desligado por padrao e com allowlist de categorias vazia, condicionado a treze guards com registro do motivo de cada recusa.
+- Handoff humano com quatorze motivos, pausando a automacao, elevando prioridade quando cabe e sem nenhum texto improvisado.
+- Limite de aprofundamentos com contagem idempotente, agradecimento e encerramento ao atingir o limite, e agrupamento de mensagens consecutivas por debounce.
+- Servico de saida unificado compartilhado por envio manual, automatico e aprovado, sem regressao do envio manual.
+- Metadados de autoria de IA nas mensagens, com selo na linha do tempo indicando quem aprovou.
+- Feedback operacional por sugestao, sem qualquer efeito automatico sobre prompt, modelo ou thresholds.
+- 51 testes de feature cobrindo os criterios de aceitacao, sugestao obsoleta, aprovacao concorrente, autoenvio duplicado, limite de turnos, handoff, opt-out e desativacao entre geracao e envio, textos proibidos, falha de provedor, os quatro modos e regressao da resposta manual.
+
+Filas novas:
+
+```text
+ai-response-generation
+ai-response-send
+```
+
+Configuracoes principais (desligadas por padrao):
+
+```text
+ai.response.mode = disabled
+ai.response.auto_send_classifications = (vazia)
+ai.response.auto_send_min_confidence = 0.90
+ai.response.max_followups = 2
+ai.response.debounce_seconds = 20
+ai.response.factual_behavior = handoff
+```
+
+Sem base de conhecimento aprovada nesta subetapa, pergunta factual sobre a Professora Norma e encaminhada para atendimento humano ou respondida com texto institucional fixo. O modelo nunca inventa conteudo factual.
+
+Documentacao complementar:
+
+- `docs/ai-response-generation.md`
+- `docs/tests/ai-response-manual-etapa-9c.md`
+
+## Escopo implementado — Etapa 9D
+
+Base de conhecimento oficial e aprovada, com recuperacao e validacao de fundamentacao. O objetivo e permitir resposta a pergunta factual **somente** com apoio em documento aprovado, com rastreabilidade ate o trecho usado. Sem evidencia, a resposta nao sai: vira encaminhamento para atendimento humano.
+
+- Quatro contratos proprios (`KnowledgeBaseProvider`, `EmbeddingProvider`, `KnowledgeRetriever`, `AnswerGroundingValidator`), resolvidos por configuracao, com provedor inerte e provedor local relacional.
+- **Aprovacao humana como condicao de existencia na busca**: sete situacoes de documento, e somente `approved` dentro de base `active` associada ao fluxo e recuperavel. Indexar nunca aprova; reprocessar revoga a aprovacao anterior.
+- Ingestao com disco privado fora de `public/`, nome em disco gerado por UUID (path traversal encerrado na origem), MIME conferido pelo conteudo real, deduplicacao por hash e por base, antivirus configuravel com comportamento explicito na ausencia do scanner.
+- Extratores nativos de texto plano, Markdown, HTML e DOCX; PDF por binario configuravel, com falha limpa quando ausente. Nenhum texto e adivinhado.
+- Tres estrategias de recuperacao — `lexical` (padrao, sem dependencia externa), `vector` e `hybrid` — com teto explicito de candidatos, recusa registrada e queda para a estrategia lexica em vez de degradacao silenciosa.
+- Defesa contra injecao de prompt em duas camadas: neutralizacao de instrucoes na ingestao, com o achado visivel antes da aprovacao, e bloco delimitado no prompt declarado como dado, com a instrucao explicita de ignorar ordens internas. O prompt de sistema prevalece sempre.
+- Prompt e schema fundamentados em versao propria (`v2`/`2`), selecionados apenas quando ha base ativa associada ao fluxo. Sem base, a 9C segue com `v1`/`1` sem nenhuma alteracao.
+- Validacao de fundamentacao deterministica **depois** do modelo, com nove vereditos. O campo `grounded` devolvido pelo modelo e sinal, nunca autorizacao. Reprovacao nunca produz texto alternativo: produz bloqueio e handoff.
+- Rastreabilidade por snapshot: log de recuperacao e citacoes guardam copia do conteudo, do titulo e da versao. Excluir ou substituir um documento nao apaga a explicacao de nenhuma resposta ja enviada.
+- Isolamento estrutural: o recuperador consulta apenas as tabelas `knowledge_*`, e um teste le o codigo-fonte e falha se `Conversation`, `Contact` ou `ConversationInsight` aparecerem. A opiniao da populacao nunca e fonte de resposta individual.
+- Telas de bases, documentos, previa de texto extraido e de trechos, teste de busca e de fundamentacao sem envio, e exibicao das fontes na sugestao. Oito permissoes proprias; aprovar e baixar o original ficam com administrador.
+- 116 testes novos (465 no total) cobrindo os criterios de aceitacao, injecao em documento, citacao inventada, documento obsoleto, exclusao, troca de versao, limite de vetores, isolamento estrutural, comandos de operacao e regressao das Etapas 1 a 9C.
+- Migrations validadas em MariaDB 10.5 real, com ciclo completo de rollback e reaplicacao. As colunas de fundamentacao ficam em migration propria, separada da criacao das tabelas de conhecimento, porque as duas mudancas tem perfis de reversao diferentes.
+
+Fila nova:
+
+```text
+knowledge-indexing
+```
+
+Configuracoes principais (desligadas por padrao):
+
+```text
+knowledge.enabled                  = 0
+knowledge.retrieval_strategy       = lexical
+knowledge.top_k                    = 5
+knowledge.score_threshold          = 0.25
+knowledge.antivirus_required       = 1
+knowledge.show_citations_to_contact = 0
+```
+
+Ligar a recuperacao exige **quatro** condicoes simultaneas: `knowledge.enabled`, base `active`, base associada ao fluxo e documento `approved`. Desligar qualquer uma interrompe a busca sem apagar nada. O rollback e `knowledge.enabled = 0` e nao exige deploy nem migration.
+
+Pendencia de ambiente: `pdftotext` nao esta instalado neste servidor. Ate `dnf install poppler-utils`, upload de PDF falha de forma limpa e o documento fica em `failed`. ClamAV esta presente e exigido.
+
+Documentacao complementar:
+
+- `docs/knowledge-base-rag.md`
+- `docs/tests/knowledge-base-manual-etapa-9d.md`
+- `docs/adr/0001-armazenamento-vetorial-e-provedor-de-conhecimento.md`
+
+## Nao implementado nesta etapa — Etapa 9D
+
+- Provedor gerenciado de vetores ou banco vetorial dedicado. Ver ADR 0001: a decisao foi documentada com limites medidos e procedimento de troca, e o corpus previsto nao a justifica.
+- Reranking por modelo, expansao de consulta e busca semantica multilingue.
+- Ingestao automatica a partir de site, feed ou repositorio externo.
+- Resposta livre fora do fluxo da pesquisa.
+- Citacao visivel ao contato por padrao.
+- Relatorios analiticos finais (9E).
+
+## Nao implementado nesta etapa — Etapa 9C
+
+- Relatorios analiticos finais (9E).
+- Conversa aberta fora do fluxo da pesquisa.
+- Aprendizado automatico a partir de feedback ou correcoes.
+- Envio de qualquer texto gerado sem aprovacao humana no modo padrao.
+
 ## Nao implementado nesta etapa — Etapa 9B
 
 - Geracao de resposta contextual e autoenvio.

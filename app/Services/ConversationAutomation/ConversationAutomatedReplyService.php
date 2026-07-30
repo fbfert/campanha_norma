@@ -2,17 +2,13 @@
 
 namespace App\Services\ConversationAutomation;
 
-use App\Enums\ConversationMessageDirection;
 use App\Enums\ConversationMessageOrigin;
-use App\Enums\ConversationMessageStatus;
 use App\Jobs\SendAutomatedConversationReplyJob;
 use App\Models\ConversationFlow;
 use App\Models\ConversationFlowState;
 use App\Models\ConversationMessage;
-use App\Services\AuditLogger;
-use App\Services\Conversations\ConversationEventService;
+use App\Services\Conversations\ConversationReplyService;
 use App\Services\SystemSettingService;
-use Illuminate\Support\Str;
 
 /**
  * Cria a mensagem automatica pendente e enfileira o envio.
@@ -22,14 +18,14 @@ class ConversationAutomatedReplyService
 {
     public function __construct(
         private readonly SystemSettingService $settings,
-        private readonly ConversationEventService $events,
-        private readonly AuditLogger $audit,
+        private readonly ConversationReplyService $replies,
     ) {}
 
     /**
-     * @param  array<string, mixed>  $metadata
+     * @param  array<string, mixed>  $metadata  Dados do evento registrado.
+     * @param  array<string, mixed>  $aiMetadata  Metadados de autoria de IA na mensagem.
      */
-    public function queue(ConversationFlowState $state, string $body, string $eventType, array $metadata = []): ?ConversationMessage
+    public function queue(ConversationFlowState $state, string $body, string $eventType, array $metadata = [], array $aiMetadata = []): ?ConversationMessage
     {
         $conversation = $state->conversation;
         $contact = $conversation?->contact;
@@ -44,37 +40,27 @@ class ConversationAutomatedReplyService
             return null;
         }
 
-        $message = ConversationMessage::create([
-            'conversation_id' => $conversation->id,
-            'contact_id' => $contact->id,
-            'direction' => ConversationMessageDirection::Outgoing,
-            'message_type' => 'text',
-            'provider' => config('whatsapp.provider', 'web'),
-            'origin' => ConversationMessageOrigin::Automation,
-            'request_id' => (string) Str::uuid(),
-            'sender_phone_snapshot' => null,
-            'recipient_phone_snapshot' => $contact->phone_normalized,
-            'sender_name_snapshot' => null,
-            'body' => $body,
-            'status' => ConversationMessageStatus::Pending,
-            'created_by' => null,
-        ]);
+        // Criacao pelo servico de saida compartilhado, preservando origem,
+        // evento e auditoria proprios da automacao.
+        $message = $this->replies->createPending(
+            conversation: $conversation,
+            body: $body,
+            origin: ConversationMessageOrigin::Automation,
+            metadata: $aiMetadata,
+            eventType: $eventType,
+            eventDescription: 'Mensagem automatica enfileirada.',
+            eventPayload: $metadata + [
+                'flow_id' => $state->conversation_flow_id,
+                'automated' => true,
+            ],
+            auditAction: 'conversation_automation.message_queued',
+            auditDescription: 'Mensagem automatica enfileirada.',
+        );
 
         $state->forceFill([
             'automated_messages_count' => $state->automated_messages_count + 1,
             'last_automated_message_id' => $message->id,
         ])->save();
-
-        $this->events->record($conversation, $eventType, 'Mensagem automatica enfileirada.', $message, null, $metadata + [
-            'flow_id' => $state->conversation_flow_id,
-            'automated' => true,
-        ]);
-
-        $this->audit->log('conversation_automation.message_queued', 'Mensagem automatica enfileirada.', $message, null, [
-            'conversation_id' => $conversation->id,
-            'flow_id' => $state->conversation_flow_id,
-            'event_type' => $eventType,
-        ]);
 
         SendAutomatedConversationReplyJob::dispatch($message->id)->onQueue($this->sendQueue());
 

@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class ConversationMessage extends Model
 {
@@ -22,6 +23,13 @@ class ConversationMessage extends Model
         'message_type',
         'provider',
         'origin',
+        'generated_by_ai',
+        'ai_run_id',
+        'ai_prompt_version',
+        'ai_confidence',
+        'approved_by',
+        'approved_at',
+        'automation_state_transition_id',
         'external_chat_id',
         'external_message_id',
         'event_id',
@@ -48,6 +56,9 @@ class ConversationMessage extends Model
         return [
             'direction' => ConversationMessageDirection::class,
             'origin' => ConversationMessageOrigin::class,
+            'generated_by_ai' => 'boolean',
+            'ai_confidence' => 'float',
+            'approved_at' => 'datetime',
             'status' => ConversationMessageStatus::class,
             'has_media' => 'boolean',
             'media_metadata' => 'array',
@@ -86,5 +97,15 @@ class ConversationMessage extends Model
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function approver(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'approved_by');
+    }
+
+    public function suggestion(): HasOne
+    {
+        return $this->hasOne(ConversationReplySuggestion::class, 'sent_message_id');
     }
 }

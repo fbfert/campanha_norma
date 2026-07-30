@@ -95,6 +95,20 @@ enum PermissionSlug: string
     case AiInsightsReprocess = 'ai_insights.reprocess';
     case AiInsightsManageTaxonomy = 'ai_insights.manage_taxonomy';
     case AiInsightsViewMonitoring = 'ai_insights.view_monitoring';
+    case ReplySuggestionsView = 'reply_suggestions.view';
+    case ReplySuggestionsApprove = 'reply_suggestions.approve';
+    case ReplySuggestionsReject = 'reply_suggestions.reject';
+    case ReplySuggestionsRegenerate = 'reply_suggestions.regenerate';
+    case ReplySuggestionsFeedback = 'reply_suggestions.feedback';
+    case ReplySuggestionsManageSettings = 'reply_suggestions.manage_settings';
+    case KnowledgeView = 'knowledge.view';
+    case KnowledgeManageBases = 'knowledge.manage_bases';
+    case KnowledgeUploadDocuments = 'knowledge.upload_documents';
+    case KnowledgeApproveDocuments = 'knowledge.approve_documents';
+    case KnowledgeDeleteDocuments = 'knowledge.delete_documents';
+    case KnowledgeDownloadDocuments = 'knowledge.download_documents';
+    case KnowledgeTestRetrieval = 'knowledge.test_retrieval';
+    case KnowledgeManageSettings = 'knowledge.manage_settings';
 
     public function label(): string
     {
@@ -190,6 +204,20 @@ enum PermissionSlug: string
             self::AiInsightsReprocess => 'Reprocessar interpretacao por IA',
             self::AiInsightsManageTaxonomy => 'Gerenciar temas de insights',
             self::AiInsightsViewMonitoring => 'Visualizar monitoramento de IA',
+            self::ReplySuggestionsView => 'Visualizar sugestoes de resposta',
+            self::ReplySuggestionsApprove => 'Aprovar e enviar sugestoes de resposta',
+            self::ReplySuggestionsReject => 'Rejeitar sugestoes de resposta',
+            self::ReplySuggestionsRegenerate => 'Regenerar sugestoes de resposta',
+            self::ReplySuggestionsFeedback => 'Registrar feedback de sugestoes',
+            self::ReplySuggestionsManageSettings => 'Gerenciar configuracoes de geracao',
+            self::KnowledgeView => 'Visualizar base de conhecimento',
+            self::KnowledgeManageBases => 'Gerenciar bases de conhecimento',
+            self::KnowledgeUploadDocuments => 'Enviar documentos para a base',
+            self::KnowledgeApproveDocuments => 'Aprovar, rejeitar e tornar documentos obsoletos',
+            self::KnowledgeDeleteDocuments => 'Excluir documentos da base',
+            self::KnowledgeDownloadDocuments => 'Baixar arquivo original de documento',
+            self::KnowledgeTestRetrieval => 'Testar busca e resposta sem envio',
+            self::KnowledgeManageSettings => 'Gerenciar configuracoes da base de conhecimento',
         };
     }
 }

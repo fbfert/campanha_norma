@@ -33,5 +33,12 @@
         <env name="PULSE_ENABLED" value="false"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
         <env name="NIGHTWATCH_ENABLED" value="false"/>
+        <!--
+            Etapa 9D: nenhum teste executa binario externo. Com os comandos vazios
+            o antivirus e o extrator de PDF caem no caminho de indisponibilidade,
+            que e justamente o que os testes precisam exercitar.
+        -->
+        <env name="KNOWLEDGE_ANTIVIRUS_COMMAND" value=""/>
+        <env name="KNOWLEDGE_PDF_TEXT_COMMAND" value=""/>
     </php>
 </phpunit>

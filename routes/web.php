@@ -13,6 +13,9 @@ use App\Http\Controllers\Admin\ConversationAutomation\ConversationFlowQuestionCo
 use App\Http\Controllers\Admin\ConversationAutomation\ConversationFlowStateController;
 use App\Http\Controllers\Admin\Histories\MessageHistoryController;
 use App\Http\Controllers\Admin\Inbox\InboxController;
+use App\Http\Controllers\Admin\Knowledge\KnowledgeBaseController;
+use App\Http\Controllers\Admin\Knowledge\KnowledgeDocumentController;
+use App\Http\Controllers\Admin\Knowledge\KnowledgeTestController;
 use App\Http\Controllers\Admin\Maintenance\MaintenanceController;
 use App\Http\Controllers\Admin\MessageBatches\MessageBatchController;
 use App\Http\Controllers\Admin\MessageProcessing\MessageProcessingController;
@@ -21,6 +24,7 @@ use App\Http\Controllers\Admin\MessageTemplates\MessageTemplateController;
 use App\Http\Controllers\Admin\Monitoring\MonitoringController;
 use App\Http\Controllers\Admin\Reports\ReportController;
 use App\Http\Controllers\Admin\Reports\ReportExportController;
+use App\Http\Controllers\Admin\ResponseGeneration\ReplySuggestionController;
 use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\WhatsApp\WhatsAppConnectionController;
@@ -119,6 +123,33 @@ Route::middleware(['auth', 'password.changed'])->group(function (): void {
         Route::post('/ai-insights/{insight}/approve', [ConversationInsightController::class, 'approve'])->name('ai-insights.approve');
         Route::post('/ai-insights/{insight}/reprocess', [ConversationInsightController::class, 'reprocess'])->name('ai-insights.reprocess');
         Route::get('/ai-monitoring', [AiMonitoringController::class, 'index'])->name('ai-monitoring.index');
+
+        Route::get('/reply-suggestions', [ReplySuggestionController::class, 'index'])->name('reply-suggestions.index');
+        Route::get('/reply-suggestions/{suggestion}', [ReplySuggestionController::class, 'show'])->name('reply-suggestions.show');
+        Route::post('/reply-suggestions/{suggestion}/approve', [ReplySuggestionController::class, 'approve'])->name('reply-suggestions.approve');
+        Route::post('/reply-suggestions/{suggestion}/reject', [ReplySuggestionController::class, 'reject'])->name('reply-suggestions.reject');
+        Route::post('/reply-suggestions/{suggestion}/regenerate', [ReplySuggestionController::class, 'regenerate'])->name('reply-suggestions.regenerate');
+        Route::post('/reply-suggestions/{suggestion}/take-over', [ReplySuggestionController::class, 'takeOver'])->name('reply-suggestions.take-over');
+        Route::post('/reply-suggestions/{suggestion}/feedback', [ReplySuggestionController::class, 'feedback'])->name('reply-suggestions.feedback');
+        // Etapa 9D: base oficial e aprovada.
+        Route::get('/knowledge/test', [KnowledgeTestController::class, 'index'])->name('knowledge.test');
+        Route::get('/knowledge/bases', [KnowledgeBaseController::class, 'index'])->name('knowledge.bases.index');
+        Route::get('/knowledge/bases/create', [KnowledgeBaseController::class, 'create'])->name('knowledge.bases.create');
+        Route::post('/knowledge/bases', [KnowledgeBaseController::class, 'store'])->name('knowledge.bases.store');
+        Route::get('/knowledge/bases/{base}', [KnowledgeBaseController::class, 'show'])->name('knowledge.bases.show');
+        Route::get('/knowledge/bases/{base}/edit', [KnowledgeBaseController::class, 'edit'])->name('knowledge.bases.edit');
+        Route::put('/knowledge/bases/{base}', [KnowledgeBaseController::class, 'update'])->name('knowledge.bases.update');
+        Route::post('/knowledge/bases/{base}/status', [KnowledgeBaseController::class, 'status'])->name('knowledge.bases.status');
+        Route::get('/knowledge/bases/{base}/documents/create', [KnowledgeDocumentController::class, 'create'])->name('knowledge.documents.create');
+        Route::post('/knowledge/bases/{base}/documents', [KnowledgeDocumentController::class, 'store'])->name('knowledge.documents.store');
+        Route::get('/knowledge/bases/{base}/documents/{document}', [KnowledgeDocumentController::class, 'show'])->name('knowledge.documents.show');
+        Route::get('/knowledge/bases/{base}/documents/{document}/download', [KnowledgeDocumentController::class, 'download'])->name('knowledge.documents.download');
+        Route::post('/knowledge/bases/{base}/documents/{document}/approve', [KnowledgeDocumentController::class, 'approve'])->name('knowledge.documents.approve');
+        Route::post('/knowledge/bases/{base}/documents/{document}/reject', [KnowledgeDocumentController::class, 'reject'])->name('knowledge.documents.reject');
+        Route::post('/knowledge/bases/{base}/documents/{document}/obsolete', [KnowledgeDocumentController::class, 'obsolete'])->name('knowledge.documents.obsolete');
+        Route::post('/knowledge/bases/{base}/documents/{document}/reprocess', [KnowledgeDocumentController::class, 'reprocess'])->name('knowledge.documents.reprocess');
+        Route::delete('/knowledge/bases/{base}/documents/{document}', [KnowledgeDocumentController::class, 'destroy'])->name('knowledge.documents.destroy');
+
         Route::resource('insight-topics', InsightTopicController::class)
             ->except('show')
             ->parameters(['insight-topics' => 'insightTopic']);

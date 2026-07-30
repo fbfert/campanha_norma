@@ -6,6 +6,7 @@ enum ConversationMessageOrigin: string
 {
     case Manual = 'manual';
     case Automation = 'automation';
+    case ApprovedAi = 'approved_ai';
     case Incoming = 'incoming';
     case Sync = 'sync';
 
@@ -14,6 +15,7 @@ enum ConversationMessageOrigin: string
         return match ($this) {
             self::Manual => 'Manual',
             self::Automation => 'Automatica',
+            self::ApprovedAi => 'Sugerida por IA',
             self::Incoming => 'Recebida',
             self::Sync => 'Sincronizada',
         };

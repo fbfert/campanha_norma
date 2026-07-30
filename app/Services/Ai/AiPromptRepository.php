@@ -22,11 +22,26 @@ class AiPromptRepository
         $key = match ($purpose) {
             AiRunPurpose::Classify => 'ai.classification_prompt_version',
             AiRunPurpose::ExtractInsight => 'ai.extraction_prompt_version',
+            AiRunPurpose::GenerateReply => 'ai.response.prompt_version',
         };
 
         $version = trim((string) $this->settings->get($key, 'v1'));
 
         return $version === '' ? 'v1' : $version;
+    }
+
+    /**
+     * Versao usada quando a resposta e fundamentada em base aprovada.
+     *
+     * E uma chave propria, e nao uma promocao da versao da subetapa anterior: o
+     * prompt fundamentado tem instrucoes e contrato diferentes, e misturar as duas
+     * versoes faria todo run sem base carregar um contrato que ele nao usa.
+     */
+    public function activeGroundedResponseVersion(): string
+    {
+        $version = trim((string) $this->settings->get('ai.response.grounded_prompt_version', 'v2'));
+
+        return $version === '' ? 'v2' : $version;
     }
 
     public function get(AiRunPurpose $purpose, ?string $version = null): string
@@ -71,6 +86,7 @@ class AiPromptRepository
         $folder = match ($purpose) {
             AiRunPurpose::Classify => 'classification',
             AiRunPurpose::ExtractInsight => 'extraction',
+            AiRunPurpose::GenerateReply => 'response',
         };
 
         return resource_path('ai/prompts/'.$folder);

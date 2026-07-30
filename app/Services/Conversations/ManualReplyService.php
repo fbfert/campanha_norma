@@ -2,21 +2,20 @@
 
 namespace App\Services\Conversations;
 
-use App\Enums\ConversationMessageDirection;
 use App\Enums\ConversationMessageOrigin;
-use App\Enums\ConversationMessageStatus;
 use App\Jobs\SendManualConversationReplyJob;
 use App\Models\Conversation;
 use App\Models\ConversationMessage;
 use App\Models\User;
-use App\Services\AuditLogger;
 use App\Services\SystemSettingService;
-use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 class ManualReplyService
 {
-    public function __construct(private readonly SystemSettingService $settings, private readonly AuditLogger $audit, private readonly ConversationEventService $events) {}
+    public function __construct(
+        private readonly SystemSettingService $settings,
+        private readonly ConversationReplyService $replies,
+    ) {}
 
     public function request(Conversation $conversation, User $user, string $body): ConversationMessage
     {
@@ -39,24 +38,19 @@ class ManualReplyService
             throw ValidationException::withMessages(['conversation' => 'Assuma a conversa antes de responder.']);
         }
 
-        $message = ConversationMessage::create([
-            'conversation_id' => $conversation->id,
-            'contact_id' => $conversation->contact_id,
-            'direction' => ConversationMessageDirection::Outgoing,
-            'message_type' => 'text',
-            'provider' => config('whatsapp.provider', 'web'),
-            'origin' => ConversationMessageOrigin::Manual,
-            'request_id' => (string) Str::uuid(),
-            'sender_phone_snapshot' => null,
-            'recipient_phone_snapshot' => $conversation->contact->phone_normalized,
-            'sender_name_snapshot' => $user->name,
-            'body' => $body,
-            'status' => ConversationMessageStatus::Pending,
-            'created_by' => $user->id,
-        ]);
-
-        $this->events->record($conversation, 'reply_requested', 'Resposta manual solicitada.', $message, $user);
-        $this->audit->log('conversation.manual_reply_requested', 'Resposta manual solicitada.', $message, null, ['conversation_id' => $conversation->id], $user);
+        // As validacoes acima sao especificas da resposta manual e continuam
+        // aqui. A criacao da mensagem passa pelo servico de saida compartilhado,
+        // com exatamente os mesmos campos, evento, auditoria e fila de antes.
+        $message = $this->replies->createPending(
+            conversation: $conversation,
+            body: $body,
+            origin: ConversationMessageOrigin::Manual,
+            user: $user,
+            eventType: 'reply_requested',
+            eventDescription: 'Resposta manual solicitada.',
+            auditAction: 'conversation.manual_reply_requested',
+            auditDescription: 'Resposta manual solicitada.',
+        );
 
         SendManualConversationReplyJob::dispatch($message->id)->onQueue('whatsapp-manual-replies');
 

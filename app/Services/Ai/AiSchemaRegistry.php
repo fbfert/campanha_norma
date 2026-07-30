@@ -6,6 +6,7 @@ use App\Enums\AiRunPurpose;
 use App\Enums\InsightSentiment;
 use App\Enums\InsightUrgency;
 use App\Enums\MessageClassification;
+use App\Enums\ReplySuggestionAction;
 use App\Services\SystemSettingService;
 use RuntimeException;
 
@@ -25,9 +26,19 @@ class AiSchemaRegistry
         $key = match ($purpose) {
             AiRunPurpose::Classify => 'ai.classification_schema_version',
             AiRunPurpose::ExtractInsight => 'ai.extraction_schema_version',
+            AiRunPurpose::GenerateReply => 'ai.response.schema_version',
         };
 
         return max(1, (int) $this->settings->get($key, 1));
+    }
+
+    /**
+     * Versao do schema usada quando a resposta e fundamentada em base aprovada.
+     * Chave propria pelo mesmo motivo do prompt fundamentado.
+     */
+    public function activeGroundedResponseVersion(): int
+    {
+        return max(2, (int) $this->settings->get('ai.response.grounded_schema_version', 2));
     }
 
     public function name(AiRunPurpose $purpose, int $version): string
@@ -43,6 +54,7 @@ class AiSchemaRegistry
         return match ($purpose) {
             AiRunPurpose::Classify => $this->classification($version),
             AiRunPurpose::ExtractInsight => $this->extraction($version),
+            AiRunPurpose::GenerateReply => $this->response($version),
         };
     }
 
@@ -62,6 +74,90 @@ class AiSchemaRegistry
                 'confidence' => ['type' => 'number', 'minimum' => 0, 'maximum' => 1],
                 'requires_human_review' => ['type' => 'boolean'],
                 'review_reason' => ['type' => ['string', 'null'], 'maxLength' => 255],
+            ],
+        ];
+    }
+
+    /**
+     * Schema da resposta gerada. Nao existe campo para dado factual sobre a
+     * pessoa representada: sem base aprovada, o modelo nao tem onde inventar.
+     *
+     * @return array<string, mixed>
+     */
+    private function response(int $version): array
+    {
+        return match ($version) {
+            1 => $this->responseV1(),
+            2 => $this->responseV2(),
+            default => throw new RuntimeException("Versao de schema de resposta nao suportada: {$version}."),
+        };
+    }
+
+    /** @return array<string, mixed> */
+    private function responseV1(): array
+    {
+        return [
+            'type' => 'object',
+            'additionalProperties' => false,
+            'required' => ['action', 'reply_text', 'follow_up_type', 'topic', 'confidence', 'requires_human_review', 'handoff_reason'],
+            'properties' => [
+                'action' => ['type' => 'string', 'enum' => ReplySuggestionAction::values()],
+                'reply_text' => ['type' => ['string', 'null'], 'maxLength' => 1000],
+                'follow_up_type' => ['type' => ['string', 'null'], 'maxLength' => 60],
+                'topic' => ['type' => ['string', 'null'], 'maxLength' => 120],
+                'confidence' => ['type' => 'number', 'minimum' => 0, 'maximum' => 1],
+                'requires_human_review' => ['type' => 'boolean'],
+                'handoff_reason' => ['type' => ['string', 'null'], 'maxLength' => 120],
+            ],
+        ];
+    }
+
+    /**
+     * Resposta fundamentada em base aprovada.
+     *
+     * `grounded` e `citations` sao devolvidos pelo modelo como declaracao, e a
+     * validacao de fundamentacao confere depois se ela se sustenta. Nao existe
+     * campo para o modelo afirmar que dispensa evidencia.
+     *
+     * @return array<string, mixed>
+     */
+    private function responseV2(): array
+    {
+        return [
+            'type' => 'object',
+            'additionalProperties' => false,
+            'required' => [
+                'action', 'reply_text', 'follow_up_type', 'topic', 'grounded',
+                'citations', 'confidence', 'requires_human_review', 'handoff_reason',
+            ],
+            'properties' => [
+                'action' => ['type' => 'string', 'enum' => ReplySuggestionAction::values()],
+                'reply_text' => ['type' => ['string', 'null'], 'maxLength' => 1000],
+                'follow_up_type' => ['type' => ['string', 'null'], 'maxLength' => 60],
+                'topic' => ['type' => ['string', 'null'], 'maxLength' => 120],
+                'grounded' => ['type' => 'boolean'],
+                'citations' => [
+                    'type' => 'array',
+                    'maxItems' => 8,
+                    'items' => [
+                        'type' => 'object',
+                        'additionalProperties' => false,
+                        'required' => ['document_id', 'chunk_id', 'page', 'section'],
+                        'properties' => [
+                            'document_id' => ['type' => 'integer', 'minimum' => 1],
+                            'chunk_id' => ['type' => 'string', 'maxLength' => 120],
+                            // Pagina e secao existem no contrato para o modelo
+                            // poder ecoar o que leu. O valor gravado na citacao vem
+                            // do trecho recuperado, nao daqui: metadado de
+                            // procedencia nao e escolha do modelo.
+                            'page' => ['type' => ['integer', 'null'], 'minimum' => 1],
+                            'section' => ['type' => ['string', 'null'], 'maxLength' => 255],
+                        ],
+                    ],
+                ],
+                'confidence' => ['type' => 'number', 'minimum' => 0, 'maximum' => 1],
+                'requires_human_review' => ['type' => 'boolean'],
+                'handoff_reason' => ['type' => ['string', 'null'], 'maxLength' => 120],
             ],
         ];
     }

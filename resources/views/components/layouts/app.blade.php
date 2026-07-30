@@ -59,6 +59,15 @@
                     <a href="{{ route('admin.ai-insights.index') }}" @class(['active' => request()->routeIs('admin.ai-insights.*')])>Interpretacao por IA</a>
                     <a href="{{ route('admin.insight-topics.index') }}" @class(['active' => request()->routeIs('admin.insight-topics.*')])>Temas de insights</a>
                 @endcan
+                @can('reply_suggestions.view')
+                    <a href="{{ route('admin.reply-suggestions.index') }}" @class(['active' => request()->routeIs('admin.reply-suggestions.*')])>Sugestoes de resposta</a>
+                @endcan
+                @can('knowledge.view')
+                    <a href="{{ route('admin.knowledge.bases.index') }}" @class(['active' => request()->routeIs('admin.knowledge.bases.*') || request()->routeIs('admin.knowledge.documents.*')])>Base de conhecimento</a>
+                @endcan
+                @can('knowledge.test_retrieval')
+                    <a href="{{ route('admin.knowledge.test') }}" @class(['active' => request()->routeIs('admin.knowledge.test')])>Teste de busca na base</a>
+                @endcan
                 @can('ai_insights.view_monitoring')
                     <a href="{{ route('admin.ai-monitoring.index') }}" @class(['active' => request()->routeIs('admin.ai-monitoring.*')])>Monitoramento de IA</a>
                 @endcan
@@ -176,6 +185,15 @@
                             'Inicio / Pesquisa conversacional / Temas / Novo' => ['dashboard', null, 'admin.insight-topics.index', null],
                             'Inicio / Pesquisa conversacional / Temas / Editar' => ['dashboard', null, 'admin.insight-topics.index', null],
                             'Inicio / Pesquisa conversacional / Monitoramento de IA' => ['dashboard', null, null],
+                            'Inicio / Pesquisa conversacional / Sugestoes' => ['dashboard', null, null],
+                            'Inicio / Pesquisa conversacional / Sugestoes / Detalhes' => ['dashboard', null, 'admin.reply-suggestions.index', null],
+                            'Inicio / Base de conhecimento' => ['dashboard', null],
+                            'Inicio / Base de conhecimento / Nova base' => ['dashboard', 'admin.knowledge.bases.index', null],
+                            'Inicio / Base de conhecimento / Editar base' => ['dashboard', 'admin.knowledge.bases.index', null],
+                            'Inicio / Base de conhecimento / Base' => ['dashboard', 'admin.knowledge.bases.index', null],
+                            'Inicio / Base de conhecimento / Base / Novo documento' => ['dashboard', 'admin.knowledge.bases.index', null, null],
+                            'Inicio / Base de conhecimento / Base / Documento' => ['dashboard', 'admin.knowledge.bases.index', null, null],
+                            'Inicio / Base de conhecimento / Teste de busca' => ['dashboard', 'admin.knowledge.bases.index', null],
                         ];
 
                         $breadcrumbTrail = $breadcrumbs ?? 'Inicio';

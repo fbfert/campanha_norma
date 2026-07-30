@@ -2,10 +2,20 @@
 
 namespace App\Providers;
 
+use App\Contracts\AnswerGroundingValidator;
+use App\Contracts\ConversationResponseGenerator;
+use App\Contracts\EmbeddingProvider;
+use App\Contracts\KnowledgeBaseProvider;
+use App\Contracts\KnowledgeRetriever;
 use App\Events\ConversationMessageEvaluated;
 use App\Listeners\DispatchConversationInterpretation;
+use App\Listeners\DispatchConversationReplyGeneration;
 use App\Models\Conversation;
 use App\Models\User;
+use App\Services\Knowledge\GroundingValidator;
+use App\Services\Knowledge\KnowledgeProviderManager;
+use App\Services\Knowledge\LocalKnowledgeRetriever;
+use App\Services\ResponseGeneration\AiConversationResponseGenerator;
 use App\Services\SystemSettingService;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Event;
@@ -19,7 +29,17 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // Etapa 9C: o gerador de resposta e resolvido por contrato, para que a
+        // troca de implementacao nao exija tocar em nenhum servico.
+        $this->app->bind(ConversationResponseGenerator::class, AiConversationResponseGenerator::class);
+
+        // Etapa 9D: os quatro contratos de conhecimento sao resolvidos aqui. Os
+        // provedores passam pelo manager para que a troca seja uma mudanca de
+        // configuracao, e nao de codigo.
+        $this->app->bind(KnowledgeRetriever::class, LocalKnowledgeRetriever::class);
+        $this->app->bind(AnswerGroundingValidator::class, GroundingValidator::class);
+        $this->app->bind(KnowledgeBaseProvider::class, fn ($app) => $app->make(KnowledgeProviderManager::class)->provider());
+        $this->app->bind(EmbeddingProvider::class, fn ($app) => $app->make(KnowledgeProviderManager::class)->embeddings());
     }
 
     /**
@@ -122,10 +142,27 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('ai_insights.reprocess', fn (User $user): bool => $user->hasPermission('ai_insights.reprocess'));
         Gate::define('ai_insights.manage_taxonomy', fn (User $user): bool => $user->hasPermission('ai_insights.manage_taxonomy'));
         Gate::define('ai_insights.view_monitoring', fn (User $user): bool => $user->hasPermission('ai_insights.view_monitoring'));
+        Gate::define('reply_suggestions.view', fn (User $user): bool => $user->hasPermission('reply_suggestions.view'));
+        Gate::define('reply_suggestions.approve', fn (User $user): bool => $user->hasPermission('reply_suggestions.approve'));
+        Gate::define('reply_suggestions.reject', fn (User $user): bool => $user->hasPermission('reply_suggestions.reject'));
+        Gate::define('reply_suggestions.regenerate', fn (User $user): bool => $user->hasPermission('reply_suggestions.regenerate'));
+        Gate::define('reply_suggestions.feedback', fn (User $user): bool => $user->hasPermission('reply_suggestions.feedback'));
+        Gate::define('reply_suggestions.manage_settings', fn (User $user): bool => $user->hasPermission('reply_suggestions.manage_settings'));
+        Gate::define('knowledge.view', fn (User $user): bool => $user->hasPermission('knowledge.view'));
+        Gate::define('knowledge.manage_bases', fn (User $user): bool => $user->hasPermission('knowledge.manage_bases'));
+        Gate::define('knowledge.upload_documents', fn (User $user): bool => $user->hasPermission('knowledge.upload_documents'));
+        Gate::define('knowledge.approve_documents', fn (User $user): bool => $user->hasPermission('knowledge.approve_documents'));
+        Gate::define('knowledge.delete_documents', fn (User $user): bool => $user->hasPermission('knowledge.delete_documents'));
+        Gate::define('knowledge.download_documents', fn (User $user): bool => $user->hasPermission('knowledge.download_documents'));
+        Gate::define('knowledge.test_retrieval', fn (User $user): bool => $user->hasPermission('knowledge.test_retrieval'));
+        Gate::define('knowledge.manage_settings', fn (User $user): bool => $user->hasPermission('knowledge.manage_settings'));
 
         // Etapa 9B: a interpretacao observa o ponto de extensao da 9A sem que a
         // 9A precise conhecer a camada de IA.
         Event::listen(ConversationMessageEvaluated::class, DispatchConversationInterpretation::class);
+
+        // Etapa 9C: geracao de resposta observa o mesmo ponto de extensao.
+        Event::listen(ConversationMessageEvaluated::class, DispatchConversationReplyGeneration::class);
 
         view()->composer('*', function ($view): void {
             $settings = app(SystemSettingService::class);
