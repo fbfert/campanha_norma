@@ -56,6 +56,73 @@ body {
     opacity: .55;
 }
 
+/*
+    Menu agrupado. Cada grupo e um `<details>` nativo: abrir e fechar, foco por
+    teclado e anuncio em leitor de tela ja vem prontos, sem JavaScript.
+*/
+.sidebar-nav .nav-root {
+    font-weight: 600;
+}
+
+.nav-group {
+    margin: 2px 0;
+}
+
+.nav-group > summary {
+    border-radius: 8px;
+    color: #9fc0d8;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    list-style: none;
+    padding: 10px 12px;
+    text-transform: uppercase;
+    user-select: none;
+}
+
+.nav-group > summary::-webkit-details-marker {
+    display: none;
+}
+
+/* Seta desenhada com borda: sem fonte de icone e sem imagem para carregar. */
+.nav-group > summary::before {
+    border-right: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    content: "";
+    display: inline-block;
+    height: 6px;
+    margin-right: 10px;
+    transform: rotate(-45deg);
+    transition: transform .15s ease;
+    width: 6px;
+}
+
+.nav-group[open] > summary::before {
+    transform: rotate(45deg);
+}
+
+.nav-group > summary:hover {
+    background: #1f5b7a;
+    color: #fff;
+}
+
+.nav-group > a {
+    font-size: 14px;
+    margin-left: 10px;
+    padding-left: 18px;
+}
+
+/*
+    Um grupo fechado que contem a tela atual nao existe na navegacao normal,
+    porque o grupo ativo abre sozinho. Mas o usuario pode fechar a mao, e nesse
+    caso o cabecalho precisa continuar dizendo onde ele esta.
+*/
+.nav-group:not([open]) > summary:has(+ a.active),
+.nav-group:not([open]):focus-within > summary {
+    color: #fff;
+}
+
 .main {
     min-width: 0;
 }

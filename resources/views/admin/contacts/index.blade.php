@@ -15,6 +15,10 @@
         <a class="btn ghost" href="{{ route('admin.contacts.index') }}">Limpar</a>
         @can('contacts.export')<a class="btn secondary" href="{{ route('admin.contacts.export', request()->query()) }}">Exportar CSV</a>@endcan
         @can('contacts.create')<a class="btn" href="{{ route('admin.contacts.create') }}">Novo contato</a>@endcan
+        {{-- A importacao saiu do menu lateral e passou a viver aqui, junto do
+             resto do que se faz com contatos. Sem este botao ela ficaria sem
+             nenhum caminho de acesso. --}}
+        @can('contacts.import')<a class="btn secondary" href="{{ route('admin.contacts.import') }}">Importar</a>@endcan
     </form>
     <section class="card table-wrap">
         @if($contacts->isEmpty())
