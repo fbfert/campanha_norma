@@ -38,7 +38,7 @@
                         <td>@foreach($contact->tags as $tag)<span style="display:inline-block;color:#fff;background:{{ $tag->color }};border-radius:6px;padding:2px 6px;margin:1px;">{{ $tag->name }}</span>@endforeach</td>
                         <td>{{ $contact->status->label() }}</td>
                         <td>{{ $contact->consent_status->label() }}</td>
-                        <td>@if($contact->do_not_contact)<strong style="color:#b42318;">Não contatar</strong>@else Não @endif</td>
+                        <td>@if($contact->do_not_contact)<strong style="color:var(--danger);">Não contatar</strong>@else Não @endif</td>
                         <td>{{ $contact->last_contacted_at?->format($dateTimeFormat) ?? '-' }}</td>
                         <td>{{ $contact->created_at->format($dateFormat) }}</td>
                         <td class="actions"><a class="btn ghost" href="{{ route('admin.contacts.show', $contact) }}">Ver</a>@can('contacts.update')<a class="btn ghost" href="{{ route('admin.contacts.edit', $contact) }}">Editar</a>@endcan</td>

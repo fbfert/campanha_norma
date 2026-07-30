@@ -1,0 +1,140 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Services\SystemSettingService;
+use Illuminate\Contracts\View\View;
+
+/**
+ * Manual de uso.
+ *
+ * Duas telas sobre a mesma coisa: o manual, que se le de cima a baixo, e o
+ * mapa mental, que mostra o sistema inteiro numa pagina so. O roteiro das
+ * secoes fica aqui, e nao duplicado nas duas views, porque duas listas iguais
+ * mantidas a mao divergem na primeira alteracao.
+ *
+ * Nao ha permissao especifica: quem entrou no sistema pode ler o manual do
+ * sistema. Exigir permissao para ler a documentacao esconderia justamente de
+ * quem esta comecando.
+ */
+class ManualController extends Controller
+{
+    public function __construct(private readonly SystemSettingService $settings) {}
+
+    public function index(): View
+    {
+        return view('manual.index', [
+            'sections' => $this->sections(),
+            'operational' => $this->operational(),
+        ]);
+    }
+
+    public function mindMap(): View
+    {
+        return view('manual.mind-map', [
+            'sections' => $this->sections(),
+        ]);
+    }
+
+    /**
+     * O roteiro do sistema, na ordem em que o trabalho acontece de verdade:
+     * primeiro se conecta, depois se reune contato, depois se fala, depois se
+     * escuta, e so no fim se le o resultado.
+     *
+     * @return list<array{id: string, icon: string, title: string, summary: string, topics: list<string>}>
+     */
+    private function sections(): array
+    {
+        return [
+            [
+                'id' => 'preparar',
+                'icon' => 'plug',
+                'title' => 'Preparar o sistema',
+                'summary' => 'O que precisa estar de pe antes de qualquer mensagem sair.',
+                'topics' => ['Conexao do WhatsApp', 'Provedor de IA', 'Usuarios e perfis', 'Configuracoes gerais'],
+            ],
+            [
+                'id' => 'contatos',
+                'icon' => 'users',
+                'title' => 'Reunir os contatos',
+                'summary' => 'Como a base de pessoas entra no sistema e como ela se mantem limpa.',
+                'topics' => ['Importar planilha', 'Conferir antes de confirmar', 'Etiquetas', 'Nao contatar'],
+            ],
+            [
+                'id' => 'envios',
+                'icon' => 'send',
+                'title' => 'Falar com muita gente',
+                'summary' => 'Modelo, lote e processamento: o caminho de um disparo em massa.',
+                'topics' => ['Modelo de mensagem', 'Lote e campanha', 'Validar antes de disparar', 'Processamento', 'Historico'],
+            ],
+            [
+                'id' => 'atendimento',
+                'icon' => 'inbox',
+                'title' => 'Atender quem responde',
+                'summary' => 'A caixa de conversas, onde o contato deixa de ser linha de planilha.',
+                'topics' => ['Conversas', 'Responder', 'Notas internas', 'Sugestoes de resposta'],
+            ],
+            [
+                'id' => 'pesquisa',
+                'icon' => 'poll',
+                'title' => 'Perguntar e escutar',
+                'summary' => 'A pesquisa conversacional: pedir permissao, fazer uma pergunta, parar.',
+                'topics' => ['Fluxo e perguntas', 'Pedido de permissao', 'Limites da automacao', 'Acompanhamento'],
+            ],
+            [
+                'id' => 'inteligencia',
+                'icon' => 'sparkles',
+                'title' => 'Deixar a IA ajudar',
+                'summary' => 'A IA interpreta e sugere. Quem decide e publica continua sendo pessoa.',
+                'topics' => ['Interpretacao', 'Taxonomia de temas', 'Base de conhecimento', 'Qualidade e monitoramento'],
+            ],
+            [
+                'id' => 'relatorios',
+                'icon' => 'chart',
+                'title' => 'Ler o resultado',
+                'summary' => 'Numeros com denominador visivel, e nao porcentagem solta.',
+                'topics' => ['Painel da pesquisa', 'Temas e demandas', 'Qualidade das perguntas', 'Exportacoes'],
+            ],
+            [
+                'id' => 'governanca',
+                'icon' => 'shield',
+                'title' => 'Cuidar dos dados',
+                'summary' => 'O que o sistema guarda, por quanto tempo, e quem viu o que.',
+                'topics' => ['Governanca', 'Auditoria', 'Saude do sistema', 'Manutencao e retencao'],
+            ],
+            [
+                'id' => 'limites',
+                'icon' => 'alert',
+                'title' => 'O que o sistema nao faz',
+                'summary' => 'Limites que estao no codigo, e nao apenas no combinado.',
+                'topics' => ['Nunca se passa por pessoa', 'Nunca promete nada', 'Opt-out imediato', 'Sem microdirecionamento'],
+            ],
+        ];
+    }
+
+    /**
+     * Valores operacionais lidos na hora, e nao escritos no texto.
+     *
+     * Um manual que diz "o limite e tres mensagens" vira mentira no dia em que
+     * alguem muda a configuracao para duas, e ninguem lembra de voltar aqui
+     * para corrigir. Entao o manual mostra o que esta valendo agora.
+     *
+     * @return array<string, string>
+     */
+    private function operational(): array
+    {
+        return [
+            'max_automated_messages' => (string) $this->settings->get('conversation_automation.max_automated_messages', '-'),
+            'validity_hours' => (string) $this->settings->get('conversation_automation.default_validity_hours', '-'),
+            'window_start' => (string) $this->settings->get('conversation_automation.window_start', '-'),
+            'window_end' => (string) $this->settings->get('conversation_automation.window_end', '-'),
+            'transparency_text' => (string) $this->settings->get('conversation_automation.transparency_text', ''),
+            'minimum_cell_size' => (string) $this->settings->get('analytics.minimum_cell_size', '-'),
+            'default_period_days' => (string) $this->settings->get('analytics.default_period_days', '-'),
+            'export_expiration_hours' => (string) $this->settings->get('analytics.export_expiration_hours', '-'),
+            'automation_enabled' => (string) $this->settings->get('conversation_automation.enabled', '0'),
+            'auto_send_enabled' => (string) $this->settings->get('conversation_automation.auto_send_enabled', '0'),
+            'ai_enabled' => (string) $this->settings->get('ai.enabled', '0'),
+        ];
+    }
+}

@@ -26,7 +26,7 @@
         <p class="muted">Nenhuma etiqueta ativa cadastrada.</p>
     @endforelse
 </fieldset>
-<fieldset class="card" style="margin-bottom:16px;border-color:#f2aaa6;">
+<fieldset class="card" style="margin-bottom:16px;border-color:var(--danger-border);">
     <legend>Não contatar</legend>
     <label style="display:flex;gap:8px;align-items:center;font-weight:400;">
         <input type="checkbox" name="do_not_contact" value="1" @checked(old('do_not_contact', $contact->do_not_contact ?? false)) style="width:auto;min-height:auto;">

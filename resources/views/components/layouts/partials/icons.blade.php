@@ -42,7 +42,9 @@
         <g id="i-sparkles"><path d="m12 3 1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M18.5 16.5 19 18l1.5.5-1.5.5-.5 1.5-.5-1.5L16.5 18l1.5-.5z"/></g>
         <g id="i-tree"><path d="M4 6h5"/><path d="M4 6v12h5"/><path d="M4 12h5"/><path d="M11 4h9"/><path d="M11 10h9"/><path d="M11 16h9"/></g>
         <g id="i-book"><path d="M5 4.5A1.5 1.5 0 0 1 6.5 3H19v14H6.5A1.5 1.5 0 0 0 5 18.5z"/><path d="M5 18.5A1.5 1.5 0 0 1 6.5 17H19v4H6.5A1.5 1.5 0 0 1 5 19.5z"/></g>
+        <g id="i-mind-map"><circle cx="5" cy="12" r="2.2"/><circle cx="18.5" cy="5.5" r="2.2"/><circle cx="18.5" cy="12" r="2.2"/><circle cx="18.5" cy="18.5" r="2.2"/><path d="M7.2 12h2.3v-6h6.8"/><path d="M7.2 12h9.1"/><path d="M7.2 12h2.3v6h6.8"/></g>
         <g id="i-search"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.4-4.4"/></g>
+        <g id="i-refresh"><path d="M20 12a8 8 0 1 1-2.6-5.9"/><path d="M20 4v4.5h-4.5"/></g>
         <g id="i-gauge"><path d="M4 17a8 8 0 1 1 16 0"/><path d="m12 13 4-3.5"/><circle cx="12" cy="14" r="1.4"/></g>
         <g id="i-activity"><path d="M3 12h4l2.5-7 5 14 2.5-7h4"/></g>
         <g id="i-plug"><path d="M9 3v6"/><path d="M15 3v6"/><path d="M6 9h12v3a6 6 0 0 1-12 0z"/><path d="M12 18v3"/></g>

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin\Inbox;
 
+use App\Enums\ContactStatus;
 use App\Enums\ConversationPriority;
 use App\Enums\ConversationStatus;
 use App\Enums\ConversationSyncStatus;
@@ -13,12 +14,14 @@ use App\Models\Conversation;
 use App\Models\ConversationNote;
 use App\Models\ConversationSyncRun;
 use App\Models\ConversationTag;
+use App\Models\Tag;
 use App\Models\User;
 use App\Services\AuditLogger;
 use App\Services\Contacts\ContactDataService;
 use App\Services\Contacts\ContactDuplicateService;
 use App\Services\Contacts\PhoneNormalizerService;
 use App\Services\Conversations\ConversationEventService;
+use App\Services\Conversations\ConversationResolverService;
 use App\Services\Conversations\ManualReplyService;
 use App\Services\Conversations\ReplyInterruptionService;
 use App\Services\SystemSettingService;
@@ -78,6 +81,109 @@ class InboxController extends Controller
             'latestSync' => ConversationSyncRun::latest()->first(),
             'syncActive' => ConversationSyncRun::whereIn('status', [ConversationSyncStatus::Pending->value, ConversationSyncStatus::Running->value])->exists(),
         ]);
+    }
+
+    /**
+     * Escolher um contato para iniciar uma conversa.
+     *
+     * A tela mostra tambem quem nao pode ser contatado, marcado e com o motivo,
+     * em vez de sumir com essas pessoas da lista. Sumir esconde o motivo: quem
+     * procura um contato e nao o encontra tende a cadastra-lo de novo, e ai o
+     * pedido de nao contatar se perde num registro duplicado.
+     */
+    public function create(Request $request): View
+    {
+        abort_unless($request->user()->can('inbox.reply') && $request->user()->can('contacts.view'), 403);
+
+        $contacts = Contact::query()
+            ->with('tags')
+            ->when($request->filled('q'), function ($query) use ($request): void {
+                $q = trim((string) $request->query('q'));
+                $digits = preg_replace('/\D+/', '', $q);
+                $query->where(function ($query) use ($q, $digits): void {
+                    $query->where('name', 'like', "%{$q}%")
+                        ->orWhere('first_name', 'like', "%{$q}%")
+                        ->orWhere('email', 'like', "%{$q}%")
+                        ->orWhere('phone', 'like', "%{$q}%");
+                    if ($digits !== '') {
+                        $query->orWhere('phone_normalized', 'like', "%{$digits}%");
+                    }
+                });
+            })
+            ->when($request->filled('city'), fn ($query) => $query->where('city', 'like', '%'.trim((string) $request->query('city')).'%'))
+            ->when($request->filled('state'), fn ($query) => $query->where('state', 'like', '%'.trim((string) $request->query('state')).'%'))
+            ->when($request->filled('status'), fn ($query) => $query->where('status', $request->string('status')))
+            ->when($request->filled('tag_id'), fn ($query) => $query->whereHas('tags', fn ($tag) => $tag->where('tags.id', $request->integer('tag_id'))))
+            // Padrao ligado: quem abre esta tela quer falar com alguem, e o
+            // caminho comum nao deveria comecar por uma lista cheia de gente
+            // com quem nao se pode falar.
+            ->when($request->boolean('only_eligible', true), function ($query): void {
+                $query->where('do_not_contact', false)
+                    ->where('status', ContactStatus::Active->value)
+                    ->whereNotNull('phone_normalized');
+            })
+            ->orderBy('name')
+            ->paginate(20)
+            ->withQueryString();
+
+        return view('admin.inbox.create', [
+            'contacts' => $contacts,
+            'tags' => Tag::orderBy('name')->get(),
+            'statuses' => ContactStatus::cases(),
+            'filters' => $request->only(['q', 'city', 'state', 'status', 'tag_id', 'only_eligible']),
+        ]);
+    }
+
+    /**
+     * Abrir a conversa com o contato escolhido.
+     *
+     * Isto nao envia nada. Cria (ou reencontra) a conversa e leva para a tela
+     * dela, onde a primeira mensagem e escrita e revisada como qualquer outra.
+     * A conversa ja nasce atribuida a quem a iniciou, senao a primeira tentativa
+     * de responder esbarraria em "assuma a conversa antes de responder".
+     */
+    public function store(Request $request, ConversationResolverService $resolver, ConversationEventService $events, AuditLogger $audit): RedirectResponse
+    {
+        abort_unless($request->user()->can('inbox.reply') && $request->user()->can('contacts.view'), 403);
+
+        $validated = $request->validate(['contact_id' => ['required', 'integer', 'exists:contacts,id']]);
+        $contact = Contact::findOrFail($validated['contact_id']);
+
+        if ($contact->do_not_contact) {
+            throw ValidationException::withMessages(['contact_id' => 'Este contato esta marcado como nao contatar.']);
+        }
+
+        if ($contact->status !== ContactStatus::Active) {
+            throw ValidationException::withMessages(['contact_id' => 'Somente contatos ativos podem receber uma conversa.']);
+        }
+
+        if (blank($contact->phone_normalized)) {
+            throw ValidationException::withMessages(['contact_id' => 'Este contato nao tem telefone valido.']);
+        }
+
+        $conversation = $resolver->resolve($contact, 'principal', false, $contact->phone_normalized);
+        $existed = ! $conversation->wasRecentlyCreated;
+
+        if ($conversation->assigned_user_id === null) {
+            $conversation->update(['assigned_user_id' => $request->user()->id]);
+            $conversation->assignments()->create([
+                'assigned_user_id' => $request->user()->id,
+                'assigned_by' => $request->user()->id,
+                'assigned_at' => now(),
+                'reason' => 'Conversa iniciada pelo operador.',
+            ]);
+        }
+
+        if (! $existed) {
+            $events->record($conversation, 'created', 'Conversa iniciada pelo operador.', null, $request->user());
+            $audit->log('conversation.started', 'Conversa iniciada pelo operador.', $conversation, null, ['contact_id' => $contact->id], $request->user());
+        }
+
+        return redirect()
+            ->route('admin.conversations.show', $conversation)
+            ->with('success', $existed
+                ? 'Ja havia uma conversa aberta com este contato.'
+                : 'Conversa iniciada. Escreva a primeira mensagem abaixo.');
     }
 
     public function show(Request $request, Conversation $conversation, ConversationEventService $events, AuditLogger $audit): View

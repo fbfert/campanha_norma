@@ -1,7 +1,5 @@
 @import 'tailwindcss';
 
-@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
-@source '../../storage/framework/views/*.php';
 @source '../**/*.blade.php';
 @source '../**/*.js';
 
@@ -9,10 +7,26 @@
     O import do Tailwind aparecia duas vezes neste arquivo, com blocos de
     `@source` repetidos - sobra de alguma juncao antiga. Ficou um so.
 
-    O sistema nao usa classes utilitarias: as telas escrevem `card`, `btn`,
-    `muted`. Isso e uma escolha boa e foi mantida, porque trocar sessenta telas
-    por utilitarias seria uma reescrita grande, arriscada e sem ganho visivel
-    para quem usa. O que muda aqui e o que essas classes valem.
+    O sistema nao usa classes utilitarias nas telas: elas escrevem `card`,
+    `btn`, `muted`. Isso e uma escolha boa e foi mantida, porque trocar sessenta
+    telas por utilitarias seria uma reescrita grande, arriscada e sem ganho
+    visivel para quem usa. O que muda aqui e o que essas classes valem.
+
+    A unica excecao e a paginacao, que vem do Laravel escrita em utilitarias.
+
+    Havia aqui duas linhas de `@source` que nao faziam nada: uma apontando para
+    a view de paginacao dentro de `vendor/` e outra para `storage/framework/views`.
+    A primeira era ignorada porque o Tailwind 4 nao varre caminho que esta no
+    `.gitignore`, e `/vendor` esta. A segunda funcionava por acidente: as classes
+    da paginacao chegavam pela view ja compilada em cache. Isso tornava o CSS
+    gerado dependente do estado do cache - `optimize:clear` antes de um build
+    fazia a paginacao sair sem estilo, e ninguem descobriria ate abrir a segunda
+    pagina de uma lista.
+
+    A view de paginacao foi publicada em `resources/views/vendor/pagination`, que
+    ja e varrido pela linha abaixo. Fica versionada, auditavel e independente do
+    cache. O preco e conhecido: mudanca futura do Laravel nessa marcacao nao
+    chega sozinha, e precisa ser trazida a mao.
 */
 
 /*
@@ -26,43 +40,58 @@
 :root {
     color-scheme: light;
 
-    /* Superficie e traco */
-    --bg: #f5f7fa;
-    --surface: #ffffff;
-    --surface-sunken: #f0f3f7;
-    --border: #e3e8ef;
-    --border-strong: #cdd5e0;
+    /*
+        Superficie e traco.
 
-    /* Texto */
-    --text: #101828;
-    --text-muted: #667085;
-    --text-inverse: #ffffff;
+        O cinza-azulado saiu e entrou um creme quente. Duas razoes praticas,
+        alem do gosto: branco puro em tela cheia cansa a vista de quem passa o
+        dia lendo tabela, e o fundo levemente quente faz o texto preto parecer
+        mais assentado sem precisar de sombra.
 
-    /* Marca. O azul-petroleo ja era a identidade do sistema; ficou mais
-       saturado para dar contraste suficiente sobre branco. */
-    --accent: #0e6f8e;
-    --accent-strong: #0a5670;
-    --accent-soft: #e6f4f9;
+        As bordas sao a cor do texto com pouca opacidade, e nao um cinza fixo.
+        Assim elas continuam pertencendo a paleta se o fundo mudar de tom.
+    */
+    --bg: #ece9e1;
+    --surface: #f7f5ee;
+    --surface-sunken: #e6e2d8;
+    --surface-hover: #f1efe7;
+    --border: rgba(25, 23, 19, .12);
+    --border-strong: rgba(25, 23, 19, .24);
+
+    /* Texto. Preto quente: #191713 em vez de um preto azulado. */
+    --text: #191713;
+    --text-muted: #6f6a5c;
+    --text-inverse: #f7f5ee;
+
+    /* Marca. O azul-petroleo estava saturado demais - era a cor de todo botao
+       e de todo link, entao pesava na tela inteira. Trocado por um azul fosco,
+       que se destaca do creme sem gritar. */
+    --accent: #3e63a8;
+    --accent-strong: #2f4d86;
+    --accent-soft: #eaeff8;
     --accent-contrast: #ffffff;
 
-    /* Barra lateral */
-    --nav-bg: #0f2b41;
-    --nav-text: #b9cddd;
-    --nav-text-strong: #ffffff;
-    --nav-hover: rgba(255, 255, 255, .07);
-    --nav-active: rgba(56, 168, 210, .16);
+    /* Barra lateral. Carvao quente, da mesma familia do texto. */
+    --nav-bg: #191713;
+    --nav-text: #a29c8f;
+    --nav-text-strong: #f7f5ee;
+    --nav-muted: #8e8880;
+    --nav-hover: rgba(247, 245, 238, .06);
+    --nav-active: rgba(143, 176, 230, .14);
+    --nav-accent: #8fb0e6;
 
-    /* Estados */
-    --success: #067647;
-    --success-soft: #e9f8f0;
-    --success-border: #a9dcc2;
-    --danger: #b42318;
-    --danger-soft: #fef3f2;
-    --danger-border: #f4b9b4;
-    --warning: #b54708;
-    --warning-soft: #fffaeb;
-    --warning-border: #f5d99a;
-    --info-soft: #eff8ff;
+    /* Estados. Fundos puxados para o quente, senao ficam manchas frias sobre
+       o creme. */
+    --success: #2f6a45;
+    --success-soft: #edf3ed;
+    --success-border: #b6cdbd;
+    --danger: #a03027;
+    --danger-soft: #f8edea;
+    --danger-border: #dfb5ae;
+    --warning: #8a5216;
+    --warning-soft: #f7f1e2;
+    --warning-border: #ddc79b;
+    --info-soft: #eaeff8;
 
     /* Forma */
     --radius-sm: 8px;
@@ -72,9 +101,9 @@
 
     /* Profundidade. Sombra discreta: a hierarquia vem da borda e do espaco,
        nao de elevacao pesada. */
-    --shadow-sm: 0 1px 2px rgba(16, 24, 40, .05);
-    --shadow: 0 1px 3px rgba(16, 24, 40, .07), 0 1px 2px rgba(16, 24, 40, .04);
-    --shadow-lg: 0 12px 28px rgba(16, 24, 40, .12);
+    --shadow-sm: 0 1px 2px rgba(25, 23, 19, .05);
+    --shadow: 0 1px 3px rgba(25, 23, 19, .07), 0 1px 2px rgba(25, 23, 19, .04);
+    --shadow-lg: 0 12px 28px rgba(25, 23, 19, .14);
 
     /* Ritmo */
     --space-1: 4px;
@@ -190,7 +219,7 @@ a {
 */
 .sidebar a.active {
     background: var(--nav-active);
-    box-shadow: inset 3px 0 0 #38a8d2;
+    box-shadow: inset 3px 0 0 var(--nav-accent);
     color: var(--nav-text-strong);
     font-weight: 600;
 }
@@ -221,7 +250,7 @@ a {
 .nav-group > summary {
     align-items: center;
     border-radius: var(--radius-sm);
-    color: #8fa9be;
+    color: var(--nav-muted);
     cursor: pointer;
     display: flex;
     font-size: 11px;
@@ -428,7 +457,7 @@ a {
 }
 
 .btn.danger:hover {
-    background: #941b12;
+    background: #85251e;
 }
 
 .btn[disabled],
@@ -456,7 +485,7 @@ textarea {
 input:hover,
 select:hover,
 textarea:hover {
-    border-color: #b3bece;
+    border-color: rgba(25, 23, 19, .38);
 }
 
 input:focus,
@@ -512,7 +541,7 @@ tbody tr:last-child td {
 }
 
 tbody tr:hover td {
-    background: #fafbfc;
+    background: var(--surface-hover);
 }
 
 .table-wrap {
@@ -536,20 +565,20 @@ tbody tr:hover td {
 .alert-success {
     background: var(--success-soft);
     border-color: var(--success-border);
-    color: #054f31;
+    color: #215034;
 }
 
 .alert.error,
 .alert-error {
     background: var(--danger-soft);
     border-color: var(--danger-border);
-    color: #7a1710;
+    color: #7d241d;
 }
 
 .alert.warning {
     background: var(--warning-soft);
     border-color: var(--warning-border);
-    color: #7a3005;
+    color: #6b3f10;
 }
 
 .muted {
@@ -712,7 +741,7 @@ tbody tr:hover td {
 
 .message-bubble.outgoing {
     align-self: flex-end;
-    background: #dcf3fb;
+    background: var(--accent-soft);
     border-bottom-right-radius: var(--space-1);
 }
 
@@ -735,6 +764,288 @@ tbody tr:hover td {
 
 .details-toggle {
     display: none;
+}
+
+/* --- Manual ------------------------------------------------------------- */
+
+/*
+    O manual e texto longo, e texto longo tem regras diferentes do resto do
+    sistema: linha curta, respiro entre paragrafos e titulos que se distinguem
+    sem precisar de tamanho grande. Uma linha de 90 caracteres cansa; 72 e o
+    limite confortavel para leitura continua.
+*/
+.manual {
+    display: grid;
+    gap: var(--space-4);
+}
+
+.manual-section p,
+.manual-section li,
+.manual-intro p {
+    max-width: 72ch;
+}
+
+.manual h2 {
+    align-items: center;
+    display: flex;
+    font-size: 19px;
+    gap: 10px;
+    margin-bottom: var(--space-4);
+}
+
+.manual h2 .icon {
+    color: var(--accent);
+}
+
+.manual-section h3 {
+    border-top: 1px solid var(--border);
+    color: var(--text);
+    font-size: 15px;
+    margin-top: var(--space-5);
+    padding-top: var(--space-4);
+}
+
+.manual-section h3:first-of-type {
+    border-top: 0;
+    padding-top: 0;
+}
+
+.manual-section p,
+.manual-intro p {
+    margin: 0 0 var(--space-3);
+}
+
+.manual-section ul,
+.manual-section ol {
+    margin: 0 0 var(--space-3);
+    padding-left: 20px;
+}
+
+.manual-section li {
+    margin-bottom: 6px;
+}
+
+.manual-quote {
+    background: var(--surface-sunken);
+    border-radius: var(--radius-sm);
+    display: inline-block;
+    padding: 2px 8px;
+}
+
+/* Indice: linha inteira clicavel, e nao so o titulo. Alvo maior erra menos. */
+.manual-toc ol {
+    counter-reset: manual-toc;
+    display: grid;
+    gap: var(--space-1);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.manual-toc a {
+    align-items: flex-start;
+    border-radius: var(--radius-sm);
+    color: inherit;
+    display: flex;
+    gap: var(--space-3);
+    padding: 10px var(--space-3);
+    text-decoration: none;
+    transition: background var(--transition);
+}
+
+.manual-toc a:hover {
+    background: var(--surface-sunken);
+}
+
+.manual-toc a > span {
+    display: grid;
+}
+
+.manual-toc .icon {
+    color: var(--accent);
+    margin-top: 2px;
+}
+
+/* Os valores lidos ao vivo da configuracao. */
+.manual-facts {
+    display: grid;
+    gap: var(--space-2);
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    margin-bottom: var(--space-3);
+}
+
+.manual-facts > div {
+    background: var(--surface-sunken);
+    border-radius: var(--radius-sm);
+    display: grid;
+    gap: 2px;
+    padding: 10px var(--space-3);
+}
+
+.manual-facts strong {
+    font-size: 16px;
+}
+
+/* --- Mapa mental -------------------------------------------------------- */
+
+/*
+    Arvore desenhada com bordas em `::before` e `::after`, sobre uma lista
+    aninhada de verdade. Sem imagem, sem canvas e sem biblioteca: o mapa
+    imprime, e anunciado como lista com hierarquia por leitor de tela e
+    continua legivel se o CSS nao carregar.
+*/
+.mindmap-card {
+    overflow-x: auto;
+}
+
+.mindmap {
+    --branch-0: #3e63a8;
+    --branch-1: #2f6a45;
+    --branch-2: #8a5216;
+    --branch-3: #6d4b91;
+    --branch-4: #a03027;
+    --branch-5: #1f6b73;
+
+    min-width: 520px;
+}
+
+.mindmap-root {
+    align-items: center;
+    background: var(--nav-bg);
+    border-radius: var(--radius);
+    color: var(--nav-text-strong);
+    display: inline-flex;
+    font-weight: 600;
+    gap: 10px;
+    margin: 0 0 var(--space-2);
+    padding: var(--space-3) var(--space-4);
+}
+
+.mindmap ul {
+    list-style: none;
+    margin: 0;
+    padding-left: var(--space-5);
+}
+
+.mindmap li {
+    padding-left: var(--space-5);
+    position: relative;
+}
+
+/* Traco horizontal ate o no. */
+.mindmap li::before {
+    border-top: 2px solid var(--branch, var(--border-strong));
+    content: "";
+    left: 0;
+    position: absolute;
+    top: 21px;
+    width: var(--space-5);
+}
+
+/* Traco vertical que liga os irmaos; no ultimo ele para na altura do proprio
+   no, senao sobra uma linha apontando para nada. */
+.mindmap li::after {
+    border-left: 2px solid var(--branch, var(--border-strong));
+    bottom: 0;
+    content: "";
+    left: 0;
+    position: absolute;
+    top: 0;
+}
+
+.mindmap li:last-child::after {
+    bottom: auto;
+    height: 21px;
+}
+
+.mindmap-branch {
+    margin: var(--space-2) 0;
+}
+
+.mindmap-node {
+    align-items: flex-start;
+    background: var(--surface);
+    border: 1px solid var(--border-strong);
+    border-left: 3px solid var(--branch, var(--accent));
+    border-radius: var(--radius-sm);
+    color: inherit;
+    display: inline-flex;
+    gap: 10px;
+    padding: 9px var(--space-3);
+    text-decoration: none;
+    transition: box-shadow var(--transition), border-color var(--transition);
+}
+
+.mindmap-node:hover {
+    box-shadow: var(--shadow);
+}
+
+.mindmap-node > span {
+    display: grid;
+}
+
+.mindmap-node .icon {
+    color: var(--branch, var(--accent));
+    margin-top: 2px;
+}
+
+.mindmap-leaf {
+    display: inline-block;
+    font-size: 14px;
+    padding: 5px 0;
+}
+
+/*
+    A folha e mais baixa que o no do galho, entao o traco precisa encontrar o
+    texto numa altura diferente. Sem isto o conector chega acima da palavra e o
+    desenho parece torto justamente onde ele deveria organizar.
+*/
+.mindmap-branch > ul > li::before {
+    opacity: .45;
+    top: 15px;
+}
+
+.mindmap-branch > ul > li::after {
+    opacity: .45;
+}
+
+.mindmap-branch > ul > li:last-child::after {
+    height: 15px;
+}
+
+.mindmap-path {
+    max-width: 72ch;
+    padding-left: 20px;
+}
+
+.mindmap-path li {
+    margin-bottom: 6px;
+}
+
+/*
+    Impresso, o manual e o mapa nao precisam do menu nem da barra de topo, e a
+    tinta economizada e o que faz alguem realmente imprimir.
+*/
+@media print {
+    .sidebar,
+    .topbar,
+    .manual-intro .actions {
+        display: none;
+    }
+
+    .app-shell {
+        display: block;
+    }
+
+    .card {
+        border-color: #999;
+        box-shadow: none;
+        break-inside: avoid;
+    }
+
+    .mindmap-card {
+        overflow: visible;
+    }
 }
 
 /* --- Emoji -------------------------------------------------------------- */

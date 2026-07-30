@@ -38,6 +38,7 @@ use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Internal\WhatsAppIncomingController;
+use App\Http\Controllers\ManualController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
@@ -65,6 +66,11 @@ Route::middleware(['auth'])->group(function (): void {
 Route::middleware(['auth', 'password.changed'])->group(function (): void {
     Route::get('/dashboard', DashboardController::class)->name('dashboard');
 
+    // Manual. Sem permissao propria: quem entrou no sistema pode ler como o
+    // sistema funciona.
+    Route::get('/manual', [ManualController::class, 'index'])->name('manual.index');
+    Route::get('/manual/mapa-mental', [ManualController::class, 'mindMap'])->name('manual.mind-map');
+
     Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::put('/profile/password', [ProfileController::class, 'password'])->name('profile.password');
@@ -87,6 +93,10 @@ Route::middleware(['auth', 'password.changed'])->group(function (): void {
         Route::get('/inbox', [InboxController::class, 'index'])->name('inbox.index');
         Route::get('/inbox/{conversation}', [InboxController::class, 'show'])->name('inbox.show');
         Route::get('/conversations', [InboxController::class, 'index'])->name('conversations.index');
+        // Antes de `/conversations/{conversation}`, senao "nova" seria lido como
+        // identificador de conversa.
+        Route::get('/conversations/nova', [InboxController::class, 'create'])->name('conversations.create');
+        Route::post('/conversations/nova', [InboxController::class, 'store'])->name('conversations.store');
         Route::get('/conversations/{conversation}', [InboxController::class, 'show'])->name('conversations.show');
         Route::post('/conversations/sync', [InboxController::class, 'sync'])->name('conversations.sync');
         Route::post('/inbox/{conversation}/read', [InboxController::class, 'show'])->name('inbox.read');

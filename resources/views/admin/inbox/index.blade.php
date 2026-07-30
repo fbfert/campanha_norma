@@ -10,12 +10,20 @@
                     <p class="muted">Nenhuma sincronizacao executada.</p>
                 @endif
             </div>
-            @can('inbox.sync')
-                <form method="post" action="{{ route('admin.conversations.sync') }}" onsubmit="return confirm('Iniciar sincronizacao das conversas disponiveis na sessao atual do WhatsApp Web?')">
-                    @csrf
-                    <button class="btn" type="submit" @disabled($syncActive)>{{ $syncActive ? ($latestSync?->status?->value === 'pending' ? 'Aguardando worker...' : 'Sincronizando...') : 'Sincronizar conversas' }}</button>
-                </form>
-            @endcan
+            <div class="actions">
+                @can('inbox.sync')
+                    <form method="post" action="{{ route('admin.conversations.sync') }}" onsubmit="return confirm('Buscar no WhatsApp as conversas da sessao atual e trazer o que houver de novo?')">
+                        @csrf
+                        <button class="btn secondary" type="submit" @disabled($syncActive)>
+                            <x-icon name="refresh" size="16" />
+                            {{ $syncActive ? ($latestSync?->status?->value === 'pending' ? 'Aguardando worker...' : 'Atualizando...') : 'Atualizar conversas' }}
+                        </button>
+                    </form>
+                @endcan
+                @if(auth()->user()->can('inbox.reply') && auth()->user()->can('contacts.view'))
+                    <a class="btn" href="{{ route('admin.conversations.create') }}"><x-icon name="plus" size="16" />Nova conversa</a>
+                @endif
+            </div>
         </div>
         <form method="get" class="filters-grid conversation-filters">
             <label>Busca <input name="q" value="{{ request('q') }}" placeholder="Nome, telefone, cidade ou mensagem"></label>

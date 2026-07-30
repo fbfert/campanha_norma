@@ -23,6 +23,7 @@
     $enviosAtivo = request()->routeIs('admin.message-templates.*', 'admin.message-batches.*', 'admin.campaigns.*', 'admin.message-processing.*', 'admin.histories.*', 'admin.reports.*', 'admin.report-exports.*');
     $inteligenciaAtiva = request()->routeIs('admin.ai-insights.*', 'admin.insight-topics.*', 'admin.knowledge.*', 'admin.ai-monitoring.*', 'admin.ai-provider.*', 'admin.analytics.ai-quality');
     $sistemaAtivo = request()->routeIs('admin.whatsapp.*', 'admin.users.*', 'admin.settings.*', 'admin.message-settings.*', 'admin.analytics.governance', 'admin.monitoring.*', 'admin.maintenance.*', 'admin.audit-logs.*');
+    $manualAtivo = request()->routeIs('manual.*');
 @endphp
 
 <nav aria-label="Menu principal" class="sidebar-nav">
@@ -157,4 +158,12 @@
             @endcan
         </details>
     @endif
+
+    {{-- Sem `@can`: quem entrou no sistema pode ler como o sistema funciona.
+         Fica por ultimo porque e material de consulta, nao de operacao. --}}
+    <details class="nav-group" @if($manualAtivo) open @endif>
+        <summary><x-icon name="book" />Manual</summary>
+        <a href="{{ route('manual.index') }}" @class(['active' => request()->routeIs('manual.index')])><x-icon name="book" /><span>Manual de uso</span></a>
+        <a href="{{ route('manual.mind-map') }}" @class(['active' => request()->routeIs('manual.mind-map')])><x-icon name="mind-map" /><span>Mapa mental</span></a>
+    </details>
 </nav>

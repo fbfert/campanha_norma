@@ -49,6 +49,7 @@
                             'Operacao / Monitoramento' => [null, null],
                             'Inicio / Configuracoes' => ['dashboard', null],
                             'Atendimento / Conversas / Conversa' => [null, 'admin.conversations.index', null],
+                            'Atendimento / Conversas / Iniciar conversa' => [null, 'admin.conversations.index', null],
                             'Inicio / WhatsApp / Conexao' => ['dashboard', null, null],
                             'Operacao / Monitoramento / Jobs falhos' => [null, 'admin.monitoring.index', null],
                             'Mensagens / Processamento' => [null, null],
@@ -102,6 +103,8 @@
                             'Inicio / Base de conhecimento / Base / Novo documento' => ['dashboard', 'admin.knowledge.bases.index', null, null],
                             'Inicio / Base de conhecimento / Base / Documento' => ['dashboard', 'admin.knowledge.bases.index', null, null],
                             'Inicio / Base de conhecimento / Teste de busca' => ['dashboard', 'admin.knowledge.bases.index', null],
+                            'Inicio / Manual / Manual de uso' => ['dashboard', null, null],
+                            'Inicio / Manual / Mapa mental' => ['dashboard', 'manual.index', null],
                         ];
 
                         $breadcrumbTrail = $breadcrumbs ?? 'Inicio';
