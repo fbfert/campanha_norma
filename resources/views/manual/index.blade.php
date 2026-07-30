@@ -290,6 +290,17 @@
                 <strong>aprovado</strong> &mdash; quem envia nao e quem aprova. Use <strong>Teste de busca
                 na base</strong> para ver o que a IA encontraria com uma pergunta, antes de confiar nela.
             </p>
+            <p>
+                Quem administra pode corrigir a ficha de uma base pelo botao <strong>Editar</strong>,
+                na propria listagem ou dentro da base: nome, descricao, finalidade, politica de uso
+                e os fluxos que podem consulta-la. Trocar os fluxos vale na hora, entao tire um
+                fluxo da lista so quando quiser mesmo que ele pare de usar aquele conteudo.
+            </p>
+            <p>
+                <strong>Ativar e desativar continua sendo acao separada</strong>, pelo <em>Alterar
+                situacao</em>. Salvar o formulario nunca publica uma base &mdash; escrever a ficha e
+                decidir que ela pode fundamentar resposta sao coisas diferentes.
+            </p>
             <div class="alert warning">
                 <x-icon name="shield" size="18" />
                 <span>

@@ -269,6 +269,29 @@ de algo que chegou a uma pessoa tem ciclo de vida mais longo.
 6. Ativar a base e associa-la ao fluxo.
 7. Ligar `knowledge.enabled`.
 
+**Editar a ficha de uma base**
+
+O botao **Editar** aparece em cada linha da listagem em *Inteligencia > Base de
+conhecimento* e tambem dentro da base, ao lado de *Alterar situacao*. Exige
+`knowledge.manage_bases`, entao `operador` e `consulta` nao veem o botao nem
+alcancam a rota.
+
+Sao editaveis o nome, a descricao, a finalidade, a politica de uso e os fluxos
+que podem consultar a base.
+
+Ficam de fora `slug`, `provider` e `version`, que registram como a base foi
+criada, e a **situacao**, que tem acao propria. Salvar o formulario nunca ativa
+nem desativa uma base: ativar muda o que a IA pode afirmar e nao pode ser efeito
+colateral de salvar um formulario.
+
+Uma ressalva sobre os fluxos: a base e opt-in por fluxo, entao mexer nessa lista
+tem efeito imediato se a base estiver `active` e `knowledge.enabled` ligado.
+Tirar um fluxo corta a recuperacao dele na hora; acrescentar um passa a
+fundamentar respostas daquele fluxo com o conteudo ja aprovado da base.
+
+Toda edicao entra em auditoria como `knowledge_base.updated`, com o antes e o
+depois dos campos alterados.
+
 **Substituir uma versao**
 
 Enviar o novo documento apontando `supersedes_document_id` para o antigo. Ao
