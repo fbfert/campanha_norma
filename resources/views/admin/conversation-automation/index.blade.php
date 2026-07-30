@@ -3,7 +3,7 @@
         <form method="get" class="grid grid-3">
             <div><label for="stage">Estagio</label><select id="stage" name="stage"><option value="">Todos</option>@foreach($stages as $stage)<option value="{{ $stage->value }}" @selected(request('stage') === $stage->value)>{{ $stage->label() }}</option>@endforeach</select></div>
             <div><label for="flow_id">Fluxo</label><select id="flow_id" name="flow_id"><option value="">Todos</option>@foreach($flows as $flow)<option value="{{ $flow->id }}" @selected((string) request('flow_id') === (string) $flow->id)>{{ $flow->name }}</option>@endforeach</select></div>
-            <div class="actions"><button class="btn" type="submit">Filtrar</button><a class="btn ghost" href="{{ route('admin.conversation-automation.index') }}">Limpar</a></div>
+            <div class="actions"><button class="btn" type="submit"><x-icon name="search" size="16" />Filtrar</button><a class="btn ghost" href="{{ route('admin.conversation-automation.index') }}">Limpar</a></div>
         </form>
         <div class="actions" style="margin-top:12px;">
             <a class="btn ghost" href="{{ route('admin.conversation-automation.index', ['needs_human' => 1]) }}">Aguardando humano</a>

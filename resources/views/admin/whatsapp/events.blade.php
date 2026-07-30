@@ -7,7 +7,7 @@
             <div><label for="user_id">Usuario</label><select id="user_id" name="user_id"><option value="">Todos</option>@foreach($users as $user)<option value="{{ $user->id }}" @selected((string) request('user_id') === (string) $user->id)>{{ $user->name }}</option>@endforeach</select></div>
             <div><label for="date_from">Data inicial</label><input id="date_from" name="date_from" type="date" value="{{ request('date_from') }}"></div>
             <div><label for="date_to">Data final</label><input id="date_to" name="date_to" type="date" value="{{ request('date_to') }}"></div>
-            <div class="actions"><button class="btn" type="submit">Filtrar</button><a class="btn ghost" href="{{ route('admin.whatsapp.events') }}">Limpar</a></div>
+            <div class="actions"><button class="btn" type="submit"><x-icon name="search" size="16" />Filtrar</button><a class="btn ghost" href="{{ route('admin.whatsapp.events') }}">Limpar</a></div>
         </form>
     </section>
 

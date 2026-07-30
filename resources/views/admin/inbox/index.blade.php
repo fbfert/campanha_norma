@@ -55,7 +55,7 @@
             <label><input type="checkbox" name="do_not_contact" value="1" @checked(request()->boolean('do_not_contact'))> Nao contatar</label>
             <label><input type="checkbox" name="archived" value="1" @checked(request()->boolean('archived'))> Arquivadas</label>
             <label><input type="checkbox" name="not_archived" value="1" @checked(request()->boolean('not_archived'))> Nao arquivadas</label>
-            <button class="btn" type="submit">Filtrar</button>
+            <button class="btn" type="submit"><x-icon name="search" size="16" />Filtrar</button>
         </form>
     </section>
 

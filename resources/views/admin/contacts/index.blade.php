@@ -11,14 +11,14 @@
             <p><label>E-mail</label><select name="email_presence"><option value="">Todos</option><option value="with" @selected(($filters['email_presence'] ?? '') === 'with')>Com e-mail</option><option value="without" @selected(($filters['email_presence'] ?? '') === 'without')>Sem e-mail</option></select></p>
             <p><label>Excluídos</label><select name="deleted"><option value="">Ocultar</option><option value="with" @selected(($filters['deleted'] ?? '') === 'with')>Incluir</option><option value="only" @selected(($filters['deleted'] ?? '') === 'only')>Somente excluídos</option></select></p>
         </div>
-        <button class="btn" type="submit">Filtrar</button>
+        <button class="btn" type="submit"><x-icon name="search" size="16" />Filtrar</button>
         <a class="btn ghost" href="{{ route('admin.contacts.index') }}">Limpar</a>
-        @can('contacts.export')<a class="btn secondary" href="{{ route('admin.contacts.export', request()->query()) }}">Exportar CSV</a>@endcan
-        @can('contacts.create')<a class="btn" href="{{ route('admin.contacts.create') }}">Novo contato</a>@endcan
+        @can('contacts.export')<a class="btn secondary" href="{{ route('admin.contacts.export', request()->query()) }}"><x-icon name="download" size="16" />Exportar CSV</a>@endcan
+        @can('contacts.create')<a class="btn" href="{{ route('admin.contacts.create') }}"><x-icon name="plus" size="16" />Novo contato</a>@endcan
         {{-- A importacao saiu do menu lateral e passou a viver aqui, junto do
              resto do que se faz com contatos. Sem este botao ela ficaria sem
              nenhum caminho de acesso. --}}
-        @can('contacts.import')<a class="btn secondary" href="{{ route('admin.contacts.import') }}">Importar</a>@endcan
+        @can('contacts.import')<a class="btn secondary" href="{{ route('admin.contacts.import') }}"><x-icon name="upload" size="16" />Importar</a>@endcan
     </form>
     <section class="card table-wrap">
         @if($contacts->isEmpty())

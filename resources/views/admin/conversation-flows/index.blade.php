@@ -3,7 +3,7 @@
         <form method="get" class="grid grid-3">
             <div><label for="q">Nome</label><input id="q" name="q" value="{{ request('q') }}"></div>
             <div><label for="status">Status</label><select id="status" name="status"><option value="">Todos</option>@foreach($statuses as $status)<option value="{{ $status->value }}" @selected(request('status') === $status->value)>{{ $status->label() }}</option>@endforeach</select></div>
-            <div class="actions"><button class="btn" type="submit">Filtrar</button><a class="btn ghost" href="{{ route('admin.conversation-flows.index') }}">Limpar</a>@can('conversation_automation.manage_flows')<a class="btn" href="{{ route('admin.conversation-flows.create') }}">Novo fluxo</a>@endcan</div>
+            <div class="actions"><button class="btn" type="submit"><x-icon name="search" size="16" />Filtrar</button><a class="btn ghost" href="{{ route('admin.conversation-flows.index') }}">Limpar</a>@can('conversation_automation.manage_flows')<a class="btn" href="{{ route('admin.conversation-flows.create') }}">Novo fluxo</a>@endcan</div>
         </form>
     </section>
     <section class="card" style="margin-top:16px;">

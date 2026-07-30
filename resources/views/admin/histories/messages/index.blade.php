@@ -6,14 +6,14 @@
             <div><label>Status</label><input name="status" value="{{ request('status') }}" placeholder="sent, failed_permanent..."></div>
             <div><label>De</label><input type="date" name="from" value="{{ request('from') }}"></div>
             <div><label>Ate</label><input type="date" name="to" value="{{ request('to') }}"></div>
-            <div class="actions"><button class="btn" type="submit">Filtrar</button><a class="btn ghost" href="{{ route('admin.histories.messages.index') }}">Limpar</a></div>
+            <div class="actions"><button class="btn" type="submit"><x-icon name="search" size="16" />Filtrar</button><a class="btn ghost" href="{{ route('admin.histories.messages.index') }}">Limpar</a></div>
         </form>
         @can('histories.export')
             <form method="post" action="{{ route('admin.reports.export') }}" style="margin-top:12px;">
                 @csrf
                 <input type="hidden" name="report_type" value="messages">
                 <input type="hidden" name="format" value="csv">
-                <button class="btn secondary" type="submit">Exportar CSV</button>
+                <button class="btn secondary" type="submit"><x-icon name="download" size="16" />Exportar CSV</button>
             </form>
         @endcan
     </section>

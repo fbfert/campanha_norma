@@ -3,7 +3,7 @@
         <form method="get" class="grid grid-3">
             <div><label for="q">Nome</label><input id="q" name="q" value="{{ request('q') }}"></div>
             <div><label for="status">Status</label><select id="status" name="status"><option value="">Todos</option><option value="active" @selected(request('status') === 'active')>Ativo</option><option value="inactive" @selected(request('status') === 'inactive')>Inativo</option></select></div>
-            <div class="actions"><button class="btn" type="submit">Filtrar</button><a class="btn ghost" href="{{ route('admin.message-templates.index') }}">Limpar</a>@can('message_templates.create')<a class="btn" href="{{ route('admin.message-templates.create') }}">Novo modelo</a>@endcan</div>
+            <div class="actions"><button class="btn" type="submit"><x-icon name="search" size="16" />Filtrar</button><a class="btn ghost" href="{{ route('admin.message-templates.index') }}">Limpar</a>@can('message_templates.create')<a class="btn" href="{{ route('admin.message-templates.create') }}">Novo modelo</a>@endcan</div>
         </form>
     </section>
     <section class="card" style="margin-top:16px;">

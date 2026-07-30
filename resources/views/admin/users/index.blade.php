@@ -7,7 +7,7 @@
                 <p><label>Perfil</label><select name="role"><option value="">Todos</option>@foreach($roles as $role)<option value="{{ $role->slug }}" @selected(($filters['role'] ?? '') === $role->slug)>{{ $role->name }}</option>@endforeach</select></p>
                 <p><label>Status</label><select name="status"><option value="">Todos</option>@foreach($statuses as $status)<option value="{{ $status->value }}" @selected(($filters['status'] ?? '') === $status->value)>{{ $status->label() }}</option>@endforeach</select></p>
             </div>
-            <button class="btn" type="submit">Filtrar</button>
+            <button class="btn" type="submit"><x-icon name="search" size="16" />Filtrar</button>
             <a class="btn ghost" href="{{ route('admin.users.index') }}">Limpar</a>
         </form>
         @can('manage-users')

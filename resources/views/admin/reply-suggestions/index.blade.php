@@ -18,7 +18,7 @@
                 </select>
             </div>
             <div class="actions">
-                <button class="btn" type="submit">Filtrar</button>
+                <button class="btn" type="submit"><x-icon name="search" size="16" />Filtrar</button>
                 <a class="btn ghost" href="{{ route('admin.reply-suggestions.index') }}">Pendentes</a>
             </div>
         </form>

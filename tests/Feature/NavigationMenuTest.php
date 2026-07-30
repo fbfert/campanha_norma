@@ -80,6 +80,53 @@ class NavigationMenuTest extends TestCase
             ->assertSee('Atendimento');
     }
 
+    // --- Icones ---------------------------------------------------------------
+
+    /**
+     * O sprite e desenhado uma vez por pagina e cada uso vira um `<use>`. Se
+     * alguem trocar por uma biblioteca externa, o sistema passa a depender de
+     * rede para desenhar o proprio menu.
+     */
+    public function test_the_icon_sprite_is_rendered_once_and_referenced_by_use(): void
+    {
+        $response = $this->actingAs($this->userWith('administrador'))->get(route('dashboard'))->assertOk();
+        $html = $response->getContent();
+
+        $this->assertSame(1, substr_count((string) $html, '<g id="i-home">'), 'O sprite deve aparecer uma unica vez.');
+        $this->assertStringContainsString('<use href="#i-home">', (string) $html);
+        $this->assertStringNotContainsString('cdn.', (string) $html);
+    }
+
+    /**
+     * Icone acompanhado de rotulo em texto e decorativo: anunciar os dois faria
+     * o leitor de tela repetir a mesma informacao.
+     */
+    public function test_icons_are_hidden_from_assistive_technology(): void
+    {
+        $this->actingAs($this->userWith('administrador'))
+            ->get(route('dashboard'))
+            ->assertOk()
+            ->assertSee('aria-hidden="true" focusable="false"', false);
+    }
+
+    public function test_every_icon_referenced_exists_in_the_sprite(): void
+    {
+        $sprite = (string) file_get_contents(resource_path('views/components/layouts/partials/icons.blade.php'));
+        $menu = (string) file_get_contents(resource_path('views/components/layouts/partials/nav.blade.php'));
+
+        preg_match_all('/<x-icon name="([a-z-]+)"/', $menu, $matches);
+
+        $this->assertNotEmpty($matches[1]);
+
+        foreach (array_unique($matches[1]) as $name) {
+            $this->assertStringContainsString(
+                '<g id="i-'.$name.'">',
+                $sprite,
+                "O menu usa o icone '{$name}', que nao existe no sprite."
+            );
+        }
+    }
+
     // --- Nenhuma tela ficou inalcancavel -------------------------------------
 
     /**

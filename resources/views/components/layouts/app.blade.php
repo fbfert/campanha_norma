@@ -8,9 +8,10 @@
     @livewireStyles
 </head>
 <body>
+    @include('components.layouts.partials.icons')
     <div class="app-shell">
         <aside class="sidebar">
-            <h1 style="font-size:20px;margin:0 0 18px;">{{ $systemName ?? config('app.name') }}</h1>
+            <h1>{{ $systemName ?? config('app.name') }}</h1>
             @include('components.layouts.partials.nav')
         </aside>
         <div class="main">
@@ -122,10 +123,10 @@
                 <div class="actions">
                     <span>{{ auth()->user()->name }}</span>
                     <span class="muted">{{ auth()->user()->roles->pluck('name')->join(', ') }}</span>
-                    <a class="btn ghost" href="{{ route('profile.show') }}">Perfil</a>
+                    <a class="btn ghost" href="{{ route('profile.show') }}"><x-icon name="user" size="16" />Perfil</a>
                     <form method="post" action="{{ route('logout') }}">
                         @csrf
-                        <button class="btn secondary" type="submit">Sair</button>
+                        <button class="btn secondary" type="submit"><x-icon name="logout" size="16" />Sair</button>
                     </form>
                 </div>
             </header>

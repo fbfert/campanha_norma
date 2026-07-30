@@ -3,7 +3,7 @@
         <form method="get" class="grid grid-3">
             <div><label for="q">Nome</label><input id="q" name="q" value="{{ request('q') }}"></div>
             <div><label for="eligibility_status">Aptidao</label><select id="eligibility_status" name="eligibility_status"><option value="">Todos</option><option value="eligible" @selected(request('eligibility_status') === 'eligible')>Apto</option><option value="excluded" @selected(request('eligibility_status') === 'excluded')>Excluido</option></select></div>
-            <div class="actions"><button class="btn" type="submit">Filtrar</button><a class="btn ghost" href="{{ route('admin.message-batches.recipients', $messageBatch) }}">Limpar</a></div>
+            <div class="actions"><button class="btn" type="submit"><x-icon name="search" size="16" />Filtrar</button><a class="btn ghost" href="{{ route('admin.message-batches.recipients', $messageBatch) }}">Limpar</a></div>
         </form>
     </section>
     <section class="card" style="margin-top:16px;">

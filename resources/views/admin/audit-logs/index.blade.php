@@ -8,7 +8,7 @@
             <p><label>Data final</label><input name="date_to" type="date" value="{{ $filters['date_to'] ?? '' }}"></p>
             <p><label>IP</label><input name="ip_address" value="{{ $filters['ip_address'] ?? '' }}"></p>
         </div>
-        <button class="btn" type="submit">Filtrar</button>
+        <button class="btn" type="submit"><x-icon name="search" size="16" />Filtrar</button>
         <a class="btn ghost" href="{{ route('admin.audit-logs.index') }}">Limpar</a>
     </form>
     <section class="card table-wrap">
