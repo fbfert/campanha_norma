@@ -48,7 +48,7 @@ class PlaceholderParserService
         $errors = [];
 
         foreach ($parsed['invalid'] as $placeholder) {
-            $errors[] = "Placeholder invalido: {$placeholder}.";
+            $errors[] = "Placeholder inválido: {$placeholder}.";
         }
         foreach ($parsed['malformed'] as $placeholder) {
             $errors[] = "Sintaxe incompleta ou invalida: {$placeholder}.";

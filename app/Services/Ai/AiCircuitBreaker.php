@@ -9,10 +9,10 @@ use Illuminate\Support\Facades\Cache;
 /**
  * Disjuntor simples por provedor.
  *
- * Conta falhas consecutivas em cache. Ao atingir o limite, abre por um periodo
- * configuravel e as chamadas seguintes falham sem tocar a rede. Um sucesso zera
- * o contador. Deliberadamente sem meia-abertura probabilistica, para nao
- * introduzir nao determinismo em teste.
+ * Conta falhas consecutivas em cache. Ao atingir o limite, abre por um período
+ * configurável e as chamadas seguintes falham sem tocar a rede. Um sucesso zera
+ * o contador. Deliberadamente sem meia-abertura probabilistica, para não
+ * introduzir não determinismo em teste.
  */
 class AiCircuitBreaker
 {
@@ -31,7 +31,7 @@ class AiCircuitBreaker
         if ($this->isOpen($provider)) {
             throw new AiProviderException(
                 AiProviderException::CIRCUIT_OPEN,
-                'Provedor de IA temporariamente indisponivel por excesso de falhas.'
+                'Provedor de IA temporariamente indisponível por excesso de falhas.'
             );
         }
     }

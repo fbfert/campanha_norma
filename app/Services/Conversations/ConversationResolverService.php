@@ -26,7 +26,7 @@ class ConversationResolverService
             $query->whereNull('contact_id');
 
             // Sem contato identificado, o telefone informado (bruto ou resolvido
-            // via lid) e o unico jeito de nao misturar remetentes diferentes na
+            // via lid) e o único jeito de não misturar remetentes diferentes na
             // mesma conversa "sem contato".
             if (filled($senderPhone)) {
                 $query->whereHas('messages', function ($messages) use ($senderPhone): void {

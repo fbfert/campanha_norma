@@ -52,9 +52,9 @@ class KnowledgeChunk extends Model
     /**
      * Serializa o vetor como floats de 32 bits em ordem de bytes fixa.
      *
-     * `pack('g*')` usa little-endian explicito, entao o blob nao depende da
+     * `pack('g*')` usa little-endian explícito, então o blob não depende da
      * arquitetura da maquina que gravou. JSON custaria cerca de trinta vezes mais
-     * espaco para a mesma informacao.
+     * espaço para a mesma informação.
      *
      * @param  array<int, float>  $vector
      */

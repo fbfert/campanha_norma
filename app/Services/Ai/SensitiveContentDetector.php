@@ -7,11 +7,11 @@ use App\Services\ConversationAutomation\PermissionResponseClassifier;
 use App\Services\SystemSettingService;
 
 /**
- * Deteccao deterministica de situacoes que exigem atendimento humano.
+ * Detecção determinística de situações que exigem atendimento humano.
  *
- * Roda sobre o texto original, independentemente do resultado da IA e tambem
+ * Roda sobre o texto original, independentemente do resultado da IA e também
  * quando a chamada de IA falhou. O modelo nunca decide sozinho se um caso e
- * sensivel.
+ * sensível.
  */
 class SensitiveContentDetector
 {

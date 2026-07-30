@@ -14,19 +14,19 @@ class SyncConversationsCommand extends Command
 {
     protected $signature = 'conversations:sync {--chat=} {--days= : Dias retroativos} {--limit-chats= : Limite de chats} {--messages-per-chat= : Limite de mensagens por chat} {--queue : Despachar para fila}';
 
-    protected $description = 'Sincroniza conversas individuais disponiveis na sessao atual do WhatsApp Web.';
+    protected $description = 'Sincroniza conversas individuais disponíveis na sessão atual do WhatsApp Web.';
 
     public function handle(ConversationSyncService $sync, SystemSettingService $settings): int
     {
         if (! (bool) $settings->get('conversations.sync_enabled', true)) {
-            $this->info('Sincronizacao de conversas desativada.');
+            $this->info('Sincronização de conversas desativada.');
 
             return self::SUCCESS;
         }
 
         $lock = Cache::lock('conversations:sync:active', $this->option('queue') ? 1 : 600);
         if ($lock->get() === false) {
-            $this->warn('Ja existe uma sincronizacao em andamento.');
+            $this->warn('Já existe uma sincronização em andamento.');
 
             return self::FAILURE;
         }
@@ -46,7 +46,7 @@ class SyncConversationsCommand extends Command
         if ($this->option('queue')) {
             $lock->release();
             SyncWhatsAppConversationsJob::dispatch($run->id)->onQueue('whatsapp-conversation-sync');
-            $this->info("Sincronizacao {$run->id} enviada para fila.");
+            $this->info("Sincronização {$run->id} enviada para fila.");
 
             return self::SUCCESS;
         }

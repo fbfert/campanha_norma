@@ -8,11 +8,11 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Problemas, acoes sugeridas e resultados desejados, em agregado.
+ * Problemas, ações sugeridas e resultados desejados, em agregado.
  *
- * Os exemplos devolvidos por `examples()` carregam apenas o texto do proprio
+ * Os exemplos devolvidos por `examples()` carregam apenas o texto do próprio
  * campo de demanda — nunca nome, telefone ou identificador de contato. Um
- * exemplo existe para dar concretude a um numero, e o numero nao fica mais
+ * exemplo existe para dar concretude a um número, e o número não fica mais
  * concreto por vir com o nome de quem o gerou.
  */
 class DemandMetricsService
@@ -45,7 +45,7 @@ class DemandMetricsService
     }
 
     /**
-     * Distribuicao por urgencia.
+     * Distribuição por urgência.
      *
      * @return array<int, array<string, mixed>>
      */
@@ -86,8 +86,8 @@ class DemandMetricsService
     }
 
     /**
-     * Fila de itens de baixa confianca, que nao devem entrar nos totais como
-     * resultado assentado enquanto ninguem conferiu.
+     * Fila de itens de baixa confiança, que não devem entrar nos totais como
+     * resultado assentado enquanto ninguém conferiu.
      *
      * @return array<string, int>
      */
@@ -121,9 +121,9 @@ class DemandMetricsService
     }
 
     /**
-     * O modelo converte alguns campos em enum e outros nao, conforme a coluna.
-     * Uma unica funcao de leitura evita que a tela quebre por causa dessa
-     * diferenca, que nao interessa a quem le o relatorio.
+     * O modelo converte alguns campos em enum e outros não, conforme a coluna.
+     * Uma única função de leitura evita que a tela quebre por causa dessa
+     * diferença, que não interessa a quem le o relatório.
      */
     private function text(mixed $value): ?string
     {

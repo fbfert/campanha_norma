@@ -5,19 +5,19 @@ namespace App\Services\Knowledge;
 use App\Services\SystemSettingService;
 
 /**
- * Neutraliza instrucoes embutidas em documentos.
+ * Neutraliza instruções embutidas em documentos.
  *
- * Esta e a primeira das duas defesas contra injecao de prompt. A segunda e a
- * delimitacao do bloco oficial no momento da montagem do prompt. Nenhuma das
- * duas basta sozinha: a primeira erra por padrao incompleto, a segunda erra por o
- * modelo ignorar a delimitacao. Juntas exigem duas falhas simultaneas.
+ * Esta e a primeira das duas defesas contra injeção de prompt. A segunda e a
+ * delimitação do bloco oficial no momento da montagem do prompt. Nenhuma das
+ * duas basta sozinha: a primeira erra por padrão incompleto, a segunda erra por o
+ * modelo ignorar a delimitação. Juntas exigem duas falhas simultaneas.
  *
- * A neutralizacao substitui a linha por um marcador em vez de apagar
+ * A neutralização substitui a linha por um marcador em vez de apagar
  * silenciosamente: quem revisa precisa ver que havia algo ali.
  */
 class PromptInjectionSanitizer
 {
-    private const MARKER = '[trecho removido: instrucao detectada no documento]';
+    private const MARKER = '[trecho removido: instrução detectada no documento]';
 
     public function __construct(private readonly SystemSettingService $settings) {}
 
@@ -54,14 +54,14 @@ class PromptInjectionSanitizer
             }
         }
 
-        // Blocos de marcacao de papel de conversa tambem sao neutralizados: um
-        // documento nao tem por que conter "system:" ou "assistant:".
+        // Blocos de marcação de papel de conversa também são neutralizados: um
+        // documento não tem por que conter "system:" ou "assistant:".
         $sanitized = implode("\n", $lines);
 
         return [
             'text' => $sanitized,
             'flagged' => $findings !== [],
-            // Achado e diagnostico, nao dossie: limitamos o que vai para a coluna.
+            // Achado e diagnostico, não dossie: limitamos o que vai para a coluna.
             'findings' => array_slice($findings, 0, 20),
         ];
     }
@@ -82,8 +82,8 @@ class PromptInjectionSanitizer
     }
 
     /**
-     * Normalizacao igual a das listas deterministicas das subetapas anteriores:
-     * caixa, acento e espaco nao devem servir de disfarce.
+     * Normalização igual a das listas deterministicas das subetapas anteriores:
+     * caixa, acento e espaço não devem servir de disfarce.
      */
     private function normalize(string $text): string
     {

@@ -15,7 +15,7 @@ use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Cache;
 
 /**
- * Envia a mensagem automatica ja criada, pelo mesmo caminho da resposta manual.
+ * Envia a mensagem automática já criada, pelo mesmo caminho da resposta manual.
  */
 class SendAutomatedConversationReplyJob implements ShouldQueue
 {
@@ -47,7 +47,7 @@ class SendAutomatedConversationReplyJob implements ShouldQueue
 
         $state = $message->conversation?->flowState;
 
-        // Revalida no momento do envio: pausa ou opt-out entre a criacao e o envio cancela.
+        // Revalida no momento do envio: pausa ou opt-out entre a criação e o envio cancela.
         if ($state) {
             $check = $guard->canSend($state);
             if (! $check['allowed']) {
@@ -55,9 +55,9 @@ class SendAutomatedConversationReplyJob implements ShouldQueue
                     'status' => ConversationMessageStatus::Failed,
                     'failed_at' => now(),
                     'error_code' => 'AUTOMATION_BLOCKED',
-                    'error_message' => 'Envio automatico bloqueado antes do disparo.',
+                    'error_message' => 'Envio automático bloqueado antes do disparo.',
                 ]);
-                $events->record($message->conversation, 'automated_reply_blocked', 'Envio automatico bloqueado.', $message, null, ['reason' => $check['reason']]);
+                $events->record($message->conversation, 'automated_reply_blocked', 'Envio automático bloqueado.', $message, null, ['reason' => $check['reason']]);
 
                 return;
             }
@@ -87,8 +87,8 @@ class SendAutomatedConversationReplyJob implements ShouldQueue
                 'last_outgoing_message_at' => now(),
             ]);
 
-            $events->record($message->conversation, 'automated_reply_sent', 'Mensagem automatica enviada.', $message);
-            $audit->log('conversation_automation.message_sent', 'Mensagem automatica enviada.', $message, null, ['conversation_id' => $message->conversation_id]);
+            $events->record($message->conversation, 'automated_reply_sent', 'Mensagem automática enviada.', $message);
+            $audit->log('conversation_automation.message_sent', 'Mensagem automática enviada.', $message, null, ['conversation_id' => $message->conversation_id]);
         } catch (\Throwable $exception) {
             $timeout = str_contains($exception->getMessage(), 'timeout');
 
@@ -96,11 +96,11 @@ class SendAutomatedConversationReplyJob implements ShouldQueue
                 'status' => $timeout ? ConversationMessageStatus::Unknown : ConversationMessageStatus::Failed,
                 'failed_at' => now(),
                 'error_code' => $timeout ? 'AUTOMATED_REPLY_RESULT_UNKNOWN' : 'AUTOMATED_REPLY_FAILED',
-                'error_message' => 'Falha ao enviar mensagem automatica.',
+                'error_message' => 'Falha ao enviar mensagem automática.',
             ]);
 
-            $events->record($message->conversation, 'automated_reply_failed', 'Falha ao enviar mensagem automatica.', $message);
-            $audit->log('conversation_automation.message_failed', 'Falha ao enviar mensagem automatica.', $message, null, ['conversation_id' => $message->conversation_id]);
+            $events->record($message->conversation, 'automated_reply_failed', 'Falha ao enviar mensagem automática.', $message);
+            $audit->log('conversation_automation.message_failed', 'Falha ao enviar mensagem automática.', $message, null, ['conversation_id' => $message->conversation_id]);
         } finally {
             $lock->release();
         }

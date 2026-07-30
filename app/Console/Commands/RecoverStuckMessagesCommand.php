@@ -13,7 +13,7 @@ class RecoverStuckMessagesCommand extends Command
 {
     protected $signature = 'messages:recover-stuck';
 
-    protected $description = 'Marca destinatarios presos em processamento como resultado incerto.';
+    protected $description = 'Marca destinatários presos em processamento como resultado incerto.';
 
     public function handle(SystemSettingService $settings, MessageProcessingEventService $events, BatchProgressService $progress): int
     {
@@ -28,15 +28,15 @@ class RecoverStuckMessagesCommand extends Command
                     'processing_status' => MessageRecipientProcessingStatus::FailedTemporary,
                     'failed_at' => now(),
                     'error_code' => 'SEND_RESULT_UNKNOWN',
-                    'error_message' => 'Resultado incerto apos encerramento inesperado do processamento.',
+                    'error_message' => 'Resultado incerto após encerramento inesperado do processamento.',
                 ])->save();
 
-                $events->record($recipient->batch, 'recipient_failed', 'Resultado incerto identificado em recuperacao.', $recipient, errorCode: 'SEND_RESULT_UNKNOWN');
+                $events->record($recipient->batch, 'recipient_failed', 'Resultado incerto identificado em recuperação.', $recipient, errorCode: 'SEND_RESULT_UNKNOWN');
                 $progress->sync($recipient->batch);
                 $count++;
             });
 
-        $this->info("Destinatarios recuperados: {$count}");
+        $this->info("Destinatários recuperados: {$count}");
 
         return self::SUCCESS;
     }

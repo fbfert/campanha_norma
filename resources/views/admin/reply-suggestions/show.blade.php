@@ -1,4 +1,4 @@
-<x-layouts.app title="Revisar sugestao" breadcrumbs="Inicio / Pesquisa conversacional / Sugestoes / Detalhes">
+<x-layouts.app title="Revisar sugestão" breadcrumbs="Inicio / Pesquisa conversacional / Sugestoes / Detalhes">
     <section class="card">
         <span class="badge" style="background:#4f46e5;color:#fff;">Gerado por IA</span>
         <span class="muted" style="margin-left:8px;">
@@ -9,7 +9,7 @@
 
         @if($stale)
             <p class="alert error" style="margin-top:8px;">
-                Esta sugestao esta <strong>obsoleta</strong>: a pessoa enviou uma mensagem nova depois da que originou o texto. O envio esta bloqueado.
+                Esta sugestão esta <strong>obsoleta</strong>: a pessoa enviou uma mensagem nova depois da que originou o texto. O envio esta bloqueado.
             </p>
         @elseif(! $sendCheck['allowed'])
             <p class="alert error" style="margin-top:8px;">Envio bloqueado: {{ $sendCheck['reason'] }}</p>
@@ -22,7 +22,7 @@
         @endif
 
         @if($suggestion->validation_error)
-            <p class="alert error" style="margin-top:8px;">Texto reprovado na validacao: {{ $suggestion->validation_error }}</p>
+            <p class="alert error" style="margin-top:8px;">Texto reprovado na validação: {{ $suggestion->validation_error }}</p>
         @endif
     </section>
 
@@ -34,9 +34,9 @@
             <p class="muted">
                 Contato:
                 @if($canSeeContactData)
-                    {{ $suggestion->conversation?->contact?->name ?? 'nao identificado' }}
+                    {{ $suggestion->conversation?->contact?->name ?? 'não identificado' }}
                 @else
-                    {{ $suggestion->conversation?->contact?->phone_normalized ? Str::mask($suggestion->conversation->contact->phone_normalized, '*', 4, -4) : 'nao identificado' }}
+                    {{ $suggestion->conversation?->contact?->phone_normalized ? Str::mask($suggestion->conversation->contact->phone_normalized, '*', 4, -4) : 'não identificado' }}
                 @endif
             </p>
             @if($suggestion->insight)
@@ -44,9 +44,9 @@
                 <p><strong>Tema:</strong> {{ $suggestion->insight->topic?->name ?? '-' }}</p>
             @endif
             @if($suggestion->classification)
-                <p><strong>Classificacao:</strong> {{ $suggestion->classification->classification->label() }}</p>
+                <p><strong>Classificação:</strong> {{ $suggestion->classification->classification->label() }}</p>
             @endif
-            <p><strong>Confianca da geracao:</strong> {{ $suggestion->confidence !== null ? number_format($suggestion->confidence, 2) : '-' }}</p>
+            <p><strong>Confiança da geração:</strong> {{ $suggestion->confidence !== null ? number_format($suggestion->confidence, 2) : '-' }}</p>
             @if($suggestion->conversation)
                 <a class="btn ghost" href="{{ route('admin.conversations.show', $suggestion->conversation) }}">Abrir conversa</a>
             @endif
@@ -54,7 +54,7 @@
 
         <section class="card">
             <h2>Texto gerado</h2>
-            <p style="white-space:pre-wrap;">{{ $suggestion->generated_text ?? 'Nenhum texto gerado para esta acao.' }}</p>
+            <p style="white-space:pre-wrap;">{{ $suggestion->generated_text ?? 'Nenhum texto gerado para esta ação.' }}</p>
 
             @if($suggestion->wasEdited())
                 <h2 style="margin-top:16px;">Texto enviado</h2>
@@ -89,11 +89,11 @@
 
     @if($suggestion->grounding_status)
         <section class="card" style="margin-top:16px;">
-            <h2>Fundamentacao na base oficial</h2>
+            <h2>Fundamentação na base oficial</h2>
             <p>
                 Veredito: <strong>{{ $suggestion->grounding_status->label() }}</strong>.
                 @unless($suggestion->grounding_status->allowsSending())
-                    Esta sugestao nao pode ser enviada: a validacao de fundamentacao reprovou o texto.
+                    Esta sugestão não pode ser enviada: a validação de fundamentação reprovou o texto.
                 @endunless
             </p>
             @if($suggestion->grounding_error)
@@ -105,11 +105,11 @@
                 <article class="card nested">
                     <p class="muted">
                         {{ $citation->document_title_snapshot ?: 'Documento removido' }}
-                        @if($citation->document_version) &middot; versao {{ $citation->document_version }} @endif
-                        @if($citation->page) &middot; pagina {{ $citation->page }} @endif
-                        @if($citation->section) &middot; secao {{ $citation->section }} @endif
+                        @if($citation->document_version) &middot; versão {{ $citation->document_version }} @endif
+                        @if($citation->page) &middot; página {{ $citation->page }} @endif
+                        @if($citation->section) &middot; seção {{ $citation->section }} @endif
                         @unless($citation->is_valid)
-                            &middot; <strong>citacao recusada</strong>{{ $citation->invalid_reason ? ': '.$citation->invalid_reason : '' }}
+                            &middot; <strong>citação recusada</strong>{{ $citation->invalid_reason ? ': '.$citation->invalid_reason : '' }}
                         @endunless
                     </p>
                     @if($citation->content_snapshot)
@@ -117,17 +117,17 @@
                     @endif
                 </article>
             @empty
-                <p class="muted">Nenhuma fonte registrada para esta sugestao.</p>
+                <p class="muted">Nenhuma fonte registrada para esta sugestão.</p>
             @endforelse
             <p class="muted">
-                O conteudo acima e a copia do trecho no momento em que ele foi usado. Ele continua aqui mesmo que o documento
-                original tenha sido substituido ou removido depois.
+                O conteúdo acima e a copia do trecho no momento em que ele foi usado. Ele continua aqui mesmo que o documento
+                original tenha sido substituído ou removido depois.
             </p>
         </section>
     @endif
 
     <section class="card" style="margin-top:16px;">
-        <h2>Outras acoes</h2>
+        <h2>Outras ações</h2>
         <div class="grid grid-2">
             @can('reply_suggestions.reject')
                 <form method="post" action="{{ route('admin.reply-suggestions.reject', $suggestion) }}">
@@ -141,7 +141,7 @@
             @can('reply_suggestions.regenerate')
                 <form method="post" action="{{ route('admin.reply-suggestions.regenerate', $suggestion) }}">
                     @csrf
-                    <label for="justification">Regenerar (justificativa obrigatoria)</label>
+                    <label for="justification">Regenerar (justificativa obrigatória)</label>
                     <input id="justification" name="justification" required value="{{ old('justification') }}">
                     <div class="actions" style="margin-top:8px;"><button class="btn secondary">Regenerar</button></div>
                 </form>
@@ -157,7 +157,7 @@
             @can('reply_suggestions.feedback')
                 <form method="post" action="{{ route('admin.reply-suggestions.feedback', $suggestion) }}">
                     @csrf
-                    <label for="feedback">Feedback sobre a sugestao</label>
+                    <label for="feedback">Feedback sobre a sugestão</label>
                     <select id="feedback" name="feedback">
                         @foreach($feedbacks as $option)
                             <option value="{{ $option->value }}" @selected($suggestion->feedback?->value === $option->value)>{{ $option->label() }}</option>
@@ -171,10 +171,10 @@
     </section>
 
     <section class="card" style="margin-top:16px;">
-        <h2>Historico desta mensagem</h2>
+        <h2>Histórico desta mensagem</h2>
         <div class="table-wrap">
             <table>
-                <thead><tr><th>Tentativa</th><th>Acao</th><th>Situacao</th><th>Justificativa</th><th>Data</th><th></th></tr></thead>
+                <thead><tr><th>Tentativa</th><th>Ação</th><th>Situação</th><th>Justificativa</th><th>Data</th><th></th></tr></thead>
                 <tbody>
                     @foreach($history as $item)
                         <tr>

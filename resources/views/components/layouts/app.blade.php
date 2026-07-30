@@ -20,8 +20,8 @@
                     <strong>{{ $title ?? 'Painel' }}</strong>
                     @php
                         // Mapa: string completa da trilha (como hoje passada em `breadcrumbs="A / B / C"`)
-                        // => nome da rota de cada segmento, na mesma ordem/posicao. `null` = sem link
-                        // (o ultimo segmento, a pagina atual, nunca deve ter link).
+                        // => nome da rota de cada segmento, na mesma ordem/posição. `null` = sem link
+                        // (o último segmento, a página atual, nunca deve ter link).
                         $breadcrumbRouteMap = [
                             'Inicio / Perfil' => ['dashboard', null],
                             'Inicio / Dashboard' => ['dashboard', null],
@@ -107,7 +107,7 @@
                             'Inicio / Manual / Mapa mental' => ['dashboard', 'manual.index', null],
                         ];
 
-                        $breadcrumbTrail = $breadcrumbs ?? 'Inicio';
+                        $breadcrumbTrail = $breadcrumbs ?? 'Início';
                         $breadcrumbSegments = array_map('trim', explode('/', $breadcrumbTrail));
                         $breadcrumbRoutes = $breadcrumbRouteMap[$breadcrumbTrail] ?? [];
                     @endphp

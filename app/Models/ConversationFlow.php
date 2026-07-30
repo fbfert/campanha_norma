@@ -70,7 +70,7 @@ class ConversationFlow extends Model
     }
 
     /**
-     * Bases que efetivamente participam de uma recuperacao para este fluxo.
+     * Bases que efetivamente participam de uma recuperação para este fluxo.
      */
     public function retrievableKnowledgeBases(): BelongsToMany
     {

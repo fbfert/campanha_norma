@@ -2,60 +2,60 @@
 
 ## Fonte
 
-Este documento consolida o planejamento de `projeto_gerenciador_whatsapp.md` para orientar implementacao, validacao e manutencao das specs OpenSpec.
+Este documento consolida o planejamento de `projeto_gerenciador_whatsapp.md` para orientar implementação, validação e manutenção das specs OpenSpec.
 
 ## Objetivo
 
-Construir uma aplicacao web para organizar contatos, criar mensagens iniciais personalizadas, controlar lotes de envio pelo WhatsApp e registrar historico completo.
+Construir uma aplicação web para organizar contatos, criar mensagens iniciais personalizadas, controlar lotes de envio pelo WhatsApp e registrar histórico completo.
 
-A automacao deve se limitar ao primeiro contato. Depois que a pessoa responder, a continuidade da conversa deve ocorrer manualmente e de forma humana pelo WhatsApp.
+A automação deve se limitar ao primeiro contato. Depois que a pessoa responder, a continuidade da conversa deve ocorrer manualmente e de forma humana pelo WhatsApp.
 
 ## Arquitetura Recomendada
 
-- Aplicacao principal em PHP 8.3+, Laravel, MySQL, Redis, Laravel Queue, Blade, Livewire e Alpine.js.
+- Aplicação principal em PHP 8.3+, Laravel, MySQL, Redis, Laravel Queue, Blade, Livewire e Alpine.js.
 - Hospedagem em VPS com Apache, HTTPS, cron e Supervisor ou systemd.
-- Servico Node.js separado para conexao com WhatsApp Web por QR Code.
-- Comunicacao privada entre Laravel e Node.js via endereco local, token secreto, timeout e validacao de origem.
-- Laravel deve concentrar regras administrativas, filas, historico, auditoria e provider abstraction.
-- Node.js deve ficar restrito a conexao, QR Code, estado da sessao e envio pelo WhatsApp Web.
+- Serviço Node.js separado para conexão com WhatsApp Web por QR Code.
+- Comunicação privada entre Laravel e Node.js via endereço local, token secreto, timeout e validação de origem.
+- Laravel deve concentrar regras administrativas, filas, histórico, auditoria e provider abstraction.
+- Node.js deve ficar restrito a conexão, QR Code, estado da sessão e envio pelo WhatsApp Web.
 
-## Escopo Minimo da Primeira Versao
+## Escopo Mínimo da Primeira Versão
 
-- Login, usuarios administradores e controle de acesso.
-- Cadastro, importacao, busca, filtros, etiquetas e bloqueio de duplicados em contatos.
-- Lista de nao contatar.
-- Conexao WhatsApp Web por QR Code com persistencia segura de sessao.
-- Modelos de mensagem, placeholders, pre-visualizacao e validacao antes de criar lote.
-- Criacao de lotes com ordem aleatoria definida uma unica vez.
-- Limites por minuto, hora e dia, janela de horarios e dias permitidos.
-- Fila com iniciar, pausar, continuar, parar, retentar e cancelar destinatario.
-- Status individual, historico, snapshots, erros e logs basicos.
-- Arquitetura de provedor para futura migracao para API oficial.
+- Login, usuários administradores e controle de acesso.
+- Cadastro, importação, busca, filtros, etiquetas e bloqueio de duplicados em contatos.
+- Lista de não contatar.
+- Conexão WhatsApp Web por QR Code com persistência segura de sessão.
+- Modelos de mensagem, placeholders, pre-visualização e validação antes de criar lote.
+- Criação de lotes com ordem aleatória definida uma única vez.
+- Limites por minuto, hora e dia, janela de horários e dias permitidos.
+- Fila com iniciar, pausar, continuar, parar, retentar e cancelar destinatário.
+- Status individual, histórico, snapshots, erros e logs básicos.
+- Arquitetura de provedor para futura migração para API oficial.
 
-## Itens Fora da Primeira Versao
+## Itens Fora da Primeira Versão
 
 - Caixa de entrada completa.
 - Envio de anexos.
-- Multiplos numeros.
-- Multiplos operadores.
+- Múltiplos números.
+- Múltiplos operadores.
 - Campanhas recorrentes.
-- Respostas automaticas.
+- Respostas automáticas.
 - Painel estatistico avancado.
 - Campos personalizados.
-- Automacoes baseadas em resposta.
-- Integracao com CRM.
-- API publica.
-- Aplicativo movel.
+- Automações baseadas em resposta.
+- Integração com CRM.
+- API pública.
+- Aplicativo móvel.
 
-## Cuidados Obrigatorios
+## Cuidados Obrigatórios
 
-- A integracao por WhatsApp Web e temporaria e deve permitir substituicao futura pela API oficial.
-- O sistema nao deve fazer disparos em massa.
-- Mensagens com placeholders obrigatorios sem valor devem ser bloqueadas antes de entrar na fila.
-- Contatos bloqueados ou em lista de nao contatar nunca devem receber novos lotes.
-- A sessao do WhatsApp deve ser protegida como credencial e nunca ficar em diretorio publico.
-- Logs nao devem conter tokens, QR Codes, sessoes completas ou informacoes sensiveis desnecessarias.
-- Toda tentativa de envio deve ser auditavel e idempotente por `request_id`.
+- A integração por WhatsApp Web e temporária e deve permitir substituição futura pela API oficial.
+- O sistema não deve fazer disparos em massa.
+- Mensagens com placeholders obrigatórios sem valor devem ser bloqueadas antes de entrar na fila.
+- Contatos bloqueados ou em lista de não contatar nunca devem receber novos lotes.
+- A sessão do WhatsApp deve ser protegida como credencial e nunca ficar em diretório público.
+- Logs não devem conter tokens, QR Codes, sessões completas ou informações sensíveis desnecessárias.
+- Toda tentativa de envio deve ser auditável e idempotente por `request_id`.
 
 ## Specs OpenSpec
 

@@ -14,7 +14,7 @@ class PhoneNormalizerService
         $digits = preg_replace('/\D+/', '', (string) $phone);
 
         if ($digits === '') {
-            return new PhoneNormalizationResult(null, 'Telefone e obrigatorio.');
+            return new PhoneNormalizationResult(null, 'Telefone e obrigatório.');
         }
 
         $defaultCode = (string) $this->settings->get('contacts.default_country_code', '55');
@@ -26,13 +26,13 @@ class PhoneNormalizerService
         }
 
         if (strlen($digits) < 12 || strlen($digits) > 15) {
-            return new PhoneNormalizationResult(null, 'Telefone invalido. Informe DDI, DDD e numero.');
+            return new PhoneNormalizationResult(null, 'Telefone inválido. Informe DDI, DDD e número.');
         }
 
         if (str_starts_with($digits, '55')) {
             $local = substr($digits, 2);
             if (strlen($local) < 10 || strlen($local) > 11 || preg_match('/^(\d)\1+$/', $local)) {
-                return new PhoneNormalizationResult(null, 'Telefone brasileiro invalido.');
+                return new PhoneNormalizationResult(null, 'Telefone brasileiro inválido.');
             }
         }
 
@@ -40,9 +40,9 @@ class PhoneNormalizerService
     }
 
     /**
-     * Numeros moveis brasileiros podem circular com ou sem o nono digito
+     * Números móveis brasileiros podem circular com ou sem o nono digito
      * (ex: 5549999592392 x 554999592392). Retorna a forma alternativa do
-     * numero informado para permitir casamento entre as duas variantes.
+     * número informado para permitir casamento entre as duas variantes.
      */
     public function alternateBrazilianMobileDigits(string $normalized): ?string
     {

@@ -17,18 +17,18 @@ use OpenSpout\Writer\XLSX\Writer as XlsxWriter;
 use Throwable;
 
 /**
- * Exportacao analitica.
+ * Exportação analítica.
  *
  * Dois escopos com regras diferentes:
  *
- * - **agregado** e o padrao. Contagem, rotulo, taxa e periodo. Nao carrega
- *   identificacao de ninguem, e por isso basta a permissao de exportar
+ * - **agregado** e o padrão. Contagem, rótulo, taxa e período. Não carrega
+ *   identificação de ninguém, e por isso basta a permissão de exportar
  *   agregado.
- * - **detalhado** carrega o texto que as pessoas escreveram. Exige permissao
+ * - **detalhado** carrega o texto que as pessoas escreveram. Exige permissão
  *   elevada, finalidade escrita e passa pelo anonimizador.
  *
- * A finalidade nao e validada pelo sistema. E um registro de responsabilidade,
- * nao um controle tecnico — vale dizer isso em voz alta para que ninguem a
+ * A finalidade não e validada pelo sistema. E um registro de responsabilidade,
+ * não um controle técnico — vale dizer isso em voz alta para que ninguém a
  * confunda com garantia.
  */
 class AnalyticsExportService
@@ -71,7 +71,7 @@ class AnalyticsExportService
 
         $this->audit->log(
             'analytics.export_requested',
-            'Exportacao analitica solicitada.',
+            'Exportação analítica solicitada.',
             $export,
             null,
             ['tipo' => $type, 'escopo' => $scope, 'formato' => $format, 'finalidade' => $purpose, 'filtros' => $filters],
@@ -117,7 +117,7 @@ class AnalyticsExportService
                 'status' => ReportExportStatus::Failed,
                 'finished_at' => now(),
                 'error_code' => 'ANALYTICS_EXPORT_FAILED',
-                'error_message' => 'Falha ao gerar exportacao analitica.',
+                'error_message' => 'Falha ao gerar exportação analítica.',
             ]);
         }
 
@@ -140,18 +140,18 @@ class AnalyticsExportService
 
         return match ($export->report_type) {
             'analytics.demands' => array_map(
-                fn (array $row): array => [$row['label'], $row['total'], $row['suppressed'] ? 'sim' : 'nao'],
+                fn (array $row): array => [$row['label'], $row['total'], $row['suppressed'] ? 'sim' : 'não'],
                 $this->demands->problems($from, $to, $flowId, 1000),
             ),
             default => array_map(
-                fn (array $row): array => [$row['name'], $row['total'], $row['average_confidence'], $row['reviewed'], $row['suppressed'] ? 'sim' : 'nao'],
+                fn (array $row): array => [$row['name'], $row['total'], $row['average_confidence'], $row['reviewed'], $row['suppressed'] ? 'sim' : 'não'],
                 $this->topics->mostMentioned($from, $to, $flowId, 1000),
             ),
         };
     }
 
     /**
-     * Linhas detalhadas, ja anonimizadas.
+     * Linhas detalhadas, já anonimizadas.
      *
      * @return array<int, array<int, mixed>>
      */
@@ -177,15 +177,15 @@ class AnalyticsExportService
                 $this->text($insight->urgency),
                 $this->text($insight->region),
                 $insight->confidence === null ? null : (float) $insight->confidence,
-                $insight->reviewed ? 'sim' : 'nao',
+                $insight->reviewed ? 'sim' : 'não',
             ])
             ->all();
     }
 
     /**
-     * Alguns campos do insight sao convertidos em enum pelo modelo e o escritor
-     * de planilha nao sabe o que fazer com um objeto. Converter aqui evita que
-     * a exportacao inteira falhe por causa de uma coluna.
+     * Alguns campos do insight são convertidos em enum pelo modelo e o escritor
+     * de planilha não sabe o que fazer com um objeto. Converter aqui evita que
+     * a exportação inteira falhe por causa de uma coluna.
      */
     private function text(mixed $value): ?string
     {

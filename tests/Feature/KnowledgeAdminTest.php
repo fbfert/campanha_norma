@@ -22,10 +22,10 @@ use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 /**
- * Subetapa 9D: administracao da base.
+ * Subetapa 9D: administração da base.
  *
- * A tela de teste existe para que a base seja homologavel antes de ser ligada, e
- * nenhuma acao dela produz mensagem para ninguem.
+ * A tela de teste existe para que a base seja homologável antes de ser ligada, e
+ * nenhuma ação dela produz mensagem para ninguém.
  */
 class KnowledgeAdminTest extends TestCase
 {
@@ -59,7 +59,7 @@ class KnowledgeAdminTest extends TestCase
     }
 
     // =========================================================================
-    // Permissoes
+    // Permissões
     // =========================================================================
 
     public function test_a_user_without_permission_cannot_see_the_bases(): void
@@ -86,7 +86,7 @@ class KnowledgeAdminTest extends TestCase
             ->assertOk()
             ->assertSee(route('admin.knowledge.bases.edit', $base), false);
 
-        // Operador prepara a base, mas nao redefine o que ela e: sem o link e
+        // Operador prepara a base, mas não redefine o que ela e: sem o link e
         // sem a rota.
         $this->actingAs($this->userWith('operador'))
             ->get(route('admin.knowledge.bases.index'))
@@ -111,7 +111,7 @@ class KnowledgeAdminTest extends TestCase
         $this->actingAs($this->userWith('administrador'))
             ->put(route('admin.knowledge.bases.update', $base), [
                 'name' => 'Base revisada',
-                'description' => 'Descricao revisada.',
+                'description' => 'Descrição revisada.',
                 'purpose' => 'Finalidade revisada.',
                 'usage_policy' => 'Sustenta apenas o que estiver aprovado.',
                 'flow_ids' => [$flow->id],
@@ -121,7 +121,7 @@ class KnowledgeAdminTest extends TestCase
         $base->refresh();
 
         $this->assertSame('Base revisada', $base->name);
-        $this->assertSame('Descricao revisada.', $base->description);
+        $this->assertSame('Descrição revisada.', $base->description);
         $this->assertSame('Finalidade revisada.', $base->purpose);
         $this->assertSame('Sustenta apenas o que estiver aprovado.', $base->usage_policy);
         $this->assertSame([$flow->id], $base->flows()->pluck('conversation_flows.id')->all());
@@ -135,7 +135,7 @@ class KnowledgeAdminTest extends TestCase
             ->put(route('admin.knowledge.bases.update', $base), ['name' => 'Ainda em rascunho'])
             ->assertRedirect(route('admin.knowledge.bases.show', $base));
 
-        // Publicar e ato separado: salvar o formulario nunca pode ligar a base.
+        // Publicar e ato separado: salvar o formulário nunca pode ligar a base.
         $this->assertSame(KnowledgeBaseStatus::Draft, $base->refresh()->status);
     }
 
@@ -174,8 +174,8 @@ class KnowledgeAdminTest extends TestCase
 
         $this->actingAs($this->userWith('administrador'))
             ->post(route('admin.knowledge.bases.store'), [
-                'name' => 'Competencias institucionais',
-                'description' => 'Conteudo oficial.',
+                'name' => 'Competências institucionais',
+                'description' => 'Conteúdo oficial.',
                 'flow_ids' => [$flow->id],
             ])
             ->assertRedirect();
@@ -245,7 +245,7 @@ class KnowledgeAdminTest extends TestCase
 
         $this->actingAs($this->userWith('administrador'))
             ->post(route('admin.knowledge.documents.store', $base), [
-                'title' => 'Conversa de cidadao',
+                'title' => 'Conversa de cidadão',
                 'type' => 'citizen_conversation',
                 'file' => UploadedFile::fake()->createWithContent('conversa.txt', 'Texto qualquer.'),
             ])
@@ -285,14 +285,14 @@ class KnowledgeAdminTest extends TestCase
         ]);
         KnowledgeChunk::factory()
             ->for($document, 'document')
-            ->withContent('TRECHO INDEXADO PARA CITACAO')
+            ->withContent('TRECHO INDEXADO PARA CITAÇÃO')
             ->create(['knowledge_base_id' => $base->id]);
 
         $this->actingAs($this->userWith('administrador'))
             ->get(route('admin.knowledge.documents.show', [$base, $document]))
             ->assertOk()
             ->assertSee('TEXTO EXTRAIDO DO ARQUIVO OFICIAL')
-            ->assertSee('TRECHO INDEXADO PARA CITACAO');
+            ->assertSee('TRECHO INDEXADO PARA CITAÇÃO');
     }
 
     public function test_downloading_the_original_file_is_audited(): void
@@ -302,7 +302,7 @@ class KnowledgeAdminTest extends TestCase
             'disk' => 'local',
             'file_path' => 'knowledge-documents/arquivo.txt',
         ]);
-        Storage::disk('local')->put($document->file_path, 'conteudo oficial');
+        Storage::disk('local')->put($document->file_path, 'conteúdo oficial');
 
         $this->actingAs($this->userWith('administrador'))
             ->get(route('admin.knowledge.documents.download', [$base, $document]))
@@ -339,7 +339,7 @@ class KnowledgeAdminTest extends TestCase
 
         $this->actingAs($this->userWith('administrador'))
             ->get(route('admin.knowledge.test', [
-                'query' => 'horario de atendimento do gabinete',
+                'query' => 'horário de atendimento do gabinete',
                 'base_ids' => [$base->id],
             ]))
             ->assertOk()
@@ -359,7 +359,7 @@ class KnowledgeAdminTest extends TestCase
 
         $this->actingAs($this->userWith('administrador'))
             ->get(route('admin.knowledge.test', [
-                'query' => 'horario de atendimento do gabinete',
+                'query' => 'horário de atendimento do gabinete',
                 'base_ids' => [$base->id],
                 'answer' => 'O gabinete atendeu 4200 pessoas no ano passado.',
             ]))

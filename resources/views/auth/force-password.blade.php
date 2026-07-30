@@ -1,5 +1,5 @@
 <x-layouts.guest>
-    <h2>Alterar senha temporaria</h2>
+    <h2>Alterar senha temporária</h2>
     <p class="muted">Defina uma nova senha antes de acessar o sistema.</p>
     <form method="post" action="{{ route('password.force.update') }}">
         @csrf

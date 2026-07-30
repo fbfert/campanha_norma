@@ -91,7 +91,7 @@ class MessageTemplateController extends Controller
         abort_unless($request->user()->can('message_templates.delete'), 403);
         $service->delete($messageTemplate, $request->user());
 
-        return redirect()->route('admin.message-templates.index')->with('success', 'Modelo excluido logicamente.');
+        return redirect()->route('admin.message-templates.index')->with('success', 'Modelo excluído logicamente.');
     }
 
     public function restore(Request $request, int $messageTemplate, MessageTemplateService $service): RedirectResponse

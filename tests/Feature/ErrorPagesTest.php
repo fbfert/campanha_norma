@@ -10,19 +10,19 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 /**
- * Paginas de erro proprias.
+ * Páginas de erro próprias.
  *
- * Existem por dois motivos. O visivel: quem erra um endereco ou esbarra numa
- * permissao passa a ver algo que parece o sistema, em portugues, com caminho de
+ * Existem por dois motivos. O visível: quem erra um endereço ou esbarra numa
+ * permissão passa a ver algo que parece o sistema, em português, com caminho de
  * volta.
  *
- * O invisivel importa mais. A pagina padrao do Laravel e escrita em utilitarias
+ * O invisível importa mais. A página padrão do Laravel e escrita em utilitarias
  * do Tailwind que nenhuma tela deste sistema usa. Elas so chegavam ao CSS
  * porque o `app.css` mandava varrer `storage/framework/views`, o cache de views
  * compiladas. Isso fazia o CSS gerado depender do estado do cache: um
- * `view:clear` antes do build produzia um arquivo diferente, e a pagina de erro
- * saia sem estilo. Com estas paginas usando as classes do proprio sistema, a
- * varredura do cache deixou de ser necessaria e o build virou deterministico.
+ * `view:clear` antes do build produzia um arquivo diferente, e a página de erro
+ * saia sem estilo. Com estas páginas usando as classes do próprio sistema, a
+ * varredura do cache deixou de ser necessária e o build virou determinístico.
  */
 class ErrorPagesTest extends TestCase
 {
@@ -40,7 +40,7 @@ class ErrorPagesTest extends TestCase
     {
         $this->get('/endereco-que-nao-existe')
             ->assertNotFound()
-            ->assertSee('Pagina nao encontrada');
+            ->assertSee('Página não encontrada');
     }
 
     public function test_a_forbidden_screen_explains_that_it_is_permission(): void
@@ -51,11 +51,11 @@ class ErrorPagesTest extends TestCase
         $this->actingAs($user)
             ->get(route('admin.users.index'))
             ->assertForbidden()
-            ->assertSee('Sem permissao');
+            ->assertSee('Sem permissão');
     }
 
     /**
-     * A pagina de erro e publica. Mensagem de erro interno costuma carregar
+     * A página de erro e pública. Mensagem de erro interno costuma carregar
      * caminho de arquivo, nome de tabela ou trecho de consulta.
      */
     public function test_the_error_screen_does_not_leak_internals(): void
@@ -67,8 +67,8 @@ class ErrorPagesTest extends TestCase
     }
 
     /**
-     * O motivo de existirem: se alguem voltar a escrever utilitarias do
-     * Tailwind aqui, a dependencia do cache de views volta junto.
+     * O motivo de existirem: se alguém voltar a escrever utilitarias do
+     * Tailwind aqui, a dependência do cache de views volta junto.
      */
     public function test_the_error_screens_use_the_system_classes_and_not_utilities(): void
     {
@@ -78,15 +78,15 @@ class ErrorPagesTest extends TestCase
             $this->assertDoesNotMatchRegularExpression(
                 '/class="[^"]*\b(min-h-screen|max-w-\w+|text-gray-\d+|antialiased|sm:[a-z-]+)\b/',
                 $source,
-                "A pagina {$view} voltou a usar utilitarias do Tailwind."
+                "A página {$view} voltou a usar utilitarias do Tailwind."
             );
         }
     }
 
     /**
-     * A view de paginacao foi publicada para dentro de `resources`, que o
-     * Tailwind varre. Se ela sumir, a paginacao perde o estilo no proximo build
-     * feito com o cache limpo - e so se descobre abrindo a segunda pagina de
+     * A view de paginação foi publicada para dentro de `resources`, que o
+     * Tailwind varre. Se ela sumir, a paginação perde o estilo no próximo build
+     * feito com o cache limpo - e so se descobre abrindo a segunda página de
      * uma lista.
      */
     public function test_the_pagination_view_lives_inside_resources(): void
@@ -95,9 +95,9 @@ class ErrorPagesTest extends TestCase
     }
 
     /**
-     * O `app.css` nao pode voltar a varrer o cache de views nem `vendor`: o
+     * O `app.css` não pode voltar a varrer o cache de views nem `vendor`: o
      * primeiro torna o build dependente do estado do cache, e o segundo e
-     * ignorado em silencio porque `/vendor` esta no `.gitignore`.
+     * ignorado em silêncio porque `/vendor` esta no `.gitignore`.
      */
     public function test_the_stylesheet_does_not_scan_the_view_cache_or_vendor(): void
     {

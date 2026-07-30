@@ -37,8 +37,8 @@ class InsightTopicRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'slug.regex' => 'O identificador aceita apenas letras minusculas, numeros e sublinhado.',
-            'parent_id.not_in' => 'Um tema nao pode ser pai de si mesmo.',
+            'slug.regex' => 'O identificador aceita apenas letras minúsculas, números e sublinhado.',
+            'parent_id.not_in' => 'Um tema não pode ser pai de si mesmo.',
         ];
     }
 }

@@ -15,8 +15,8 @@ use Illuminate\Support\Facades\Storage;
 /**
  * Extrai, sanitiza, divide, gera embeddings e indexa.
  *
- * O resultado de sucesso e `ready`, nao `approved`: indexar e tecnico, aprovar e
- * uma afirmacao humana. Nenhum caminho aqui torna um documento recuperavel.
+ * O resultado de sucesso e `ready`, não `approved`: indexar e técnico, aprovar e
+ * uma afirmação humana. Nenhum caminho aqui torna um documento recuperável.
  */
 class KnowledgeIndexingService
 {
@@ -59,8 +59,8 @@ class KnowledgeIndexingService
             $result = $this->providers->provider()->indexDocument($document, $prepared);
 
             $document->forceFill([
-                // Documento reindexado volta a aguardar aprovacao: o texto mudou,
-                // e quem aprovou o anterior nao aprovou este.
+                // Documento reindexado volta a aguardar aprovação: o texto mudou,
+                // e quem aprovou o anterior não aprovou este.
                 'status' => KnowledgeDocumentStatus::Ready,
                 'extracted_text' => $sanitized['text'],
                 'chunk_count' => $result->indexedChunks,
@@ -104,7 +104,7 @@ class KnowledgeIndexingService
     }
 
     /**
-     * Aprovacao humana: e o unico caminho que torna um documento recuperavel.
+     * Aprovação humana: e o único caminho que torna um documento recuperável.
      */
     public function approve(KnowledgeDocument $document, User $user): KnowledgeDocument
     {
@@ -117,12 +117,12 @@ class KnowledgeIndexingService
             'rejection_reason' => null,
         ])->save();
 
-        // Aprovar a nova versao aposenta a anterior sem apagar nada dela.
+        // Aprovar a nova versão aposenta a anterior sem apagar nada dela.
         if ($document->supersedes_document_id !== null) {
             $previous = KnowledgeDocument::find($document->supersedes_document_id);
 
             if ($previous && $previous->status !== KnowledgeDocumentStatus::Obsolete) {
-                $this->obsolete($previous, $user, 'substituido pela versao '.$document->version);
+                $this->obsolete($previous, $user, 'substituído pela versão '.$document->version);
             }
         }
 
@@ -168,8 +168,8 @@ class KnowledgeIndexingService
     }
 
     /**
-     * Exclusao definitiva. Sincroniza o provedor e apaga o arquivo privado, mas
-     * nao toca no log de recuperacao nem nas citacoes: elas guardam snapshot
+     * Exclusão definitiva. Sincroniza o provedor e apaga o arquivo privado, mas
+     * não toca no log de recuperação nem nas citações: elas guardam snapshot
      * justamente para sobreviver a isto.
      */
     public function delete(KnowledgeDocument $document, ?User $user = null): void
@@ -180,7 +180,7 @@ class KnowledgeIndexingService
             Storage::disk($document->disk)->delete($document->file_path);
         }
 
-        $this->audit->log('knowledge_document.deleted', 'Documento excluido da base de conhecimento.', $document, [
+        $this->audit->log('knowledge_document.deleted', 'Documento excluído da base de conhecimento.', $document, [
             'title' => $document->title,
             'knowledge_base_id' => $document->knowledge_base_id,
         ], null, $user);
@@ -189,8 +189,8 @@ class KnowledgeIndexingService
     }
 
     /**
-     * Embeddings apenas quando a estrategia ativa os usa. Falta de credencial nao
-     * impede a indexacao: a estrategia lexica nao depende de vetor.
+     * Embeddings apenas quando a estratégia ativa os usa. Falta de credencial não
+     * impede a indexação: a estratégia léxica não depende de vetor.
      *
      * @param  array<int, PreparedChunk>  $chunks
      * @return array<int, PreparedChunk>
@@ -208,8 +208,8 @@ class KnowledgeIndexingService
                 throw KnowledgeProviderException::code(KnowledgeProviderException::EMBEDDINGS_NOT_CONFIGURED);
             }
 
-            // Na estrategia hibrida a parte lexica continua funcionando, entao
-            // indexar sem vetor e degradacao aceitavel e registrada.
+            // Na estratégia híbrida a parte léxica continua funcionando, então
+            // indexar sem vetor e degradação aceitável e registrada.
             Log::warning('knowledge.embeddings_unavailable', ['strategy' => $this->guard->strategy()->value]);
 
             return $chunks;

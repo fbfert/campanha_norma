@@ -55,7 +55,7 @@ class ConversationAutomationModuleTest extends TestCase
         app(SystemSettingService::class)->updateMany([
             'conversation_automation.enabled' => '1',
             'conversation_automation.auto_send_enabled' => $autoSend ? '1' : '0',
-            // Janela aberta para o teste nao depender da hora da execucao.
+            // Janela aberta para o teste não depender da hora da execução.
             'conversation_automation.window_start' => '00:00',
             'conversation_automation.window_end' => '23:59',
         ]);
@@ -97,7 +97,7 @@ class ConversationAutomationModuleTest extends TestCase
     }
 
     // ---------------------------------------------------------------
-    // Cenario 1
+    // Cenário 1
     // ---------------------------------------------------------------
 
     public function test_cenario_1_permissao_concedida_seleciona_uma_pergunta_e_cria_uma_mensagem(): void
@@ -129,7 +129,7 @@ class ConversationAutomationModuleTest extends TestCase
     }
 
     // ---------------------------------------------------------------
-    // Cenario 2
+    // Cenário 2
     // ---------------------------------------------------------------
 
     public function test_cenario_2_execucao_repetida_nao_cria_segunda_pergunta_nem_segunda_mensagem(): void
@@ -153,7 +153,7 @@ class ConversationAutomationModuleTest extends TestCase
     }
 
     // ---------------------------------------------------------------
-    // Cenario 3
+    // Cenário 3
     // ---------------------------------------------------------------
 
     public function test_cenario_3_opt_out_marca_nao_contatar_interrompe_lotes_e_nao_envia(): void
@@ -169,7 +169,7 @@ class ConversationAutomationModuleTest extends TestCase
             'contact_phone_snapshot' => $contact->phone_normalized,
         ]);
 
-        $message = $this->incoming($conversation, 'nao quero receber mensagens');
+        $message = $this->incoming($conversation, 'não quero receber mensagens');
 
         app(ConversationFlowService::class)->handleIncomingMessage($message);
 
@@ -189,7 +189,7 @@ class ConversationAutomationModuleTest extends TestCase
     }
 
     // ---------------------------------------------------------------
-    // Cenario 4
+    // Cenário 4
     // ---------------------------------------------------------------
 
     public function test_cenario_4_texto_ambiguo_nao_envia_pergunta_e_sinaliza_humano(): void
@@ -197,7 +197,7 @@ class ConversationAutomationModuleTest extends TestCase
         Queue::fake();
         [, , $conversation, $state] = $this->makeScenario();
 
-        $message = $this->incoming($conversation, 'quem e voce e por que esta me mandando mensagem sobre isso agora');
+        $message = $this->incoming($conversation, 'quem e você e por que esta me mandando mensagem sobre isso agora');
 
         app(ConversationFlowService::class)->handleIncomingMessage($message);
 
@@ -213,7 +213,7 @@ class ConversationAutomationModuleTest extends TestCase
     }
 
     // ---------------------------------------------------------------
-    // Cenario 5
+    // Cenário 5
     // ---------------------------------------------------------------
 
     public function test_cenario_5_automacao_global_desligada_nao_cria_resposta(): void
@@ -263,7 +263,7 @@ class ConversationAutomationModuleTest extends TestCase
     }
 
     // ---------------------------------------------------------------
-    // Cenario 6
+    // Cenário 6
     // ---------------------------------------------------------------
 
     public function test_cenario_6_sem_pergunta_disponivel_vai_para_humano_com_evento(): void
@@ -271,7 +271,7 @@ class ConversationAutomationModuleTest extends TestCase
         Queue::fake();
         [, $flow, $conversation, $state] = $this->makeScenario(questions: 1);
 
-        // Torna a unica pergunta inativa: nao ha candidata elegivel.
+        // Torna a única pergunta inativa: não ha candidata elegível.
         ConversationFlowQuestion::where('conversation_flow_id', $flow->id)->update(['is_active' => false]);
 
         app(ConversationFlowService::class)->handleIncomingMessage($this->incoming($conversation, 'sim'));
@@ -310,7 +310,7 @@ class ConversationAutomationModuleTest extends TestCase
         Queue::fake();
         [$contact, , $conversation, $state] = $this->makeScenario();
 
-        app(ConversationFlowService::class)->handleIncomingMessage($this->incoming($conversation, 'nao obrigado'));
+        app(ConversationFlowService::class)->handleIncomingMessage($this->incoming($conversation, 'não obrigado'));
 
         $this->assertSame(ConversationFlowStage::PermissionDenied, $state->refresh()->current_stage);
         $this->assertFalse($contact->refresh()->do_not_contact);
@@ -354,7 +354,7 @@ class ConversationAutomationModuleTest extends TestCase
 
         $this->assertNotNull($first);
         $this->assertNotNull($second);
-        $this->assertNull($third, 'Nao deve sortear alem do numero de perguntas ativas.');
+        $this->assertNull($third, 'Não deve sortear além do número de perguntas ativas.');
         $this->assertNotSame($first->conversation_flow_question_id, $second->conversation_flow_question_id);
     }
 
@@ -442,7 +442,7 @@ class ConversationAutomationModuleTest extends TestCase
         $state->refresh();
         $this->assertSame(ConversationFlowStage::WaitingAnswer, $state->current_stage);
 
-        $answer = $this->incoming($conversation, 'Acho que ela deveria priorizar educacao e saude na regiao oeste do estado.');
+        $answer = $this->incoming($conversation, 'Acho que ela deveria priorizar educação e saúde na região oeste do estado.');
         app(ConversationFlowService::class)->handleIncomingMessage($answer);
 
         $state->refresh();
@@ -451,7 +451,7 @@ class ConversationAutomationModuleTest extends TestCase
     }
 
     // ---------------------------------------------------------------
-    // Job / integracao
+    // Job / integração
     // ---------------------------------------------------------------
 
     public function test_job_de_avaliacao_usa_fila_propria_e_nao_a_de_entrada(): void
@@ -478,7 +478,7 @@ class ConversationAutomationModuleTest extends TestCase
     }
 
     // ---------------------------------------------------------------
-    // Rotas e permissoes
+    // Rotas e permissões
     // ---------------------------------------------------------------
 
     public function test_rotas_administrativas_exigem_permissao(): void
@@ -486,7 +486,7 @@ class ConversationAutomationModuleTest extends TestCase
         $user = User::factory()->create();
         $user->roles()->attach(Role::where('slug', 'consulta')->first());
 
-        // Consulta pode ver, mas nao gerenciar fluxos.
+        // Consulta pode ver, mas não gerenciar fluxos.
         $this->actingAs($user)->get(route('admin.conversation-automation.index'))->assertOk();
         $this->actingAs($user)->get(route('admin.conversation-flows.create'))->assertForbidden();
     }

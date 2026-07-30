@@ -173,7 +173,7 @@ The system SHALL support configurable disclosure that the interaction is automat
 - **THEN** automated messages SHALL be visually identified as automatic.
 
 ### Requirement: Automation Administration Screens
-The system SHALL provide an administrative area for conversational research with flow and question CRUD, conversation state screen, pause, resume, finish and human takeover actions, filters by stage and flow, and specific permissions.
+The system SHALL provide an administrative área for conversational research with flow and question CRUD, conversation state screen, pause, resume, finish and human takeover actions, filters by stage and flow, and specific permissions.
 
 #### Scenario: Human takeover
 - **WHEN** an authorized user takes a conversation manually
@@ -181,5 +181,5 @@ The system SHALL provide an administrative area for conversational research with
 - **AND** the action SHALL be audited.
 
 #### Scenario: Unauthorized access
-- **WHEN** a user without the automation permissions opens the administration area
+- **WHEN** a user without the automation permissions opens the administration área
 - **THEN** access SHALL be denied.

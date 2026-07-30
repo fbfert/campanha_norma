@@ -10,10 +10,10 @@ use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Cache;
 
 /**
- * Gera a sugestao de resposta em fila propria.
+ * Gera a sugestão de resposta em fila própria.
  *
- * O atraso configuravel agrupa mensagens consecutivas: ao executar, o servico
- * verifica se esta mensagem ainda e a ultima recebida e desiste se nao for.
+ * O atraso configurável agrupa mensagens consecutivas: ao executar, o serviço
+ * verifica se esta mensagem ainda e a última recebida e desiste se não for.
  */
 class GenerateConversationReplyJob implements ShouldQueue
 {

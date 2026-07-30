@@ -1,11 +1,11 @@
 <x-layouts.app title="Teste de busca na base" breadcrumbs="Inicio / Base de conhecimento / Teste de busca">
     <section class="card">
         <p class="muted">
-            Esta tela nao envia nada para ninguem e nao chama o provedor de IA. Ela mostra o que a base devolveria para uma consulta
+            Esta tela não envia nada para ninguém e não chama o provedor de IA. Ela mostra o que a base devolveria para uma consulta
             e confere se um texto se sustenta nos trechos devolvidos.
         </p>
         @unless($knowledgeEnabled)
-            <p class="muted">A recuperacao esta desligada em configuracoes. O teste continua funcionando; a geracao de respostas nao usa a base.</p>
+            <p class="muted">A recuperação esta desligada em configurações. O teste continua funcionando; a geração de respostas não usa a base.</p>
         @endunless
 
         <form method="get">
@@ -26,7 +26,7 @@
             </fieldset>
 
             <div>
-                <label for="strategy">Estrategia</label>
+                <label for="strategy">Estratégia</label>
                 <select id="strategy" name="strategy">
                     <option value="">Usar a configurada</option>
                     @foreach($strategies as $item)
@@ -58,21 +58,21 @@
         <section class="card">
             <h2>Resultado</h2>
             <dl class="grid grid-3">
-                <div><dt>Estrategia usada</dt><dd>{{ $result->strategy->label() }}</dd></div>
+                <div><dt>Estratégia usada</dt><dd>{{ $result->strategy->label() }}</dd></div>
                 <div><dt>Candidatos avaliados</dt><dd>{{ $result->candidateCount }}</dd></div>
                 <div><dt>Trechos devolvidos</dt><dd>{{ $result->count() }}</dd></div>
-                <div><dt>Maior pontuacao</dt><dd>{{ $result->maxScore() !== null ? number_format($result->maxScore(), 4, ',', '.') : '-' }}</dd></div>
-                <div><dt>Duracao</dt><dd>{{ $result->durationMs }} ms</dd></div>
-                <div><dt>Degradacao</dt><dd>{{ $result->degradedReason ?: 'Nenhuma' }}</dd></div>
+                <div><dt>Maior pontuação</dt><dd>{{ $result->maxScore() !== null ? number_format($result->maxScore(), 4, ',', '.') : '-' }}</dd></div>
+                <div><dt>Duração</dt><dd>{{ $result->durationMs }} ms</dd></div>
+                <div><dt>Degradação</dt><dd>{{ $result->degradedReason ?: 'Nenhuma' }}</dd></div>
             </dl>
 
             @forelse($result->chunks as $chunk)
                 <article class="card nested">
                     <p class="muted">
                         {{ $chunk->documentTitle }} &middot; document_id={{ $chunk->documentId }} &middot; chunk_id={{ $chunk->reference() }}
-                        @if($chunk->page) &middot; pagina {{ $chunk->page }} @endif
-                        @if($chunk->section) &middot; secao {{ $chunk->section }} @endif
-                        &middot; pontuacao {{ number_format($chunk->score, 4, ',', '.') }}
+                        @if($chunk->page) &middot; página {{ $chunk->page }} @endif
+                        @if($chunk->section) &middot; seção {{ $chunk->section }} @endif
+                        &middot; pontuação {{ number_format($chunk->score, 4, ',', '.') }}
                     </p>
                     <p>{{ $chunk->content }}</p>
                 </article>
@@ -84,7 +84,7 @@
 
     @if($verdict)
         <section class="card">
-            <h2>Conferencia de fundamentacao</h2>
+            <h2>Conferência de fundamentação</h2>
             <p>
                 Veredito: <strong>{{ $verdict->status->label() }}</strong>.
                 {{ $verdict->allowsSending() ? 'Um texto assim poderia ser enviado.' : 'Um texto assim seria bloqueado e encaminhado para atendimento humano.' }}

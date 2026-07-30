@@ -9,8 +9,8 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Testes puros do classificador deterministico: sem banco, sem framework.
- * As configuracoes sao injetadas por um duble do servico de settings.
+ * Testes puros do classificador determinístico: sem banco, sem framework.
+ * As configurações são injetadas por um duble do serviço de settings.
  */
 class PermissionResponseClassifierTest extends TestCase
 {
@@ -24,8 +24,8 @@ class PermissionResponseClassifierTest extends TestCase
             {
                 return $this->overrides[$key] ?? match ($key) {
                     'conversation_automation.yes_expressions' => 'sim|claro|pode|pode sim|pode perguntar|manda|manda ai|pergunte|pergunta|quero|aceito|ok|beleza|positivo|com certeza|vamos|bora|tudo bem',
-                    'conversation_automation.no_expressions' => 'nao|nao quero|nao posso|agora nao|nao obrigado|nao obrigada|prefiro nao|sem interesse|nao tenho interesse|deixa pra la|talvez depois|negativo',
-                    'conversation_automation.opt_out_expressions' => 'sair|parar|pare|cancelar|descadastrar|remover|me remova|nao quero receber mensagens|nao quero mais receber|nao me mande mais|nao envie mais|nao perturbe|me tire da lista|bloquear|spam|stop|unsubscribe',
+                    'conversation_automation.no_expressions' => 'não|não quero|não posso|agora não|não obrigado|não obrigada|prefiro não|sem interesse|não tenho interesse|deixa pra la|talvez depois|negativo',
+                    'conversation_automation.opt_out_expressions' => 'sair|parar|pare|cancelar|descadastrar|remover|me remova|não quero receber mensagens|não quero mais receber|não me mande mais|não envie mais|não perturbe|me tire da lista|bloquear|spam|stop|unsubscribe',
                     'conversation_automation.short_answer_max_words' => 6,
                     default => $default,
                 };
@@ -45,9 +45,9 @@ class PermissionResponseClassifierTest extends TestCase
     {
         return [
             'sim' => ['sim'],
-            'sim maiusculo' => ['SIM'],
-            'sim com pontuacao' => ['Sim!'],
-            'sim com espacos' => ['   sim   '],
+            'sim maiúsculo' => ['SIM'],
+            'sim com pontuação' => ['Sim!'],
+            'sim com espaços' => ['   sim   '],
             'claro' => ['Claro'],
             'pode' => ['pode'],
             'pode sim' => ['Pode sim'],
@@ -76,13 +76,13 @@ class PermissionResponseClassifierTest extends TestCase
     {
         return [
             'nao' => ['nao'],
-            'nao com acento' => ['não'],
-            'nao maiusculo' => ['NAO'],
-            'nao obrigado' => ['Nao obrigado'],
-            'nao obrigada com acento' => ['Não, obrigada'],
-            'agora nao' => ['agora nao'],
-            'nao posso' => ['nao posso'],
-            'prefiro nao' => ['prefiro nao'],
+            'não com acento' => ['não'],
+            'não maiúsculo' => ['NÃO'],
+            'não obrigado' => ['Não obrigado'],
+            'não obrigada com acento' => ['Não, obrigada'],
+            'agora não' => ['agora não'],
+            'não posso' => ['não posso'],
+            'prefiro não' => ['prefiro não'],
             'sem interesse' => ['sem interesse'],
             'talvez depois' => ['talvez depois'],
             'negativo' => ['negativo'],
@@ -105,9 +105,9 @@ class PermissionResponseClassifierTest extends TestCase
             'cancelar' => ['cancelar'],
             'descadastrar' => ['descadastrar'],
             'me remova' => ['me remova'],
-            'nao quero receber mensagens' => ['nao quero receber mensagens'],
+            'não quero receber mensagens' => ['não quero receber mensagens'],
             'com acento' => ['não quero receber mensagens'],
-            'nao me mande mais' => ['nao me mande mais'],
+            'não me mande mais' => ['não me mande mais'],
             'me tire da lista' => ['me tire da lista'],
             'stop' => ['STOP'],
             'unsubscribe' => ['unsubscribe'],
@@ -129,7 +129,7 @@ class PermissionResponseClassifierTest extends TestCase
 
     public function test_opt_out_tem_prioridade_sobre_negativa(): void
     {
-        $this->assertSame(PermissionResponseClassification::OptOut, $this->classify('nao quero receber mensagens'));
+        $this->assertSame(PermissionResponseClassification::OptOut, $this->classify('não quero receber mensagens'));
     }
 
     /** @return array<string, array{0: string}> */
@@ -137,14 +137,14 @@ class PermissionResponseClassifierTest extends TestCase
     {
         return [
             'vazio' => [''],
-            'somente espacos' => ['   '],
-            'somente pontuacao' => ['???'],
-            'pergunta de volta' => ['quem e voce'],
-            'texto longo sem expressao' => ['estou no trabalho agora e nao consigo falar direito sobre isso'],
-            'texto longo com positiva' => ['bom dia tudo bem com voce entao me diga do que se trata isso ai'],
+            'somente espaços' => ['   '],
+            'somente pontuação' => ['???'],
+            'pergunta de volta' => ['quem e você'],
+            'texto longo sem expressão' => ['estou no trabalho agora e não consigo falar direito sobre isso'],
+            'texto longo com positiva' => ['bom dia tudo bem com você então me diga do que se trata isso ai'],
             'duvida' => ['depende do assunto'],
-            'positiva e negativa' => ['sim e nao'],
-            'numero solto' => ['12345'],
+            'positiva e negativa' => ['sim e não'],
+            'número solto' => ['12345'],
         ];
     }
 
@@ -156,7 +156,7 @@ class PermissionResponseClassifierTest extends TestCase
 
     public function test_texto_longo_nao_vira_positivo_por_aproximacao(): void
     {
-        $texto = 'eu nao sei se posso responder isso agora mas talvez sim quem sabe depois';
+        $texto = 'eu não sei se posso responder isso agora mas talvez sim quem sabe depois';
 
         $this->assertSame(PermissionResponseClassification::Ambiguous, $this->classify($texto));
     }
@@ -164,8 +164,8 @@ class PermissionResponseClassifierTest extends TestCase
     public function test_correspondencia_exata_vale_mesmo_com_muitas_palavras(): void
     {
         // Frase longa configurada explicitamente deve ser aceita como exata.
-        $classification = $this->classify('sim pode perguntar o que voce quiser agora', [
-            'conversation_automation.yes_expressions' => 'sim pode perguntar o que voce quiser agora',
+        $classification = $this->classify('sim pode perguntar o que você quiser agora', [
+            'conversation_automation.yes_expressions' => 'sim pode perguntar o que você quiser agora',
             'conversation_automation.short_answer_max_words' => 3,
         ]);
 
@@ -174,8 +174,8 @@ class PermissionResponseClassifierTest extends TestCase
 
     public function test_nao_casa_expressao_dentro_de_outra_palavra(): void
     {
-        // "sim" nao pode casar dentro de "simplesmente"; "pode" nao dentro de "poderia".
-        $this->assertSame(PermissionResponseClassification::Ambiguous, $this->classify('simplesmente incrivel'));
+        // "sim" não pode casar dentro de "simplesmente"; "pode" não dentro de "poderia".
+        $this->assertSame(PermissionResponseClassification::Ambiguous, $this->classify('simplesmente incrível'));
     }
 
     public function test_listas_sao_editaveis_sem_alterar_codigo(): void
@@ -191,7 +191,7 @@ class PermissionResponseClassifierTest extends TestCase
     {
         $result = $this->classifier()->classify('  Não, Obrigado!  ');
 
-        $this->assertSame('nao obrigado', $result['normalized']);
+        $this->assertSame('nao obrigado', $result['normalized']); // ortografia:ignorar - saida normalizada nao tem acento
         $this->assertSame(PermissionResponseClassification::PermissionNo, $result['classification']);
     }
 
@@ -208,7 +208,7 @@ class PermissionResponseClassifierTest extends TestCase
     {
         $classifier = $this->classifier();
 
-        $this->assertSame('acao e coracao', $classifier->normalize('Ação; e Coração!'));
+        $this->assertSame('acao e coracao', $classifier->normalize('Ação; e Coração!')); // ortografia:ignorar - saida normalizada nao tem acento
         $this->assertSame('nao', $classifier->normalize('NÃO...'));
         $this->assertSame('', $classifier->normalize('!!!'));
     }

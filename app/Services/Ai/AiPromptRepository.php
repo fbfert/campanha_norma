@@ -9,9 +9,9 @@ use RuntimeException;
 /**
  * Prompts de sistema versionados em arquivo.
  *
- * Ficam no repositorio para serem revisaveis em diff. A versao ativa por
+ * Ficam no repositório para serem revisáveis em diff. A versão ativa por
  * finalidade vem de system_settings, o que permite promover ou reverter sem
- * deploy, mas nunca editar o texto em producao sem rastro.
+ * deploy, mas nunca editar o texto em produção sem rastro.
  */
 class AiPromptRepository
 {
@@ -31,11 +31,11 @@ class AiPromptRepository
     }
 
     /**
-     * Versao usada quando a resposta e fundamentada em base aprovada.
+     * Versão usada quando a resposta e fundamentada em base aprovada.
      *
-     * E uma chave propria, e nao uma promocao da versao da subetapa anterior: o
-     * prompt fundamentado tem instrucoes e contrato diferentes, e misturar as duas
-     * versoes faria todo run sem base carregar um contrato que ele nao usa.
+     * E uma chave própria, e não uma promoção da versão da subetapa anterior: o
+     * prompt fundamentado tem instruções e contrato diferentes, e misturar as duas
+     * versões faria todo run sem base carregar um contrato que ele não usa.
      */
     public function activeGroundedResponseVersion(): string
     {
@@ -75,7 +75,7 @@ class AiPromptRepository
 
     private function path(AiRunPurpose $purpose, string $version): string
     {
-        // Impede travessia de diretorio a partir de uma configuracao alterada.
+        // Impede travessia de diretório a partir de uma configuração alterada.
         $safeVersion = preg_replace('/[^A-Za-z0-9._-]/', '', $version) ?? '';
 
         return $this->directory($purpose).'/'.$safeVersion.'.txt';

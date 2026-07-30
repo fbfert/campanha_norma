@@ -10,7 +10,7 @@ class RebuildConversationUnreadCommand extends Command
 {
     protected $signature = 'conversations:rebuild-unread';
 
-    protected $description = 'Recalcula contadores internos de mensagens nao lidas das conversas.';
+    protected $description = 'Recalcula contadores internos de mensagens não lidas das conversas.';
 
     public function handle(): int
     {

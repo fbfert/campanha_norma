@@ -3,10 +3,10 @@
 namespace App\Enums;
 
 /**
- * Estrategia de recuperacao.
+ * Estratégia de recuperação.
  *
- * O padrao e `lexical` porque ela nao depende de credencial de embedding: a base
- * funciona, e testavel e e homologavel sem nenhuma chamada externa. A vetorial e
+ * O padrão e `lexical` porque ela não depende de credencial de embedding: a base
+ * funciona, e testável e e homologável sem nenhuma chamada externa. A vetorial e
  * um ganho de qualidade que se liga depois.
  */
 enum RetrievalStrategy: string
@@ -18,9 +18,9 @@ enum RetrievalStrategy: string
     public function label(): string
     {
         return match ($this) {
-            self::Lexical => 'Lexica',
+            self::Lexical => 'Léxica',
             self::Vector => 'Vetorial',
-            self::Hybrid => 'Hibrida',
+            self::Hybrid => 'Híbrida',
         };
     }
 

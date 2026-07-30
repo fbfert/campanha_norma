@@ -28,8 +28,8 @@ class MessageSettingsController extends Controller
         $data['updated_by'] = $request->user()->id;
         $settings->update($data);
 
-        $audit->log('message_settings.updated', 'Configuracoes de envio atualizadas.', $settings, $old, $settings->fresh()->only(array_keys($data)), $request->user());
+        $audit->log('message_settings.updated', 'Configurações de envio atualizadas.', $settings, $old, $settings->fresh()->only(array_keys($data)), $request->user());
 
-        return redirect()->route('admin.message-settings.edit')->with('success', 'Configuracoes de envio atualizadas.');
+        return redirect()->route('admin.message-settings.edit')->with('success', 'Configurações de envio atualizadas.');
     }
 }

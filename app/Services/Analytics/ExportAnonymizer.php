@@ -5,22 +5,22 @@ namespace App\Services\Analytics;
 use Illuminate\Support\Str;
 
 /**
- * Anonimizacao aplicada a exportacao detalhada.
+ * Anonimização aplicada a exportação detalhada.
  *
- * Tres operacoes, cada uma com um motivo distinto:
+ * Três operações, cada uma com um motivo distinto:
  *
- * - nome sai por completo, porque nome nao tem uso analitico;
- * - telefone fica mascarado nos quatro ultimos digitos, o bastante para a
- *   equipe conferir um caso especifico contra a caixa de entrada e insuficiente
+ * - nome sai por completo, porque nome não tem uso analítico;
+ * - telefone fica mascarado nos quatro últimos digitos, o bastante para a
+ *   equipe conferir um caso específico contra a caixa de entrada e insuficiente
  *   para discar;
- * - identificador do contato vira pseudonimo derivado com sal proprio da
- *   exportacao.
+ * - identificador do contato vira pseudônimo derivado com sal próprio da
+ *   exportação.
  *
- * O sal por exportacao e o ponto que sustenta o resto. Com sal fixo, duas
- * exportacoes de periodos diferentes teriam o mesmo pseudonimo para a mesma
- * pessoa, e cruzar as duas reconstruiria o historico dela. Com sal por
- * exportacao, cada arquivo e um universo fechado: da para agrupar respostas
- * dentro dele e nao da para ligar nada fora dele.
+ * O sal por exportação e o ponto que sustenta o resto. Com sal fixo, duas
+ * exportações de períodos diferentes teriam o mesmo pseudônimo para a mesma
+ * pessoa, e cruzar as duas reconstruiria o histórico dela. Com sal por
+ * exportação, cada arquivo e um universo fechado: da para agrupar respostas
+ * dentro dele e não da para ligar nada fora dele.
  */
 class ExportAnonymizer
 {
@@ -30,8 +30,8 @@ class ExportAnonymizer
     }
 
     /**
-     * Pseudonimo estavel dentro de uma exportacao e sem relacao com qualquer
-     * outra. Irreversivel por construcao: nao existe caminho de volta do hash
+     * Pseudônimo estável dentro de uma exportação e sem relação com qualquer
+     * outra. Irreversível por construção: não existe caminho de volta do hash
      * ao identificador, mesmo de posse do sal.
      */
     public function pseudonym(string $salt, int|string|null $contactId): string
@@ -44,7 +44,7 @@ class ExportAnonymizer
     }
 
     /**
-     * Telefone reduzido aos quatro ultimos digitos.
+     * Telefone reduzido aos quatro últimos digitos.
      */
     public function maskPhone(?string $phone): ?string
     {
@@ -65,7 +65,7 @@ class ExportAnonymizer
 
     /**
      * Nome nunca sai. Devolve string vazia em vez de remover a coluna para que
-     * o cabecalho da planilha continue estavel entre exportacoes.
+     * o cabeçalho da planilha continue estável entre exportações.
      */
     public function removeName(?string $name): string
     {

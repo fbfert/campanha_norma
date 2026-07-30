@@ -5,20 +5,20 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * Etapa 9D: colunas de fundamentacao na sugestao de resposta.
+ * Etapa 9D: colunas de fundamentação na sugestão de resposta.
  *
- * Migration separada da criacao das tabelas de conhecimento de proposito. As
- * duas mudancas tem perfis de reversao diferentes: dar baixa na camada de
- * conhecimento nao deveria obrigar a mexer na tabela da subetapa anterior, e o
- * contrario tambem vale.
+ * Migration separada da criação das tabelas de conhecimento de propósito. As
+ * duas mudanças tem perfis de reversão diferentes: dar baixa na camada de
+ * conhecimento não deveria obrigar a mexer na tabela da subetapa anterior, e o
+ * contrário também vale.
  */
 return new class extends Migration
 {
     public function up(): void
     {
         Schema::table('conversation_reply_suggestions', function (Blueprint $table): void {
-            // Colunas relacionais, nao JSON: a subetapa seguinte precisa filtrar
-            // e agregar por fundamentacao.
+            // Colunas relacionais, não JSON: a subetapa seguinte precisa filtrar
+            // e agregar por fundamentação.
             $table->boolean('grounded')->default(false)->after('confidence');
             $table->string('grounding_status')->nullable()->after('grounded');
             $table->string('grounding_error')->nullable()->after('grounding_status');

@@ -25,7 +25,7 @@ class ContactImportController extends Controller
     {
         $import = $service->upload($request->file('file'));
 
-        return redirect()->route('admin.contacts.imports.show', $import)->with('success', 'Arquivo enviado. Revise a pre-validacao antes de confirmar.');
+        return redirect()->route('admin.contacts.imports.show', $import)->with('success', 'Arquivo enviado. Revise a pre-validação antes de confirmar.');
     }
 
     public function validateImport(Request $request, ContactImport $contactImport, ContactImportService $service): RedirectResponse
@@ -33,7 +33,7 @@ class ContactImportController extends Controller
         abort_unless($request->user()->can('contacts.import'), 403);
         $service->validateRows($contactImport);
 
-        return back()->with('success', 'Pre-validacao concluida.');
+        return back()->with('success', 'Pre-validação concluída.');
     }
 
     public function confirm(Request $request, ContactImport $contactImport, ContactImportService $service): RedirectResponse
@@ -42,7 +42,7 @@ class ContactImportController extends Controller
         $data = $request->validate(['duplicate_strategy' => ['required', 'in:ignore,update,new_only,interrupt']]);
         $service->process($contactImport, $data['duplicate_strategy']);
 
-        return back()->with('success', 'Importacao processada.');
+        return back()->with('success', 'Importação processada.');
     }
 
     public function index(Request $request): View

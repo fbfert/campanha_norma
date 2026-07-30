@@ -82,9 +82,9 @@ class ConversationFlowController extends Controller
         abort_unless($request->user()->can('conversation_automation.manage_flows'), 403);
 
         $conversationFlow->delete();
-        $audit->log('conversation_flow.deleted', 'Fluxo conversacional excluido logicamente.', $conversationFlow, null, null, $request->user());
+        $audit->log('conversation_flow.deleted', 'Fluxo conversacional excluído logicamente.', $conversationFlow, null, null, $request->user());
 
-        return redirect()->route('admin.conversation-flows.index')->with('success', 'Fluxo excluido logicamente.');
+        return redirect()->route('admin.conversation-flows.index')->with('success', 'Fluxo excluído logicamente.');
     }
 
     /** @return array<string, mixed> */

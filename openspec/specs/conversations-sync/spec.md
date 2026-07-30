@@ -10,7 +10,7 @@ Define the CONVERSAS administrative module, WhatsApp Web chat synchronization, i
 The system SHALL expose the existing inbox module as `CONVERSAS` in the administrative menu without removing legacy `/admin/inbox` routes.
 
 #### Scenario: Authorized menu item
-- **WHEN** a user with `inbox.view` opens the administration area
+- **WHEN** a user with `inbox.view` opens the administration área
 - **THEN** the menu SHALL show `CONVERSAS`
 - **AND** the link SHALL point to the existing conversation/inbox module
 - **AND** a non-zero unread badge SHALL respect the user's inbox visibility scope.
@@ -42,7 +42,7 @@ The Node.js service SHALL expose private authenticated endpoints for listing ind
 #### Scenario: Fetching messages
 - **WHEN** Laravel calls `GET /api/conversations/{chatId}/messages`
 - **THEN** the service SHALL validate the chat id and limit
-- **AND** return normalized incoming and outgoing message metadata without session, cookies, QR Code, or downloaded media.
+- **AND** return normalized incoming and outgoing message metadata without session, cookies, QR Code, or downloaded média.
 
 ### Requirement: Laravel Provider Boundary
 Laravel SHALL access conversation sync endpoints only through the WhatsApp provider/client abstraction.
@@ -75,7 +75,7 @@ Conversation synchronization SHALL run in the `whatsapp-conversation-sync` queue
 - **THEN** another manual request SHALL be rejected or ignored safely.
 
 ### Requirement: Manual-Only Continuation
-The module SHALL NOT implement chatbot, automatic replies, keyword flows, AI, media download, groups, broadcast lists, channels, multiple accounts, or Meta Cloud API behavior.
+The module SHALL NOT implement chatbot, automatic replies, keyword flows, AI, média download, groups, broadcast lists, channels, multiple accounts, or Meta Cloud API behavior.
 
 #### Scenario: Recipient replies
 - **WHEN** a synced incoming message is recorded

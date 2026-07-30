@@ -65,7 +65,7 @@ class AiMonitoringService
     }
 
     /**
-     * Execucoes presas: iniciadas e nunca finalizadas dentro do limite.
+     * Execuções presas: iniciadas e nunca finalizadas dentro do limite.
      */
     public function stuck()
     {

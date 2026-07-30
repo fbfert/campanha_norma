@@ -13,7 +13,7 @@ enum MessageBatchSelectionType: string
         return match ($this) {
             self::Manual => 'Manual',
             self::Filtered => 'Todos os filtrados',
-            self::RandomSample => 'Amostra aleatoria',
+            self::RandomSample => 'Amostra aleatória',
         };
     }
 }

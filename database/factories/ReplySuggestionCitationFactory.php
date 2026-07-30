@@ -27,8 +27,8 @@ class ReplySuggestionCitationFactory extends Factory
     }
 
     /**
-     * Citacao recusada: sem vinculo de documento, porque o identificador que o
-     * modelo inventou nao aponta para nada.
+     * Citação recusada: sem vínculo de documento, porque o identificador que o
+     * modelo inventou não aponta para nada.
      */
     public function invalid(string $reason = 'fora do conjunto recuperado'): static
     {

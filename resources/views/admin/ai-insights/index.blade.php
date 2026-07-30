@@ -1,6 +1,6 @@
-<x-layouts.app title="Interpretacao por IA" breadcrumbs="Inicio / Pesquisa conversacional / Interpretacao">
+<x-layouts.app title="Interpretação por IA" breadcrumbs="Inicio / Pesquisa conversacional / Interpretacao">
     <section class="card">
-        <p class="muted">Resultados gerados por inteligencia artificial a partir das respostas da pesquisa. A mensagem original permanece inalterada e continua sendo a fonte de verdade.</p>
+        <p class="muted">Resultados gerados por inteligência artificial a partir das respostas da pesquisa. A mensagem original permanece inalterada e continua sendo a fonte de verdade.</p>
         <form method="get" class="grid grid-3">
             <div>
                 <label for="topic_id">Tema</label>
@@ -12,7 +12,7 @@
                 </select>
             </div>
             <div>
-                <label for="urgency">Urgencia</label>
+                <label for="urgency">Urgência</label>
                 <select id="urgency" name="urgency">
                     <option value="">Todas</option>
                     @foreach($urgencies as $urgency)
@@ -30,7 +30,7 @@
                 </select>
             </div>
             <div>
-                <label for="reason">Motivo de revisao</label>
+                <label for="reason">Motivo de revisão</label>
                 <select id="reason" name="reason">
                     <option value="">Todos</option>
                     @foreach($reasons as $reason)
@@ -44,7 +44,7 @@
             </div>
         </form>
         <div class="actions" style="margin-top:12px;">
-            <a class="btn ghost" href="{{ route('admin.ai-insights.index', ['needs_review' => 1]) }}">Fila de revisao</a>
+            <a class="btn ghost" href="{{ route('admin.ai-insights.index', ['needs_review' => 1]) }}">Fila de revisão</a>
             <a class="btn ghost" href="{{ route('admin.insight-topics.index') }}">Temas</a>
             @can('ai_insights.view_monitoring')
                 <a class="btn ghost" href="{{ route('admin.ai-monitoring.index') }}">Monitoramento</a>
@@ -60,11 +60,11 @@
                         <th>Contato</th>
                         <th>Resumo</th>
                         <th>Tema</th>
-                        <th>Urgencia</th>
-                        <th>Confianca</th>
-                        <th>Revisao</th>
+                        <th>Urgência</th>
+                        <th>Confiança</th>
+                        <th>Revisão</th>
                         <th>Data</th>
-                        <th>Acoes</th>
+                        <th>Ações</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -72,10 +72,10 @@
                         <tr>
                             <td>
                                 @if($canSeeContactData)
-                                    {{ $insight->conversation?->contact?->name ?? 'Contato nao identificado' }}
+                                    {{ $insight->conversation?->contact?->name ?? 'Contato não identificado' }}
                                 @else
-                                    {{-- Telas analiticas mascaram identificacao sem a permissao especifica. --}}
-                                    {{ $insight->conversation?->contact?->phone_normalized ? Str::mask($insight->conversation->contact->phone_normalized, '*', 4, -4) : 'Contato nao identificado' }}
+                                    {{-- Telas analíticas mascaram identificação sem a permissão específica. --}}
+                                    {{ $insight->conversation?->contact?->phone_normalized ? Str::mask($insight->conversation->contact->phone_normalized, '*', 4, -4) : 'Contato não identificado' }}
                                 @endif
                             </td>
                             <td>{{ Str::limit($insight->summary ?? '-', 90) }}</td>

@@ -18,7 +18,7 @@ use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Extracao estruturada e pesquisavel a partir da resposta do contato.
+ * Extração estruturada e pesquisável a partir da resposta do contato.
  *
  * O insight e derivado e versionado. A mensagem original nunca e alterada.
  */
@@ -44,7 +44,7 @@ class InsightExtractionService
         $promptVersion = $this->prompts->activeVersion(AiRunPurpose::ExtractInsight);
         $extractionVersion = $this->schemas->activeVersion(AiRunPurpose::ExtractInsight);
 
-        // Idempotencia: mesma mensagem e mesma versao de extracao nao chamam o
+        // Idempotência: mesma mensagem e mesma versão de extração não chamam o
         // provedor de novo nem criam um segundo insight.
         $existing = ConversationInsight::query()
             ->where('source_message_id', $message->id)
@@ -84,7 +84,7 @@ class InsightExtractionService
         $sensitiveReason = $this->sensitive->detect($message->body);
 
         if ($run->status !== AiRunStatus::Succeeded) {
-            // Saida invalida ou falha nao criam insight, apenas revisao humana.
+            // Saída invalida ou falha não criam insight, apenas revisão humana.
             return null;
         }
 
@@ -106,7 +106,7 @@ class InsightExtractionService
             return InsightReviewReason::LowConfidence;
         }
 
-        // O modelo pode sinalizar revisao, mas o motivo canonico e sempre um
+        // O modelo pode sinalizar revisão, mas o motivo canônico e sempre um
         // valor conhecido do sistema.
         if (($data['requires_human_review'] ?? false) === true) {
             return InsightReviewReason::tryFrom((string) ($data['review_reason'] ?? ''))
@@ -154,7 +154,7 @@ class InsightExtractionService
             'affected_group' => $this->text($data['affected_group'] ?? null),
             'locality_text' => $this->text($data['locality_text'] ?? null),
             // Nunca inferimos cidade: a coluna normalizada so recebe valor quando
-            // houver localidade declarada pelo proprio contato.
+            // houver localidade declarada pelo próprio contato.
             'locality_normalized' => null,
             'region' => $this->text($data['region'] ?? null),
             'urgency' => InsightUrgency::tryFrom((string) ($data['urgency'] ?? '')),
@@ -171,7 +171,7 @@ class InsightExtractionService
             try {
                 $insight = ConversationInsight::updateOrCreate($keys, $attributes);
             } catch (UniqueConstraintViolationException) {
-                // Corrida entre workers: o indice unico e a garantia final.
+                // Corrida entre workers: o índice único e a garantia final.
                 return ConversationInsight::where($keys)->firstOrFail();
             }
 

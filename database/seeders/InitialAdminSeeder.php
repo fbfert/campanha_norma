@@ -35,7 +35,7 @@ class InitialAdminSeeder extends Seeder
         $admin->roles()->syncWithoutDetaching(Role::query()->where('slug', 'administrador')->pluck('id'));
 
         if ($generated && $this->command) {
-            $this->command->warn('Senha temporaria do administrador inicial: '.$password);
+            $this->command->warn('Senha temporária do administrador inicial: '.$password);
         }
     }
 }

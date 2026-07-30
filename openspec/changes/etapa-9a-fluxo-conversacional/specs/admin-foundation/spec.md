@@ -17,8 +17,8 @@ The system SHALL provide specific permissions for conversational research coveri
 - **THEN** the Consulta role SHALL receive only the viewing permission.
 
 ### Requirement: Conversation Automation Navigation
-The administrative menu SHALL expose the conversational research area only to users holding the viewing permission.
+The administrative menu SHALL expose the conversational research área only to users holding the viewing permission.
 
 #### Scenario: Menu visibility
-- **WHEN** a user without the viewing permission opens the administration area
+- **WHEN** a user without the viewing permission opens the administration área
 - **THEN** the conversational research menu item SHALL NOT be rendered.

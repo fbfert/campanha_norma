@@ -100,7 +100,7 @@ class ConversationInsightController extends Controller
         }
 
         return back()->with('success', $changed > 0
-            ? 'Correcao registrada.'
+            ? 'Correção registrada.'
             : 'Nenhum campo do insight foi alterado.');
     }
 
@@ -119,7 +119,7 @@ class ConversationInsightController extends Controller
 
         InterpretConversationMessageJob::dispatch($insight->source_message_id);
 
-        $audit->log('ai_insights.reprocess_requested', 'Reprocessamento de interpretacao solicitado.', $insight, null, [
+        $audit->log('ai_insights.reprocess_requested', 'Reprocessamento de interpretação solicitado.', $insight, null, [
             'insight_id' => $insight->id,
             'source_message_id' => $insight->source_message_id,
         ], $request->user());

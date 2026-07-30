@@ -1,6 +1,6 @@
 <x-layouts.guest>
     <h2>Recuperar senha</h2>
-    <p class="muted">Informe seu e-mail para receber as instrucoes de redefinicao.</p>
+    <p class="muted">Informe seu e-mail para receber as instruções de redefinição.</p>
     <form method="post" action="{{ route('password.email') }}">
         @csrf
         <p>
@@ -9,7 +9,7 @@
         </p>
         <div class="actions">
             <a class="btn ghost" href="{{ route('login') }}">Voltar</a>
-            <button class="btn" type="submit">Enviar instrucoes</button>
+            <button class="btn" type="submit">Enviar instruções</button>
         </div>
     </form>
 </x-layouts.guest>

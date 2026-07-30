@@ -27,9 +27,9 @@ class SystemSettingService
     /**
      * Invalida o cache sem escrever nada.
      *
-     * Existe para quem grava configuracao por um caminho proprio, com grupo,
-     * tipo e visibilidade escolhidos a mao. `updateMany` marca tudo como
-     * publico e adivinha o tipo, o que serve para a tela geral e nao serve
+     * Existe para quem grava configuração por um caminho próprio, com grupo,
+     * tipo e visibilidade escolhidos a mão. `updateMany` marca tudo como
+     * público e adivinha o tipo, o que serve para a tela geral e não serve
      * para um segredo.
      */
     public function forget(): void

@@ -69,7 +69,7 @@ class MessageBatchController extends Controller
     public function edit(Request $request, MessageBatch $messageBatch, PlaceholderCatalogService $catalog): View
     {
         abort_unless($request->user()->can('message_batches.update'), 403);
-        abort_if($messageBatch->status !== MessageBatchStatus::Draft, 403, 'Lotes preparados ou cancelados nao podem ser editados diretamente.');
+        abort_if($messageBatch->status !== MessageBatchStatus::Draft, 403, 'Lotes preparados ou cancelados não podem ser editados diretamente.');
 
         return view('admin.message-batches.edit', array_merge($this->formData($catalog), ['batch' => $messageBatch]));
     }
@@ -85,7 +85,7 @@ class MessageBatchController extends Controller
     {
         abort_unless($request->user()->can('message_batches.update'), 403);
 
-        return back()->with('success', "Validacao concluida: {$messageBatch->eligible_total} aptos e {$messageBatch->ineligible_total} excluidos.");
+        return back()->with('success', "Validação concluída: {$messageBatch->eligible_total} aptos e {$messageBatch->ineligible_total} excluídos.");
     }
 
     public function randomize(Request $request, MessageBatch $messageBatch, BatchCreationService $service): RedirectResponse
@@ -93,7 +93,7 @@ class MessageBatchController extends Controller
         abort_unless($request->user()->can('message_batches.update'), 403);
         $service->randomize($messageBatch, $request->user());
 
-        return back()->with('success', 'Ordem aleatoria regerada.');
+        return back()->with('success', 'Ordem aleatória regerada.');
     }
 
     public function prepare(Request $request, MessageBatch $messageBatch, BatchCreationService $service): RedirectResponse
@@ -102,7 +102,7 @@ class MessageBatchController extends Controller
         $data = $request->validate(['confirmation' => ['required', 'string']]);
         $service->prepare($messageBatch, $request->user(), $data['confirmation']);
 
-        return back()->with('success', 'Lote preparado. O processamento automatico ainda nao foi implementado.');
+        return back()->with('success', 'Lote preparado. O processamento automático ainda não foi implementado.');
     }
 
     public function duplicate(Request $request, MessageBatch $messageBatch, BatchCreationService $service): RedirectResponse
@@ -128,7 +128,7 @@ class MessageBatchController extends Controller
         abort_if($messageBatch->status !== MessageBatchStatus::Draft || $messageBatch->prepared_at, 403);
         $messageBatch->delete();
 
-        return redirect()->route('admin.message-batches.index')->with('success', 'Rascunho excluido.');
+        return redirect()->route('admin.message-batches.index')->with('success', 'Rascunho excluído.');
     }
 
     public function recipients(Request $request, MessageBatch $messageBatch): View

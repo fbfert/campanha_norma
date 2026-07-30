@@ -1,8 +1,8 @@
 <x-layouts.app title="Auditoria" breadcrumbs="Inicio / Auditoria">
     <form method="get" class="card" style="margin-bottom:16px;">
         <div class="grid grid-3">
-            <p><label>Usuario</label><select name="user_id"><option value="">Todos</option>@foreach($users as $user)<option value="{{ $user->id }}" @selected((string)($filters['user_id'] ?? '') === (string)$user->id)>{{ $user->name }}</option>@endforeach</select></p>
-            <p><label>Acao</label><input name="action" value="{{ $filters['action'] ?? '' }}"></p>
+            <p><label>Usuário</label><select name="user_id"><option value="">Todos</option>@foreach($users as $user)<option value="{{ $user->id }}" @selected((string)($filters['user_id'] ?? '') === (string)$user->id)>{{ $user->name }}</option>@endforeach</select></p>
+            <p><label>Ação</label><input name="action" value="{{ $filters['action'] ?? '' }}"></p>
             <p><label>Entidade</label><input name="entity_type" value="{{ $filters['entity_type'] ?? '' }}"></p>
             <p><label>Data inicial</label><input name="date_from" type="date" value="{{ $filters['date_from'] ?? '' }}"></p>
             <p><label>Data final</label><input name="date_to" type="date" value="{{ $filters['date_to'] ?? '' }}"></p>
@@ -16,7 +16,7 @@
             <p class="muted">Nenhum registro de auditoria encontrado.</p>
         @else
             <table>
-                <thead><tr><th>Data</th><th>Usuario</th><th>Acao</th><th>Entidade</th><th>Descricao</th><th>IP</th><th></th></tr></thead>
+                <thead><tr><th>Data</th><th>Usuário</th><th>Ação</th><th>Entidade</th><th>Descrição</th><th>IP</th><th></th></tr></thead>
                 <tbody>
                 @foreach($auditLogs as $log)
                     <tr>

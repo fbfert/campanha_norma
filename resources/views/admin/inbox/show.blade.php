@@ -45,7 +45,7 @@
         <aside class="conversation-panel conversation-panel-list">
             <a class="btn ghost" href="{{ route('admin.conversations.index') }}">Voltar para conversas</a>
             <div class="conversation-selected">
-                <strong>{{ $conversation->contact?->name ?? 'Contato nao identificado' }}</strong>
+                <strong>{{ $conversation->contact?->name ?? 'Contato não identificado' }}</strong>
                 <span class="muted">{{ $conversation->last_message_at?->format($dateTimeFormat) ?? 'Sem mensagens' }}</span>
             </div>
         </aside>
@@ -53,9 +53,9 @@
         <section class="conversation-chat">
             <header class="conversation-chat-header">
                 <div>
-                    <h2>{{ $conversation->contact?->name ?? 'Contato nao identificado' }}</h2>
+                    <h2>{{ $conversation->contact?->name ?? 'Contato não identificado' }}</h2>
                     <p class="muted">
-                        {{ $conversation->contact?->phone_normalized ? Str::mask($conversation->contact->phone_normalized, '*', 4, -4) : ($displayPhone ? Str::mask($displayPhone, '*', 4, -4) : 'Telefone nao disponivel') }}
+                        {{ $conversation->contact?->phone_normalized ? Str::mask($conversation->contact->phone_normalized, '*', 4, -4) : ($displayPhone ? Str::mask($displayPhone, '*', 4, -4) : 'Telefone não disponível') }}
                         | {{ $conversation->status->label() }} | {{ $conversation->priority->label() }}
                     </p>
                 </div>
@@ -63,7 +63,7 @@
             </header>
 
             @if($conversation->contact?->do_not_contact)
-                <div class="alert error">Contato marcado como nao contatar. Respostas pelo sistema ficam bloqueadas.</div>
+                <div class="alert error">Contato marcado como não contatar. Respostas pelo sistema ficam bloqueadas.</div>
             @endif
 
             @can('inbox.reply')
@@ -73,7 +73,7 @@
                         <label for="reply_body">Resposta manual</label>
                         @php
                             $replyBlocked = !$conversation->contact || $conversation->contact?->do_not_contact || $conversation->contact?->status?->value !== 'active';
-                            $replyBlockReason = !$conversation->contact ? 'Associe um contato antes de responder.' : ($conversation->contact?->do_not_contact ? 'Contato marcado como nao contatar.' : ($conversation->contact?->status?->value !== 'active' ? 'Contato inativo ou bloqueado.' : null));
+                            $replyBlockReason = !$conversation->contact ? 'Associe um contato antes de responder.' : ($conversation->contact?->do_not_contact ? 'Contato marcado como não contatar.' : ($conversation->contact?->status?->value !== 'active' ? 'Contato inativo ou bloqueado.' : null));
                         @endphp
                         @if($replyBlockReason)
                             <p class="alert error">{{ $replyBlockReason }}</p>
@@ -118,19 +118,19 @@
 
             <section class="card">
                 <h2>Detalhes</h2>
-                <p><strong>Contato:</strong> {{ $conversation->contact?->name ?? 'Nao associado' }}</p>
-                <p><strong>Telefone:</strong> {{ $conversation->contact?->phone_normalized ? Str::mask($conversation->contact->phone_normalized, '*', 4, -4) : ($displayPhone ? Str::mask($displayPhone, '*', 4, -4) : 'Nao disponivel') }}</p>
+                <p><strong>Contato:</strong> {{ $conversation->contact?->name ?? 'Não associado' }}</p>
+                <p><strong>Telefone:</strong> {{ $conversation->contact?->phone_normalized ? Str::mask($conversation->contact->phone_normalized, '*', 4, -4) : ($displayPhone ? Str::mask($displayPhone, '*', 4, -4) : 'Não disponível') }}</p>
                 @if(! $displayPhone && $conversation->whatsappIdentifierForDisplay())
                     <p><strong>Identificador do WhatsApp:</strong> {{ $conversation->whatsappIdentifierForDisplay() }}</p>
                 @endif
                 <p><strong>E-mail:</strong> {{ $conversation->contact?->email ?? '-' }}</p>
                 <p><strong>Cidade:</strong> {{ $conversation->contact?->city ?? '-' }} {{ $conversation->contact?->state }}</p>
-                <p><strong>Responsavel:</strong> {{ $conversation->assignee?->name ?? 'Sem responsavel' }}</p>
+                <p><strong>Responsável:</strong> {{ $conversation->assignee?->name ?? 'Sem responsável' }}</p>
                 <p><strong>Primeira mensagem:</strong> {{ $conversation->messages()->oldest()->first()?->created_at?->format($dateTimeFormat) ?? '-' }}</p>
-                <p><strong>Ultima mensagem:</strong> {{ $conversation->last_message_at?->format($dateTimeFormat) ?? '-' }}</p>
+                <p><strong>Última mensagem:</strong> {{ $conversation->last_message_at?->format($dateTimeFormat) ?? '-' }}</p>
                 <p><strong>Total de mensagens:</strong> {{ $conversation->messages()->count() }}</p>
                 @if(! $conversation->contact && ! $displayPhone)
-                    <p class="muted">Este chat nao possui telefone confiavel. A associacao manual de contato e opcional, mas pode ser necessaria para responder.</p>
+                    <p class="muted">Este chat não possui telefone confiável. A associação manual de contato e opcional, mas pode ser necessária para responder.</p>
                 @endif
                 @if($conversation->contact)
                     <a class="btn ghost" href="{{ route('admin.contacts.show', $conversation->contact) }}">Abrir cadastro</a>
@@ -138,11 +138,11 @@
             </section>
 
             <section class="card">
-                <h2>Acoes</h2>
+                <h2>Ações</h2>
                 <div class="stack-list">
                     @can('inbox.assign')
                         <form method="post" action="{{ route('admin.inbox.assign', $conversation) }}">@csrf <button class="btn secondary">Atribuir a mim</button></form>
-                        <form method="post" action="{{ route('admin.inbox.unassign', $conversation) }}">@csrf <button class="btn ghost">Remover atribuicao</button></form>
+                        <form method="post" action="{{ route('admin.inbox.unassign', $conversation) }}">@csrf <button class="btn ghost">Remover atribuição</button></form>
                     @endcan
                     @can('inbox.change_status')
                         <form method="post" action="{{ route('admin.inbox.status', $conversation) }}">@csrf <label>Status<select name="status">@foreach($statuses as $status)<option value="{{ $status->value }}" @selected($conversation->status === $status)>{{ $status->label() }}</option>@endforeach</select></label><button class="btn secondary">Alterar</button></form>
@@ -161,7 +161,7 @@
                     <section class="card">
                         <h2>Associar contato</h2>
                         @if(! $displayPhone)
-                            <p class="muted">Nao ha telefone confiavel para este chat. Escolha o contato correto manualmente.</p>
+                            <p class="muted">Não ha telefone confiável para este chat. Escolha o contato correto manualmente.</p>
                         @endif
                         <form method="post" action="{{ route('admin.inbox.associate-contact', $conversation) }}">
                             @csrf
@@ -173,7 +173,7 @@
                     @can('contacts.create')
                         <section class="card">
                             <h2>Cadastrar novo contato</h2>
-                            <p class="muted">Cria o contato com os dados do WhatsApp e ja associa a esta conversa.</p>
+                            <p class="muted">Cria o contato com os dados do WhatsApp e já associa a esta conversa.</p>
                             @error('name') <p class="alert error">{{ $message }}</p> @enderror
                             @error('phone') <p class="alert error">{{ $message }}</p> @enderror
                             <form method="post" action="{{ route('admin.inbox.associate-contact.create', $conversation) }}">
@@ -205,8 +205,8 @@
             @can('inbox.mark_do_not_contact')
                 @if($conversation->contact && ! $conversation->contact->do_not_contact)
                     <section class="card">
-                        <h2>Nao contatar</h2>
-                        <form method="post" action="{{ route('admin.inbox.do-not-contact', $conversation) }}">@csrf <label>Motivo<input name="reason" required></label><button class="btn danger">Marcar nao contatar</button></form>
+                        <h2>Não contatar</h2>
+                        <form method="post" action="{{ route('admin.inbox.do-not-contact', $conversation) }}">@csrf <label>Motivo<input name="reason" required></label><button class="btn danger">Marcar não contatar</button></form>
                     </section>
                 @endif
             @endcan

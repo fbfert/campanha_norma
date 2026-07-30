@@ -20,13 +20,13 @@ class ConversationFlowFactory extends Factory
             'status' => ConversationFlowStatus::Active,
             'presentation_template_id' => null,
             'presentation_text' => 'Ola! Podemos fazer uma pergunta rapida?',
-            'thank_you_text' => 'Obrigado pela sua participacao.',
-            'permission_denied_text' => 'Tudo bem, obrigado pela atencao.',
+            'thank_you_text' => 'Obrigado pela sua participação.',
+            'permission_denied_text' => 'Tudo bem, obrigado pela atenção.',
             'max_main_questions' => 1,
             'max_followups' => 0,
             'validity_hours' => 48,
             'transparency_enabled' => true,
-            'transparency_text' => 'Mensagem automatica.',
+            'transparency_text' => 'Mensagem automática.',
             'created_by' => User::factory(),
         ];
     }

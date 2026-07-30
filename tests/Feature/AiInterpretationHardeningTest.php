@@ -42,10 +42,10 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 /**
- * Testes da etapa de revisao e estabilizacao das subetapas 9A e 9B.
+ * Testes da etapa de revisão e estabilização das subetapas 9A e 9B.
  *
- * Cobrem separacao de feature flags, precedencia deterministica sobre as listas
- * reais de producao, ausencia de campos sensiveis nos schemas, isolamento de
+ * Cobrem separação de feature flags, precedência determinística sobre as listas
+ * reais de produção, ausência de campos sensíveis nos schemas, isolamento de
  * contexto, matriz de falhas do provedor e a garantia de que a 9B nunca envia.
  */
 class AiInterpretationHardeningTest extends TestCase
@@ -154,7 +154,7 @@ class AiInterpretationHardeningTest extends TestCase
     }
 
     // =========================================================================
-    // 2. SEPARACAO DE FEATURE FLAGS
+    // 2. SEPARAÇÃO DE FEATURE FLAGS
     // =========================================================================
 
     public function test_new_flags_are_disabled_by_default(): void
@@ -187,7 +187,7 @@ class AiInterpretationHardeningTest extends TestCase
         Http::fake();
 
         [, $conversation] = $this->scenario();
-        $this->interpret($this->incoming($conversation, 'Uma resposta aberta sobre saude.'));
+        $this->interpret($this->incoming($conversation, 'Uma resposta aberta sobre saúde.'));
 
         Http::assertNothingSent();
         $this->assertSame(0, AiRun::count());
@@ -196,7 +196,7 @@ class AiInterpretationHardeningTest extends TestCase
 
     public function test_analysis_runs_even_with_the_9a_engine_disabled(): void
     {
-        // O ponto central da separacao: a 9B nao depende da chave da 9A.
+        // O ponto central da separação: a 9B não depende da chave da 9A.
         $this->settings([
             'conversation_automation.enabled' => '0',
             'ai.enabled' => '1',
@@ -205,7 +205,7 @@ class AiInterpretationHardeningTest extends TestCase
 
         Queue::fake();
         [, $conversation] = $this->scenario();
-        $message = $this->incoming($conversation, 'Faltam medicos especialistas no interior.');
+        $message = $this->incoming($conversation, 'Faltam médicos especialistas no interior.');
 
         app(ConversationFlowService::class)->handleIncomingMessage($message);
 
@@ -225,7 +225,7 @@ class AiInterpretationHardeningTest extends TestCase
         Http::fake();
 
         [, $conversation, $state] = $this->scenario();
-        $message = $this->incoming($conversation, 'Faltam medicos especialistas no interior.');
+        $message = $this->incoming($conversation, 'Faltam médicos especialistas no interior.');
 
         app(ConversationFlowService::class)->handleIncomingMessage($message);
 
@@ -239,7 +239,7 @@ class AiInterpretationHardeningTest extends TestCase
         $this->enableAnalysis();
         Http::fake();
 
-        // Conversa sem estado de fluxo: nao e uma resposta de pesquisa.
+        // Conversa sem estado de fluxo: não e uma resposta de pesquisa.
         $conversation = Conversation::factory()->create();
         $this->interpret($this->incoming($conversation, 'Uma mensagem avulsa qualquer.'));
 
@@ -252,7 +252,7 @@ class AiInterpretationHardeningTest extends TestCase
 
     public function test_the_flow_service_does_not_reference_the_ai_layer(): void
     {
-        // Garantia de separacao entre as subetapas: a 9A nao conhece a 9B.
+        // Garantia de separação entre as subetapas: a 9A não conhece a 9B.
         $source = file_get_contents(app_path('Services/ConversationAutomation/ConversationFlowService.php'));
 
         $this->assertStringNotContainsString('App\\Services\\Ai', $source);
@@ -261,7 +261,7 @@ class AiInterpretationHardeningTest extends TestCase
     }
 
     // =========================================================================
-    // 3. PRECEDENCIA DETERMINISTICA
+    // 3. PRECEDÊNCIA DETERMINÍSTICA
     // =========================================================================
 
     #[DataProvider('deterministicPhrases')]
@@ -291,24 +291,24 @@ class AiInterpretationHardeningTest extends TestCase
             'claro' => ['claro', $yes],
             'sim, pode perguntar' => ['sim, pode perguntar', $yes],
             'nao' => ['não', $no],
-            'agora nao' => ['agora não', $no],
-            'nao quero' => ['não quero', $no],
-            'nao tenho interesse' => ['não tenho interesse', $no],
+            'agora não' => ['agora não', $no],
+            'não quero' => ['não quero', $no],
+            'não tenho interesse' => ['não tenho interesse', $no],
             'pare' => ['pare', $out],
             'parar' => ['parar', $out],
-            'retire meu numero' => ['retire meu número', $out],
+            'retire meu número' => ['retire meu número', $out],
             'remova meu contato' => ['remova meu contato', $out],
-            'nao me mande mais mensagens' => ['não me mande mais mensagens', $out],
-            // Conflitantes: o pedido inequivoco de interrupcao prevalece.
-            'positiva com pedido de interrupcao' => ['sim, mas não quero receber mais mensagens', $out],
-            'consentimento com interrupcao futura' => ['pode perguntar, mas depois não me mande mais mensagens', $out],
+            'não me mande mais mensagens' => ['não me mande mais mensagens', $out],
+            // Conflitantes: o pedido inequivoco de interrupção prevalece.
+            'positiva com pedido de interrupção' => ['sim, mas não quero receber mais mensagens', $out],
+            'consentimento com interrupção futura' => ['pode perguntar, mas depois não me mande mais mensagens', $out],
         ];
     }
 
     public function test_a_report_of_wrongdoing_is_not_treated_as_opt_out(): void
     {
-        // Regressao: "denuncia" estava na lista de opt-out e marcava o contato
-        // como nao contatar, interrompendo lotes indevidamente.
+        // Regressão: "denuncia" estava na lista de opt-out e marcava o contato
+        // como não contatar, interrompendo lotes indevidamente.
         $result = app(PermissionResponseClassifier::class)->classify('Quero fazer uma denuncia sobre desvio de verba.');
 
         $this->assertNotSame(PermissionResponseClassification::OptOut, $result['classification']);
@@ -324,7 +324,7 @@ class AiInterpretationHardeningTest extends TestCase
         $this->interpret($this->incoming($conversation, $phrase));
 
         Http::assertNothingSent();
-        $this->assertSame(0, AiRun::count(), 'Uma decisao deterministica nao pode gastar tokens.');
+        $this->assertSame(0, AiRun::count(), 'Uma decisão determinística não pode gastar tokens.');
 
         $classification = ConversationMessageClassification::firstOrFail();
         $this->assertSame(ClassificationSource::Deterministic, $classification->source);
@@ -333,7 +333,7 @@ class AiInterpretationHardeningTest extends TestCase
     }
 
     // =========================================================================
-    // 4. IDEMPOTENCIA E CONCORRENCIA
+    // 4. IDEMPOTÊNCIA E CONCORRÊNCIA
     // =========================================================================
 
     public function test_a_provider_retry_creates_a_new_run_and_preserves_the_previous_attempt(): void
@@ -353,21 +353,21 @@ class AiInterpretationHardeningTest extends TestCase
         ]);
 
         [, $conversation] = $this->scenario();
-        $this->interpret($this->incoming($conversation, 'Uma resposta aberta sobre saude no interior.'));
+        $this->interpret($this->incoming($conversation, 'Uma resposta aberta sobre saúde no interior.'));
 
         $runs = AiRun::where('purpose', AiRunPurpose::Classify->value)->orderBy('attempt')->get();
 
-        $this->assertCount(2, $runs, 'Cada tentativa gera um ai_run proprio.');
+        $this->assertCount(2, $runs, 'Cada tentativa gera um ai_run próprio.');
         $this->assertSame(AiRunStatus::Failed, $runs->first()->status, 'A tentativa que falhou continua preservada.');
         $this->assertSame(AiRunStatus::Succeeded, $runs->last()->status);
-        $this->assertSame(1, ConversationInsight::count(), 'Uma unica extracao valida.');
+        $this->assertSame(1, ConversationInsight::count(), 'Uma única extração valida.');
     }
 
     public function test_simulated_concurrent_workers_produce_a_single_insight(): void
     {
         $this->enableAnalysis();
 
-        // Duas execucoes com a mesma versao: a segunda nao deve chamar o
+        // Duas execuções com a mesma versão: a segunda não deve chamar o
         // provedor nem criar um segundo resultado corrente.
         Http::fake([
             '*' => Http::sequence()
@@ -381,7 +381,7 @@ class AiInterpretationHardeningTest extends TestCase
         ]);
 
         [, $conversation] = $this->scenario();
-        $message = $this->incoming($conversation, 'Uma resposta aberta sobre saude no interior.');
+        $message = $this->incoming($conversation, 'Uma resposta aberta sobre saúde no interior.');
 
         $this->interpret($message);
         $this->interpret($message->refresh());
@@ -395,11 +395,11 @@ class AiInterpretationHardeningTest extends TestCase
             ->where('extraction_version', app(AiSchemaRegistry::class)->activeVersion(AiRunPurpose::ExtractInsight))
             ->count();
 
-        $this->assertSame(1, $current, 'Somente um resultado corrente por mensagem e versao.');
+        $this->assertSame(1, $current, 'Somente um resultado corrente por mensagem e versão.');
     }
 
     // =========================================================================
-    // 5. SCHEMA E DADOS SENSIVEIS
+    // 5. SCHEMA E DADOS SENSÍVEIS
     // =========================================================================
 
     #[DataProvider('aiPurposes')]
@@ -419,7 +419,7 @@ class AiInterpretationHardeningTest extends TestCase
             $this->assertStringNotContainsString(
                 $forbidden,
                 $blob,
-                "O schema {$purpose->value} nao pode ter campo relacionado a \"{$forbidden}\"."
+                "O schema {$purpose->value} não pode ter campo relacionado a \"{$forbidden}\"."
             );
         }
     }
@@ -451,7 +451,7 @@ class AiInterpretationHardeningTest extends TestCase
                 'confidence' => 0.95,
                 'requires_human_review' => false,
                 'review_reason' => null,
-                // O modelo tenta anexar atributos que o sistema nao deve possuir.
+                // O modelo tenta anexar atributos que o sistema não deve possuir.
                 'voting_intention' => 'partido x',
                 'religion' => 'catolica',
                 'income_bracket' => 'alta',
@@ -459,14 +459,14 @@ class AiInterpretationHardeningTest extends TestCase
         ]);
 
         [, $conversation] = $this->scenario();
-        $this->interpret($this->incoming($conversation, 'Uma resposta aberta sobre saude.'));
+        $this->interpret($this->incoming($conversation, 'Uma resposta aberta sobre saúde.'));
 
         $run = AiRun::firstOrFail();
         $this->assertSame(AiRunStatus::InvalidOutput, $run->status);
-        $this->assertNull($run->result, 'Saida rejeitada nao pode ser persistida.');
+        $this->assertNull($run->result, 'Saída rejeitada não pode ser persistida.');
         $this->assertSame(0, ConversationInsight::count());
 
-        // Nenhuma execucao pode ter sido aceita, e o valor sensivel nao pode
+        // Nenhuma execução pode ter sido aceita, e o valor sensível não pode
         // vazar nem para a mensagem de erro.
         $this->assertSame(0, AiRun::where('status', AiRunStatus::Succeeded->value)->count());
         $this->assertStringNotContainsString('partido x', (string) $run->error_message);
@@ -485,7 +485,7 @@ class AiInterpretationHardeningTest extends TestCase
         $contactA->update(['name' => 'Alice Primeira', 'email' => 'alice@example.com', 'city' => 'Chapeco']);
         $contactB->update(['name' => 'Bruno Segundo']);
 
-        $this->incoming($conversationB, 'CONTEUDO EXCLUSIVO DA CONVERSA B');
+        $this->incoming($conversationB, 'CONTEÚDO EXCLUSIVO DA CONVERSA B');
         $this->incoming($conversationA, 'Mensagem anterior da conversa A.');
         $messageA = $this->incoming($conversationA, 'Resposta atual da conversa A.');
 
@@ -498,7 +498,7 @@ class AiInterpretationHardeningTest extends TestCase
             $this->assertStringContainsString('Resposta atual da conversa A.', $prompt);
             $this->assertStringContainsString('Mensagem anterior da conversa A.', $prompt);
 
-            $this->assertStringNotContainsString('CONTEUDO EXCLUSIVO DA CONVERSA B', $prompt);
+            $this->assertStringNotContainsString('CONTEÚDO EXCLUSIVO DA CONVERSA B', $prompt);
             $this->assertStringNotContainsString('Alice Primeira', $prompt);
             $this->assertStringNotContainsString('Bruno Segundo', $prompt);
             $this->assertStringNotContainsString('alice@example.com', $prompt);
@@ -527,9 +527,9 @@ class AiInterpretationHardeningTest extends TestCase
         $contact->update(['name' => 'Carlos Terceiro', 'email' => 'carlos@example.com']);
 
         $other = Conversation::factory()->create();
-        $this->incoming($other, 'MENSAGEM DE TERCEIRO NAO RELACIONADA');
+        $this->incoming($other, 'MENSAGEM DE TERCEIRO NÃO RELACIONADA');
 
-        $this->interpret($this->incoming($conversation, 'Precisamos de mais medicos no interior.'));
+        $this->interpret($this->incoming($conversation, 'Precisamos de mais médicos no interior.'));
 
         Http::assertSent(function ($request): bool {
             $body = (string) $request->body();
@@ -537,7 +537,7 @@ class AiInterpretationHardeningTest extends TestCase
             $this->assertStringNotContainsString('Carlos Terceiro', $body);
             $this->assertStringNotContainsString('carlos@example.com', $body);
             $this->assertStringNotContainsString('5549988887777', $body);
-            $this->assertStringNotContainsString('MENSAGEM DE TERCEIRO NAO RELACIONADA', $body);
+            $this->assertStringNotContainsString('MENSAGEM DE TERCEIRO NÃO RELACIONADA', $body);
 
             return true;
         });
@@ -558,7 +558,7 @@ class AiInterpretationHardeningTest extends TestCase
         [, $conversation, $state] = $this->scenario();
         $stageBefore = $state->current_stage;
 
-        $this->interpret($this->incoming($conversation, 'Uma resposta aberta sobre saude no interior.'));
+        $this->interpret($this->incoming($conversation, 'Uma resposta aberta sobre saúde no interior.'));
 
         $run = AiRun::latest('id')->firstOrFail();
         $this->assertSame($expectedStatus, $run->status->value);
@@ -576,7 +576,7 @@ class AiInterpretationHardeningTest extends TestCase
         Queue::assertNotPushed(SendAutomatedConversationReplyJob::class);
         Queue::assertNotPushed(SendManualConversationReplyJob::class);
 
-        // O item foi para revisao humana em vez de seguir sozinho.
+        // O item foi para revisão humana em vez de seguir sozinho.
         $this->assertTrue(ConversationMessageClassification::firstOrFail()->requires_human_review);
     }
 
@@ -600,22 +600,22 @@ class AiInterpretationHardeningTest extends TestCase
             'timeout' => [fn () => Http::fake(function (): void {
                 throw new ConnectionException('cURL error 28: Operation timed out after 30000 milliseconds');
             }), 'TIMEOUT', 'failed'],
-            'conexao indisponivel' => [fn () => Http::fake(function (): void {
+            'conexão indisponível' => [fn () => Http::fake(function (): void {
                 throw new ConnectionException('cURL error 7: Failed to connect to host');
             }), 'SERVICE_UNAVAILABLE', 'failed'],
             'corpo vazio' => [fn () => Http::fake(['*' => Http::response([], 200)]), 'INVALID_RESPONSE', 'failed'],
-            'conteudo vazio' => [fn () => Http::fake(['*' => Http::response(['choices' => [['message' => ['content' => '   ']]]], 200)]), 'INVALID_RESPONSE', 'failed'],
-            'json invalido' => [fn () => Http::fake(['*' => Http::response(['choices' => [['message' => ['content' => 'nao e json']]]], 200)]), 'INVALID_RESPONSE', 'invalid_output'],
-            'classificacao desconhecida' => [fn () => Http::fake(['*' => Http::response($ok([
+            'conteúdo vazio' => [fn () => Http::fake(['*' => Http::response(['choices' => [['message' => ['content' => '   ']]]], 200)]), 'INVALID_RESPONSE', 'failed'],
+            'json inválido' => [fn () => Http::fake(['*' => Http::response(['choices' => [['message' => ['content' => 'não e json']]]], 200)]), 'INVALID_RESPONSE', 'invalid_output'],
+            'classificação desconhecida' => [fn () => Http::fake(['*' => Http::response($ok([
                 'classification' => 'categoria_inexistente', 'confidence' => 0.9, 'requires_human_review' => false, 'review_reason' => null,
             ]))]), 'INVALID_RESPONSE', 'invalid_output'],
-            'confianca acima de um' => [fn () => Http::fake(['*' => Http::response($ok([
+            'confiança acima de um' => [fn () => Http::fake(['*' => Http::response($ok([
                 'classification' => 'question_answer', 'confidence' => 7.5, 'requires_human_review' => false, 'review_reason' => null,
             ]))]), 'INVALID_RESPONSE', 'invalid_output'],
-            'confianca como texto' => [fn () => Http::fake(['*' => Http::response($ok([
+            'confiança como texto' => [fn () => Http::fake(['*' => Http::response($ok([
                 'classification' => 'question_answer', 'confidence' => 'alta', 'requires_human_review' => false, 'review_reason' => null,
             ]))]), 'INVALID_RESPONSE', 'invalid_output'],
-            'campo obrigatorio ausente' => [fn () => Http::fake(['*' => Http::response($ok([
+            'campo obrigatório ausente' => [fn () => Http::fake(['*' => Http::response($ok([
                 'classification' => 'question_answer', 'confidence' => 0.9,
             ]))]), 'INVALID_RESPONSE', 'invalid_output'],
             'propriedades extras' => [fn () => Http::fake(['*' => Http::response($ok([
@@ -650,8 +650,8 @@ class AiInterpretationHardeningTest extends TestCase
         $stageBefore = $state->current_stage;
         $endReasonBefore = $state->end_reason;
 
-        // Texto neutro: garante que a classificacao vem do provedor falso e nao
-        // de uma regra deterministica.
+        // Texto neutro: garante que a classificação vem do provedor falso e não
+        // de uma regra determinística.
         $this->interpret($this->incoming($conversation, 'Uma resposta aberta e neutra sobre o estado.'));
 
         $this->assertSame(
@@ -659,7 +659,7 @@ class AiInterpretationHardeningTest extends TestCase
             ConversationMessage::where('conversation_id', $conversation->id)
                 ->where('direction', ConversationMessageDirection::Outgoing)
                 ->count(),
-            "A classificacao {$classification} nao pode gerar mensagem de saida."
+            "A classificação {$classification} não pode gerar mensagem de saída."
         );
 
         Queue::assertNotPushed(SendAutomatedConversationReplyJob::class);
@@ -736,10 +736,10 @@ class AiInterpretationHardeningTest extends TestCase
         $this->interpret($this->incoming($conversation, 'Uma resposta aberta e neutra sobre o estado.'));
 
         $state->refresh();
-        $this->assertTrue($state->needs_human_review, 'A unica alteracao permitida e a marcacao de revisao.');
+        $this->assertTrue($state->needs_human_review, 'A única alteração permitida e a marcação de revisão.');
 
         foreach ($before as $field => $value) {
-            $this->assertEquals($value, $state->getAttribute($field), "O campo {$field} nao pode ser alterado pela IA.");
+            $this->assertEquals($value, $state->getAttribute($field), "O campo {$field} não pode ser alterado pela IA.");
         }
     }
 }

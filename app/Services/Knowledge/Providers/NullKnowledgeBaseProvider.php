@@ -11,7 +11,7 @@ use App\Models\KnowledgeDocument;
 /**
  * Provedor inerte, ativo quando nenhum armazenamento esta configurado.
  *
- * Indexar falha de forma controlada; remover e criar armazenamento nao fazem
+ * Indexar falha de forma controlada; remover e criar armazenamento não fazem
  * nada. A camada pode estar instalada e desligada sem efeito silencioso.
  */
 class NullKnowledgeBaseProvider implements KnowledgeBaseProvider

@@ -4,10 +4,10 @@
             Bases oficiais aprovadas. Somente documento aprovado dentro de base ativa pode ser recuperado para fundamentar uma resposta.
         </p>
         <p class="muted">
-            Recuperacao: <strong>{{ $knowledgeEnabled ? 'ligada' : 'desligada' }}</strong>.
-            Estrategia configurada: <strong>{{ $strategy->label() }}</strong>.
+            Recuperação: <strong>{{ $knowledgeEnabled ? 'ligada' : 'desligada' }}</strong>.
+            Estratégia configurada: <strong>{{ $strategy->label() }}</strong>.
             @unless($knowledgeEnabled)
-                Com a recuperacao desligada nada da base entra no contexto da IA.
+                Com a recuperação desligada nada da base entra no contexto da IA.
             @endunless
         </p>
         @can('knowledge.manage_bases')
@@ -26,7 +26,7 @@
             <thead>
                 <tr>
                     <th>Base</th>
-                    <th>Situacao</th>
+                    <th>Situação</th>
                     <th>Documentos</th>
                     <th>Aprovados</th>
                     <th>Fluxos</th>

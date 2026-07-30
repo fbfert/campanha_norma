@@ -1,90 +1,90 @@
 # Base de conhecimento oficial (Etapa 9D)
 
-Operacao e seguranca da camada que permite responder perguntas factuais com base
+Operação e segurança da camada que permite responder perguntas factuais com base
 em documentos oficiais aprovados.
 
-A regra que organiza tudo o que vem abaixo: **aprovacao humana e a condicao de
-existencia de um trecho na busca**. Nao ha caminho automatico que torne conteudo
-recuperavel, e nenhuma resposta factual sai sem evidencia conferida.
+A regra que organiza tudo o que vem abaixo: **aprovação humana e a condição de
+existência de um trecho na busca**. Não ha caminho automático que torne conteúdo
+recuperável, e nenhuma resposta factual sai sem evidência conferida.
 
 ---
 
-## 1. O que esta camada faz e o que ela nao faz
+## 1. O que esta camada faz e o que ela não faz
 
 Faz:
 
-- guarda documentos oficiais, segmentados em trechos, com procedencia completa;
+- guarda documentos oficiais, segmentados em trechos, com procedência completa;
 - recupera trechos aprovados para a pergunta da pessoa;
 - entrega esses trechos ao modelo em um bloco declarado como **dado**;
 - confere, depois da resposta, se o que o modelo escreveu se sustenta nos trechos citados;
 - registra o que foi buscado e o que foi usado.
 
-Nao faz:
+Não faz:
 
-- nao usa conversa de outra pessoa como fonte;
-- nao usa a base de opinioes coletadas na pesquisa como fonte de resposta individual;
-- nao completa lacuna com conhecimento geral do modelo;
-- nao envia nada: continua valendo a aprovacao humana da Etapa 9C.
+- não usa conversa de outra pessoa como fonte;
+- não usa a base de opiniões coletadas na pesquisa como fonte de resposta individual;
+- não completa lacuna com conhecimento geral do modelo;
+- não envia nada: continua valendo a aprovação humana da Etapa 9C.
 
 ---
 
 ## 2. Ligar e desligar
 
-| Chave | Padrao | Efeito |
+| Chave | Padrão | Efeito |
 | --- | --- | --- |
-| `knowledge.enabled` | `0` | Chave global. Em `0`, nenhuma busca acontece e a geracao usa o contrato da 9C. |
-| associacao base ↔ fluxo | nenhuma | A base e opt-in por fluxo. Fluxo sem base associada nao produz recuperacao. |
-| situacao da base | `draft` | Somente base `active` participa da busca. |
-| situacao do documento | `draft` | Somente documento `approved` participa da busca. |
+| `knowledge.enabled` | `0` | Chave global. Em `0`, nenhuma busca acontece e a geração usa o contrato da 9C. |
+| associação base ↔ fluxo | nenhuma | A base e opt-in por fluxo. Fluxo sem base associada não produz recuperação. |
+| situação da base | `draft` | Somente base `active` participa da busca. |
+| situação do documento | `draft` | Somente documento `approved` participa da busca. |
 
-As quatro condicoes sao conjuntivas. Desligar qualquer uma interrompe a
-recuperacao sem apagar nada.
+As quatro condições são conjuntivas. Desligar qualquer uma interrompe a
+recuperação sem apagar nada.
 
-**Rollback:** `knowledge.enabled = 0`. A geracao volta ao prompt `v1` e ao schema
-`1` da 9C no run seguinte. Nao requer deploy, migration nem limpeza de dados.
+**Rollback:** `knowledge.enabled = 0`. A geração volta ao prompt `v1` e ao schema
+`1` da 9C no run seguinte. Não requer deploy, migration nem limpeza de dados.
 
 ---
 
-## 3. Configuracoes
+## 3. Configurações
 
 Tudo em `system_settings`, grupo `knowledge`. Nenhum valor operacional esta em
-codigo.
+código.
 
-### Recuperacao
+### Recuperação
 
-| Chave | Padrao | Observacao |
+| Chave | Padrão | Observação |
 | --- | --- | --- |
 | `knowledge.retrieval_strategy` | `lexical` | `lexical`, `vector` ou `hybrid`. |
 | `knowledge.top_k` | `5` | Trechos devolvidos por busca. |
-| `knowledge.score_threshold` | `0.25` | Abaixo disso o trecho nao entra no contexto. |
+| `knowledge.score_threshold` | `0.25` | Abaixo disso o trecho não entra no contexto. |
 | `knowledge.max_context_chars` | `4000` | Teto do bloco oficial no prompt. |
-| `knowledge.max_lexical_candidates` | `2000` | Teto de trechos avaliados na busca lexica. |
-| `knowledge.max_vector_candidates` | `5000` | Teto do ADR 0001. Acima disso a busca vetorial recusa e o resultado sai da lexica. |
+| `knowledge.max_lexical_candidates` | `2000` | Teto de trechos avaliados na busca léxica. |
+| `knowledge.max_vector_candidates` | `5000` | Teto do ADR 0001. Acima disso a busca vetorial recusa e o resultado sai da léxica. |
 | `knowledge.proximity_window` | `400` | Janela para pontuar proximidade entre termos. |
-| `knowledge.min_term_length` | `3` | Termos menores sao ignorados. |
+| `knowledge.min_term_length` | `3` | Termos menores são ignorados. |
 | `knowledge.stop_words` | lista | Separadas por barra vertical. |
 
-### Ingestao
+### Ingestão
 
-| Chave | Padrao | Observacao |
+| Chave | Padrão | Observação |
 | --- | --- | --- |
-| `knowledge.queue` | `knowledge-indexing` | Fila propria. |
+| `knowledge.queue` | `knowledge-indexing` | Fila própria. |
 | `knowledge.chunk_size` | `1200` | Tamanho alvo do trecho em caracteres. |
-| `knowledge.chunk_overlap` | `150` | Sobreposicao entre trechos. |
+| `knowledge.chunk_overlap` | `150` | Sobreposição entre trechos. |
 | `knowledge.max_file_size_mb` | `20` | Teto de upload. |
 | `knowledge.accepted_mime_types` | lista | Conferido pelo MIME **real**, nunca pelo declarado no upload. |
 | `knowledge.antivirus_required` | `1` | Em `1`, upload e recusado quando o scanner esta ausente. |
-| `knowledge.injection_patterns` | lista | Expressoes tratadas como injecao dentro de documentos. |
+| `knowledge.injection_patterns` | lista | Expressões tratadas como injeção dentro de documentos. |
 
-### Fundamentacao
+### Fundamentação
 
-| Chave | Padrao | Observacao |
+| Chave | Padrão | Observação |
 | --- | --- | --- |
-| `knowledge.factual_markers` | lista | Expressoes que caracterizam afirmacao factual e exigem evidencia. |
-| `knowledge.commitment_markers` | lista | Expressoes de compromisso. |
+| `knowledge.factual_markers` | lista | Expressões que caracterizam afirmação factual e exigem evidência. |
+| `knowledge.commitment_markers` | lista | Expressões de compromisso. |
 | `knowledge.commitment_support_markers` | lista | O que, no trecho citado, sustenta um compromisso. |
-| `knowledge.show_citations_to_contact` | `0` | Citacoes sao internas por padrao. |
-| `knowledge.retrieval_retention_days` | `180` | Retencao do log de busca. `0` desliga a limpeza. |
+| `knowledge.show_citations_to_contact` | `0` | Citações são internas por padrão. |
+| `knowledge.retrieval_retention_days` | `180` | Retenção do log de busca. `0` desliga a limpeza. |
 
 ### Ambiente (`.env`)
 
@@ -99,29 +99,29 @@ KNOWLEDGE_PDF_TEXT_COMMAND="pdftotext -layout -enc UTF-8 :input -"
 KNOWLEDGE_ANTIVIRUS_COMMAND="clamscan --no-summary --stdout :input"
 ```
 
-Chave de embeddings (`KNOWLEDGE_EMBEDDING_KEY`) so e necessaria nas estrategias
+Chave de embeddings (`KNOWLEDGE_EMBEDDING_KEY`) so e necessária nas estratégias
 `vector` e `hybrid`. Com `lexical` a base funciona sem nenhuma credencial externa.
 
 ---
 
-## 4. Implantacao
+## 4. Implantação
 
-1. `php84 artisan migrate` — cria sete tabelas e acrescenta colunas de fundamentacao em `conversation_reply_suggestions`.
+1. `php84 artisan migrate` — cria sete tabelas e acrescenta colunas de fundamentação em `conversation_reply_suggestions`.
 2. `php84 artisan db:seed --class=SystemSettingSeeder` — grava as chaves `knowledge.*` desligadas.
-3. `php84 artisan db:seed --class=RolePermissionSeeder` — cria as permissoes `knowledge.*`.
+3. `php84 artisan db:seed --class=RolePermissionSeeder` — cria as permissões `knowledge.*`.
 4. `php84 artisan cache:clear` — `SystemSettingService` cacheia para sempre.
 5. Acrescentar `knowledge-indexing` as filas do worker systemd.
 6. `php84 artisan knowledge:diagnose` — confere provedores, ferramentas externas e estado.
 
-Filas do worker apos esta etapa:
+Filas do worker após esta etapa:
 
 ```
 whatsapp-send,conversation-automation,conversation-automation-send,ai-interpretation,ai-response-generation,ai-response-send,knowledge-indexing
 ```
 
-### Dependencia externa pendente
+### Dependência externa pendente
 
-`pdftotext` **nao esta instalado** neste servidor. Enquanto isso, upload de PDF
+`pdftotext` **não esta instalado** neste servidor. Enquanto isso, upload de PDF
 falha de forma limpa com `extrator_pdf_indisponivel` e o documento fica em
 `failed`. Para habilitar:
 
@@ -143,87 +143,87 @@ draft ─► processing ─► ready ─► approved ─► obsolete
                   └─► failed
 ```
 
-- **processing** — enfileirado para extracao, sanitizacao, segmentacao e indexacao.
-- **ready** — indexado com sucesso. **Ainda invisivel para a busca.**
-- **approved** — unica situacao recuperavel, e somente dentro de base `active`.
-- **rejected** — recusado na revisao.
-- **obsolete** — sai da busca sem apagar historico. Aplicado automaticamente ao documento substituido quando a nova versao e aprovada.
-- **failed** — extracao ou indexacao falhou. O motivo fica em `error_message` como codigo, nunca como mensagem do provedor.
+- **processing** — enfileirado para extração, sanitização, segmentação e indexação.
+- **ready** — indexado com sucesso. **Ainda invisível para a busca.**
+- **approved** — única situação recuperável, e somente dentro de base `active`.
+- **rejected** — recusado na revisão.
+- **obsolete** — sai da busca sem apagar histórico. Aplicado automaticamente ao documento substituído quando a nova versão e aprovada.
+- **failed** — extração ou indexação falhou. O motivo fica em `error_message` como código, nunca como mensagem do provedor.
 
-Reprocessar **revoga a aprovacao**: conteudo novo exige leitura humana nova.
+Reprocessar **revoga a aprovação**: conteúdo novo exige leitura humana nova.
 
 Excluir remove arquivo e trechos, mas nunca toca em `knowledge_retrievals`,
 `knowledge_retrieval_chunks` ou `reply_suggestion_citations`.
 
 ---
 
-## 6. Tipos de conteudo permitidos
+## 6. Tipos de conteúdo permitidos
 
-Somente estes oito, aplicados por enum no banco e por validacao na tela:
+Somente estes oito, aplicados por enum no banco e por validação na tela:
 
-biografia, historico publico, competencia institucional, proposta aprovada,
-posicao oficial, agenda publica, perguntas frequentes, canais de contato.
+biografia, histórico público, competência institucional, proposta aprovada,
+posição oficial, agenda pública, perguntas frequentes, canais de contato.
 
-Nao envie: conversa de cidadao, opiniao coletada na pesquisa, dado pessoal,
-documento sigiloso, material de terceiro sem autorizacao, conteudo de campanha
-eleitoral, promessa ou compromisso nao formalizado.
+Não envie: conversa de cidadão, opinião coletada na pesquisa, dado pessoal,
+documento sigiloso, material de terceiro sem autorização, conteúdo de campanha
+eleitoral, promessa ou compromisso não formalizado.
 
 ---
 
-## 7. Seguranca
+## 7. Segurança
 
 ### Arquivo
 
 - Disco privado, fora de `public/`.
-- O nome em disco e um UUID gerado no servidor. O nome enviado **nunca** participa da montagem do caminho: nao existe superficie para path traversal.
-- O nome original sobrevive apenas como rotulo higienizado.
-- MIME conferido pelo conteudo real (`getMimeType()`), nao pelo cabecalho do upload.
-- Antivirus roda apos a gravacao; arquivo suspeito ou nao verificavel e apagado do disco.
+- O nome em disco e um UUID gerado no servidor. O nome enviado **nunca** participa da montagem do caminho: não existe superfície para path traversal.
+- O nome original sobrevive apenas como rótulo higienizado.
+- MIME conferido pelo conteúdo real (`getMimeType()`), não pelo cabeçalho do upload.
+- Antivirus roda após a gravação; arquivo suspeito ou não verificável e apagado do disco.
 - Download exige `knowledge.download_documents`, usa o caminho gravado no banco e e auditado.
 
-### Injecao de prompt
+### Injeção de prompt
 
 Duas defesas, porque nenhuma basta sozinha:
 
-1. **Na ingestao** — cada linha e comparada, ja normalizada, contra `knowledge.injection_patterns`. A linha que casa e substituida por um marcador e o documento e sinalizado (`injection_flagged`), com os achados visiveis na tela antes da aprovacao.
-2. **No prompt** — os trechos vao em um bloco delimitado, declarado como material de referencia, com a instrucao explicita de que ordens dentro dele devem ser ignoradas. O prompt de sistema prevalece sempre.
+1. **Na ingestão** — cada linha e comparada, já normalizada, contra `knowledge.injection_patterns`. A linha que casa e substituída por um marcador e o documento e sinalizado (`injection_flagged`), com os achados visíveis na tela antes da aprovação.
+2. **No prompt** — os trechos vao em um bloco delimitado, declarado como material de referência, com a instrução explícita de que ordens dentro dele devem ser ignoradas. O prompt de sistema prevalece sempre.
 
-A primeira erra por padrao incompleto; a segunda erra se o modelo ignorar a
-delimitacao. Juntas cobrem o buraco uma da outra.
+A primeira erra por padrão incompleto; a segunda erra se o modelo ignorar a
+delimitação. Juntas cobrem o buraco uma da outra.
 
-Nenhum documento pode alterar ferramenta, credencial ou politica: o conteudo
-recuperado so alcanca o prompt como texto.
+Nenhum documento pode alterar ferramenta, credencial ou política: o conteúdo
+recuperado so alcança o prompt como texto.
 
 ### Dados pessoais
 
-- `RetrievalQuery` nao carrega identificador de contato. Um teste le o arquivo para garantir que continue assim.
-- `LocalKnowledgeRetriever` consulta apenas `knowledge_*`. Um teste le o codigo (sem comentarios) e falha se `Conversation`, `Contact` ou `ConversationInsight` aparecerem.
+- `RetrievalQuery` não carrega identificador de contato. Um teste le o arquivo para garantir que continue assim.
+- `LocalKnowledgeRetriever` consulta apenas `knowledge_*`. Um teste le o código (sem comentários) e falha se `Conversation`, `Contact` ou `ConversationInsight` aparecerem.
 - A consulta gravada no log e truncada em 1000 caracteres.
-- Logs registram codigo de erro, contagem e duracao — nunca credencial, caminho de arquivo ou corpo de requisicao.
+- Logs registram código de erro, contagem e duração — nunca credencial, caminho de arquivo ou corpo de requisição.
 
 ---
 
-## 8. Fundamentacao
+## 8. Fundamentação
 
-O campo `grounded` devolvido pelo modelo e **sinal**, nunca autorizacao. A
-validacao acontece depois, e e deterministica.
+O campo `grounded` devolvido pelo modelo e **sinal**, nunca autorização. A
+validação acontece depois, e e determinística.
 
 | Veredito | Significado | Envio |
 | --- | --- | --- |
-| `not_required` | O texto nao afirma nada factual. | permitido |
-| `grounded` | Afirmacao factual sustentada pelos trechos citados. | permitido |
-| `no_evidence` | Afirmacao factual sem nenhuma citacao valida. | bloqueado |
+| `not_required` | O texto não afirma nada factual. | permitido |
+| `grounded` | Afirmação factual sustentada pelos trechos citados. | permitido |
+| `no_evidence` | Afirmação factual sem nenhuma citação valida. | bloqueado |
 | `invalid_citation` | Citou algo fora do conjunto recuperado. | bloqueado |
-| `obsolete_citation` | Citou documento que deixou de ser recuperavel. | bloqueado |
-| `unsupported_number` | Numero que nao esta no trecho citado. | bloqueado |
-| `unsupported_date` | Data que nao esta no trecho citado. | bloqueado |
-| `unsupported_commitment` | Compromisso sem suporte explicito. | bloqueado |
+| `obsolete_citation` | Citou documento que deixou de ser recuperável. | bloqueado |
+| `unsupported_number` | Número que não esta no trecho citado. | bloqueado |
+| `unsupported_date` | Data que não esta no trecho citado. | bloqueado |
+| `unsupported_commitment` | Compromisso sem suporte explícito. | bloqueado |
 | `grounded_without_citation` | Declarou-se fundamentado sem citar nada. | bloqueado |
 
-Reprovacao nunca produz texto alternativo: produz bloqueio e handoff
+Reprovação nunca produz texto alternativo: produz bloqueio e handoff
 (`insufficient_evidence` para `no_evidence`, `ungrounded_answer` para os demais).
 
-Data e conferida antes de numero de proposito: uma data e feita de numeros, e a
+Data e conferida antes de número de propósito: uma data e feita de números, e a
 ordem inversa reportaria motivo enganoso.
 
 ---
@@ -231,17 +231,17 @@ ordem inversa reportaria motivo enganoso.
 ## 9. Rastreabilidade
 
 Cada busca grava `knowledge_retrievals` e uma linha por trecho devolvido em
-`knowledge_retrieval_chunks`, com **snapshot** de conteudo, titulo e versao.
-Cada sugestao fundamentada grava `reply_suggestion_citations`, com o mesmo
+`knowledge_retrieval_chunks`, com **snapshot** de conteúdo, título e versão.
+Cada sugestão fundamentada grava `reply_suggestion_citations`, com o mesmo
 snapshot.
 
-E duplicacao de texto deliberada. Sem ela, substituir ou excluir um documento
-apagaria a explicacao de toda resposta que ele sustentou. Citacao recusada
-tambem vira linha, com o motivo e sem vinculo de documento — o identificador que
-o modelo inventou nao aponta para nada.
+E duplicação de texto deliberada. Sem ela, substituir ou excluir um documento
+apagaria a explicação de toda resposta que ele sustentou. Citação recusada
+também vira linha, com o motivo e sem vínculo de documento — o identificador que
+o modelo inventou não aponta para nada.
 
-Retencao: `knowledge:prune-retrievals` limpa o log de busca conforme
-`knowledge.retrieval_retention_days`. **Nao** toca nas citacoes: a justificativa
+Retenção: `knowledge:prune-retrievals` limpa o log de busca conforme
+`knowledge.retrieval_retention_days`. **Não** toca nas citações: a justificativa
 de algo que chegou a uma pessoa tem ciclo de vida mais longo.
 
 ---
@@ -250,20 +250,20 @@ de algo que chegou a uma pessoa tem ciclo de vida mais longo.
 
 | Comando | Uso |
 | --- | --- |
-| `knowledge:diagnose` | Configuracao, provedores, ferramentas externas e estado por base. Nao chama provedor externo. |
-| `knowledge:index` | Enfileira reindexacao. `--base=`, `--document=`, `--failed`, `--dry-run`. Revoga a aprovacao. |
-| `knowledge:sync` | Reconcilia contagem de trechos, remove trecho orfao e relata arquivo ausente ou documento parado em processamento. `--base=`, `--dry-run`. Nunca aprova, nunca reindexa, nunca exclui documento. |
-| `knowledge:prune-retrievals` | Retencao do log de busca. `--days=`, `--dry-run`. |
+| `knowledge:diagnose` | Configuração, provedores, ferramentas externas e estado por base. Não chama provedor externo. |
+| `knowledge:index` | Enfileira reindexação. `--base=`, `--document=`, `--failed`, `--dry-run`. Revoga a aprovação. |
+| `knowledge:sync` | Reconcilia contagem de trechos, remove trecho órfão e relata arquivo ausente ou documento parado em processamento. `--base=`, `--dry-run`. Nunca aprova, nunca reindexa, nunca exclui documento. |
+| `knowledge:prune-retrievals` | Retenção do log de busca. `--days=`, `--dry-run`. |
 
 ---
 
-## 11. Operacao no dia a dia
+## 11. Operação no dia a dia
 
-**Publicar conteudo novo**
+**Publicar conteúdo novo**
 
 1. Criar ou escolher a base. Base nova nasce em `draft`.
 2. Enviar o documento. Conferir o texto extraido e os trechos na tela do documento.
-3. Se houver aviso de instrucao detectada, revisar o material antes de qualquer coisa.
+3. Se houver aviso de instrução detectada, revisar o material antes de qualquer coisa.
 4. Testar em *Teste de busca na base* com perguntas reais.
 5. Aprovar o documento.
 6. Ativar a base e associa-la ao fluxo.
@@ -271,28 +271,28 @@ de algo que chegou a uma pessoa tem ciclo de vida mais longo.
 
 **Editar a ficha de uma base**
 
-O botao **Editar** aparece em cada linha da listagem em *Inteligencia > Base de
-conhecimento* e tambem dentro da base, ao lado de *Alterar situacao*. Exige
-`knowledge.manage_bases`, entao `operador` e `consulta` nao veem o botao nem
-alcancam a rota.
+O botão **Editar** aparece em cada linha da listagem em *Inteligência > Base de
+conhecimento* e também dentro da base, ao lado de *Alterar situação*. Exige
+`knowledge.manage_bases`, então `operador` e `consulta` não veem o botão nem
+alcançam a rota.
 
-Sao editaveis o nome, a descricao, a finalidade, a politica de uso e os fluxos
+São editáveis o nome, a descrição, a finalidade, a política de uso e os fluxos
 que podem consultar a base.
 
 Ficam de fora `slug`, `provider` e `version`, que registram como a base foi
-criada, e a **situacao**, que tem acao propria. Salvar o formulario nunca ativa
-nem desativa uma base: ativar muda o que a IA pode afirmar e nao pode ser efeito
-colateral de salvar um formulario.
+criada, e a **situação**, que tem ação própria. Salvar o formulário nunca ativa
+nem desativa uma base: ativar muda o que a IA pode afirmar e não pode ser efeito
+colateral de salvar um formulário.
 
-Uma ressalva sobre os fluxos: a base e opt-in por fluxo, entao mexer nessa lista
+Uma ressalva sobre os fluxos: a base e opt-in por fluxo, então mexer nessa lista
 tem efeito imediato se a base estiver `active` e `knowledge.enabled` ligado.
-Tirar um fluxo corta a recuperacao dele na hora; acrescentar um passa a
-fundamentar respostas daquele fluxo com o conteudo ja aprovado da base.
+Tirar um fluxo corta a recuperação dele na hora; acrescentar um passa a
+fundamentar respostas daquele fluxo com o conteúdo já aprovado da base.
 
-Toda edicao entra em auditoria como `knowledge_base.updated`, com o antes e o
+Toda edição entra em auditoria como `knowledge_base.updated`, com o antes e o
 depois dos campos alterados.
 
-**Substituir uma versao**
+**Substituir uma versão**
 
 Enviar o novo documento apontando `supersedes_document_id` para o antigo. Ao
 aprovar o novo, o antigo vira `obsolete` sozinho.
@@ -300,7 +300,7 @@ aprovar o novo, o antigo vira `obsolete` sozinho.
 **Tirar algo do ar rapidamente**
 
 Marcar o documento como obsoleto, ou desativar a base. Os dois interrompem a
-recuperacao imediatamente e nao apagam historico.
+recuperação imediatamente e não apagam histórico.
 
 ---
 
@@ -309,19 +309,19 @@ recuperacao imediatamente e nao apagam historico.
 | Sintoma | Verificar |
 | --- | --- |
 | Busca sempre vazia | `knowledge.enabled`; base `active`; base associada ao fluxo; documento `approved`; `knowledge.score_threshold` alto demais. |
-| `degraded_reason = sem_base_associada` | O fluxo nao tem base ativa associada. |
+| `degraded_reason = sem_base_associada` | O fluxo não tem base ativa associada. |
 | `degraded_reason = consulta_sem_termos` | A mensagem so tem stop words ou termos curtos. |
 | `degraded_reason = limite_de_candidatos_excedido` | Corpus acima de `knowledge.max_vector_candidates`. Ver ADR 0001 antes de simplesmente subir o teto. |
-| `degraded_reason = embeddings_nao_configurados` | Estrategia vetorial sem provedor configurado. |
+| `degraded_reason = embeddings_nao_configurados` | Estratégia vetorial sem provedor configurado. |
 | Documento em `failed` com `extrator_pdf_indisponivel` | `pdftotext` ausente. |
 | Upload recusado com `antivirus_indisponivel` | ClamAV parado. |
-| Muitas respostas em `no_evidence` | A base nao cobre as perguntas que chegam, ou `top_k`/threshold estao restritivos demais. |
-| Muitas respostas em `unsupported_number` | O modelo esta arredondando ou combinando trechos. Revisar o prompt antes de afrouxar a validacao. |
+| Muitas respostas em `no_evidence` | A base não cobre as perguntas que chegam, ou `top_k`/threshold estão restritivos demais. |
+| Muitas respostas em `unsupported_number` | O modelo esta arredondando ou combinando trechos. Revisar o prompt antes de afrouxar a validação. |
 
 ---
 
 ## 13. Documentos relacionados
 
 - `docs/adr/0001-armazenamento-vetorial-e-provedor-de-conhecimento.md` — escolha de armazenamento, limites medidos e procedimento de troca de provedor.
-- `docs/tests/knowledge-base-manual-etapa-9d.md` — roteiro de homologacao manual.
+- `docs/tests/knowledge-base-manual-etapa-9d.md` — roteiro de homologação manual.
 - `openspec/changes/etapa-9d-base-conhecimento-rag/` — proposta, design e specs.

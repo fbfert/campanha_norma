@@ -6,11 +6,11 @@
         <div><label>Cidade</label><input type="text" wire:model.live.debounce.400ms="city"></div>
         <div><label>Estado</label><input type="text" maxlength="2" wire:model.live.debounce.400ms="state"></div>
         <div><label>Consentimento</label><select wire:model.live="consentStatus"><option value="">Todos</option>@foreach($consentStatuses as $c)<option value="{{ $c->value }}">{{ $c->label() }}</option>@endforeach</select></div>
-        <div><label>Nao contatar</label><select wire:model.live="doNotContact"><option value="">Todos</option><option value="0">Nao</option><option value="1">Sim</option></select></div>
+        <div><label>Não contatar</label><select wire:model.live="doNotContact"><option value="">Todos</option><option value="0">Não</option><option value="1">Sim</option></select></div>
         <div><label>Telefone</label><select wire:model.live="phonePresence"><option value="">Todos</option><option value="with">Com telefone</option><option value="without">Sem telefone</option></select></div>
         <div><label>Contato anterior</label><select wire:model.live="neverContacted"><option value="">Todos</option><option value="1">Nunca contatados</option></select></div>
         <div><label>Cadastrado de</label><input type="date" wire:model.live="createdFrom"></div>
-        <div><label>Cadastrado ate</label><input type="date" wire:model.live="createdTo"></div>
+        <div><label>Cadastrado até</label><input type="date" wire:model.live="createdTo"></div>
     </div>
 
     <p class="muted" style="margin-top:12px;">
@@ -48,11 +48,11 @@
     @endif
 
     <div class="actions" style="margin-top:12px;">
-        <button type="button" class="btn ghost" wire:click="selectAllOnPage">Selecionar todos desta pagina</button>
-        <button type="button" class="btn ghost" wire:click="clearSelection">Limpar selecao</button>
+        <button type="button" class="btn ghost" wire:click="selectAllOnPage">Selecionar todos desta página</button>
+        <button type="button" class="btn ghost" wire:click="clearSelection">Limpar seleção</button>
     </div>
 
-    <label style="margin-top:12px;">Selecao manual</label>
+    <label style="margin-top:12px;">Seleção manual</label>
     <div class="grid grid-3" wire:loading.class="muted">
         @forelse($contacts as $contact)
             <label style="font-weight:400;display:flex;gap:6px;align-items:center;" wire:key="contact-{{ $contact->id }}">
@@ -60,7 +60,7 @@
                     @checked(in_array($contact->id, $selectedIds, true))
                     wire:click="toggleContact({{ $contact->id }})">
                 {{ $contact->name }} - {{ $contact->city }}
-                @if($contact->do_not_contact)<span class="muted">(nao contatar)</span>@endif
+                @if($contact->do_not_contact)<span class="muted">(não contatar)</span>@endif
             </label>
         @empty
             <p class="muted">Nenhum contato encontrado com esses filtros.</p>

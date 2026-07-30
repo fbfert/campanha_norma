@@ -9,7 +9,7 @@ class MaintenanceSyncCountersCommand extends Command
 {
     protected $signature = 'maintenance:sync-counters';
 
-    protected $description = 'Sincroniza contadores de lotes via manutencao.';
+    protected $description = 'Sincroniza contadores de lotes via manutenção.';
 
     public function handle(MaintenanceService $maintenance): int
     {

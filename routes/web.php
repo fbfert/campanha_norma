@@ -66,7 +66,7 @@ Route::middleware(['auth'])->group(function (): void {
 Route::middleware(['auth', 'password.changed'])->group(function (): void {
     Route::get('/dashboard', DashboardController::class)->name('dashboard');
 
-    // Manual. Sem permissao propria: quem entrou no sistema pode ler como o
+    // Manual. Sem permissão própria: quem entrou no sistema pode ler como o
     // sistema funciona.
     Route::get('/manual', [ManualController::class, 'index'])->name('manual.index');
     Route::get('/manual/mapa-mental', [ManualController::class, 'mindMap'])->name('manual.mind-map');
@@ -93,7 +93,7 @@ Route::middleware(['auth', 'password.changed'])->group(function (): void {
         Route::get('/inbox', [InboxController::class, 'index'])->name('inbox.index');
         Route::get('/inbox/{conversation}', [InboxController::class, 'show'])->name('inbox.show');
         Route::get('/conversations', [InboxController::class, 'index'])->name('conversations.index');
-        // Antes de `/conversations/{conversation}`, senao "nova" seria lido como
+        // Antes de `/conversations/{conversation}`, senão "nova" seria lido como
         // identificador de conversa.
         Route::get('/conversations/nova', [InboxController::class, 'create'])->name('conversations.create');
         Route::post('/conversations/nova', [InboxController::class, 'store'])->name('conversations.store');
@@ -138,13 +138,13 @@ Route::middleware(['auth', 'password.changed'])->group(function (): void {
         Route::get('/ai-monitoring', [AiMonitoringController::class, 'index'])->name('ai-monitoring.index');
 
         // Etapa 9E-0: provedor de IA configurado pela tela. Fora do grupo de
-        // configuracoes gerais porque aqui se manipula credencial.
+        // configurações gerais porque aqui se manipula credencial.
         Route::get('/ai-provider', [AiProviderController::class, 'edit'])->name('ai-provider.edit');
         Route::put('/ai-provider', [AiProviderController::class, 'update'])->name('ai-provider.update');
         Route::post('/ai-provider/test', [AiProviderController::class, 'test'])->name('ai-provider.test');
 
-        // Etapa 9E: relatorios analiticos. Somente leitura; nenhuma rota aqui
-        // envia mensagem, altera conversa ou liga qualquer automacao.
+        // Etapa 9E: relatórios analíticos. Somente leitura; nenhuma rota aqui
+        // envia mensagem, altera conversa ou liga qualquer automação.
         Route::get('/analytics', [AnalyticsController::class, 'dashboard'])->name('analytics.dashboard');
         Route::get('/analytics/temas', [AnalyticsController::class, 'topics'])->name('analytics.topics');
         Route::get('/analytics/geografia', [AnalyticsController::class, 'geography'])->name('analytics.geography');

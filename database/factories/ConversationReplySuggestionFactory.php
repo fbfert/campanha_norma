@@ -22,7 +22,7 @@ class ConversationReplySuggestionFactory extends Factory
             'source_message_id' => ConversationMessage::factory(),
             'status' => ReplySuggestionStatus::Pending,
             'action' => ReplySuggestionAction::SuggestReply,
-            'generated_text' => 'Obrigada por explicar. O maior problema hoje e a falta de profissionais ou a distancia ate o atendimento?',
+            'generated_text' => 'Obrigada por explicar. O maior problema hoje e a falta de profissionais ou a distância até o atendimento?',
             'confidence' => 0.92,
             'requires_human_review' => false,
             'mode' => ResponseGenerationMode::ApprovalRequired,
@@ -35,7 +35,7 @@ class ConversationReplySuggestionFactory extends Factory
 
     public function configure(): static
     {
-        // A coluna espelho e o que garante unicidade da sugestao viva.
+        // A coluna espelho e o que garante unicidade da sugestão viva.
         return $this->afterMaking(function (ConversationReplySuggestion $suggestion): void {
             if ($suggestion->status->isLive() && $suggestion->active_source_message_id === null) {
                 $suggestion->active_source_message_id = $suggestion->source_message_id;

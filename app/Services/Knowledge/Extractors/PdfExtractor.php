@@ -8,14 +8,14 @@ use Symfony\Component\Process\ExecutableFinder;
 use Symfony\Component\Process\Process;
 
 /**
- * PDF textual, por binario externo configuravel.
+ * PDF textual, por binário externo configurável.
  *
- * Nao existe fallback nativo, e isso e uma decisao e nao uma lacuna. Um extrator
+ * Não existe fallback nativo, e isso e uma decisão e não uma lacuna. Um extrator
  * improvisado de streams de PDF produz texto parcialmente correto, e texto
  * parcialmente correto dentro de uma base oficial e pior do que uma falha limpa:
- * a falha alguem conserta, o texto corrompido alguem cita.
+ * a falha alguém conserta, o texto corrompido alguém cita.
  *
- * Quando o binario nao existe, o documento vai para `failed` com o codigo
+ * Quando o binário não existe, o documento vai para `failed` com o código
  * `extrator_pdf_indisponivel`. Instalar com `dnf install poppler-utils`.
  */
 class PdfExtractor implements TextExtractor
@@ -43,14 +43,14 @@ class PdfExtractor implements TextExtractor
         if (! $process->isSuccessful()) {
             throw KnowledgeProviderException::code(
                 KnowledgeProviderException::EMPTY_EXTRACTION,
-                'Codigo de saida '.$process->getExitCode().'.',
+                'Código de saída '.$process->getExitCode().'.',
             );
         }
 
         $output = $process->getOutput();
 
         if (trim($output) === '') {
-            // PDF de imagem escaneada cai aqui. Sem OCR, nao ha texto a indexar.
+            // PDF de imagem escaneada cai aqui. Sem OCR, não ha texto a indexar.
             throw KnowledgeProviderException::code(
                 KnowledgeProviderException::EMPTY_EXTRACTION,
                 'PDF sem camada de texto.',
@@ -63,9 +63,9 @@ class PdfExtractor implements TextExtractor
     /**
      * Monta os argumentos sem passar por shell.
      *
-     * O template vem de configuracao e o caminho do arquivo entra como argumento
+     * O template vem de configuração e o caminho do arquivo entra como argumento
      * separado, nunca interpolado numa linha de comando: um nome de arquivo
-     * hostil nao tem como virar comando.
+     * hostil não tem como virar comando.
      *
      * @return array<int, string>
      */
@@ -89,7 +89,7 @@ class PdfExtractor implements TextExtractor
         if (! is_string($resolved) || $resolved === '' || ! is_executable($resolved)) {
             throw KnowledgeProviderException::code(
                 KnowledgeProviderException::PDF_EXTRACTOR_UNAVAILABLE,
-                'Binario nao encontrado: '.$binary,
+                'Binário não encontrado: '.$binary,
             );
         }
 
@@ -103,8 +103,8 @@ class PdfExtractor implements TextExtractor
     }
 
     /**
-     * `pdftotext` separa paginas com form feed. Quando o separador nao aparece,
-     * devolvemos texto corrido em vez de fingir uma paginacao que nao existe.
+     * `pdftotext` separa páginas com form feed. Quando o separador não aparece,
+     * devolvemos texto corrido em vez de fingir uma paginação que não existe.
      */
     private function paginate(string $output): ExtractedText
     {

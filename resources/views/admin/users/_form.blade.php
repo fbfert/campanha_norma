@@ -9,11 +9,11 @@
 </p>
 @isset($creating)
     <p>
-        <label for="password">Senha temporaria</label>
+        <label for="password">Senha temporária</label>
         <input id="password" name="password" type="password" required>
     </p>
     <p>
-        <label for="password_confirmation">Confirmar senha temporaria</label>
+        <label for="password_confirmation">Confirmar senha temporária</label>
         <input id="password_confirmation" name="password_confirmation" type="password" required>
     </p>
 @endisset

@@ -9,7 +9,7 @@ use App\Models\ConversationMessage;
 use App\Models\User;
 
 /**
- * Unico ponto autorizado a alterar `current_stage`. Toda transicao gera historico.
+ * Único ponto autorizado a alterar `current_stage`. Toda transição gera histórico.
  */
 class ConversationFlowStateMachine
 {

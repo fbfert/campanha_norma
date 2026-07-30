@@ -1,12 +1,12 @@
-# Geracao de respostas e aprovacao humana — Etapa 9C
+# Geração de respostas e aprovação humana — Etapa 9C
 
-Geracao de resposta contextualizada para **aprofundar a opiniao da propria pessoa**. O modo padrao e sugerir para aprovacao humana. Nenhum texto gerado chega ao contato sem aprovacao explicita, salvo autoenvio deliberadamente habilitado e sob todos os guards.
+Geração de resposta contextualizada para **aprofundar a opinião da própria pessoa**. O modo padrão e sugerir para aprovação humana. Nenhum texto gerado chega ao contato sem aprovação explícita, salvo autoenvio deliberadamente habilitado e sob todos os guards.
 
 ## Objetivo conversacional
 
-A resposta reconhece brevemente o ponto, permanece neutra, faz **no maximo uma pergunta** e usa apenas o que a propria pessoa escreveu. Nao tenta mudar voto, nao promete acao, nao afirma proposta inexistente e nao simula intimidade.
+A resposta reconhece brevemente o ponto, permanece neutra, faz **no máximo uma pergunta** e usa apenas o que a própria pessoa escreveu. Não tenta mudar voto, não promete ação, não afirma proposta inexistente e não simula intimidade.
 
-## Modos de operacao
+## Modos de operação
 
 ```text
 disabled           nao gera nada, nenhuma chamada ao provedor
@@ -15,14 +15,14 @@ approval_required  gera e aguarda aprovacao humana individual
 auto_send_limited  permite autoenvio, apenas sob todos os guards
 ```
 
-Ordenados por permissividade. **O modo efetivo e o menor entre o global e o do fluxo**: um fluxo pode restringir, nunca ampliar. Desligar globalmente e um botao de parada real.
+Ordenados por permissividade. **O modo efetivo e o menor entre o global e o do fluxo**: um fluxo pode restringir, nunca ampliar. Desligar globalmente e um botão de parada real.
 
 ```text
 ai.response.mode                 global, padrao `disabled`
 conversation_flows.response_mode por fluxo, nulo herda o global
 ```
 
-## Acoes do contrato
+## Ações do contrato
 
 ```text
 suggest_reply          reconhece e pergunta uma vez
@@ -33,7 +33,7 @@ no_reply               nada a responder
 opt_out                a pessoa pediu para parar
 ```
 
-Somente as tres primeiras produzem texto. `suggest_reply` e `request_clarification` contam como aprofundamento quando enviadas.
+Somente as três primeiras produzem texto. `suggest_reply` e `request_clarification` contam como aprofundamento quando enviadas.
 
 ## Fluxo
 
@@ -52,30 +52,30 @@ Mensagem recebida
               caso contrario -> pendente na caixa de aprovacao
 ```
 
-## Onde esta a garantia de "uma sugestao valida por mensagem"
+## Onde esta a garantia de "uma sugestão valida por mensagem"
 
-MySQL nao possui indice unico parcial. A tabela usa uma coluna espelho anulavel:
+MySQL não possui índice único parcial. A tabela usa uma coluna espelho anulável:
 
 ```text
 active_source_message_id = source_message_id   enquanto pending ou approved
 active_source_message_id = NULL                quando sent, rejected, superseded, expired, blocked ou failed
 ```
 
-com `UNIQUE (active_source_message_id)`. MySQL aceita multiplos `NULL` em indice unico — comportamento verificado empiricamente em MariaDB 10.5 — entao o efeito e exatamente "no maximo uma sugestao viva por mensagem recebida", sem impedir o historico de regeneracoes.
+com `UNIQUE (active_source_message_id)`. MySQL aceita múltiplos `NULL` em índice único — comportamento verificado empiricamente em MariaDB 10.5 — então o efeito e exatamente "no máximo uma sugestão viva por mensagem recebida", sem impedir o histórico de regenerações.
 
-## Obsolescencia
+## Obsolescência
 
-Uma sugestao fica obsoleta quando chega mensagem recebida mais nova que a de origem. A verificacao compara identificadores no momento da aprovacao e do autoenvio.
+Uma sugestão fica obsoleta quando chega mensagem recebida mais nova que a de origem. A verificação compara identificadores no momento da aprovação e do autoenvio.
 
-Nao usamos tempo como criterio principal: uma sugestao de dez minutos atras continua valida se a pessoa nao escreveu mais nada, e uma de dez segundos atras ja e invalida se ela escreveu. Existe um teto de validade (`ai.response.validity_minutes`), mas ele e limite, nao criterio.
+Não usamos tempo como critério principal: uma sugestão de dez minutos atrás continua valida se a pessoa não escreveu mais nada, e uma de dez segundos atrás já e invalida se ela escreveu. Existe um teto de validade (`ai.response.validity_minutes`), mas ele e limite, não critério.
 
 ## Texto gerado e texto final
 
-`generated_text` nunca e sobrescrito. A edicao do operador vai para `final_text`. O que e enviado e `final_text ?? generated_text`. Isso permite responder depois: o modelo estava bom, ou o operador consertou?
+`generated_text` nunca e sobrescrito. A edição do operador vai para `final_text`. O que e enviado e `final_text ?? generated_text`. Isso permite responder depois: o modelo estava bom, ou o operador consertou?
 
-O texto editado tambem passa pelo validador antes de sair.
+O texto editado também passa pelo validador antes de sair.
 
-## Validador deterministico
+## Validador determinístico
 
 Roda depois do modelo, sempre. Reprova por:
 
@@ -88,7 +88,7 @@ intimidade_simulada             alegacao_de_leitura_pessoal
 coleta_de_dado_pessoal
 ```
 
-As listas ficam em `ai.response.forbidden.*`, editaveis sem deploy. Texto reprovado nunca e enviado, nem automaticamente nem por aprovacao.
+As listas ficam em `ai.response.forbidden.*`, editáveis sem deploy. Texto reprovado nunca e enviado, nem automaticamente nem por aprovação.
 
 ## Guards do autoenvio
 
@@ -103,28 +103,28 @@ mensagem de origem ainda e a ultima     nenhuma outra mensagem pendente
 trava obtida                            texto aprovado no validador
 ```
 
-`ai.response.auto_send_classifications` nasce **vazia**: nenhuma categoria e elegivel ate alguem preencher deliberadamente.
+`ai.response.auto_send_classifications` nasce **vazia**: nenhuma categoria e elegível até alguém preencher deliberadamente.
 
 ## Handoff humano
 
-Motivos: pedido explicito, pergunta factual sem base aprovada, denuncia ou acusacao, ameaca, pedido de ajuda individual, assunto juridico, promessa ou compromisso, baixa confianca, conteudo hostil, midia nao suportada, conflito de contexto, limite de turnos e falha repetida do provedor.
+Motivos: pedido explícito, pergunta factual sem base aprovada, denuncia ou acusação, ameaca, pedido de ajuda individual, assunto juridico, promessa ou compromisso, baixa confiança, conteúdo hostil, midia não suportada, conflito de contexto, limite de turnos e falha repetida do provedor.
 
-Ao encaminhar: pausa a automacao, muda o estagio para `waiting_human`, eleva a prioridade quando o motivo indica risco, cria evento, exibe o motivo e invalida sugestoes vivas. **Nunca envia texto improvisado.**
+Ao encaminhar: pausa a automação, muda o estagio para `waiting_human`, eleva a prioridade quando o motivo indica risco, cria evento, exibe o motivo e invalida sugestões vivas. **Nunca envia texto improvisado.**
 
 ## Sem base factual aprovada
 
-Nao existe base de conhecimento nesta subetapa. Pergunta factual sobre a Professora Norma tem dois destinos configuraveis em `ai.response.factual_behavior`:
+Não existe base de conhecimento nesta subetapa. Pergunta factual sobre a Professora Norma tem dois destinos configuráveis em `ai.response.factual_behavior`:
 
 ```text
 handoff        encaminha para a equipe (padrao)
 institutional  responde com `ai.response.institutional_text`, texto fixo
 ```
 
-O modelo nunca preenche essa lacuna. O prompt declara explicitamente que ele nao possui informacao factual.
+O modelo nunca preenche essa lacuna. O prompt declara explicitamente que ele não possui informação factual.
 
-## Servico de saida unificado
+## Serviço de saída unificado
 
-`ConversationReplyService` concentra elegibilidade, criacao da mensagem pendente, `request_id` unico, snapshots, evento e auditoria. Manual, automatico da 9A e aprovado por IA passam pelo mesmo caminho, com origens distintas:
+`ConversationReplyService` concentra elegibilidade, criação da mensagem pendente, `request_id` único, snapshots, evento e auditoria. Manual, automático da 9A e aprovado por IA passam pelo mesmo caminho, com origens distintas:
 
 ```text
 manual       resposta escrita por uma pessoa
@@ -132,7 +132,7 @@ automation   pergunta e textos da 9A
 approved_ai  sugestao aprovada ou autoenviada
 ```
 
-As validacoes proprias do envio manual continuam em `ManualReplyService` e seu comportamento nao mudou.
+As validações próprias do envio manual continuam em `ManualReplyService` e seu comportamento não mudou.
 
 ## Metadados na linha do tempo
 
@@ -143,7 +143,7 @@ approved_by                     approved_at
 automation_state_transition_id
 ```
 
-Colunas relacionais, nao JSON: precisam ser filtraveis pelos relatorios da subetapa seguinte. A timeline exibe selo identificando a assistencia de IA e quem aprovou.
+Colunas relacionais, não JSON: precisam ser filtráveis pelos relatórios da subetapa seguinte. A timeline exibe selo identificando a assistência de IA e quem aprovou.
 
 ## Filas
 
@@ -158,7 +158,7 @@ Adicionar ao worker:
 php artisan queue:work --queue=whatsapp-incoming,whatsapp-messages,whatsapp-manual-replies,whatsapp-conversation-sync,whatsapp-maintenance,conversation-automation,conversation-automation-send,ai-interpretation,ai-response-generation,ai-response-send,default
 ```
 
-## Configuracoes
+## Configurações
 
 ```text
 ai.response.mode                        disabled
@@ -182,7 +182,7 @@ ai.response.institutional_text          texto
 ai.response.forbidden.*                 listas de expressoes proibidas
 ```
 
-## Permissoes
+## Permissões
 
 ```text
 reply_suggestions.view              reply_suggestions.approve
@@ -191,29 +191,29 @@ reply_suggestions.feedback          reply_suggestions.manage_settings
 ```
 
 - Administrador: todas.
-- Operador: `view`, `reject` e `feedback`. **Nao aprova.**
+- Operador: `view`, `reject` e `feedback`. **Não aprova.**
 - Consulta: apenas `view`.
 
-Aprovar e enviar exige permissao propria, separada de visualizar.
+Aprovar e enviar exige permissão própria, separada de visualizar.
 
-## Caixa de aprovacao
+## Caixa de aprovação
 
-`/admin/reply-suggestions` lista sugestoes pendentes com a mensagem da pessoa, a pergunta original, o resumo, o tema, a confianca e o motivo de revisao.
+`/admin/reply-suggestions` lista sugestões pendentes com a mensagem da pessoa, a pergunta original, o resumo, o tema, a confiança e o motivo de revisão.
 
 - Editar antes de enviar.
 - Aprovar e enviar, individualmente.
 - Rejeitar com motivo.
-- Regenerar com justificativa obrigatoria.
-- Assumir manualmente, pausando a automacao.
+- Regenerar com justificativa obrigatória.
+- Assumir manualmente, pausando a automação.
 - Registrar feedback.
 
-**Nao existe aprovacao em massa.** A ausencia e deliberada: uma tela que aprova cinquenta sugestoes com um clique transforma revisao humana em carimbo.
+**Não existe aprovação em massa.** A ausência e deliberada: uma tela que aprova cinquenta sugestões com um clique transforma revisão humana em carimbo.
 
 ## Feedback operacional
 
-O operador marca a sugestao como boa, ruim ou inadequada, com motivo opcional. O valor fica armazenado com autor e data.
+O operador marca a sugestão como boa, ruim ou inadequada, com motivo opcional. O valor fica armazenado com autor e data.
 
-Nenhum processo automatico le esse campo para ajustar prompt, modelo, threshold ou allowlist. Promover aprendizado exige nova versao de prompt no repositorio, revisada em diff.
+Nenhum processo automático le esse campo para ajustar prompt, modelo, threshold ou allowlist. Promover aprendizado exige nova versão de prompt no repositório, revisada em diff.
 
 ## Rollback
 
@@ -222,19 +222,19 @@ Nenhum processo automatico le esse campo para ajustar prompt, modelo, threshold 
 php artisan migrate:rollback --step=1 --force
 ```
 
-O `down()` remove a tabela de sugestoes, os metadados de IA em `conversation_messages`, os contadores em `conversation_flow_states` e o modo por fluxo. Sugestoes sao dados derivados: descarta-las nao afeta o historico de conversas nem as mensagens ja enviadas.
+O `down()` remove a tabela de sugestões, os metadados de IA em `conversation_messages`, os contadores em `conversation_flow_states` e o modo por fluxo. Sugestões são dados derivados: descarta-las não afeta o histórico de conversas nem as mensagens já enviadas.
 
-## Solucao de problemas
+## Solução de problemas
 
-- **Nada e gerado**: confirmar `ai.enabled`, `ai.analysis_enabled`, `ai.response.mode` diferente de `disabled`, o worker da fila `ai-response-generation` e a existencia de estado de fluxo na conversa.
-- **Sugestao criada mas botao de aprovar desabilitado**: ler o motivo exibido no topo da tela. Obsoleta, expirada, contato inelegivel ou modo `draft_only`.
-- **Autoenvio nunca dispara**: `ai.response.auto_send_classifications` vazia bloqueia tudo por padrao. Conferir tambem a janela de horario da 9A e a atribuicao da conversa.
-- **Tudo caindo em handoff**: revisar as categorias da 9B que forcam encaminhamento e os thresholds de confianca.
+- **Nada e gerado**: confirmar `ai.enabled`, `ai.analysis_enabled`, `ai.response.mode` diferente de `disabled`, o worker da fila `ai-response-generation` e a existência de estado de fluxo na conversa.
+- **Sugestão criada mas botão de aprovar desabilitado**: ler o motivo exibido no topo da tela. Obsoleta, expirada, contato inelegível ou modo `draft_only`.
+- **Autoenvio nunca dispara**: `ai.response.auto_send_classifications` vazia bloqueia tudo por padrão. Conferir também a janela de horário da 9A e a atribuição da conversa.
+- **Tudo caindo em handoff**: revisar as categorias da 9B que forcam encaminhamento e os thresholds de confiança.
 - **Texto sempre reprovado**: as listas em `ai.response.forbidden.*` podem estar amplas demais; conferir o motivo exato em `validation_error`.
 
-## Nao implementado nesta subetapa
+## Não implementado nesta subetapa
 
-- Recuperacao vetorial e base de conhecimento oficial (9D).
-- Relatorios analiticos finais (9E).
+- Recuperação vetorial e base de conhecimento oficial (9D).
+- Relatórios analíticos finais (9E).
 - Conversa aberta fora do fluxo da pesquisa.
-- Aprendizado automatico a partir de feedback ou correcoes.
+- Aprendizado automático a partir de feedback ou correções.

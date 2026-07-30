@@ -16,13 +16,13 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Log;
 
 /**
- * Recuperacao sobre o armazenamento relacional.
+ * Recuperação sobre o armazenamento relacional.
  *
  * Esta classe consulta exclusivamente `knowledge_chunks`, `knowledge_documents` e
- * `knowledge_bases`. Nao referencia `Conversation`, `ConversationMessage`,
+ * `knowledge_bases`. Não referência `Conversation`, `ConversationMessage`,
  * `Contact` nem `ConversationInsight`, e um teste le este arquivo para garantir
- * que continue assim: a proibicao de usar conversa de terceiro ou opiniao da
- * populacao como fonte precisa ser estrutural, nao apenas documentada.
+ * que continue assim: a proibição de usar conversa de terceiro ou opinião da
+ * população como fonte precisa ser estrutural, não apenas documentada.
  */
 class LocalKnowledgeRetriever implements KnowledgeRetriever
 {
@@ -78,10 +78,10 @@ class LocalKnowledgeRetriever implements KnowledgeRetriever
     }
 
     /**
-     * Pontuacao lexica em 0..1.
+     * Pontuação léxica em 0..1.
      *
-     * Cobertura pesa mais que frequencia de proposito: um trecho que menciona
-     * todos os termos uma vez responde melhor do que um que repete um unico termo
+     * Cobertura pesa mais que frequência de propósito: um trecho que menciona
+     * todos os termos uma vez responde melhor do que um que repete um único termo
      * dez vezes.
      *
      * @param  array<int, string>  $terms
@@ -147,7 +147,7 @@ class LocalKnowledgeRetriever implements KnowledgeRetriever
     }
 
     /**
-     * Termos proximos indicam que o trecho fala do assunto, nao que ele menciona
+     * Termos próximos indicam que o trecho fala do assunto, não que ele menciona
      * as palavras em contextos distantes.
      *
      * @param  array<int, int>  $positions
@@ -165,11 +165,11 @@ class LocalKnowledgeRetriever implements KnowledgeRetriever
     }
 
     /**
-     * Pontuacao vetorial por cosseno.
+     * Pontuação vetorial por cosseno.
      *
-     * Valores negativos sao zerados: cosseno negativo significa "fala de outra
-     * coisa", nao "fala do contrario", e tratar isso como pontuacao negativa
-     * distorceria a fusao hibrida.
+     * Valores negativos são zerados: cosseno negativo significa "fala de outra
+     * coisa", não "fala do contrário", e tratar isso como pontuação negativa
+     * distorceria a fusão híbrida.
      *
      * @return array{scores: array<int, float>, degraded: ?string, candidates: int}
      */
@@ -186,8 +186,8 @@ class LocalKnowledgeRetriever implements KnowledgeRetriever
 
         if ($candidateCount > $maximum) {
             /*
-             | Teto explicito do ADR 0001. Acima dele a busca vetorial nao degrada
-             | em silencio: recusa, registra e deixa a estrategia lexica responder.
+             | Teto explícito do ADR 0001. Acima dele a busca vetorial não degrada
+             | em silêncio: recusa, registra e deixa a estratégia léxica responder.
              */
             Log::warning('knowledge.vector_candidate_limit', [
                 'candidates' => $candidateCount,
@@ -226,8 +226,8 @@ class LocalKnowledgeRetriever implements KnowledgeRetriever
             ->select(['knowledge_chunks.id', 'knowledge_chunks.embedding', 'knowledge_chunks.embedding_dimensions'])
             ->chunkById(500, function ($rows) use (&$scores, &$mismatches, $needle, $needleNorm, $dimensions): void {
                 foreach ($rows as $row) {
-                    // Dimensao divergente e ignorada, nao adivinhada: comparar
-                    // vetores de modelos diferentes produz numero sem sentido.
+                    // Dimensão divergente e ignorada, não adivinhada: comparar
+                    // vetores de modelos diferentes produz número sem sentido.
                     if ((int) $row->embedding_dimensions !== $dimensions) {
                         $mismatches++;
 
@@ -269,11 +269,11 @@ class LocalKnowledgeRetriever implements KnowledgeRetriever
     }
 
     /**
-     * Fusao das duas estrategias.
+     * Fusão das duas estratégias.
      *
-     * Um trecho forte em qualquer uma das duas sobrevive; concordancia entre elas
-     * ganha um bonus pequeno. Evita que a hibrida seja pior que as partes, que e o
-     * que uma media simples produziria.
+     * Um trecho forte em qualquer uma das duas sobrevive; concordância entre elas
+     * ganha um bonus pequeno. Evita que a híbrida seja pior que as partes, que e o
+     * que uma média simples produziria.
      *
      * @param  array<int, float>  $lexical
      * @param  array<int, float>  $vector
@@ -289,7 +289,7 @@ class LocalKnowledgeRetriever implements KnowledgeRetriever
             return $vector;
         }
 
-        // Hibrida sem vetor disponivel vale exatamente a lexica.
+        // Híbrida sem vetor disponível vale exatamente a léxica.
         if ($vector === []) {
             return $lexical;
         }
@@ -307,9 +307,9 @@ class LocalKnowledgeRetriever implements KnowledgeRetriever
     }
 
     /**
-     * Aplica threshold, top_k, deduplicacao e limite de contexto.
+     * Aplica threshold, top_k, deduplicação e limite de contexto.
      *
-     * @param  array<int, float>  $scores  ja ordenado do maior para o menor
+     * @param  array<int, float>  $scores  já ordenado do maior para o menor
      * @return array<int, RetrievedChunk>
      */
     private function materialize(RetrievalQuery $query, array $scores): array
@@ -354,8 +354,8 @@ class LocalKnowledgeRetriever implements KnowledgeRetriever
                 continue;
             }
 
-            // Deduplicacao por conteudo: o mesmo paragrafo em dois documentos nao
-            // vale duas evidencias.
+            // Deduplicação por conteúdo: o mesmo paragrafo em dois documentos não
+            // vale duas evidências.
             $hash = (string) $row->content_hash;
             if (in_array($hash, $seenHashes, true)) {
                 continue;
@@ -370,7 +370,7 @@ class LocalKnowledgeRetriever implements KnowledgeRetriever
                 }
 
                 // O primeiro trecho e truncado em vez de descartado: devolver
-                // vazio por excesso de tamanho seria pior que devolver o inicio.
+                // vazio por excesso de tamanho seria pior que devolver o início.
                 $content = mb_substr($content, 0, $query->maxContextChars);
                 $length = mb_strlen($content);
             }
@@ -396,11 +396,11 @@ class LocalKnowledgeRetriever implements KnowledgeRetriever
     }
 
     /**
-     * Filtro obrigatorio: base associada e ativa, documento aprovado.
+     * Filtro obrigatório: base associada e ativa, documento aprovado.
      *
-     * A condicao e reafirmada aqui mesmo existindo no escopo do model. Duplicar
+     * A condição e reafirmada aqui mesmo existindo no escopo do model. Duplicar
      * uma regra dessa natureza e barato; esquece-la em um caminho novo custa uma
-     * resposta baseada em documento nao aprovado.
+     * resposta baseada em documento não aprovado.
      */
     private function baseQuery(RetrievalQuery $query): Builder
     {

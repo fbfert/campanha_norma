@@ -1,8 +1,8 @@
-# Conversas e sincronizacao do WhatsApp
+# Conversas e sincronização do WhatsApp
 
 ## Arquitetura
 
-O modulo `CONVERSAS` reutiliza as tabelas da Etapa 7:
+O módulo `CONVERSAS` reutiliza as tabelas da Etapa 7:
 
 - `conversations`
 - `conversation_messages`
@@ -12,7 +12,7 @@ O modulo `CONVERSAS` reutiliza as tabelas da Etapa 7:
 - `conversation_conversation_tag`
 - `conversation_notes`
 
-A Etapa 8 adiciona campos de sincronizacao e a tabela `conversation_sync_runs`.
+A Etapa 8 adiciona campos de sincronização e a tabela `conversation_sync_runs`.
 
 Fluxo:
 
@@ -31,7 +31,7 @@ Rotas preservadas:
 /admin/inbox/{conversation}
 ```
 
-Rotas amigaveis:
+Rotas amigáveis:
 
 ```text
 /admin/conversations
@@ -39,7 +39,7 @@ Rotas amigaveis:
 POST /admin/conversations/sync
 ```
 
-## Permissoes
+## Permissões
 
 - `inbox.view`
 - `inbox.view_all`
@@ -68,7 +68,7 @@ Ambos exigem o token interno `Authorization: Bearer`.
 
 ## Limites
 
-Valores configuraveis via `system_settings`:
+Valores configuráveis via `system_settings`:
 
 ```text
 conversations.sync_max_chats = 100
@@ -84,31 +84,31 @@ Limites absolutos:
 365 dias
 ```
 
-## Conversas removidas e resincronizacao
+## Conversas removidas e resincronização
 
-`ConversationSyncService::syncChat()` verifica, antes de criar uma conversa, se ja existe um registro removido (soft delete) com o mesmo `provider` + `external_chat_id`. Se existir, a sincronizacao pula aquele chat em vez de recriar a conversa — evita colidir com a restricao unica da tabela e evita reviver conversas removidas intencionalmente (por exemplo, conversas vazias sem contato, sem mensagem e sem telefone identificavel, originadas por falha de resolucao de `@lid`).
+`ConversationSyncService::syncChat()` verifica, antes de criar uma conversa, se já existe um registro removido (soft delete) com o mesmo `provider` + `external_chat_id`. Se existir, a sincronização pula aquele chat em vez de recriar a conversa — evita colidir com a restrição única da tabela e evita reviver conversas removidas intencionalmente (por exemplo, conversas vazias sem contato, sem mensagem e sem telefone identificável, originadas por falha de resolução de `@lid`).
 
 ## Limitações
 
-- O historico recuperado pode ser parcial.
-- Grupos, status, canais, comunidades e listas sao ignorados.
-- Midias nao sao baixadas.
-- Nao ha chatbot, IA, resposta automatica ou API oficial da Meta.
+- O histórico recuperado pode ser parcial.
+- Grupos, status, canais, comunidades e listas são ignorados.
+- Midias não são baixadas.
+- Não ha chatbot, IA, resposta automática ou API oficial da Meta.
 
 ## Teste manual
 
 1. Acessar como administrador.
 2. Abrir `CONVERSAS`.
-3. Conferir badge de nao lidas.
+3. Conferir badge de não lidas.
 4. Confirmar WhatsApp conectado.
 5. Clicar em `Sincronizar conversas`.
 6. Aguardar o worker `whatsapp-conversation-sync`.
 7. Abrir uma conversa importada.
 8. Ver mensagens recebidas e enviadas por outros dispositivos.
 9. Responder manualmente.
-10. Associar contato quando necessario.
-11. Alterar responsavel, status e prioridade.
+10. Associar contato quando necessário.
+11. Alterar responsável, status e prioridade.
 12. Adicionar etiqueta e nota interna.
 13. Arquivar e desarquivar.
-14. Validar bloqueio para contato marcado como nao contatar.
-15. Testar usuario sem permissao `inbox.sync`.
+14. Validar bloqueio para contato marcado como não contatar.
+15. Testar usuário sem permissão `inbox.sync`.

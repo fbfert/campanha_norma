@@ -25,8 +25,8 @@ class KnowledgeChunkFactory extends Factory
                 ->value('knowledge_base_id'),
             'chunk_index' => 0,
             'content' => $content,
-            // A coluna normalizada e populada pelo mesmo normalizador da indexacao:
-            // fixture com normalizacao propria testaria uma busca que nao existe.
+            // A coluna normalizada e populada pelo mesmo normalizador da indexação:
+            // fixture com normalização própria testaria uma busca que não existe.
             'search_text' => app(TextNormalizer::class)->normalize($content),
             'content_hash' => hash('sha256', $content),
             'token_estimate' => (int) ceil(mb_strlen($content) / 4),

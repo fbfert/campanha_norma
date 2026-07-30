@@ -36,7 +36,7 @@ class ContactExportService
                 $contact->source->value,
                 $contact->status->value,
                 $contact->consent_status->value,
-                $contact->do_not_contact ? 'sim' : 'nao',
+                $contact->do_not_contact ? 'sim' : 'não',
                 $contact->tags->pluck('name')->join('; '),
                 $contact->last_contacted_at?->format('d/m/Y H:i'),
                 $contact->created_at?->format('d/m/Y H:i'),

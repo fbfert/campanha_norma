@@ -3,8 +3,8 @@
 namespace App\Enums;
 
 /**
- * Feedback operacional. Coletado para leitura humana e para as metricas da
- * subetapa seguinte: nenhum processo automatico ajusta prompt, modelo,
+ * Feedback operacional. Coletado para leitura humana e para as métricas da
+ * subetapa seguinte: nenhum processo automático ajusta prompt, modelo,
  * threshold ou allowlist a partir deste valor.
  */
 enum SuggestionFeedback: string

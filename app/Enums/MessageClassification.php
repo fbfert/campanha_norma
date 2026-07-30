@@ -5,7 +5,7 @@ namespace App\Enums;
 /**
  * Categorias ampliadas da subetapa 9B.
  *
- * As tres primeiras coincidem com o classificador deterministico da 9A e podem
+ * As três primeiras coincidem com o classificador determinístico da 9A e podem
  * ser produzidas sem qualquer chamada de IA.
  */
 enum MessageClassification: string
@@ -27,25 +27,25 @@ enum MessageClassification: string
     public function label(): string
     {
         return match ($this) {
-            self::PermissionYes => 'Permissao concedida',
-            self::PermissionNo => 'Permissao negada',
-            self::OptOut => 'Pedido de nao contatar',
+            self::PermissionYes => 'Permissão concedida',
+            self::PermissionNo => 'Permissão negada',
+            self::OptOut => 'Pedido de não contatar',
             self::QuestionAnswer => 'Resposta a pergunta',
             self::AsksForClarification => 'Pede esclarecimento',
             self::AsksAboutNorma => 'Pergunta sobre a Professora Norma',
             self::OffTopic => 'Fora do assunto',
             self::HumanRequested => 'Pede atendimento humano',
-            self::Complaint => 'Reclamacao',
-            self::SensitiveReport => 'Relato sensivel',
+            self::Complaint => 'Reclamação',
+            self::SensitiveReport => 'Relato sensível',
             self::InsultOrAbuse => 'Ofensa ou abuso',
-            self::MediaOrUnsupported => 'Midia ou tipo nao suportado',
-            self::Ambiguous => 'Ambigua',
+            self::MediaOrUnsupported => 'Midia ou tipo não suportado',
+            self::Ambiguous => 'Ambígua',
         };
     }
 
     /**
      * Categorias que sempre exigem atendimento humano, independentemente da
-     * confianca reportada pelo modelo.
+     * confiança reportada pelo modelo.
      */
     public function alwaysRequiresHuman(): bool
     {
@@ -58,7 +58,7 @@ enum MessageClassification: string
     }
 
     /**
-     * Somente respostas a pergunta produzem extracao estruturada.
+     * Somente respostas a pergunta produzem extração estruturada.
      */
     public function allowsExtraction(): bool
     {

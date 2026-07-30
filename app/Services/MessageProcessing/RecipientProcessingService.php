@@ -50,7 +50,7 @@ class RecipientProcessingService
             }
 
             if (! $this->contactStillAllowed($recipient)) {
-                $this->markSkipped($recipient, 'CONTACT_BECAME_INELIGIBLE', 'Contato ficou inapto apos a preparacao do lote.');
+                $this->markSkipped($recipient, 'CONTACT_BECAME_INELIGIBLE', 'Contato ficou inapto após a preparação do lote.');
 
                 return;
             }
@@ -58,7 +58,7 @@ class RecipientProcessingService
             $settings = $this->settings->current();
             $window = $this->window->check($settings);
             if (! $window['allowed']) {
-                $this->wait($recipient, MessageRecipientProcessingStatus::WaitingSchedule, $window['next_at'], $window['reason'] ?? 'Fora do horario permitido.');
+                $this->wait($recipient, MessageRecipientProcessingStatus::WaitingSchedule, $window['next_at'], $window['reason'] ?? 'Fora do horário permitido.');
 
                 return;
             }
@@ -135,7 +135,7 @@ class RecipientProcessingService
             } catch (WhatsAppServiceException $exception) {
                 $this->recordException($recipient, $exception->errorCode, $exception->userMessage());
             } catch (Throwable $exception) {
-                $this->recordException($recipient, 'TEMPORARY_PROVIDER_ERROR', 'Falha temporaria ao processar envio.');
+                $this->recordException($recipient, 'TEMPORARY_PROVIDER_ERROR', 'Falha temporária ao processar envio.');
             }
 
             $this->progress->completeIfFinished($batch);
@@ -145,7 +145,7 @@ class RecipientProcessingService
 
     /**
      * Ativa o fluxo conversacional quando o lote esta vinculado a um fluxo.
-     * Falha aqui nunca invalida um envio ja concluido com sucesso.
+     * Falha aqui nunca invalida um envio já concluído com sucesso.
      */
     private function activateConversationFlow(MessageBatch $batch, MessageBatchRecipient $recipient): void
     {

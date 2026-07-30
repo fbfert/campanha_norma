@@ -5,7 +5,7 @@ The system SHALL calculate operational reports from persisted batches, recipient
 
 #### Scenario: Batch indicators
 - **WHEN** a report calculates success, failure, cancellation, retry, or average duration rates
-- **THEN** it SHALL use documented formulas
+- **THEN** it SHALL use documented fórmulas
 - **AND** SHALL show `—` or `Sem dados suficientes` instead of misleading zero percentages when the denominator is zero.
 
 ### Requirement: Report Exports

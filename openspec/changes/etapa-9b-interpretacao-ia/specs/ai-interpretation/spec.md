@@ -91,7 +91,7 @@ The system SHALL classify open messages into `permission_yes`, `permission_no`, 
 - **AND** the resulting category SHALL be one of the supported categories.
 
 #### Scenario: Unsupported message type
-- **WHEN** the incoming message carries media or an unsupported type
+- **WHEN** the incoming message carries média or an unsupported type
 - **THEN** the classification SHALL be `media_or_unsupported`
 - **AND** no extraction SHALL be attempted.
 
@@ -120,7 +120,7 @@ The system SHALL extract a searchable insight from answers to the survey questio
 #### Scenario: No guessed locality
 - **WHEN** the person does not state a locality
 - **THEN** the locality fields SHALL remain empty
-- **AND** the system SHALL NOT infer a city from area code, name or any other signal.
+- **AND** the system SHALL NOT infer a city from área code, name or any other signal.
 
 #### Scenario: Descriptive sentiment only
 - **WHEN** sentiment is recorded

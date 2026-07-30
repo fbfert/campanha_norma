@@ -9,9 +9,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * Log append-only de cada tentativa de execucao de IA.
+ * Log append-only de cada tentativa de execução de IA.
  *
- * Nunca guarda credencial, cabecalho de autorizacao ou payload desnecessario.
+ * Nunca guarda credencial, cabeçalho de autorização ou payload desnecessário.
  */
 class AiRun extends Model
 {

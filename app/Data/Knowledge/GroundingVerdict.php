@@ -7,7 +7,7 @@ use App\Enums\GroundingStatus;
 readonly class GroundingVerdict
 {
     /**
-     * @param  array<int, array<string, mixed>>  $citations  citacoes validadas
+     * @param  array<int, array<string, mixed>>  $citations  citações validadas
      * @param  array<int, string>  $errors
      */
     public function __construct(

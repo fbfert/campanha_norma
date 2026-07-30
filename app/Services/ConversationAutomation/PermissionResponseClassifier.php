@@ -6,10 +6,10 @@ use App\Enums\PermissionResponseClassification;
 use App\Services\SystemSettingService;
 
 /**
- * Classificador deterministico de respostas curtas de permissao.
+ * Classificador determinístico de respostas curtas de permissão.
  *
- * Nao usa IA, embeddings, similaridade ou ranking. A decisao deriva apenas do
- * texto normalizado e das listas de expressoes configuraveis em system_settings.
+ * Não usa IA, embeddings, similaridade ou ranking. A decisão deriva apenas do
+ * texto normalizado e das listas de expressões configuráveis em system_settings.
  */
 class PermissionResponseClassifier
 {
@@ -26,7 +26,7 @@ class PermissionResponseClassifier
             return $this->result(PermissionResponseClassification::Ambiguous, $normalized, null, 'texto_vazio');
         }
 
-        // Opt-out tem prioridade absoluta sobre qualquer outra classificacao.
+        // Opt-out tem prioridade absoluta sobre qualquer outra classificação.
         $optOut = $this->firstMatch($normalized, $this->expressions('conversation_automation.opt_out_expressions'));
         if ($optOut !== null) {
             return $this->result(PermissionResponseClassification::OptOut, $normalized, $optOut, 'expressao_opt_out');
@@ -35,10 +35,10 @@ class PermissionResponseClassifier
         $yesExpressions = $this->expressions('conversation_automation.yes_expressions');
         $noExpressions = $this->expressions('conversation_automation.no_expressions');
 
-        // Correspondencia exata vale mesmo em textos longos.
-        // Precedencia: opt_out > permission_no > permission_yes > ambiguous.
-        // A negativa e avaliada antes da positiva tambem na correspondencia
-        // exata, para que uma sobreposicao entre as listas nunca resulte em
+        // Correspondência exata vale mesmo em textos longos.
+        // Precedência: opt_out > permission_no > permission_yes > ambiguous.
+        // A negativa e avaliada antes da positiva também na correspondência
+        // exata, para que uma sobreposição entre as listas nunca resulte em
         // consentimento presumido.
         if (in_array($normalized, $noExpressions, true)) {
             return $this->result(PermissionResponseClassification::PermissionNo, $normalized, $normalized, 'expressao_exata_negativa');
@@ -48,7 +48,7 @@ class PermissionResponseClassifier
             return $this->result(PermissionResponseClassification::PermissionYes, $normalized, $normalized, 'expressao_exata_positiva');
         }
 
-        // Acima do limite de palavras nao classificamos por aproximacao.
+        // Acima do limite de palavras não classificamos por aproximação.
         $maxWords = (int) $this->settings->get('conversation_automation.short_answer_max_words', 6);
         if ($this->wordCount($normalized) > $maxWords) {
             return $this->result(PermissionResponseClassification::Ambiguous, $normalized, null, 'texto_longo');
@@ -57,7 +57,7 @@ class PermissionResponseClassifier
         $no = $this->firstMatch($normalized, $noExpressions);
         $yes = $this->firstMatch($normalized, $yesExpressions);
 
-        // Texto curto contendo positiva e negativa e ambiguo, nao positivo.
+        // Texto curto contendo positiva e negativa e ambíguo, não positivo.
         if ($no !== null && $yes !== null) {
             return $this->result(PermissionResponseClassification::Ambiguous, $normalized, null, 'positiva_e_negativa');
         }
@@ -74,8 +74,8 @@ class PermissionResponseClassifier
     }
 
     /**
-     * Normaliza caixa, espacos, pontuacao e acentos sem destruir o texto original,
-     * que permanece disponivel para registro no chamador.
+     * Normaliza caixa, espaços, pontuação e acentos sem destruir o texto original,
+     * que permanece disponível para registro no chamador.
      */
     public function normalize(string $text): string
     {
@@ -89,14 +89,14 @@ class PermissionResponseClassifier
             'ç' => 'c', 'ñ' => 'n',
         ]);
 
-        // Emojis e pontuacao viram separadores para nao colar palavras.
+        // Emojis e pontuação viram separadores para não colar palavras.
         $text = preg_replace('/[^a-z0-9]+/u', ' ', $text) ?? '';
 
         return trim(preg_replace('/\s+/', ' ', $text) ?? '');
     }
 
     /**
-     * Correspondencia por palavra inteira ou frase inteira, nunca por substring solta,
+     * Correspondência por palavra inteira ou frase inteira, nunca por substring solta,
      * para que "nao" nunca case dentro de outra palavra.
      *
      * @param  array<int, string>  $expressions
@@ -129,7 +129,7 @@ class PermissionResponseClassifier
             ->map(fn (string $item): string => $this->normalize($item))
             ->filter(fn (string $item): bool => $item !== '')
             ->unique()
-            // Expressoes mais longas primeiro para "nao quero" vencer "nao".
+            // Expressões mais longas primeiro para "não quero" vencer "nao".
             ->sortByDesc(fn (string $item): int => mb_strlen($item))
             ->values()
             ->all();

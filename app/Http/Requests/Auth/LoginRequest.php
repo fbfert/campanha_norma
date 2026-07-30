@@ -40,7 +40,7 @@ class LoginRequest extends FormRequest
             app(AuditLogger::class)->log('auth.login_failed', 'Falha de login para '.$credentials['email'].'.');
 
             throw ValidationException::withMessages([
-                'email' => 'As credenciais informadas nao conferem.',
+                'email' => 'As credenciais informadas não conferem.',
             ]);
         }
 
@@ -49,10 +49,10 @@ class LoginRequest extends FormRequest
         if (! $user || ! $user->isActive()) {
             Auth::logout();
             RateLimiter::hit($this->throttleKey());
-            app(AuditLogger::class)->log('auth.login_denied', 'Login negado por status do usuario.', $user);
+            app(AuditLogger::class)->log('auth.login_denied', 'Login negado por status do usuário.', $user);
 
             throw ValidationException::withMessages([
-                'email' => 'Este usuario nao esta autorizado a acessar o sistema.',
+                'email' => 'Este usuário não esta autorizado a acessar o sistema.',
             ]);
         }
 

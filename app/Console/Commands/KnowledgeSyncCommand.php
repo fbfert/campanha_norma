@@ -9,20 +9,20 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Storage;
 
 /**
- * Reconciliacao entre o estado gravado e o armazenamento efetivo.
+ * Reconciliação entre o estado gravado e o armazenamento efetivo.
  *
  * Nunca aprova, nunca reindexa e nunca apaga documento. Corrige contagem,
- * remove trecho orfao e sinaliza divergencia que exige decisao humana. Um
- * comando de manutencao que decide por conta propria o que e conteudo oficial
- * seria uma porta lateral para a aprovacao.
+ * remove trecho órfão e sinaliza divergência que exige decisão humana. Um
+ * comando de manutenção que decide por conta própria o que e conteúdo oficial
+ * seria uma porta lateral para a aprovação.
  */
 class KnowledgeSyncCommand extends Command
 {
     protected $signature = 'knowledge:sync
         {--base= : Limita a uma base pelo id}
-        {--dry-run : Apenas relata as divergencias}';
+        {--dry-run : Apenas relata as divergências}';
 
-    protected $description = 'Reconcilia contagem de trechos, trechos orfaos e arquivos ausentes da base de conhecimento.';
+    protected $description = 'Reconcilia contagem de trechos, trechos órfãos e arquivos ausentes da base de conhecimento.';
 
     public function handle(): int
     {
@@ -35,14 +35,14 @@ class KnowledgeSyncCommand extends Command
         $stuck = $this->reportStuckDocuments($baseId);
 
         $this->newLine();
-        $this->info(($dryRun ? 'Divergencias encontradas' : 'Reconciliacao concluida').':');
+        $this->info(($dryRun ? 'Divergências encontradas' : 'Reconciliação concluída').':');
         $this->line("- contagem de trechos corrigida: {$fixedCounts}");
-        $this->line("- trechos orfaos removidos: {$orphans}");
+        $this->line("- trechos órfãos removidos: {$orphans}");
         $this->line("- documentos com arquivo ausente: {$missing}");
         $this->line("- documentos parados em processamento: {$stuck}");
 
         if ($missing > 0 || $stuck > 0) {
-            $this->warn('Estes dois itens exigem decisao humana e nao sao corrigidos automaticamente.');
+            $this->warn('Estes dois itens exigem decisão humana e não são corrigidos automaticamente.');
         }
 
         return self::SUCCESS;
@@ -113,7 +113,7 @@ class KnowledgeSyncCommand extends Command
 
     /**
      * Documento preso em `processing` significa job perdido: quem decide entre
-     * reprocessar e descartar e uma pessoa, nao este comando.
+     * reprocessar e descartar e uma pessoa, não este comando.
      */
     private function reportStuckDocuments(?int $baseId): int
     {

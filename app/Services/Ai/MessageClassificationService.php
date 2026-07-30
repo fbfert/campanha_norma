@@ -17,10 +17,10 @@ use App\Services\SystemSettingService;
 use Illuminate\Database\UniqueConstraintViolationException;
 
 /**
- * Classificacao ampliada de mensagens abertas.
+ * Classificação ampliada de mensagens abertas.
  *
- * A regra deterministica da 9A tem precedencia estrutural: quando ela conclui,
- * o caminho de codigo nem chega ao provedor de IA.
+ * A regra determinística da 9A tem precedência estrutural: quando ela conclui,
+ * o caminho de código nem chega ao provedor de IA.
  */
 class MessageClassificationService
 {
@@ -63,7 +63,7 @@ class MessageClassificationService
         $promptVersion = $this->prompts->activeVersion(AiRunPurpose::Classify);
         $schemaVersion = $this->schemas->activeVersion(AiRunPurpose::Classify);
 
-        // Idempotencia: mesma mensagem, mesma finalidade e mesma versao nao
+        // Idempotência: mesma mensagem, mesma finalidade e mesma versão não
         // provoca nova chamada ao provedor.
         $existing = $this->existing($message, $promptVersion, $schemaVersion);
         if ($existing) {
@@ -91,8 +91,8 @@ class MessageClassificationService
         );
 
         if ($run->status !== AiRunStatus::Succeeded) {
-            // Falha ou saida invalida nunca alteram estado: registram ambiguidade
-            // e mandam para revisao humana com o motivo correspondente.
+            // Falha ou saída invalida nunca alteram estado: registram ambiguidade
+            // e mandam para revisão humana com o motivo correspondente.
             $reason = $run->status === AiRunStatus::InvalidOutput
                 ? InsightReviewReason::InvalidOutput
                 : InsightReviewReason::ProviderFailure;
@@ -126,7 +126,7 @@ class MessageClassificationService
     }
 
     /**
-     * Motivo de revisao decidido pelo sistema, nunca pelo modelo.
+     * Motivo de revisão decidido pelo sistema, nunca pelo modelo.
      */
     private function reviewReasonFor(MessageClassification $classification, ?float $confidence): ?InsightReviewReason
     {
@@ -152,8 +152,8 @@ class MessageClassificationService
     }
 
     /**
-     * Mapeia a saida deterministica da 9A para a taxonomia ampliada da 9B.
-     * `ambiguous` sem expressao correspondida devolve null para permitir IA.
+     * Mapeia a saída determinística da 9A para a taxonomia ampliada da 9B.
+     * `ambiguous` sem expressão correspondida devolve null para permitir IA.
      */
     private function fromDeterministic(PermissionResponseClassification $classification, ?string $matched): ?MessageClassification
     {
@@ -223,7 +223,7 @@ class MessageClassificationService
         try {
             return ConversationMessageClassification::updateOrCreate($keys, $attributes);
         } catch (UniqueConstraintViolationException) {
-            // Corrida entre workers: o indice unico e a garantia final.
+            // Corrida entre workers: o índice único e a garantia final.
             return ConversationMessageClassification::where($keys)->firstOrFail();
         }
     }

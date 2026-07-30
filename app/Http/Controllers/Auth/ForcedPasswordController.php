@@ -23,7 +23,7 @@ class ForcedPasswordController extends Controller
             'must_change_password' => false,
         ])->save();
 
-        app(AuditLogger::class)->log('auth.password_changed', 'Senha temporaria alterada.', $request->user());
+        app(AuditLogger::class)->log('auth.password_changed', 'Senha temporária alterada.', $request->user());
 
         return redirect()->route('dashboard')->with('success', 'Senha alterada com sucesso.');
     }

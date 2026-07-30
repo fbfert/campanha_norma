@@ -1,4 +1,4 @@
-<x-layouts.app title="Usuarios" breadcrumbs="Inicio / Usuarios">
+<x-layouts.app title="Usuários" breadcrumbs="Inicio / Usuarios">
     <div class="actions" style="justify-content:space-between;margin-bottom:16px;">
         <form method="get" class="card" style="flex:1;">
             <div class="grid grid-3">
@@ -11,15 +11,15 @@
             <a class="btn ghost" href="{{ route('admin.users.index') }}">Limpar</a>
         </form>
         @can('manage-users')
-            <a class="btn" href="{{ route('admin.users.create') }}">Cadastrar usuario</a>
+            <a class="btn" href="{{ route('admin.users.create') }}">Cadastrar usuário</a>
         @endcan
     </div>
     <section class="card table-wrap">
         @if ($users->isEmpty())
-            <p class="muted">Nenhum usuario encontrado.</p>
+            <p class="muted">Nenhum usuário encontrado.</p>
         @else
             <table>
-                <thead><tr><th>Nome</th><th>E-mail</th><th>Perfil</th><th>Status</th><th>Ultimo acesso</th><th>Cadastro</th><th>Acoes</th></tr></thead>
+                <thead><tr><th>Nome</th><th>E-mail</th><th>Perfil</th><th>Status</th><th>Último acesso</th><th>Cadastro</th><th>Ações</th></tr></thead>
                 <tbody>
                 @foreach ($users as $user)
                     <tr>

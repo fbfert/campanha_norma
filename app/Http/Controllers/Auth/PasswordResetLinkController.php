@@ -23,9 +23,9 @@ class PasswordResetLinkController extends Controller
         $status = Password::sendResetLink($request->only('email'));
 
         if ($status !== Password::RESET_LINK_SENT) {
-            throw ValidationException::withMessages(['email' => 'Nao foi possivel enviar o link de recuperacao.']);
+            throw ValidationException::withMessages(['email' => 'Não foi possível enviar o link de recuperação.']);
         }
 
-        return back()->with('status', 'Enviamos as instrucoes para redefinir a senha.');
+        return back()->with('status', 'Enviamos as instruções para redefinir a senha.');
     }
 }

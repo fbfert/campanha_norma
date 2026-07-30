@@ -11,7 +11,7 @@ use App\Services\Conversations\ConversationReplyService;
 use App\Services\SystemSettingService;
 
 /**
- * Cria a mensagem automatica pendente e enfileira o envio.
+ * Cria a mensagem automática pendente e enfileira o envio.
  * Nunca chama o provedor diretamente: o envio e responsabilidade do job.
  */
 class ConversationAutomatedReplyService
@@ -40,21 +40,21 @@ class ConversationAutomatedReplyService
             return null;
         }
 
-        // Criacao pelo servico de saida compartilhado, preservando origem,
-        // evento e auditoria proprios da automacao.
+        // Criação pelo serviço de saída compartilhado, preservando origem,
+        // evento e auditoria próprios da automação.
         $message = $this->replies->createPending(
             conversation: $conversation,
             body: $body,
             origin: ConversationMessageOrigin::Automation,
             metadata: $aiMetadata,
             eventType: $eventType,
-            eventDescription: 'Mensagem automatica enfileirada.',
+            eventDescription: 'Mensagem automática enfileirada.',
             eventPayload: $metadata + [
                 'flow_id' => $state->conversation_flow_id,
                 'automated' => true,
             ],
             auditAction: 'conversation_automation.message_queued',
-            auditDescription: 'Mensagem automatica enfileirada.',
+            auditDescription: 'Mensagem automática enfileirada.',
         );
 
         $state->forceFill([
@@ -68,7 +68,7 @@ class ConversationAutomatedReplyService
     }
 
     /**
-     * Aviso de atendimento automatizado, exigencia de transparencia.
+     * Aviso de atendimento automatizado, exigência de transparência.
      */
     public function applyTransparency(?ConversationFlow $flow, string $body): string
     {

@@ -35,14 +35,14 @@ class StartMessageBatchAction
         $eligibleCount = $batch->recipients()->where('eligibility_status', MessageBatchRecipientEligibility::Eligible)->count();
 
         if ($eligibleCount === 0) {
-            throw new RuntimeException('O lote nao possui destinatarios aptos.');
+            throw new RuntimeException('O lote não possui destinatários aptos.');
         }
 
         $batch = DB::transaction(function () use ($batch, $user, $settings): MessageBatch {
             $locked = MessageBatch::query()->whereKey($batch->id)->lockForUpdate()->firstOrFail();
 
             if ($locked->status !== MessageBatchStatus::Ready) {
-                throw new RuntimeException('Este lote ja foi iniciado ou alterado.');
+                throw new RuntimeException('Este lote já foi iniciado ou alterado.');
             }
 
             $version = $locked->processing_version + 1;

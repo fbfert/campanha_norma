@@ -8,7 +8,7 @@
                 <p><label>Nome</label><input name="name" value="{{ old('name', $user->name) }}" required></p>
                 <p><label>E-mail</label><input value="{{ $user->email }}" disabled></p>
                 <p><label>Perfil</label><input value="{{ $user->roles->pluck('name')->join(', ') }}" disabled></p>
-                <p><label>Ultimo acesso</label><input value="{{ $user->last_login_at?->format($dateTimeFormat) ?? 'Sem registro' }}" disabled></p>
+                <p><label>Último acesso</label><input value="{{ $user->last_login_at?->format($dateTimeFormat) ?? 'Sem registro' }}" disabled></p>
                 <button class="btn" type="submit">Salvar perfil</button>
             </form>
         </section>

@@ -1,4 +1,4 @@
-<div><label for="internal_title">Titulo interno</label><input id="internal_title" name="internal_title" value="{{ old('internal_title', $question->internal_title) }}" maxlength="150" required></div>
+<div><label for="internal_title">Título interno</label><input id="internal_title" name="internal_title" value="{{ old('internal_title', $question->internal_title) }}" maxlength="150" required></div>
 <div style="margin-top:12px;"><label for="text">Texto da pergunta</label><textarea id="text" name="text" rows="5" required>{{ old('text', $question->text) }}</textarea><p class="muted" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;"><x-emoji-picker target="text" /> Texto enviado ao contato.</p></div>
 <div class="grid grid-3" style="margin-top:12px;">
     <div><label for="category">Categoria</label><input id="category" name="category" value="{{ old('category', $question->category) }}"></div>

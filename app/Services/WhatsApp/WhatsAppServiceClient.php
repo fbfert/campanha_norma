@@ -102,7 +102,7 @@ class WhatsAppServiceClient
             /** @var Response $response */
             $response = $request->{$method}($path);
         } catch (ConnectionException $exception) {
-            throw new WhatsAppServiceException('SERVICE_UNAVAILABLE', 'O servico de conexao com o WhatsApp esta indisponivel.', 0, [
+            throw new WhatsAppServiceException('SERVICE_UNAVAILABLE', 'O serviço de conexão com o WhatsApp esta indisponível.', 0, [
                 'exception' => $exception::class,
             ]);
         }
@@ -118,7 +118,7 @@ class WhatsAppServiceClient
 
             throw new WhatsAppServiceException(
                 (string) ($error['code'] ?? ($response->status() === 401 ? 'UNAUTHORIZED_SERVICE_REQUEST' : 'SERVICE_UNAVAILABLE')),
-                (string) ($error['message'] ?? 'Falha na comunicacao com o servico do WhatsApp.'),
+                (string) ($error['message'] ?? 'Falha na comunicação com o serviço do WhatsApp.'),
                 $response->status(),
                 is_array($payload) ? $payload : []
             );
@@ -127,7 +127,7 @@ class WhatsAppServiceClient
         $payload = $response->json();
 
         if (! is_array($payload) || ($payload['success'] ?? null) !== true || ! array_key_exists('data', $payload)) {
-            throw new WhatsAppServiceException('INVALID_RESPONSE', 'Resposta invalida do servico do WhatsApp.');
+            throw new WhatsAppServiceException('INVALID_RESPONSE', 'Resposta invalida do serviço do WhatsApp.');
         }
 
         return is_array($payload['data']) ? $payload['data'] : [];

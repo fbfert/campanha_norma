@@ -9,13 +9,13 @@ use Illuminate\Contracts\View\View;
  * Manual de uso.
  *
  * Duas telas sobre a mesma coisa: o manual, que se le de cima a baixo, e o
- * mapa mental, que mostra o sistema inteiro numa pagina so. O roteiro das
- * secoes fica aqui, e nao duplicado nas duas views, porque duas listas iguais
- * mantidas a mao divergem na primeira alteracao.
+ * mapa mental, que mostra o sistema inteiro numa página so. O roteiro das
+ * seções fica aqui, e não duplicado nas duas views, porque duas listas iguais
+ * mantidas a mão divergem na primeira alteração.
  *
- * Nao ha permissao especifica: quem entrou no sistema pode ler o manual do
- * sistema. Exigir permissao para ler a documentacao esconderia justamente de
- * quem esta comecando.
+ * Não ha permissão específica: quem entrou no sistema pode ler o manual do
+ * sistema. Exigir permissão para ler a documentação esconderia justamente de
+ * quem esta começando.
  */
 class ManualController extends Controller
 {
@@ -51,73 +51,73 @@ class ManualController extends Controller
                 'icon' => 'plug',
                 'title' => 'Preparar o sistema',
                 'summary' => 'O que precisa estar de pe antes de qualquer mensagem sair.',
-                'topics' => ['Conexao do WhatsApp', 'Provedor de IA', 'Usuarios e perfis', 'Configuracoes gerais'],
+                'topics' => ['Conexão do WhatsApp', 'Provedor de IA', 'Usuários e perfis', 'Configurações gerais'],
             ],
             [
                 'id' => 'contatos',
                 'icon' => 'users',
                 'title' => 'Reunir os contatos',
                 'summary' => 'Como a base de pessoas entra no sistema e como ela se mantem limpa.',
-                'topics' => ['Importar planilha', 'Conferir antes de confirmar', 'Etiquetas', 'Nao contatar'],
+                'topics' => ['Importar planilha', 'Conferir antes de confirmar', 'Etiquetas', 'Não contatar'],
             ],
             [
                 'id' => 'envios',
                 'icon' => 'send',
                 'title' => 'Falar com muita gente',
                 'summary' => 'Modelo, lote e processamento: o caminho de um disparo em massa.',
-                'topics' => ['Modelo de mensagem', 'Lote e campanha', 'Validar antes de disparar', 'Processamento', 'Historico'],
+                'topics' => ['Modelo de mensagem', 'Lote e campanha', 'Validar antes de disparar', 'Processamento', 'Histórico'],
             ],
             [
                 'id' => 'atendimento',
                 'icon' => 'inbox',
                 'title' => 'Atender quem responde',
                 'summary' => 'A caixa de conversas, onde o contato deixa de ser linha de planilha.',
-                'topics' => ['Conversas', 'Responder', 'Notas internas', 'Sugestoes de resposta'],
+                'topics' => ['Conversas', 'Responder', 'Notas internas', 'Sugestões de resposta'],
             ],
             [
                 'id' => 'pesquisa',
                 'icon' => 'poll',
                 'title' => 'Perguntar e escutar',
-                'summary' => 'A pesquisa conversacional: pedir permissao, fazer uma pergunta, parar.',
-                'topics' => ['Fluxo e perguntas', 'Pedido de permissao', 'Limites da automacao', 'Acompanhamento'],
+                'summary' => 'A pesquisa conversacional: pedir permissão, fazer uma pergunta, parar.',
+                'topics' => ['Fluxo e perguntas', 'Pedido de permissão', 'Limites da automação', 'Acompanhamento'],
             ],
             [
                 'id' => 'inteligencia',
                 'icon' => 'sparkles',
                 'title' => 'Deixar a IA ajudar',
-                'summary' => 'A IA interpreta e sugere. Quem decide e publica continua sendo pessoa.',
-                'topics' => ['Interpretacao', 'Taxonomia de temas', 'Base de conhecimento', 'Qualidade e monitoramento'],
+                'summary' => 'A IA interpreta e sugere. Quem decide e pública continua sendo pessoa.',
+                'topics' => ['Interpretação', 'Taxonomia de temas', 'Base de conhecimento', 'Qualidade e monitoramento'],
             ],
             [
                 'id' => 'relatorios',
                 'icon' => 'chart',
                 'title' => 'Ler o resultado',
-                'summary' => 'Numeros com denominador visivel, e nao porcentagem solta.',
-                'topics' => ['Painel da pesquisa', 'Temas e demandas', 'Qualidade das perguntas', 'Exportacoes'],
+                'summary' => 'Números com denominador visível, e não porcentagem solta.',
+                'topics' => ['Painel da pesquisa', 'Temas e demandas', 'Qualidade das perguntas', 'Exportações'],
             ],
             [
                 'id' => 'governanca',
                 'icon' => 'shield',
                 'title' => 'Cuidar dos dados',
                 'summary' => 'O que o sistema guarda, por quanto tempo, e quem viu o que.',
-                'topics' => ['Governanca', 'Auditoria', 'Saude do sistema', 'Manutencao e retencao'],
+                'topics' => ['Governança', 'Auditoria', 'Saúde do sistema', 'Manutenção e retenção'],
             ],
             [
                 'id' => 'limites',
                 'icon' => 'alert',
-                'title' => 'O que o sistema nao faz',
-                'summary' => 'Limites que estao no codigo, e nao apenas no combinado.',
+                'title' => 'O que o sistema não faz',
+                'summary' => 'Limites que estão no código, e não apenas no combinado.',
                 'topics' => ['Nunca se passa por pessoa', 'Nunca promete nada', 'Opt-out imediato', 'Sem microdirecionamento'],
             ],
         ];
     }
 
     /**
-     * Valores operacionais lidos na hora, e nao escritos no texto.
+     * Valores operacionais lidos na hora, e não escritos no texto.
      *
-     * Um manual que diz "o limite e tres mensagens" vira mentira no dia em que
-     * alguem muda a configuracao para duas, e ninguem lembra de voltar aqui
-     * para corrigir. Entao o manual mostra o que esta valendo agora.
+     * Um manual que diz "o limite e três mensagens" vira mentira no dia em que
+     * alguém muda a configuração para duas, e ninguém lembra de voltar aqui
+     * para corrigir. Então o manual mostra o que esta valendo agora.
      *
      * @return array<string, string>
      */

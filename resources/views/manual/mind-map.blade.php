@@ -1,12 +1,12 @@
 <x-layouts.app title="Mapa mental" breadcrumbs="Inicio / Manual / Mapa mental">
     {{--
-        O mapa e uma lista aninhada de verdade, desenhada com CSS. Nao e imagem
-        e nao e biblioteca de diagrama.
+        O mapa e uma lista aninhada de verdade, desenhada com CSS. Não e imagem
+        e não e biblioteca de diagrama.
 
-        Isso resolve tres coisas de uma vez: quem usa leitor de tela ouve uma
+        Isso resolve três coisas de uma vez: quem usa leitor de tela ouve uma
         lista com hierarquia em vez de um bloco sem significado, o mapa imprime
-        junto com o resto da pagina, e ninguem precisa de rede para desenha-lo.
-        Cada galho leva para a secao correspondente do manual.
+        junto com o resto da página, e ninguém precisa de rede para desenha-lo.
+        Cada galho leva para a seção correspondente do manual.
     --}}
     <section class="card">
         <h2>Como ler este mapa</h2>
@@ -49,16 +49,16 @@
     </section>
 
     <section class="card">
-        <h2>O caminho mais curto para comecar</h2>
-        <p class="muted">Se for a primeira vez, faca nesta ordem e pare a cada passo para conferir.</p>
+        <h2>O caminho mais curto para começar</h2>
+        <p class="muted">Se for a primeira vez, faça nesta ordem e pare a cada passo para conferir.</p>
         <ol class="mindmap-path">
             <li>Conectar o WhatsApp e ver o status ficar conectado.</li>
-            <li>Cadastrar a chave do provedor de IA e usar o botao de testar.</li>
-            <li>Importar uma planilha pequena, so para ver a validacao funcionando.</li>
+            <li>Cadastrar a chave do provedor de IA e usar o botão de testar.</li>
+            <li>Importar uma planilha pequena, so para ver a validação funcionando.</li>
             <li>Criar um modelo de mensagem e abrir a previa.</li>
             <li>Montar um lote com poucos contatos e validar antes de disparar.</li>
             <li>Enviar, acompanhar em Processamento e responder na tela de Conversas.</li>
-            <li>So depois disso ligar a automacao &mdash; e primeiro sem envio automatico.</li>
+            <li>So depois disso ligar a automação &mdash; e primeiro sem envio automático.</li>
         </ol>
     </section>
 </x-layouts.app>

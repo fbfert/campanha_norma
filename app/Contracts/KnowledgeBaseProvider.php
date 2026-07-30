@@ -11,9 +11,9 @@ use App\Models\KnowledgeDocument;
 /**
  * Armazenamento da base de conhecimento.
  *
- * A interface existe para que trocar o armazenamento nao toque em nenhum
- * chamador. Implementacoes que usam servico externo persistem os identificadores
- * remotos nas colunas ja previstas: `external_store_id`, `provider_file_id` e
+ * A interface existe para que trocar o armazenamento não toque em nenhum
+ * chamador. Implementações que usam serviço externo persistem os identificadores
+ * remotos nas colunas já previstas: `external_store_id`, `provider_file_id` e
  * `external_chunk_id`.
  */
 interface KnowledgeBaseProvider
@@ -36,7 +36,7 @@ interface KnowledgeBaseProvider
     public function deleteStore(KnowledgeBase $base): void;
 
     /**
-     * Indexa os trechos ja extraidos e sanitizados de um documento.
+     * Indexa os trechos já extraidos e sanitizados de um documento.
      *
      * @param  array<int, PreparedChunk>  $chunks
      *

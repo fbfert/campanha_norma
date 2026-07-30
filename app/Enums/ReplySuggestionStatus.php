@@ -16,7 +16,7 @@ enum ReplySuggestionStatus: string
     public function label(): string
     {
         return match ($this) {
-            self::Pending => 'Aguardando aprovacao',
+            self::Pending => 'Aguardando aprovação',
             self::Approved => 'Aprovada',
             self::Sent => 'Enviada',
             self::Rejected => 'Rejeitada',
@@ -28,7 +28,7 @@ enum ReplySuggestionStatus: string
     }
 
     /**
-     * Sugestao viva ocupa a unicidade por mensagem de origem.
+     * Sugestão viva ocupa a unicidade por mensagem de origem.
      */
     public function isLive(): bool
     {

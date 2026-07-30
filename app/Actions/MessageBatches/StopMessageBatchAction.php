@@ -22,7 +22,7 @@ class StopMessageBatchAction
     public function execute(MessageBatch $batch, User $user, string $reason): MessageBatch
     {
         if (! in_array($batch->status, [MessageBatchStatus::Queued, MessageBatchStatus::Processing, MessageBatchStatus::Paused, MessageBatchStatus::Pausing], true)) {
-            throw new RuntimeException('Este lote nao pode ser parado no estado atual.');
+            throw new RuntimeException('Este lote não pode ser parado no estado atual.');
         }
 
         $cancelable = [
@@ -41,7 +41,7 @@ class StopMessageBatchAction
             'processing_status' => MessageRecipientProcessingStatus::Cancelled->value,
             'cancelled_at' => now(),
             'error_code' => 'BATCH_STOPPED',
-            'error_message' => 'Lote parado pelo usuario.',
+            'error_message' => 'Lote parado pelo usuário.',
         ]);
 
         $batch->forceFill(['status' => MessageBatchStatus::Stopped, 'stopped_at' => now(), 'cancelled_by' => $user->id])->save();

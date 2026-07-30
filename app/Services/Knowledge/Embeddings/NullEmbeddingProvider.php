@@ -8,8 +8,8 @@ use App\Exceptions\Knowledge\KnowledgeProviderException;
 /**
  * Provedor de embeddings inerte.
  *
- * Ausencia de embeddings nao impede a base de funcionar: a estrategia lexica e a
- * padrao justamente para que a base seja utilizavel e homologavel sem credencial.
+ * Ausência de embeddings não impede a base de funcionar: a estratégia léxica e a
+ * padrão justamente para que a base seja utilizável e homologável sem credencial.
  */
 class NullEmbeddingProvider implements EmbeddingProvider
 {

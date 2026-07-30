@@ -10,9 +10,9 @@ use DOMXPath;
 /**
  * HTML.
  *
- * `script`, `style`, `noscript` e comentarios sao removidos antes da leitura:
- * codigo e comentario nao sao conteudo aprovado, e comentario HTML e um lugar
- * classico para esconder instrucao de injecao.
+ * `script`, `style`, `noscript` e comentários são removidos antes da leitura:
+ * código e comentário não são conteúdo aprovado, e comentário HTML e um lugar
+ * clássico para esconder instrução de injeção.
  */
 class HtmlExtractor implements TextExtractor
 {
@@ -32,7 +32,7 @@ class HtmlExtractor implements TextExtractor
 
         $document = new DOMDocument;
 
-        // HTML real e malformado com frequencia. Silenciamos os avisos do parser
+        // HTML real e malformado com frequência. Silenciamos os avisos do parser
         // e trabalhamos com o que ele conseguiu montar.
         $loaded = @$document->loadHTML(
             '<?xml encoding="UTF-8">'.$contents,

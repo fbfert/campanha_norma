@@ -35,7 +35,7 @@ class WhatsAppConnectionController extends Controller
             }
         }
 
-        $audit->log('whatsapp.connection_viewed', 'Tela de conexao WhatsApp visualizada.', $connection, null, null, $request->user(), $request);
+        $audit->log('whatsapp.connection_viewed', 'Tela de conexão WhatsApp visualizada.', $connection, null, null, $request->user(), $request);
 
         return view('admin.whatsapp.connection', [
             'connection' => $connection->load('events.user'),
@@ -58,7 +58,7 @@ class WhatsAppConnectionController extends Controller
         try {
             $service->connect($request->user(), $request);
 
-            return back()->with('success', 'Inicializacao da conexao solicitada.');
+            return back()->with('success', 'Inicialização da conexão solicitada.');
         } catch (WhatsAppServiceException $exception) {
             return back()->with('error', $exception->userMessage());
         }
@@ -102,7 +102,7 @@ class WhatsAppConnectionController extends Controller
         try {
             $service->reconnect($request->user(), $request);
 
-            return back()->with('success', 'Reconexao solicitada.');
+            return back()->with('success', 'Reconexão solicitada.');
         } catch (WhatsAppServiceException $exception) {
             return back()->with('error', $exception->userMessage());
         }
@@ -115,7 +115,7 @@ class WhatsAppConnectionController extends Controller
         try {
             $service->disconnect($request->user(), $request);
 
-            return back()->with('success', 'Desconexao solicitada.');
+            return back()->with('success', 'Desconexão solicitada.');
         } catch (WhatsAppServiceException $exception) {
             return back()->with('error', $exception->userMessage());
         }
@@ -126,7 +126,7 @@ class WhatsAppConnectionController extends Controller
         try {
             $service->clearSession($request->user(), $request);
 
-            return back()->with('success', 'Exclusao da sessao solicitada. Um novo QR Code sera necessario.');
+            return back()->with('success', 'Exclusão da sessão solicitada. Um novo QR Code será necessário.');
         } catch (WhatsAppServiceException $exception) {
             return back()->with('error', $exception->userMessage());
         }

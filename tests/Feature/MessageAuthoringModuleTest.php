@@ -175,7 +175,7 @@ class MessageAuthoringModuleTest extends TestCase
         $this->assertSame('draft', $copy->status->value);
         $this->assertSame(0, $copy->recipients()->count());
 
-        $this->actingAs($admin)->post(route('admin.message-batches.cancel', $batch), ['cancel_reason' => 'Teste concluido'])->assertRedirect();
+        $this->actingAs($admin)->post(route('admin.message-batches.cancel', $batch), ['cancel_reason' => 'Teste concluído'])->assertRedirect();
         $this->assertSame('cancelled', $batch->fresh()->status->value);
         $this->assertDatabaseHas('audit_logs', ['action' => 'message_batch.cancelled']);
     }

@@ -31,19 +31,19 @@ class CancelMessageRecipientAction
         ];
 
         if (! in_array($recipient->processing_status, $cancelable, true)) {
-            throw new RuntimeException('Este destinatario nao pode ser cancelado no estado atual.');
+            throw new RuntimeException('Este destinatário não pode ser cancelado no estado atual.');
         }
 
         $recipient->forceFill([
             'processing_status' => MessageRecipientProcessingStatus::Cancelled,
             'cancelled_at' => now(),
             'error_code' => 'RECIPIENT_CANCELLED',
-            'error_message' => 'Destinatario cancelado manualmente.',
+            'error_message' => 'Destinatário cancelado manualmente.',
         ])->save();
 
         $batch = $recipient->batch;
-        $this->events->record($batch, 'recipient_cancelled', 'Destinatario cancelado.', $recipient, $user);
-        $this->audit->log('message_recipient.cancelled', 'Destinatario cancelado.', $recipient, null, ['batch_id' => $batch->id], $user);
+        $this->events->record($batch, 'recipient_cancelled', 'Destinatário cancelado.', $recipient, $user);
+        $this->audit->log('message_recipient.cancelled', 'Destinatário cancelado.', $recipient, null, ['batch_id' => $batch->id], $user);
         $this->progress->sync($batch);
 
         return $recipient->refresh();

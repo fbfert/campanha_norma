@@ -46,7 +46,7 @@ class ReplySuggestionController extends Controller
         $suggestion->load([
             'conversation.contact', 'sourceMessage', 'insight.topic', 'classification',
             'topic', 'state', 'flow', 'run', 'approver', 'rejecter', 'sentMessage',
-            // Etapa 9D: as fontes que sustentaram a sugestao, validas e recusadas.
+            // Etapa 9D: as fontes que sustentaram a sugestão, validas e recusadas.
             'citations',
         ]);
 
@@ -75,7 +75,7 @@ class ReplySuggestionController extends Controller
 
         return $result['sent']
             ? back()->with('success', 'Resposta aprovada e enfileirada para envio.')
-            : back()->with('error', 'Nao foi possivel enviar: '.$result['reason']);
+            : back()->with('error', 'Não foi possível enviar: '.$result['reason']);
     }
 
     public function reject(Request $request, ConversationReplySuggestion $suggestion, SuggestionApprovalService $approvals): RedirectResponse
@@ -86,7 +86,7 @@ class ReplySuggestionController extends Controller
 
         $approvals->reject($suggestion, $request->user(), $validated['reason'] ?? null);
 
-        return back()->with('success', 'Sugestao rejeitada.');
+        return back()->with('success', 'Sugestão rejeitada.');
     }
 
     public function regenerate(Request $request, ConversationReplySuggestion $suggestion, SuggestionApprovalService $approvals): RedirectResponse
@@ -98,8 +98,8 @@ class ReplySuggestionController extends Controller
         $new = $approvals->regenerate($suggestion, $request->user(), $validated['justification']);
 
         return $new
-            ? redirect()->route('admin.reply-suggestions.show', $new)->with('success', 'Nova sugestao gerada.')
-            : back()->with('error', 'Nao foi possivel regenerar esta sugestao.');
+            ? redirect()->route('admin.reply-suggestions.show', $new)->with('success', 'Nova sugestão gerada.')
+            : back()->with('error', 'Não foi possível regenerar esta sugestão.');
     }
 
     public function takeOver(Request $request, ConversationReplySuggestion $suggestion, SuggestionApprovalService $approvals): RedirectResponse
@@ -108,7 +108,7 @@ class ReplySuggestionController extends Controller
 
         $approvals->takeOver($suggestion, $request->user());
 
-        return back()->with('success', 'Conversa assumida manualmente. Automacao pausada.');
+        return back()->with('success', 'Conversa assumida manualmente. Automação pausada.');
     }
 
     public function feedback(Request $request, ConversationReplySuggestion $suggestion, SuggestionApprovalService $approvals): RedirectResponse

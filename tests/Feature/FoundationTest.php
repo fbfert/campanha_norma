@@ -81,7 +81,7 @@ class FoundationTest extends TestCase
 
         $this->actingAs($admin)->get(route('admin.users.index'))
             ->assertOk()
-            ->assertSee('Usuarios');
+            ->assertSee('Usuários');
     }
 
     public function test_administrador_pode_criar_usuario(): void

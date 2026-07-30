@@ -14,7 +14,7 @@ class EnsurePasswordChanged
 
         if ($user && $user->must_change_password && ! $request->routeIs('password.force.*', 'logout')) {
             return redirect()->route('password.force.edit')
-                ->with('error', 'Altere sua senha temporaria antes de continuar.');
+                ->with('error', 'Altere sua senha temporária antes de continuar.');
         }
 
         return $next($request);

@@ -13,21 +13,21 @@
     <section class="card" style="margin-top:16px;">
         <div class="table-wrap">
             <table>
-                <thead><tr><th>Contato</th><th>Fluxo</th><th>Estagio</th><th>Mensagens automaticas</th><th>Pausada</th><th>Humano</th><th>Ultima transicao</th><th>Acoes</th></tr></thead>
+                <thead><tr><th>Contato</th><th>Fluxo</th><th>Estagio</th><th>Mensagens automáticas</th><th>Pausada</th><th>Humano</th><th>Última transição</th><th>Ações</th></tr></thead>
                 <tbody>
                     @forelse($states as $state)
                         <tr>
-                            <td>{{ $state->conversation?->contact?->name ?? 'Contato nao identificado' }}</td>
+                            <td>{{ $state->conversation?->contact?->name ?? 'Contato não identificado' }}</td>
                             <td>{{ $state->flow?->name ?? '-' }}</td>
                             <td>{{ $state->current_stage->label() }}</td>
                             <td>{{ $state->automated_messages_count }}</td>
-                            <td>{{ $state->is_paused ? 'Sim' : 'Nao' }}</td>
-                            <td>{{ $state->needs_human_review ? 'Sim' : 'Nao' }}</td>
+                            <td>{{ $state->is_paused ? 'Sim' : 'Não' }}</td>
+                            <td>{{ $state->needs_human_review ? 'Sim' : 'Não' }}</td>
                             <td>{{ $state->last_transition_at?->format($dateTimeFormat) ?? '-' }}</td>
                             <td class="actions"><a class="btn ghost" href="{{ route('admin.conversation-automation.show', $state) }}">Ver</a></td>
                         </tr>
                     @empty
-                        <tr><td colspan="8">Nenhuma conversa em automacao.</td></tr>
+                        <tr><td colspan="8">Nenhuma conversa em automação.</td></tr>
                     @endforelse
                 </tbody>
             </table>

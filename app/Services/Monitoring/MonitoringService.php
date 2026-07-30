@@ -38,7 +38,7 @@ class MonitoringService
 
     public function laravel(): array
     {
-        return $this->item(MonitoringHealthStatus::Healthy, 'Aplicacao Laravel respondendo.', [
+        return $this->item(MonitoringHealthStatus::Healthy, 'Aplicação Laravel respondendo.', [
             'environment' => app()->environment(),
             'debug' => config('app.debug') ? 'ativo' : 'inativo',
             'php' => PHP_VERSION,
@@ -52,9 +52,9 @@ class MonitoringService
             $start = microtime(true);
             DB::select('select 1');
 
-            return $this->item(MonitoringHealthStatus::Healthy, 'Banco de dados acessivel.', ['duration_ms' => (int) ((microtime(true) - $start) * 1000)]);
+            return $this->item(MonitoringHealthStatus::Healthy, 'Banco de dados acessível.', ['duration_ms' => (int) ((microtime(true) - $start) * 1000)]);
         } catch (Throwable) {
-            return $this->item(MonitoringHealthStatus::Critical, 'Banco de dados indisponivel.');
+            return $this->item(MonitoringHealthStatus::Critical, 'Banco de dados indisponível.');
         }
     }
 
@@ -64,9 +64,9 @@ class MonitoringService
             $start = microtime(true);
             $pong = Redis::connection()->ping();
 
-            return $this->item(MonitoringHealthStatus::Healthy, 'Redis acessivel.', ['response' => (string) $pong, 'duration_ms' => (int) ((microtime(true) - $start) * 1000)]);
+            return $this->item(MonitoringHealthStatus::Healthy, 'Redis acessível.', ['response' => (string) $pong, 'duration_ms' => (int) ((microtime(true) - $start) * 1000)]);
         } catch (Throwable) {
-            return $this->item(MonitoringHealthStatus::Critical, 'Redis indisponivel ou extensao ausente.');
+            return $this->item(MonitoringHealthStatus::Critical, 'Redis indisponível ou extensão ausente.');
         }
     }
 
@@ -93,7 +93,7 @@ class MonitoringService
         $minutes = $last->last_heartbeat_at?->diffInMinutes(now()) ?? 9999;
         $status = $this->threshold($minutes, 'monitoring.worker_warning_minutes', 'monitoring.worker_critical_minutes');
 
-        return $this->item($status, 'Ultimo heartbeat de worker avaliado.', ['last_heartbeat_at' => $last->last_heartbeat_at?->format('d/m/Y H:i'), 'minutes' => $minutes]);
+        return $this->item($status, 'Último heartbeat de worker avaliado.', ['last_heartbeat_at' => $last->last_heartbeat_at?->format('d/m/Y H:i'), 'minutes' => $minutes]);
     }
 
     public function scheduler(): array
@@ -106,7 +106,7 @@ class MonitoringService
         $minutes = $last->last_run_at?->diffInMinutes(now()) ?? 9999;
         $status = $this->threshold($minutes, 'monitoring.scheduler_warning_minutes', 'monitoring.scheduler_critical_minutes');
 
-        return $this->item($status, 'Ultimo heartbeat do Scheduler avaliado.', ['last_run_at' => $last->last_run_at?->format('d/m/Y H:i'), 'minutes' => $minutes]);
+        return $this->item($status, 'Último heartbeat do Scheduler avaliado.', ['last_run_at' => $last->last_run_at?->format('d/m/Y H:i'), 'minutes' => $minutes]);
     }
 
     public function node(): array
@@ -116,9 +116,9 @@ class MonitoringService
             $response = Http::baseUrl((string) config('whatsapp.service.url'))->withToken((string) config('whatsapp.service.token'))->timeout(5)->get('/api/health');
             $status = $response->ok() ? MonitoringHealthStatus::Healthy : MonitoringHealthStatus::Critical;
 
-            return $this->item($status, $response->ok() ? 'Servico Node.js acessivel.' : 'Servico Node.js respondeu com erro.', ['duration_ms' => (int) ((microtime(true) - $start) * 1000)]);
+            return $this->item($status, $response->ok() ? 'Serviço Node.js acessível.' : 'Serviço Node.js respondeu com erro.', ['duration_ms' => (int) ((microtime(true) - $start) * 1000)]);
         } catch (Throwable) {
-            return $this->item(MonitoringHealthStatus::Critical, 'Servico Node.js indisponivel.');
+            return $this->item(MonitoringHealthStatus::Critical, 'Serviço Node.js indisponível.');
         }
     }
 
@@ -158,13 +158,13 @@ class MonitoringService
         $last = ConversationSyncRun::query()->latest('finished_at')->latest('created_at')->first();
 
         if (! $active && ! $last) {
-            return $this->item(MonitoringHealthStatus::Unknown, 'Nenhuma sincronizacao de conversas registrada.');
+            return $this->item(MonitoringHealthStatus::Unknown, 'Nenhuma sincronização de conversas registrada.');
         }
 
         $stuck = $active && $active->last_heartbeat_at && $active->last_heartbeat_at->lt(now()->subMinutes(30));
         $status = $stuck ? MonitoringHealthStatus::Warning : (($last?->status?->value === 'failed') ? MonitoringHealthStatus::Warning : MonitoringHealthStatus::Healthy);
 
-        return $this->item($status, $active ? 'Sincronizacao de conversas ativa.' : 'Ultima sincronizacao de conversas avaliada.', [
+        return $this->item($status, $active ? 'Sincronização de conversas ativa.' : 'Última sincronização de conversas avaliada.', [
             'active_id' => $active?->id,
             'active_status' => $active?->status?->value,
             'last_id' => $last?->id,

@@ -50,7 +50,7 @@ The system SHALL aggregate by city and region only from data already registered 
 #### Scenario: Using only declared or registered locality
 - **WHEN** the geographic report is built
 - **THEN** it SHALL read city and state from the contact record and locality declared in the person's own answer
-- **AND** it SHALL NOT derive locality from phone area code or any other proxy.
+- **AND** it SHALL NOT derive locality from phone área code or any other proxy.
 
 #### Scenario: Suppressing a small cell
 - **WHEN** an aggregated cell contains fewer records than the configured minimum
@@ -145,8 +145,8 @@ The system SHALL export aggregated data by default and SHALL require an elevated
 - **THEN** the file SHALL be stored on a private disk outside the publicly served directory
 - **AND** it SHALL have an expiration after which download is refused.
 
-### Requirement: Spreadsheet Formula Injection Is Neutralized
-The system SHALL neutralize spreadsheet formula injection in every generated CSV and XLSX file.
+### Requirement: Spreadsheet Fórmula Injection Is Neutralized
+The system SHALL neutralize spreadsheet fórmula injection in every generated CSV and XLSX file.
 
 #### Scenario: Neutralizing a dangerous cell
 - **WHEN** a cell value starts with an equals sign, a plus sign, a minus sign, an at sign, a tab or a carriage return

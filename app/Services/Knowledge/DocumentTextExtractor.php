@@ -13,9 +13,9 @@ use App\Services\Knowledge\Extractors\TextExtractor;
 use Illuminate\Support\Facades\Storage;
 
 /**
- * Despacha a extracao pelo MIME real do arquivo.
+ * Despacha a extração pelo MIME real do arquivo.
  *
- * Formato sem extrator nao produz extracao parcial: produz falha com codigo.
+ * Formato sem extrator não produz extração parcial: produz falha com código.
  */
 class DocumentTextExtractor
 {

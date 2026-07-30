@@ -3,11 +3,11 @@
 namespace App\Services\Knowledge\Extractors;
 
 /**
- * Texto extraido, opcionalmente segmentado por pagina.
+ * Texto extraido, opcionalmente segmentado por página.
  *
- * Quando o formato nao fornece pagina, `pages` fica vazio e o chunker trabalha
- * sobre o texto corrido. Nao inventamos numero de pagina: metadado errado numa
- * citacao e pior do que metadado ausente.
+ * Quando o formato não fornece página, `pages` fica vazio e o chunker trabalha
+ * sobre o texto corrido. Não inventamos número de página: metadado errado numa
+ * citação e pior do que metadado ausente.
  */
 readonly class ExtractedText
 {

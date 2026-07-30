@@ -177,7 +177,7 @@ class ContactImportService
 
         $status = $import->invalid_rows > 0 ? ContactImportStatus::CompletedWithErrors : ContactImportStatus::Completed;
         $import->update(['status' => $status, 'created_rows' => $created, 'updated_rows' => $updated, 'ignored_rows' => $ignored, 'finished_at' => now()]);
-        $this->audit->log('contacts.imported', 'Importacao de contatos processada.', $import, null, $import->only(['original_filename', 'status', 'created_rows', 'updated_rows', 'ignored_rows', 'invalid_rows']));
+        $this->audit->log('contacts.imported', 'Importação de contatos processada.', $import, null, $import->only(['original_filename', 'status', 'created_rows', 'updated_rows', 'ignored_rows', 'invalid_rows']));
 
         return $import->refresh();
     }
@@ -207,16 +207,16 @@ class ContactImportService
             $errors[] = ['field' => 'nome', 'value' => '', 'problem' => 'Nome ausente.', 'suggestion' => 'Informe o nome completo.'];
         }
         if ($data['email'] && ! filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
-            $errors[] = ['field' => 'email', 'value' => $data['email'], 'problem' => 'E-mail invalido.', 'suggestion' => 'Corrija ou deixe vazio.'];
+            $errors[] = ['field' => 'email', 'value' => $data['email'], 'problem' => 'E-mail inválido.', 'suggestion' => 'Corrija ou deixe vazio.'];
         }
         $phone = $this->phones->normalize($data['phone']);
         if (! $phone->valid()) {
-            $errors[] = ['field' => 'telefone', 'value' => $data['phone'], 'problem' => $phone->error, 'suggestion' => 'Informe DDI, DDD e numero.'];
+            $errors[] = ['field' => 'telefone', 'value' => $data['phone'], 'problem' => $phone->error, 'suggestion' => 'Informe DDI, DDD e número.'];
         } else {
             $data['phone_normalized'] = $phone->normalized;
         }
         if (! empty($data['consent_at']) && $data['consent_at'] === 'invalid') {
-            $errors[] = ['field' => 'data_consentimento', 'value' => $raw['data_consentimento'], 'problem' => 'Data invalida ou ambigua.', 'suggestion' => 'Use dd/mm/aaaa.'];
+            $errors[] = ['field' => 'data_consentimento', 'value' => $raw['data_consentimento'], 'problem' => 'Data invalida ou ambígua.', 'suggestion' => 'Use dd/mm/aaaa.'];
             $data['consent_at'] = null;
         }
 

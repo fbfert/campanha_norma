@@ -13,11 +13,11 @@ enum ConsentStatus: string
     public function label(): string
     {
         return match ($this) {
-            self::NotInformed => 'Nao informado',
+            self::NotInformed => 'Não informado',
             self::Pending => 'Pendente',
             self::Granted => 'Concedido',
             self::Revoked => 'Revogado',
-            self::NotRequired => 'Nao requerido',
+            self::NotRequired => 'Não requerido',
         };
     }
 }

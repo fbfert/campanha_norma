@@ -65,12 +65,12 @@ class AiInterpretationModuleTest extends TestCase
     private function enableInterpretation(bool $classification = true, bool $extraction = true): void
     {
         app(SystemSettingService::class)->updateMany([
-            // Chave mestra e chave de analise sao independentes por desenho.
+            // Chave mestra e chave de análise são independentes por desenho.
             'ai.enabled' => '1',
             'ai.analysis_enabled' => '1',
             'ai.classification_enabled' => $classification ? '1' : '0',
             'ai.extraction_enabled' => $extraction ? '1' : '0',
-            // Sem espera entre tentativas para o teste nao depender de tempo real.
+            // Sem espera entre tentativas para o teste não depender de tempo real.
             'ai.retry_backoff_ms' => '0',
         ]);
     }
@@ -141,13 +141,13 @@ class AiInterpretationModuleTest extends TestCase
     private function extractionPayload(array $overrides = []): array
     {
         return array_merge([
-            'summary' => 'A pessoa relata dificuldade de acesso a especialistas medicos em municipios menores.',
+            'summary' => 'A pessoa relata dificuldade de acesso a especialistas médicos em municípios menores.',
             'main_topic' => 'saude',
             'secondary_topics' => ['desigualdade_regional'],
-            'identified_problem' => 'Falta de especialistas proximos',
+            'identified_problem' => 'Falta de especialistas próximos',
             'suggested_action' => null,
-            'desired_result' => 'Atendimento especializado mais proximo',
-            'affected_group' => 'moradores de municipios menores',
+            'desired_result' => 'Atendimento especializado mais próximo',
+            'affected_group' => 'moradores de municípios menores',
             'locality_text' => null,
             'region' => null,
             'urgency' => 'alta',
@@ -181,14 +181,14 @@ class AiInterpretationModuleTest extends TestCase
         return $user;
     }
 
-    // --- Criterio: opt-out deterministico nunca depende da IA ----------------
+    // --- Critério: opt-out determinístico nunca depende da IA ----------------
 
     public function test_deterministic_opt_out_never_calls_the_provider(): void
     {
         Http::fake();
         [, $conversation] = $this->scenario();
 
-        $this->interpret($this->incoming($conversation, 'nao quero receber mensagens'));
+        $this->interpret($this->incoming($conversation, 'não quero receber mensagens'));
 
         Http::assertNothingSent();
 
@@ -228,14 +228,14 @@ class AiInterpretationModuleTest extends TestCase
         $this->assertSame(0, ConversationInsight::count());
     }
 
-    // --- Criterio: sucesso, classificacao e extracao -------------------------
+    // --- Critério: sucesso, classificação e extração -------------------------
 
     public function test_successful_pipeline_classifies_and_extracts(): void
     {
         $this->fakeSuccessfulPipeline();
         [, $conversation] = $this->scenario();
 
-        $this->interpret($this->incoming($conversation, 'Faltam medicos especialistas nas cidades pequenas do interior.'));
+        $this->interpret($this->incoming($conversation, 'Faltam médicos especialistas nas cidades pequenas do interior.'));
 
         $classification = ConversationMessageClassification::firstOrFail();
         $this->assertSame(MessageClassification::QuestionAnswer, $classification->classification);
@@ -248,7 +248,7 @@ class AiInterpretationModuleTest extends TestCase
         $this->assertSame(['medicos', 'especialistas', 'deslocamento'], $insight->keywords);
         $this->assertFalse($insight->requires_human_review);
 
-        // Tema principal e secundario ficam relacionais para filtro e relatorio.
+        // Tema principal e secundário ficam relacionais para filtro e relatório.
         $this->assertSame('saude', $insight->topicLinks->firstWhere('role', 'main')?->topic?->slug);
         $this->assertSame('desigualdade_regional', $insight->topicLinks->firstWhere('role', 'secondary')?->topic?->slug);
     }
@@ -258,7 +258,7 @@ class AiInterpretationModuleTest extends TestCase
         $this->fakeSuccessfulPipeline();
         [, $conversation] = $this->scenario();
 
-        $this->interpret($this->incoming($conversation, 'Precisamos de mais medicos no interior.'));
+        $this->interpret($this->incoming($conversation, 'Precisamos de mais médicos no interior.'));
 
         $this->assertSame(2, AiRun::count());
 
@@ -278,7 +278,7 @@ class AiInterpretationModuleTest extends TestCase
         $this->fakeSuccessfulPipeline();
         [, $conversation] = $this->scenario();
 
-        $this->interpret($this->incoming($conversation, 'Faltam medicos no interior.'));
+        $this->interpret($this->incoming($conversation, 'Faltam médicos no interior.'));
 
         $this->assertSame(
             0,
@@ -288,13 +288,13 @@ class AiInterpretationModuleTest extends TestCase
         );
     }
 
-    // --- Criterio: idempotencia ---------------------------------------------
+    // --- Critério: idempotência ---------------------------------------------
 
     public function test_reprocessing_is_idempotent_and_does_not_duplicate(): void
     {
         $this->fakeSuccessfulPipeline();
         [, $conversation] = $this->scenario();
-        $message = $this->incoming($conversation, 'Faltam medicos especialistas.');
+        $message = $this->incoming($conversation, 'Faltam médicos especialistas.');
 
         $this->interpret($message);
         $this->interpret($message->refresh());
@@ -302,7 +302,7 @@ class AiInterpretationModuleTest extends TestCase
 
         $this->assertSame(1, ConversationInsight::count());
         $this->assertSame(1, ConversationMessageClassification::count());
-        // A sequencia tem duas respostas: uma terceira chamada teria falhado.
+        // A sequência tem duas respostas: uma terceira chamada teria falhado.
         Http::assertSentCount(2);
     }
 
@@ -310,12 +310,12 @@ class AiInterpretationModuleTest extends TestCase
     {
         $this->fakeSuccessfulPipeline();
         [, $conversation] = $this->scenario();
-        $message = $this->incoming($conversation, 'Faltam medicos especialistas.');
+        $message = $this->incoming($conversation, 'Faltam médicos especialistas.');
         $this->interpret($message);
 
         $insight = ConversationInsight::firstOrFail();
 
-        // Garantia final contra dois workers: o indice unico, nao o codigo.
+        // Garantia final contra dois workers: o índice único, não o código.
         $this->expectException(UniqueConstraintViolationException::class);
 
         ConversationInsight::create([
@@ -330,7 +330,7 @@ class AiInterpretationModuleTest extends TestCase
     {
         $this->fakeSuccessfulPipeline();
         [, $conversation] = $this->scenario();
-        $this->interpret($this->incoming($conversation, 'Faltam medicos especialistas.'));
+        $this->interpret($this->incoming($conversation, 'Faltam médicos especialistas.'));
 
         $classification = ConversationMessageClassification::firstOrFail();
 
@@ -354,11 +354,11 @@ class AiInterpretationModuleTest extends TestCase
                 ->push($this->providerResponse($this->classificationPayload()))
                 ->push($this->providerResponse($this->extractionPayload()))
                 ->push($this->providerResponse($this->classificationPayload()))
-                ->push($this->providerResponse($this->extractionPayload(['summary' => 'Resumo da versao dois.']))),
+                ->push($this->providerResponse($this->extractionPayload(['summary' => 'Resumo da versão dois.']))),
         ]);
 
         [, $conversation] = $this->scenario();
-        $message = $this->incoming($conversation, 'Faltam medicos especialistas.');
+        $message = $this->incoming($conversation, 'Faltam médicos especialistas.');
 
         $this->interpret($message);
 
@@ -374,14 +374,14 @@ class AiInterpretationModuleTest extends TestCase
         );
     }
 
-    // --- Criterio: JSON invalido nao altera estado ---------------------------
+    // --- Critério: JSON inválido não altera estado ---------------------------
 
     public function test_invalid_json_does_not_create_an_insight_and_flags_review(): void
     {
         Http::fake([
             '*' => Http::response([
                 'model' => 'modelo-de-teste',
-                'choices' => [['message' => ['content' => 'nao consegui responder em json']]],
+                'choices' => [['message' => ['content' => 'não consegui responder em json']]],
             ]),
         ]);
 
@@ -413,13 +413,13 @@ class AiInterpretationModuleTest extends TestCase
         ]);
 
         [, $conversation] = $this->scenario();
-        $this->interpret($this->incoming($conversation, 'Resposta aberta sobre saude no interior.'));
+        $this->interpret($this->incoming($conversation, 'Resposta aberta sobre saúde no interior.'));
 
         $this->assertSame(AiRunStatus::InvalidOutput, AiRun::firstOrFail()->status);
         $this->assertSame(0, ConversationInsight::count());
     }
 
-    // --- Criterio: falhas de provedor ---------------------------------------
+    // --- Critério: falhas de provedor ---------------------------------------
 
     public function test_timeout_is_recorded_and_flags_review(): void
     {
@@ -428,7 +428,7 @@ class AiInterpretationModuleTest extends TestCase
         });
 
         [, $conversation, $state] = $this->scenario();
-        $this->interpret($this->incoming($conversation, 'Resposta aberta sobre estradas da regiao.'));
+        $this->interpret($this->incoming($conversation, 'Resposta aberta sobre estradas da região.'));
 
         $run = AiRun::latest('id')->firstOrFail();
         $this->assertSame(AiRunStatus::Failed, $run->status);
@@ -490,7 +490,7 @@ class AiInterpretationModuleTest extends TestCase
         $this->interpret($this->incoming($conversation, 'Terceira resposta aberta.'));
 
         $this->assertSame('CIRCUIT_OPEN', AiRun::latest('id')->firstOrFail()->error_code);
-        // A terceira tentativa nao tocou a rede.
+        // A terceira tentativa não tocou a rede.
         Http::assertSentCount(2);
     }
 
@@ -506,7 +506,7 @@ class AiInterpretationModuleTest extends TestCase
         $this->assertSame('NOT_CONFIGURED', AiRun::firstOrFail()->error_code);
     }
 
-    // --- Criterio: baixa confianca e conteudo sensivel ----------------------
+    // --- Critério: baixa confiança e conteúdo sensível ----------------------
 
     public function test_low_confidence_goes_to_review(): void
     {
@@ -585,8 +585,8 @@ class AiInterpretationModuleTest extends TestCase
         [, $conversation] = $this->scenario();
         $this->interpret($this->incoming($conversation, 'Resposta sobre buracos na rodovia.'));
 
-        // "rodovia" e sinonimo cadastrado do tema estradas; a comparacao e por
-        // correspondencia exata da chave normalizada, nunca por aproximacao.
+        // "rodovia" e sinônimo cadastrado do tema estradas; a comparação e por
+        // correspondência exata da chave normalizada, nunca por aproximação.
         $this->assertSame('estradas', ConversationInsight::firstOrFail()->topic?->slug);
     }
 
@@ -594,7 +594,7 @@ class AiInterpretationModuleTest extends TestCase
     {
         $this->fakeSuccessfulPipeline();
         [, $conversation] = $this->scenario();
-        $this->interpret($this->incoming($conversation, 'Faltam medicos especialistas.'));
+        $this->interpret($this->incoming($conversation, 'Faltam médicos especialistas.'));
 
         $topic = InsightTopic::where('slug', 'saude')->firstOrFail();
 
@@ -652,13 +652,13 @@ class AiInterpretationModuleTest extends TestCase
         $this->assertNull(InsightTopic::find($topic->id));
     }
 
-    // --- Correcao humana -----------------------------------------------------
+    // --- Correção humana -----------------------------------------------------
 
     public function test_operator_correction_is_audited_and_preserves_the_original(): void
     {
         $this->fakeSuccessfulPipeline();
         [, $conversation] = $this->scenario();
-        $this->interpret($this->incoming($conversation, 'Faltam medicos especialistas.'));
+        $this->interpret($this->incoming($conversation, 'Faltam médicos especialistas.'));
 
         $insight = ConversationInsight::firstOrFail();
         $original = $insight->summary;
@@ -691,7 +691,7 @@ class AiInterpretationModuleTest extends TestCase
     {
         $this->fakeSuccessfulPipeline();
         [, $conversation] = $this->scenario();
-        $this->interpret($this->incoming($conversation, 'Faltam medicos especialistas.'));
+        $this->interpret($this->incoming($conversation, 'Faltam médicos especialistas.'));
 
         $insight = ConversationInsight::firstOrFail();
 
@@ -711,7 +711,7 @@ class AiInterpretationModuleTest extends TestCase
         ]);
     }
 
-    // --- Permissoes ----------------------------------------------------------
+    // --- Permissões ----------------------------------------------------------
 
     public function test_user_without_permission_cannot_open_the_review_queue(): void
     {
@@ -726,7 +726,7 @@ class AiInterpretationModuleTest extends TestCase
     {
         $this->fakeSuccessfulPipeline();
         [, $conversation] = $this->scenario();
-        $this->interpret($this->incoming($conversation, 'Faltam medicos especialistas.'));
+        $this->interpret($this->incoming($conversation, 'Faltam médicos especialistas.'));
 
         $insight = ConversationInsight::firstOrFail();
         $consulta = $this->userWith('consulta');
@@ -752,7 +752,7 @@ class AiInterpretationModuleTest extends TestCase
     {
         $this->fakeSuccessfulPipeline();
         [, $conversation] = $this->scenario();
-        $this->interpret($this->incoming($conversation, 'Faltam medicos especialistas.'));
+        $this->interpret($this->incoming($conversation, 'Faltam médicos especialistas.'));
 
         $insight = ConversationInsight::firstOrFail();
 
@@ -774,7 +774,7 @@ class AiInterpretationModuleTest extends TestCase
         $this->fakeSuccessfulPipeline();
         [$contact, $conversation] = $this->scenario();
         $contact->update(['name' => 'Nome Completo Do Contato']);
-        $this->interpret($this->incoming($conversation, 'Faltam medicos especialistas.'));
+        $this->interpret($this->incoming($conversation, 'Faltam médicos especialistas.'));
 
         $this->actingAs($this->userWith('consulta'))
             ->get(route('admin.ai-insights.index'))
@@ -797,7 +797,7 @@ class AiInterpretationModuleTest extends TestCase
         Http::fake();
 
         [, $conversation] = $this->scenario();
-        $this->interpret($this->incoming($conversation, 'Faltam medicos especialistas.'));
+        $this->interpret($this->incoming($conversation, 'Faltam médicos especialistas.'));
 
         Http::assertNothingSent();
         $this->assertSame(0, AiRun::count());
@@ -810,7 +810,7 @@ class AiInterpretationModuleTest extends TestCase
         [$contact, $conversation] = $this->scenario();
         $contact->update(['do_not_contact' => true]);
 
-        $this->interpret($this->incoming($conversation, 'Faltam medicos especialistas.'));
+        $this->interpret($this->incoming($conversation, 'Faltam médicos especialistas.'));
 
         Http::assertNothingSent();
         $this->assertSame(0, AiRun::count());
@@ -823,7 +823,7 @@ class AiInterpretationModuleTest extends TestCase
         [, $conversation, $state] = $this->scenario();
         $state->update(['is_paused' => true]);
 
-        $this->interpret($this->incoming($conversation, 'Faltam medicos especialistas.'));
+        $this->interpret($this->incoming($conversation, 'Faltam médicos especialistas.'));
 
         Http::assertNothingSent();
         $this->assertSame(0, AiRun::count());
@@ -841,11 +841,11 @@ class AiInterpretationModuleTest extends TestCase
         ]);
 
         $this->incoming($conversation, 'Mensagem anterior desta conversa.');
-        $message = $this->incoming($conversation, 'Resposta atual sobre saude.');
+        $message = $this->incoming($conversation, 'Resposta atual sobre saúde.');
 
         $prompt = app(AiContextBuilder::class)->forClassification($message, $state);
 
-        $this->assertStringContainsString('Resposta atual sobre saude.', $prompt);
+        $this->assertStringContainsString('Resposta atual sobre saúde.', $prompt);
         $this->assertStringContainsString('Mensagem anterior desta conversa.', $prompt);
         $this->assertStringNotContainsString('SEGREDO DE OUTRA CONVERSA', $prompt);
         $this->assertStringNotContainsString('Fulano de Tal', $prompt);
@@ -900,7 +900,7 @@ class AiInterpretationModuleTest extends TestCase
     {
         $this->fakeSuccessfulPipeline();
         [, $conversation] = $this->scenario();
-        $this->interpret($this->incoming($conversation, 'Faltam medicos especialistas.'));
+        $this->interpret($this->incoming($conversation, 'Faltam médicos especialistas.'));
 
         AiRun::query()->update(['created_at' => now()->subDays(200)]);
 
@@ -911,7 +911,7 @@ class AiInterpretationModuleTest extends TestCase
         $this->assertSame(1, ConversationMessage::where('conversation_id', $conversation->id)->count());
     }
 
-    // --- Regressao das etapas anteriores -------------------------------------
+    // --- Regressão das etapas anteriores -------------------------------------
 
     public function test_the_deterministic_flow_is_unchanged_when_interpretation_is_disabled(): void
     {
@@ -925,7 +925,7 @@ class AiInterpretationModuleTest extends TestCase
         Http::fake();
 
         [, $conversation, $state] = $this->scenario();
-        $message = $this->incoming($conversation, 'Faltam medicos especialistas no interior do estado.');
+        $message = $this->incoming($conversation, 'Faltam médicos especialistas no interior do estado.');
 
         app(ConversationFlowService::class)->handleIncomingMessage($message);
 
@@ -945,7 +945,7 @@ class AiInterpretationModuleTest extends TestCase
         Queue::fake();
 
         [, $conversation, $state] = $this->scenario();
-        $message = $this->incoming($conversation, 'Faltam medicos especialistas no interior do estado.');
+        $message = $this->incoming($conversation, 'Faltam médicos especialistas no interior do estado.');
 
         app(ConversationFlowService::class)->handleIncomingMessage($message);
 
@@ -957,7 +957,7 @@ class AiInterpretationModuleTest extends TestCase
     {
         $this->fakeSuccessfulPipeline();
         [, $conversation] = $this->scenario();
-        $body = 'Faltam medicos especialistas nas cidades pequenas.';
+        $body = 'Faltam médicos especialistas nas cidades pequenas.';
         $message = $this->incoming($conversation, $body);
         $originalUpdatedAt = $message->updated_at;
 

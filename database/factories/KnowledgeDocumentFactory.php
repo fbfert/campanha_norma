@@ -21,14 +21,14 @@ class KnowledgeDocumentFactory extends Factory
             'knowledge_base_id' => KnowledgeBase::factory(),
             'title' => 'Documento '.$this->faker->unique()->numberBetween(1, 100000),
             'type' => KnowledgeDocumentType::InstitutionalCompetence,
-            'source' => 'Equipe responsavel',
+            'source' => 'Equipe responsável',
             'disk' => 'local',
             'file_path' => 'knowledge-documents/'.$this->faker->uuid().'.txt',
             'original_filename' => 'documento.txt',
             'mime_type' => 'text/plain',
             'file_size' => 1024,
             'content_hash' => hash('sha256', (string) $this->faker->unique()->numberBetween(1, 1000000)),
-            // Padrao rascunho: nenhum documento nasce recuperavel.
+            // Padrão rascunho: nenhum documento nasce recuperável.
             'status' => KnowledgeDocumentStatus::Draft,
             'version' => 1,
             'chunk_count' => 0,

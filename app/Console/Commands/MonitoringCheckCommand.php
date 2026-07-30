@@ -11,7 +11,7 @@ class MonitoringCheckCommand extends Command
 {
     protected $signature = 'monitoring:check';
 
-    protected $description = 'Executa diagnostico operacional basico.';
+    protected $description = 'Executa diagnostico operacional básico.';
 
     public function handle(MonitoringService $monitoring, HeartbeatService $heartbeat, AuditLogger $audit): int
     {

@@ -41,7 +41,7 @@ class MaintenanceController extends Controller
         $request->validate(['confirm' => ['accepted']]);
         \Artisan::call('messages:recover-stuck');
 
-        return back()->with('success', trim(\Artisan::output()) ?: 'Recuperacao executada.');
+        return back()->with('success', trim(\Artisan::output()) ?: 'Recuperação executada.');
     }
 
     public function cleanup(Request $request, MaintenanceService $maintenance): RedirectResponse
@@ -50,7 +50,7 @@ class MaintenanceController extends Controller
         $request->validate(['confirm' => ['accepted']]);
         $count = $maintenance->cleanup();
 
-        return back()->with('success', "Limpeza concluida: {$count} item(ns).");
+        return back()->with('success', "Limpeza concluída: {$count} item(ns).");
     }
 
     public function applyRetention(Request $request, MaintenanceService $maintenance): RedirectResponse
@@ -59,6 +59,6 @@ class MaintenanceController extends Controller
         $request->validate(['confirm' => ['accepted']]);
         $maintenance->applyRetention();
 
-        return back()->with('success', 'Politica de retencao aplicada.');
+        return back()->with('success', 'Política de retenção aplicada.');
     }
 }

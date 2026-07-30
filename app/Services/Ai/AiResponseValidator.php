@@ -3,9 +3,9 @@
 namespace App\Services\Ai;
 
 /**
- * Validacao server-side da saida do modelo.
+ * Validação server-side da saída do modelo.
  *
- * Roda sempre, mesmo quando o provedor declara suportar saida estruturada: a
+ * Roda sempre, mesmo quando o provedor declara suportar saída estruturada: a
  * conformidade nunca e presumida a partir da promessa do fornecedor.
  *
  * Cobre o subconjunto de JSON Schema efetivamente usado pelo registro: type,
@@ -36,8 +36,8 @@ class AiResponseValidator
     }
 
     /**
-     * Alguns provedores devolvem o JSON dentro de uma cerca de codigo mesmo com
-     * saida estruturada solicitada. Removemos a cerca antes de decodificar, sem
+     * Alguns provedores devolvem o JSON dentro de uma cerca de código mesmo com
+     * saída estruturada solicitada. Removemos a cerca antes de decodificar, sem
      * tentar consertar JSON malformado.
      */
     private function unwrap(string $content): string
@@ -148,7 +148,7 @@ class AiResponseValidator
                 'array' => is_array($value) && array_is_list($value),
                 'string' => is_string($value),
                 'boolean' => is_bool($value),
-                // Inteiro tambem satisfaz `number`; booleano nunca satisfaz.
+                // Inteiro também satisfaz `number`; booleano nunca satisfaz.
                 'number' => (is_int($value) || is_float($value)) && ! is_bool($value),
                 'integer' => is_int($value) && ! is_bool($value),
                 'null' => $value === null,
@@ -161,7 +161,7 @@ class AiResponseValidator
         }
 
         // Objeto vazio decodifica como lista vazia; aceitamos quando o schema
-        // espera um objeto, para nao rejeitar `{}` legitimo.
+        // espera um objeto, para não rejeitar `{}` legítimo.
         return in_array('object', $types, true) && $value === [];
     }
 

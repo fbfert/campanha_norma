@@ -11,24 +11,24 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Qualidade operacional da interpretacao e da geracao.
+ * Qualidade operacional da interpretação e da geração.
  *
- * O relatorio compara versoes de prompt e modelos lado a lado e para por ai.
- * Nenhum metodo aqui promove versao, altera configuracao ou sugere troca: a
- * decisao de mudar o que responde a cidadao e humana, e um sistema que se
- * reconfigura sozinho com base na propria metrica perde o unico ponto em que
- * alguem responde pelo resultado.
+ * O relatório compara versões de prompt e modelos lado a lado e para por ai.
+ * Nenhum método aqui promove versão, altera configuração ou sugere troca: a
+ * decisão de mudar o que responde a cidadão e humana, e um sistema que se
+ * reconfigura sozinho com base na própria métrica perde o único ponto em que
+ * alguém responde pelo resultado.
  */
 class AiQualityMetricsService
 {
     public function __construct(private readonly SystemSettingService $settings) {}
 
     /**
-     * Desfecho das sugestoes geradas no periodo.
+     * Desfecho das sugestões geradas no período.
      *
-     * Aprovada sem edicao: o texto final e igual ao gerado, ou nao houve texto
-     * final. Aprovada com edicao: houve texto final diferente do gerado. A
-     * distincao importa porque edicao constante e o sinal mais barato de que o
+     * Aprovada sem edição: o texto final e igual ao gerado, ou não houve texto
+     * final. Aprovada com edição: houve texto final diferente do gerado. A
+     * distinção importa porque edição constante e o sinal mais barato de que o
      * prompt esta errado.
      *
      * @return array<string, mixed>
@@ -105,11 +105,11 @@ class AiQualityMetricsService
     }
 
     /**
-     * Execucoes agrupadas por provedor, modelo e versao de prompt.
+     * Execuções agrupadas por provedor, modelo e versão de prompt.
      *
-     * O custo so e incluido quando quem pede tem permissao para ve-lo. A
-     * qualidade continua legivel sem ele: quem acompanha acerto do modelo nao
-     * precisa saber quanto a operacao custa.
+     * O custo so e incluído quando quem pede tem permissão para ve-lo. A
+     * qualidade continua legível sem ele: quem acompanha acerto do modelo não
+     * precisa saber quanto a operação custa.
      *
      * @return array<int, array<string, mixed>>
      */
@@ -151,11 +151,11 @@ class AiQualityMetricsService
     }
 
     /**
-     * Correcao humana de classificacao.
+     * Correção humana de classificação.
      *
-     * Numerador: insights revisados cuja revisao registrou um motivo, ou seja,
-     * alguem olhou e mudou algo. Denominador: insights revisados. Insights que
-     * ninguem olhou ficam de fora dos dois lados — nao foram corrigidos nem
+     * Numerador: insights revisados cuja revisão registrou um motivo, ou seja,
+     * alguém olhou e mudou algo. Denominador: insights revisados. Insights que
+     * ninguém olhou ficam de fora dos dois lados — não foram corrigidos nem
      * confirmados.
      *
      * @return array<string, mixed>

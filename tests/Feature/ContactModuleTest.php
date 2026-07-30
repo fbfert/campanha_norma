@@ -124,7 +124,7 @@ class ContactModuleTest extends TestCase
         $this->actingAs($operator)->patch(route('admin.contacts.do-not-contact', $contact), ['do_not_contact' => 1])
             ->assertSessionHasErrors('do_not_contact_reason');
 
-        $this->actingAs($operator)->patch(route('admin.contacts.do-not-contact', $contact), ['do_not_contact' => 1, 'do_not_contact_reason' => 'Solicitacao do titular'])
+        $this->actingAs($operator)->patch(route('admin.contacts.do-not-contact', $contact), ['do_not_contact' => 1, 'do_not_contact_reason' => 'Solicitação do titular'])
             ->assertRedirect();
         $this->assertDatabaseHas('contacts', ['id' => $contact->id, 'do_not_contact' => true]);
         $this->assertDatabaseHas('audit_logs', ['action' => 'contact.marked_do_not_contact']);
@@ -150,10 +150,12 @@ class ContactModuleTest extends TestCase
     {
         $admin = $this->userWithRole('administrador');
         Contact::factory()->create(['phone_normalized' => '5549999991234', 'do_not_contact' => true]);
-        $csv = "nome,telefone,email,cidade,estado,etiquetas,nao_contatar,motivo_nao_contatar\n".
-            "Mariana,(49) 99999-1234,mariana@example.com,Lages,SC,Alunos,nao,\n".
-            "Joao,(49) 98888-1234,joao@example.com,Lages,SC,Evento,sim,Pediu bloqueio\n".
-            ",123,email-invalido,,,Teste,nao,\n";
+        // Conteúdo de CSV, não prosa: o cabeçalho e o contrato do importador
+        // (ContactImportService::COLUNAS) e os valores são lidos tal como vem.
+        $csv = "nome,telefone,email,cidade,estado,etiquetas,nao_contatar,motivo_nao_contatar\n". // ortografia:ignorar
+            "Mariana,(49) 99999-1234,mariana@example.com,Lages,SC,Alunos,nao,\n". // ortografia:ignorar
+            "Joao,(49) 98888-1234,joao@example.com,Lages,SC,Evento,sim,Pediu bloqueio\n". // ortografia:ignorar
+            ",123,email-invalido,,,Teste,nao,\n"; // ortografia:ignorar
 
         $file = UploadedFile::fake()->createWithContent('contatos.csv', $csv);
         $this->actingAs($admin)->post(route('admin.contacts.import.upload'), ['file' => $file])->assertRedirect();
@@ -188,7 +190,7 @@ class ContactModuleTest extends TestCase
     {
         $admin = $this->userWithRole('administrador');
         $noExport = User::factory()->create(['password' => Hash::make('Password123')]);
-        $role = Role::create(['name' => 'Sem exportacao', 'slug' => 'sem-exportacao']);
+        $role = Role::create(['name' => 'Sem exportação', 'slug' => 'sem-exportacao']);
         $role->permissions()->attach(Permission::where('slug', 'contacts.view')->first());
         $noExport->roles()->attach($role);
 
@@ -224,7 +226,7 @@ class ContactModuleTest extends TestCase
             'source' => 'manual',
             'status' => 'active',
             'consent_status' => 'not_informed',
-            'notes' => 'Observacao de teste',
+            'notes' => 'Observação de teste',
             'tags' => [],
         ], $overrides);
     }

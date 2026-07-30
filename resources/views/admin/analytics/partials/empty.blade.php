@@ -1,4 +1,4 @@
 <p class="muted">
-    {{ $message ?? 'Nenhum dado no periodo selecionado.' }}
-    Isso significa ausencia de registro, nao falha do relatorio.
+    {{ $message ?? 'Nenhum dado no período selecionado.' }}
+    Isso significa ausência de registro, não falha do relatório.
 </p>

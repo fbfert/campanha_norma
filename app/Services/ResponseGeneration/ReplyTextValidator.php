@@ -6,9 +6,9 @@ use App\Services\ConversationAutomation\PermissionResponseClassifier;
 use App\Services\SystemSettingService;
 
 /**
- * Validacao deterministica do texto gerado.
+ * Validação determinística do texto gerado.
  *
- * Roda depois do modelo, sempre. O prompt tambem pede estas regras, mas prompt
+ * Roda depois do modelo, sempre. O prompt também pede estas regras, mas prompt
  * e pedido e validador e garantia: um texto reprovado aqui nunca e enviado
  * automaticamente, independentemente do que o modelo tenha reportado.
  */
@@ -36,7 +36,7 @@ class ReplyTextValidator
             $errors[] = 'texto_muito_longo';
         }
 
-        // No maximo uma pergunta: mais de um ponto de interrogacao indica que o
+        // No máximo uma pergunta: mais de um ponto de interrogação indica que o
         // modelo empilhou perguntas, o que reduz a taxa de resposta e confunde.
         if (mb_substr_count($raw, '?') > 1) {
             $errors[] = 'mais_de_uma_pergunta';
@@ -60,7 +60,7 @@ class ReplyTextValidator
     }
 
     /**
-     * Grupos de expressoes proibidas, configuraveis sem deploy.
+     * Grupos de expressões proibidas, configuráveis sem deploy.
      *
      * @return array<string, array<int, string>>
      */

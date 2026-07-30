@@ -45,10 +45,10 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 /**
- * Subetapa 9C: geracao de resposta, aprovacao humana e handoff.
+ * Subetapa 9C: geração de resposta, aprovação humana e handoff.
  *
  * O eixo destes testes e um so: nada gerado chega a uma pessoa sem passar por
- * aprovacao explicita ou por todos os guards do autoenvio.
+ * aprovação explícita ou por todos os guards do autoenvio.
  */
 class ConversationResponseGenerationTest extends TestCase
 {
@@ -116,7 +116,7 @@ class ConversationResponseGenerationTest extends TestCase
         return [$contact, $conversation, $state->fresh()];
     }
 
-    private function incoming(Conversation $conversation, string $body = 'Falta medico especialista na minha cidade.'): ConversationMessage
+    private function incoming(Conversation $conversation, string $body = 'Falta médico especialista na minha cidade.'): ConversationMessage
     {
         return ConversationMessage::factory()->create([
             'conversation_id' => $conversation->id,
@@ -151,7 +151,7 @@ class ConversationResponseGenerationTest extends TestCase
                 'model' => 'modelo-de-teste',
                 'choices' => [['message' => ['content' => json_encode(array_merge([
                     'action' => 'suggest_reply',
-                    'reply_text' => 'Obrigada por explicar. O maior problema hoje e a falta de profissionais ou a distancia ate o atendimento?',
+                    'reply_text' => 'Obrigada por explicar. O maior problema hoje e a falta de profissionais ou a distância até o atendimento?',
                     'follow_up_type' => 'clarification',
                     'topic' => 'saude',
                     'confidence' => 0.92,
@@ -184,7 +184,7 @@ class ConversationResponseGenerationTest extends TestCase
     }
 
     // =========================================================================
-    // Criterio: nada e enviado sem aprovacao
+    // Critério: nada e enviado sem aprovação
     // =========================================================================
 
     public function test_approval_required_creates_a_pending_suggestion_and_sends_nothing(): void
@@ -197,7 +197,7 @@ class ConversationResponseGenerationTest extends TestCase
         $this->assertNotNull($suggestion);
         $this->assertSame(ReplySuggestionStatus::Pending, $suggestion->status);
         $this->assertSame(ReplySuggestionAction::SuggestReply, $suggestion->action);
-        $this->assertSame(0, $this->outgoingCount($conversation), 'Nada pode ser enviado sem aprovacao.');
+        $this->assertSame(0, $this->outgoingCount($conversation), 'Nada pode ser enviado sem aprovação.');
         $this->assertNull($suggestion->sent_message_id);
     }
 
@@ -260,7 +260,7 @@ class ConversationResponseGenerationTest extends TestCase
     }
 
     // =========================================================================
-    // Aprovacao humana
+    // Aprovação humana
     // =========================================================================
 
     public function test_approval_sends_and_stores_generated_and_final_text_separately(): void
@@ -275,7 +275,7 @@ class ConversationResponseGenerationTest extends TestCase
 
         $this->actingAs($admin)
             ->post(route('admin.reply-suggestions.approve', $suggestion), [
-                'final_text' => 'Obrigada por explicar. Na sua regiao, falta profissional ou falta transporte?',
+                'final_text' => 'Obrigada por explicar. Na sua região, falta profissional ou falta transporte?',
             ])
             ->assertSessionHas('success');
 
@@ -301,7 +301,7 @@ class ConversationResponseGenerationTest extends TestCase
         [, $conversation] = $this->scenario();
         $suggestion = $this->generate($this->incoming($conversation));
 
-        // Operador ve e rejeita, mas nao aprova.
+        // Operador ve e rejeita, mas não aprova.
         $this->actingAs($this->userWith('operador'))
             ->post(route('admin.reply-suggestions.approve', $suggestion))
             ->assertForbidden();
@@ -320,13 +320,13 @@ class ConversationResponseGenerationTest extends TestCase
         $suggestion = $this->generate($this->incoming($conversation));
 
         $this->actingAs($this->userWith('operador'))
-            ->post(route('admin.reply-suggestions.reject', $suggestion), ['reason' => 'Texto generico demais.'])
+            ->post(route('admin.reply-suggestions.reject', $suggestion), ['reason' => 'Texto genérico demais.'])
             ->assertSessionHas('success');
 
         $suggestion->refresh();
         $this->assertSame(ReplySuggestionStatus::Rejected, $suggestion->status);
         $this->assertNull($suggestion->active_source_message_id);
-        $this->assertSame('Texto generico demais.', $suggestion->rejection_reason);
+        $this->assertSame('Texto genérico demais.', $suggestion->rejection_reason);
         $this->assertSame(0, $this->outgoingCount($conversation));
     }
 
@@ -349,7 +349,7 @@ class ConversationResponseGenerationTest extends TestCase
         $this->assertSame(ReplySuggestionStatus::Superseded, $suggestion->status);
         $this->assertSame('Pergunta repetida.', $suggestion->regeneration_reason);
 
-        $this->assertSame(2, ConversationReplySuggestion::count(), 'A sugestao anterior continua legivel.');
+        $this->assertSame(2, ConversationReplySuggestion::count(), 'A sugestão anterior continua legível.');
         $this->assertSame(2, ConversationReplySuggestion::max('generation_attempt'));
     }
 
@@ -370,7 +370,7 @@ class ConversationResponseGenerationTest extends TestCase
     }
 
     // =========================================================================
-    // Sugestao obsoleta e concorrencia
+    // Sugestão obsoleta e concorrência
     // =========================================================================
 
     public function test_a_newer_incoming_message_blocks_the_approval(): void
@@ -404,7 +404,7 @@ class ConversationResponseGenerationTest extends TestCase
         $second = $approvals->approveAndSend($suggestion->refresh(), $this->userWith('administrador'));
 
         $this->assertTrue($first['sent']);
-        $this->assertFalse($second['sent'], 'A segunda aprovacao nao pode enviar de novo.');
+        $this->assertFalse($second['sent'], 'A segunda aprovação não pode enviar de novo.');
         $this->assertSame(1, $this->outgoingCount($conversation));
     }
 
@@ -418,7 +418,7 @@ class ConversationResponseGenerationTest extends TestCase
         $this->generate($message->refresh());
 
         $live = ConversationReplySuggestion::whereNotNull('active_source_message_id')->count();
-        $this->assertSame(1, $live, 'No maximo uma sugestao viva por mensagem recebida.');
+        $this->assertSame(1, $live, 'No máximo uma sugestão viva por mensagem recebida.');
     }
 
     // =========================================================================
@@ -457,7 +457,7 @@ class ConversationResponseGenerationTest extends TestCase
 
         $this->assertSame(ReplySuggestionStatus::Sent, $suggestion->status);
         $this->assertTrue($suggestion->auto_sent);
-        $this->assertNull($suggestion->approved_by, 'Autoenvio nao tem aprovador humano.');
+        $this->assertNull($suggestion->approved_by, 'Autoenvio não tem aprovador humano.');
         $this->assertSame(1, $this->outgoingCount($conversation));
     }
 
@@ -519,7 +519,7 @@ class ConversationResponseGenerationTest extends TestCase
     }
 
     // =========================================================================
-    // Opt-out e elegibilidade entre geracao e envio
+    // Opt-out e elegibilidade entre geração e envio
     // =========================================================================
 
     public function test_opt_out_after_generation_blocks_the_send(): void
@@ -528,7 +528,7 @@ class ConversationResponseGenerationTest extends TestCase
         [$contact, $conversation] = $this->scenario();
         $suggestion = $this->generate($this->incoming($conversation));
 
-        // A pessoa pede para parar depois da sugestao criada.
+        // A pessoa pede para parar depois da sugestão criada.
         $contact->update(['do_not_contact' => true]);
 
         $result = app(ConversationSuggestionService::class)->send($suggestion, $this->userWith('administrador'));
@@ -561,7 +561,7 @@ class ConversationResponseGenerationTest extends TestCase
 
         $state->forceFill(['current_stage' => ConversationFlowStage::OptedOut])->save();
 
-        $this->generate($this->incoming($conversation, 'nao quero mais nada'));
+        $this->generate($this->incoming($conversation, 'não quero mais nada'));
 
         $suggestion->refresh();
         $this->assertSame(ReplySuggestionStatus::Superseded, $suggestion->status);
@@ -585,7 +585,7 @@ class ConversationResponseGenerationTest extends TestCase
         $state->refresh();
         $this->assertSame(ConversationFlowStage::Completed, $state->current_stage);
         $this->assertSame('limite_de_aprofundamentos', $state->end_reason);
-        // O agradecimento e uma mensagem automatica da 9A, nao texto gerado.
+        // O agradecimento e uma mensagem automática da 9A, não texto gerado.
         $this->assertSame(1, $this->outgoingCount($conversation));
         $this->assertSame(
             ConversationMessageOrigin::Automation,
@@ -602,7 +602,7 @@ class ConversationResponseGenerationTest extends TestCase
         [, $conversation, $state] = $this->scenario();
 
         $first = $this->generate($this->incoming($conversation));
-        $this->assertSame(0, $state->refresh()->followups_count, 'Gerar nao conta turno.');
+        $this->assertSame(0, $state->refresh()->followups_count, 'Gerar não conta turno.');
 
         app(SuggestionApprovalService::class)->approveAndSend($first, $this->userWith('administrador'));
 
@@ -625,7 +625,7 @@ class ConversationResponseGenerationTest extends TestCase
 
         Http::assertNothingSent();
         $state->refresh();
-        $this->assertTrue($state->is_paused, 'Handoff pausa a automacao.');
+        $this->assertTrue($state->is_paused, 'Handoff pausa a automação.');
         $this->assertTrue($state->needs_human_review);
         $this->assertSame(ConversationFlowStage::WaitingHuman, $state->current_stage);
         $this->assertSame(0, $this->outgoingCount($conversation), 'Handoff nunca envia texto improvisado.');
@@ -670,7 +670,7 @@ class ConversationResponseGenerationTest extends TestCase
         ]);
 
         [, $conversation, $state] = $this->scenario();
-        $suggestion = $this->generate($this->incoming($conversation, 'Qual e a proposta dela para a saude?'));
+        $suggestion = $this->generate($this->incoming($conversation, 'Qual e a proposta dela para a saúde?'));
 
         $this->assertSame(ReplySuggestionAction::HandoffHuman, $suggestion->action);
         $this->assertNull($suggestion->generated_text);
@@ -679,7 +679,7 @@ class ConversationResponseGenerationTest extends TestCase
     }
 
     // =========================================================================
-    // Validacao deterministica do texto
+    // Validação determinística do texto
     // =========================================================================
 
     #[DataProvider('forbiddenTexts')]
@@ -687,7 +687,7 @@ class ConversationResponseGenerationTest extends TestCase
     {
         $result = app(ReplyTextValidator::class)->validate($text);
 
-        $this->assertFalse($result['valid'], "Esperava reprovacao para: {$text}");
+        $this->assertFalse($result['valid'], "Esperava reprovação para: {$text}");
         $this->assertContains($expectedError, $result['errors']);
     }
 
@@ -695,7 +695,7 @@ class ConversationResponseGenerationTest extends TestCase
     public static function forbiddenTexts(): array
     {
         return [
-            'duas perguntas' => ['Entendi. E a distancia? E o transporte?', 'mais_de_uma_pergunta'],
+            'duas perguntas' => ['Entendi. E a distância? E o transporte?', 'mais_de_uma_pergunta'],
             'promessa' => ['Obrigada. Vamos resolver isso na sua cidade.', 'promessa'],
             'pedido de voto' => ['Obrigada pelo relato. Conto com seu voto.', 'pedido_de_voto'],
             'comparacao' => ['Obrigada. Diferente dos outros, ela escuta.', 'comparacao_com_adversarios'],
@@ -710,7 +710,7 @@ class ConversationResponseGenerationTest extends TestCase
     public function test_a_valid_text_passes_the_validator(): void
     {
         $result = app(ReplyTextValidator::class)->validate(
-            'Obrigada por explicar. Na sua regiao, o problema maior e a falta de profissionais ou a distancia?'
+            'Obrigada por explicar. Na sua região, o problema maior e a falta de profissionais ou a distância?'
         );
 
         $this->assertTrue($result['valid'], implode(', ', $result['errors']));
@@ -786,7 +786,7 @@ class ConversationResponseGenerationTest extends TestCase
         Http::fake([
             '*' => Http::response([
                 'model' => 'modelo-de-teste',
-                'choices' => [['message' => ['content' => 'nao consegui responder']]],
+                'choices' => [['message' => ['content' => 'não consegui responder']]],
             ]),
         ]);
 
@@ -806,10 +806,10 @@ class ConversationResponseGenerationTest extends TestCase
     {
         Http::fake();
         [, $conversation] = $this->scenario();
-        $first = $this->incoming($conversation, 'Falta medico');
-        $this->incoming($conversation, 'e falta tambem transporte ate o hospital.');
+        $first = $this->incoming($conversation, 'Falta médico');
+        $this->incoming($conversation, 'e falta também transporte até o hospital.');
 
-        $this->assertNull($this->generate($first), 'Fragmento antigo nao gera.');
+        $this->assertNull($this->generate($first), 'Fragmento antigo não gera.');
         Http::assertNothingSent();
     }
 
@@ -853,7 +853,7 @@ class ConversationResponseGenerationTest extends TestCase
     }
 
     // =========================================================================
-    // Regressao da resposta manual
+    // Regressão da resposta manual
     // =========================================================================
 
     public function test_manual_reply_still_works_exactly_as_before(): void

@@ -7,18 +7,18 @@ use App\Models\ConversationMessage;
 use App\Services\SystemSettingService;
 
 /**
- * Monta o contexto minimo enviado ao modelo.
+ * Monta o contexto mínimo enviado ao modelo.
  *
- * Por construcao nao tem acesso ao model Contact: nome, telefone, etiquetas e
- * historico de campanhas nunca entram no prompt. Mensagens de outras conversas
- * tambem nao, porque a consulta e sempre escopada por `conversation_id`.
+ * Por construção não tem acesso ao model Contact: nome, telefone, etiquetas e
+ * histórico de campanhas nunca entram no prompt. Mensagens de outras conversas
+ * também não, porque a consulta e sempre escopada por `conversation_id`.
  */
 class AiContextBuilder
 {
     public function __construct(private readonly SystemSettingService $settings) {}
 
     /**
-     * Prompt de usuario para classificacao.
+     * Prompt de usuário para classificação.
      */
     public function forClassification(ConversationMessage $message, ?ConversationFlowState $state): string
     {
@@ -37,14 +37,14 @@ class AiContextBuilder
         $parts[] = "MENSAGEM A CLASSIFICAR:\n".$this->truncate($message->body);
 
         if ($message->has_media) {
-            $parts[] = 'OBSERVACAO: a mensagem possui midia anexada que nao foi enviada para analise.';
+            $parts[] = 'OBSERVAÇÃO: a mensagem possui midia anexada que não foi enviada para análise.';
         }
 
         return implode("\n\n", $parts);
     }
 
     /**
-     * Prompt de usuario para extracao.
+     * Prompt de usuário para extração.
      *
      * @param  array<int, string>  $topics
      */
@@ -53,7 +53,7 @@ class AiContextBuilder
         $parts = [];
 
         $question = $state?->selected_question_snapshot;
-        $parts[] = "PERGUNTA DA PESQUISA:\n".(filled($question) ? $question : 'Nao registrada.');
+        $parts[] = "PERGUNTA DA PESQUISA:\n".(filled($question) ? $question : 'Não registrada.');
 
         $parts[] = "TEMAS CADASTRADOS (use exatamente um destes identificadores):\n".implode(', ', $topics);
         $parts[] = "TEMA DE FALLBACK (use quando nenhum outro servir):\n".$fallbackTopic;

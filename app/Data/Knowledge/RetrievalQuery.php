@@ -5,11 +5,11 @@ namespace App\Data\Knowledge;
 use App\Enums\RetrievalStrategy;
 
 /**
- * Consulta de recuperacao.
+ * Consulta de recuperação.
  *
- * Carrega apenas texto e parametros. Nao carrega identificador de contato: a
- * recuperacao nao precisa saber quem perguntou, e nao poder saber e a forma mais
- * simples de garantir que nao havera microdirecionamento individual.
+ * Carrega apenas texto e parâmetros. Não carrega identificador de contato: a
+ * recuperação não precisa saber quem perguntou, e não poder saber e a forma mais
+ * simples de garantir que não haverá microdirecionamento individual.
  */
 readonly class RetrievalQuery
 {

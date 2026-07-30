@@ -18,10 +18,10 @@ use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 /**
- * Subetapa 9D: comandos de operacao.
+ * Subetapa 9D: comandos de operação.
  *
  * Nenhum deles aprova documento nem chama provedor externo. Reconciliar estado e
- * trabalho de manutencao; decidir o que e conteudo oficial nao e.
+ * trabalho de manutenção; decidir o que e conteúdo oficial não e.
  */
 class KnowledgeCommandsTest extends TestCase
 {
@@ -44,8 +44,8 @@ class KnowledgeCommandsTest extends TestCase
     public function test_diagnose_reports_the_configuration_without_calling_any_provider(): void
     {
         $this->artisan('knowledge:diagnose')
-            ->expectsOutputToContain('Recuperacao ligada: nao')
-            ->expectsOutputToContain('Estrategia: lexical')
+            ->expectsOutputToContain('Recuperação ligada: não')
+            ->expectsOutputToContain('Estratégia: lexical')
             ->assertSuccessful();
     }
 
@@ -145,7 +145,7 @@ class KnowledgeCommandsTest extends TestCase
     }
 
     /**
-     * A explicacao de algo que chegou a uma pessoa tem ciclo de vida mais longo
+     * A explicação de algo que chegou a uma pessoa tem ciclo de vida mais longo
      * que o log de busca. Apagar os dois juntos destruiria a justificativa de uma
      * resposta enviada.
      */

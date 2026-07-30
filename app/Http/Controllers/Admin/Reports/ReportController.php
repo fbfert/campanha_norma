@@ -22,7 +22,7 @@ class ReportController extends Controller
     {
         abort_unless($request->user()->can('reports.view'), 403);
         [$from, $to] = $this->period($request);
-        $audit->log('report.viewed', 'Visao geral de relatorios visualizada.', null, null, ['from' => $from->toDateString(), 'to' => $to->toDateString()]);
+        $audit->log('report.viewed', 'Visão geral de relatórios visualizada.', null, null, ['from' => $from->toDateString(), 'to' => $to->toDateString()]);
 
         return view('admin.reports.index', ['metrics' => $metrics->overview($from, $to), 'from' => $from, 'to' => $to]);
     }

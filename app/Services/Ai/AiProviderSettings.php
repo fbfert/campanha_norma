@@ -9,15 +9,15 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Crypt;
 
 /**
- * Configuracao do provedor de IA vinda do banco.
+ * Configuração do provedor de IA vinda do banco.
  *
  * A Etapa 9B deixou provedor, modelo, URL e chave no arquivo de ambiente. Isso
  * funciona, mas exige acesso ao servidor para trocar de modelo. Esta classe
  * acrescenta uma segunda fonte, de prioridade maior, para que a troca seja
  * feita por quem opera o sistema.
  *
- * A ordem e: banco, depois `.env`. Uma chave em branco no banco nao apaga a do
- * ambiente, apenas nao a sobrescreve. Quem preferir manter tudo no `.env` nao
+ * A ordem e: banco, depois `.env`. Uma chave em branco no banco não apaga a do
+ * ambiente, apenas não a sobrescreve. Quem preferir manter tudo no `.env` não
  * precisa fazer nada.
  *
  * A credencial e guardada cifrada com a `APP_KEY` e nunca volta para a tela nem
@@ -31,11 +31,11 @@ class AiProviderSettings
     public function __construct(private readonly SystemSettingService $settings) {}
 
     /**
-     * Sobrescreve a configuracao em memoria com o que estiver no banco.
+     * Sobrescreve a configuração em memória com o que estiver no banco.
      *
      * Chamado uma vez no boot. Os provedores continuam lendo `config()`, sem
-     * saber que existe banco: manter um unico caminho de leitura evita que
-     * metade do sistema enxergue uma configuracao e a outra metade enxergue
+     * saber que existe banco: manter um único caminho de leitura evita que
+     * metade do sistema enxergue uma configuração e a outra metade enxergue
      * outra.
      */
     public function applyToConfig(): void
@@ -82,14 +82,14 @@ class AiProviderSettings
     }
 
     /**
-     * Grava o formulario.
+     * Grava o formulário.
      *
      * Campo de chave em branco preserva a chave atual: obrigar a redigitar o
-     * segredo a cada ajuste de modelo levaria alguem a deixa-lo anotado em
-     * algum lugar mais facil de ler que este banco.
+     * segredo a cada ajuste de modelo levaria alguém a deixa-lo anotado em
+     * algum lugar mais fácil de ler que este banco.
      *
      * @param  array<string, mixed>  $values
-     * @return array<string, string> valores anteriores, ja sem segredo
+     * @return array<string, string> valores anteriores, já sem segredo
      */
     public function save(array $values): array
     {
@@ -157,7 +157,7 @@ class AiProviderSettings
     }
 
     /**
-     * Dica da credencial: os quatro ultimos caracteres, ou nulo quando nao ha
+     * Dica da credencial: os quatro últimos caracteres, ou nulo quando não ha
      * chave gravada no banco.
      */
     public function hint(string $key): ?string
@@ -176,9 +176,9 @@ class AiProviderSettings
     /**
      * Credencial em claro, so para quem vai efetivamente chamar o provedor.
      *
-     * Devolve nulo quando nao ha chave gravada ou quando a `APP_KEY` mudou
-     * desde a gravacao. Chave que nao decifra e chave inexistente: fingir que
-     * existe produziria uma falha de autenticacao confusa la na frente.
+     * Devolve nulo quando não ha chave gravada ou quando a `APP_KEY` mudou
+     * desde a gravação. Chave que não decifra e chave inexistente: fingir que
+     * existe produziria uma falha de autenticação confusa la na frente.
      */
     public function key(string $key): ?string
     {

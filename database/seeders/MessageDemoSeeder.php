@@ -27,7 +27,7 @@ class MessageDemoSeeder extends Seeder
             ['slug' => 'primeiro-contato-demo'],
             [
                 'name' => 'Primeiro contato demo',
-                'description' => 'Modelo de demonstracao para desenvolvimento.',
+                'description' => 'Modelo de demonstração para desenvolvimento.',
                 'body' => "Oi {primeiro_nome}, como esta {cidade}?\n\nSou o professor Felipe. Posso lhe fazer uma pergunta?",
                 'status' => MessageTemplateStatus::Active,
                 'version' => 1,

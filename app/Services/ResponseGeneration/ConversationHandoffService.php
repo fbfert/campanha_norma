@@ -16,7 +16,7 @@ use App\Services\Conversations\ConversationEventService;
 /**
  * Encaminhamento para atendimento humano.
  *
- * Pausa a automacao, muda o estado, eleva a prioridade quando cabe, cria evento
+ * Pausa a automação, muda o estado, eleva a prioridade quando cabe, cria evento
  * e registra o motivo. Nunca envia texto improvisado.
  */
 class ConversationHandoffService
@@ -37,7 +37,7 @@ class ConversationHandoffService
             'needs_human_review' => true,
         ])->save();
 
-        // Nao reabre fluxo terminal: apenas marca a necessidade de atendimento.
+        // Não reabre fluxo terminal: apenas marca a necessidade de atendimento.
         if (! $state->current_stage->isTerminal()) {
             $this->machine->transition(
                 $state,
@@ -65,7 +65,7 @@ class ConversationHandoffService
             );
         }
 
-        // Sugestoes vivas perdem validade: nada pendente pode ser enviado depois
+        // Sugestões vivas perdem validade: nada pendente pode ser enviado depois
         // de um encaminhamento.
         $this->invalidateLiveSuggestions($state, 'handoff');
 
@@ -76,7 +76,7 @@ class ConversationHandoffService
     }
 
     /**
-     * Invalida toda sugestao viva da conversa, liberando a unicidade.
+     * Invalida toda sugestão viva da conversa, liberando a unicidade.
      */
     public function invalidateLiveSuggestions(ConversationFlowState $state, string $reason): int
     {

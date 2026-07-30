@@ -15,8 +15,8 @@
         <a class="btn ghost" href="{{ route('admin.contacts.index') }}">Limpar</a>
         @can('contacts.export')<a class="btn secondary" href="{{ route('admin.contacts.export', request()->query()) }}"><x-icon name="download" size="16" />Exportar CSV</a>@endcan
         @can('contacts.create')<a class="btn" href="{{ route('admin.contacts.create') }}"><x-icon name="plus" size="16" />Novo contato</a>@endcan
-        {{-- A importacao saiu do menu lateral e passou a viver aqui, junto do
-             resto do que se faz com contatos. Sem este botao ela ficaria sem
+        {{-- A importação saiu do menu lateral e passou a viver aqui, junto do
+             resto do que se faz com contatos. Sem este botão ela ficaria sem
              nenhum caminho de acesso. --}}
         @can('contacts.import')<a class="btn secondary" href="{{ route('admin.contacts.import') }}"><x-icon name="upload" size="16" />Importar</a>@endcan
     </form>

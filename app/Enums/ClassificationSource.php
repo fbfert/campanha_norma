@@ -11,9 +11,9 @@ enum ClassificationSource: string
     public function label(): string
     {
         return match ($this) {
-            self::Deterministic => 'Regra deterministica',
-            self::Ai => 'Inteligencia artificial',
-            self::Human => 'Correcao humana',
+            self::Deterministic => 'Regra determinística',
+            self::Ai => 'Inteligência artificial',
+            self::Human => 'Correção humana',
         };
     }
 }

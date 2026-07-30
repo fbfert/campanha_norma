@@ -30,8 +30,8 @@ enum MessageBatchStatus: string
             self::Paused => 'Pausado',
             self::Stopping => 'Parando',
             self::Stopped => 'Parado',
-            self::Completed => 'Concluido',
-            self::CompletedWithErrors => 'Concluido com erros',
+            self::Completed => 'Concluído',
+            self::CompletedWithErrors => 'Concluído com erros',
             self::Failed => 'Falhou',
             self::Cancelled => 'Cancelado',
         };

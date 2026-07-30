@@ -38,13 +38,13 @@ class NewPasswordController extends Controller
                     'must_change_password' => false,
                 ])->save();
 
-                app(AuditLogger::class)->log('auth.password_reset', 'Senha redefinida pelo fluxo de recuperacao.', $user);
+                app(AuditLogger::class)->log('auth.password_reset', 'Senha redefinida pelo fluxo de recuperação.', $user);
                 event(new PasswordReset($user));
             }
         );
 
         if ($status !== Password::PASSWORD_RESET) {
-            throw ValidationException::withMessages(['email' => 'Nao foi possivel redefinir a senha.']);
+            throw ValidationException::withMessages(['email' => 'Não foi possível redefinir a senha.']);
         }
 
         return redirect()->route('login')->with('status', 'Senha redefinida com sucesso.');

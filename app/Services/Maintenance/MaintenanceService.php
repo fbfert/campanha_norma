@@ -58,7 +58,7 @@ class MaintenanceService
     public function applyRetention(): array
     {
         $expiredExports = $this->expireExports();
-        $this->audit->log('maintenance.retention_applied', 'Politica de retencao aplicada preservando historico.', null, null, ['expired_exports' => $expiredExports]);
+        $this->audit->log('maintenance.retention_applied', 'Política de retenção aplicada preservando histórico.', null, null, ['expired_exports' => $expiredExports]);
 
         return ['expired_exports' => $expiredExports, 'history_preserved' => true];
     }

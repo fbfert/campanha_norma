@@ -2,25 +2,25 @@
     <section class="card">
         <span class="badge" style="background:#4f46e5;color:#fff;">Gerado por IA</span>
         <span class="muted" style="margin-left:8px;">
-            Modelo {{ $insight->run?->model ?? '-' }} &middot; prompt {{ $insight->prompt_version }} &middot; extracao v{{ $insight->extraction_version }}
+            Modelo {{ $insight->run?->model ?? '-' }} &middot; prompt {{ $insight->prompt_version }} &middot; extração v{{ $insight->extraction_version }}
         </span>
         @if($insight->requires_human_review && ! $insight->reviewed)
-            <p style="margin-top:8px;"><strong>Aguardando revisao humana:</strong> {{ \App\Enums\InsightReviewReason::tryFrom((string) $insight->review_reason)?->label() ?? $insight->review_reason }}</p>
+            <p style="margin-top:8px;"><strong>Aguardando revisão humana:</strong> {{ \App\Enums\InsightReviewReason::tryFrom((string) $insight->review_reason)?->label() ?? $insight->review_reason }}</p>
         @endif
     </section>
 
     <div class="grid grid-2" style="margin-top:16px;">
         <section class="card">
             <h2>Mensagem original</h2>
-            <p class="muted">Fonte primaria e imutavel.</p>
+            <p class="muted">Fonte primária e imutável.</p>
             <p><strong>Pergunta:</strong> {{ $insight->question_snapshot ?? '-' }}</p>
             <p style="white-space:pre-wrap;">{{ $insight->sourceMessage?->body ?? '-' }}</p>
             <p class="muted">
                 Contato:
                 @if($canSeeContactData)
-                    {{ $insight->conversation?->contact?->name ?? 'nao identificado' }}
+                    {{ $insight->conversation?->contact?->name ?? 'não identificado' }}
                 @else
-                    {{ $insight->conversation?->contact?->phone_normalized ? Str::mask($insight->conversation->contact->phone_normalized, '*', 4, -4) : 'nao identificado' }}
+                    {{ $insight->conversation?->contact?->phone_normalized ? Str::mask($insight->conversation->contact->phone_normalized, '*', 4, -4) : 'não identificado' }}
                 @endif
             </p>
             @if($insight->conversation)
@@ -29,10 +29,10 @@
         </section>
 
         <section class="card">
-            <h2>Interpretacao</h2>
+            <h2>Interpretação</h2>
             <p><strong>Resumo:</strong> {{ $insight->summary ?? '-' }}</p>
-            <p><strong>Tema principal:</strong> {{ $insight->topic?->name ?? '-' }} <span class="muted">({{ $insight->main_topic_raw ?? 'sem saida do modelo' }})</span></p>
-            <p><strong>Temas secundarios:</strong>
+            <p><strong>Tema principal:</strong> {{ $insight->topic?->name ?? '-' }} <span class="muted">({{ $insight->main_topic_raw ?? 'sem saída do modelo' }})</span></p>
+            <p><strong>Temas secundários:</strong>
                 @forelse($insight->topicLinks->where('role', 'secondary') as $link)
                     <span class="badge" style="background:{{ $link->topic?->color ?? '#64748b' }};color:#fff;">{{ $link->topic?->name }}</span>
                 @empty
@@ -40,17 +40,17 @@
                 @endforelse
             </p>
             <p><strong>Problema identificado:</strong> {{ $insight->identified_problem ?? '-' }}</p>
-            <p><strong>Acao sugerida:</strong> {{ $insight->suggested_action ?? '-' }}</p>
+            <p><strong>Ação sugerida:</strong> {{ $insight->suggested_action ?? '-' }}</p>
             <p><strong>Resultado desejado:</strong> {{ $insight->desired_result ?? '-' }}</p>
             <p><strong>Grupo afetado:</strong> {{ $insight->affected_group ?? '-' }}</p>
             <p><strong>Localidade declarada:</strong> {{ $insight->locality_text ?? '-' }}</p>
-            <p><strong>Regiao:</strong> {{ $insight->region ?? '-' }}</p>
-            <p><strong>Urgencia:</strong> {{ $insight->urgency?->label() ?? '-' }}</p>
+            <p><strong>Região:</strong> {{ $insight->region ?? '-' }}</p>
+            <p><strong>Urgência:</strong> {{ $insight->urgency?->label() ?? '-' }}</p>
             <p><strong>Sentimento:</strong> {{ $insight->sentiment?->label() ?? '-' }}</p>
             <p><strong>Palavras-chave:</strong> {{ implode(', ', $insight->keywords ?? []) ?: '-' }}</p>
-            <p><strong>Confianca:</strong> {{ $insight->confidence !== null ? number_format($insight->confidence, 2) : '-' }}</p>
+            <p><strong>Confiança:</strong> {{ $insight->confidence !== null ? number_format($insight->confidence, 2) : '-' }}</p>
             @if($classification)
-                <p><strong>Classificacao:</strong> {{ $classification->classification->label() }}
+                <p><strong>Classificação:</strong> {{ $classification->classification->label() }}
                     <span class="muted">({{ $classification->source->label() }})</span>
                 </p>
             @endif
@@ -59,8 +59,8 @@
 
     @can('ai_insights.correct')
         <section class="card" style="margin-top:16px;">
-            <h2>Correcao manual</h2>
-            <p class="muted">O valor original e preservado no historico. Correcoes nao retroalimentam o modelo.</p>
+            <h2>Correção manual</h2>
+            <p class="muted">O valor original e preservado no histórico. Correções não retroalimentam o modelo.</p>
             <form method="post" action="{{ route('admin.ai-insights.correct', $insight) }}">
                 @csrf
                 @method('put')
@@ -74,7 +74,7 @@
                         <textarea id="identified_problem" name="identified_problem" rows="3">{{ old('identified_problem', $insight->identified_problem) }}</textarea>
                     </div>
                     <div>
-                        <label for="suggested_action">Acao sugerida</label>
+                        <label for="suggested_action">Ação sugerida</label>
                         <textarea id="suggested_action" name="suggested_action" rows="2">{{ old('suggested_action', $insight->suggested_action) }}</textarea>
                     </div>
                     <div>
@@ -90,7 +90,7 @@
                         <input id="locality_text" name="locality_text" value="{{ old('locality_text', $insight->locality_text) }}">
                     </div>
                     <div>
-                        <label for="region">Regiao</label>
+                        <label for="region">Região</label>
                         <input id="region" name="region" value="{{ old('region', $insight->region) }}">
                     </div>
                     <div>
@@ -103,9 +103,9 @@
                         </select>
                     </div>
                     <div>
-                        <label for="urgency">Urgencia</label>
+                        <label for="urgency">Urgência</label>
                         <select id="urgency" name="urgency">
-                            <option value="">Nao definida</option>
+                            <option value="">Não definida</option>
                             @foreach($urgencies as $urgency)
                                 <option value="{{ $urgency->value }}" @selected(old('urgency', $insight->urgency?->value) === $urgency->value)>{{ $urgency->label() }}</option>
                             @endforeach
@@ -114,7 +114,7 @@
                     <div>
                         <label for="sentiment">Sentimento</label>
                         <select id="sentiment" name="sentiment">
-                            <option value="">Nao definido</option>
+                            <option value="">Não definido</option>
                             @foreach($sentiments as $sentiment)
                                 <option value="{{ $sentiment->value }}" @selected(old('sentiment', $insight->sentiment?->value) === $sentiment->value)>{{ $sentiment->label() }}</option>
                             @endforeach
@@ -122,7 +122,7 @@
                     </div>
                     @if($classification)
                         <div>
-                            <label for="classification">Classificacao</label>
+                            <label for="classification">Classificação</label>
                             <select id="classification" name="classification">
                                 <option value="">Manter</option>
                                 @foreach($classifications as $option)
@@ -132,12 +132,12 @@
                         </div>
                     @endif
                     <div>
-                        <label for="reason">Motivo da correcao</label>
+                        <label for="reason">Motivo da correção</label>
                         <input id="reason" name="reason" value="{{ old('reason') }}">
                     </div>
                 </div>
                 <div class="actions" style="margin-top:12px;">
-                    <button class="btn" type="submit">Salvar correcao</button>
+                    <button class="btn" type="submit">Salvar correção</button>
                 </div>
             </form>
             <div class="actions" style="margin-top:12px;">
@@ -151,10 +151,10 @@
 
     <div class="grid grid-2" style="margin-top:16px;">
         <section class="card">
-            <h2>Versoes</h2>
+            <h2>Versões</h2>
             <div class="table-wrap">
                 <table>
-                    <thead><tr><th>Extracao</th><th>Prompt</th><th>Confianca</th><th>Data</th><th></th></tr></thead>
+                    <thead><tr><th>Extração</th><th>Prompt</th><th>Confiança</th><th>Data</th><th></th></tr></thead>
                     <tbody>
                         @foreach($versions as $version)
                             <tr>
@@ -177,10 +177,10 @@
         </section>
 
         <section class="card">
-            <h2>Historico de correcoes</h2>
+            <h2>Histórico de correções</h2>
             <div class="table-wrap">
                 <table>
-                    <thead><tr><th>Campo</th><th>Original</th><th>Corrigido</th><th>Usuario</th><th>Data</th></tr></thead>
+                    <thead><tr><th>Campo</th><th>Original</th><th>Corrigido</th><th>Usuário</th><th>Data</th></tr></thead>
                     <tbody>
                         @forelse($insight->corrections as $correction)
                             <tr>
@@ -191,7 +191,7 @@
                                 <td>{{ $correction->created_at?->format($dateTimeFormat) ?? '-' }}</td>
                             </tr>
                         @empty
-                            <tr><td colspan="5">Nenhuma correcao registrada.</td></tr>
+                            <tr><td colspan="5">Nenhuma correção registrada.</td></tr>
                         @endforelse
                     </tbody>
                 </table>

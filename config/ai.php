@@ -3,13 +3,13 @@
 return [
     /*
      | Provedor ativo. `null` desliga qualquer chamada externa sem exigir que a
-     | camada de interpretacao seja removida do sistema.
+     | camada de interpretação seja removida do sistema.
      */
     'provider' => env('AI_PROVIDER', 'null'),
 
     'providers' => [
         /*
-         | Compativel com APIs de chat no formato OpenAI (OpenAI, Azure OpenAI,
+         | Compatível com APIs de chat no formato OpenAI (OpenAI, Azure OpenAI,
          | OpenRouter, Groq e servidores locais como Ollama e vLLM).
          */
         'openai' => [
@@ -21,8 +21,8 @@ return [
     ],
 
     /*
-     | Limites de transporte. Valores operacionais de negocio (thresholds de
-     | confianca, versoes de prompt, retencao) ficam em system_settings.
+     | Limites de transporte. Valores operacionais de negócio (thresholds de
+     | confiança, versões de prompt, retenção) ficam em system_settings.
      */
     'timeout' => (int) env('AI_TIMEOUT', 30),
     'connect_timeout' => (int) env('AI_CONNECT_TIMEOUT', 5),
@@ -39,15 +39,15 @@ return [
     ],
 
     /*
-     | Catalogo exibido na tela de provedor. E uma lista de conveniencia, nao
-     | uma restricao: cada fornecedor aceita modelo digitado a mao, porque nome
+     | Catalogo exibido na tela de provedor. E uma lista de conveniência, não
+     | uma restrição: cada fornecedor aceita modelo digitado a mão, porque nome
      | de modelo muda mais rapido que release de sistema. Um catalogo que
-     | impede de usar o modelo lancado ontem seria pior que nenhum catalogo.
+     | impede de usar o modelo lançado ontem seria pior que nenhum catalogo.
      |
      | Todos os fornecedores abaixo falam o protocolo de chat da OpenAI, que e
-     | o unico que `OpenAiCompatibleProvider` implementa. A API propria da
-     | Anthropic nao fala esse protocolo: os modelos Claude aparecem aqui pelo
-     | OpenRouter, que os expoe no formato compativel.
+     | o único que `OpenAiCompatibleProvider` implementa. A API própria da
+     | Anthropic não fala esse protocolo: os modelos Claude aparecem aqui pelo
+     | OpenRouter, que os expoe no formato compatível.
      */
     'catalog' => [
         'openai' => [
@@ -70,7 +70,7 @@ return [
         'openrouter' => [
             'label' => 'OpenRouter',
             'url' => 'https://openrouter.ai/api/v1',
-            'key_hint' => 'Chave de API do OpenRouter. Da acesso a modelos de varios fornecedores por uma credencial so.',
+            'key_hint' => 'Chave de API do OpenRouter. Da acesso a modelos de vários fornecedores por uma credencial so.',
             'supports_organization' => false,
             'models' => [
                 'anthropic/claude-sonnet-5' => 'Claude Sonnet 5 (equilibrio)',
@@ -109,7 +109,7 @@ return [
         'ollama' => [
             'label' => 'Ollama ou servidor local',
             'url' => 'http://127.0.0.1:11434/v1',
-            'key_hint' => 'Servidor local costuma aceitar qualquer valor. Preencha com "local" se nao houver chave.',
+            'key_hint' => 'Servidor local costuma aceitar qualquer valor. Preencha com "local" se não houver chave.',
             'supports_organization' => false,
             'models' => [
                 'llama3.1' => 'Llama 3.1',
@@ -121,7 +121,7 @@ return [
         ],
 
         'custom' => [
-            'label' => 'Outro compativel com OpenAI',
+            'label' => 'Outro compatível com OpenAI',
             'url' => '',
             'key_hint' => 'Qualquer servico que exponha /chat/completions no formato da OpenAI.',
             'supports_organization' => false,

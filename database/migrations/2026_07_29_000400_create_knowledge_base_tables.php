@@ -18,8 +18,8 @@ return new class extends Migration
             $table->string('status')->index('kb_status_idx');
             $table->unsignedInteger('version')->default(1);
 
-            // Provedor e identificador remoto ficam na propria base: trocar de
-            // armazenamento nao exige adivinhar onde cada base foi criada.
+            // Provedor e identificador remoto ficam na própria base: trocar de
+            // armazenamento não exige adivinhar onde cada base foi criada.
             $table->string('provider');
             $table->string('external_store_id')->nullable();
 
@@ -49,8 +49,8 @@ return new class extends Migration
             $table->string('status')->index('kd_status_idx');
             $table->unsignedInteger('version')->default(1);
 
-            // Versao nova nao sobrescreve rastreabilidade: aponta para a anterior
-            // e a anterior vira obsoleta, permanecendo legivel.
+            // Versão nova não sobrescreve rastreabilidade: aponta para a anterior
+            // e a anterior vira obsoleta, permanecendo legível.
             $table->foreignId('supersedes_document_id')->nullable()
                 ->constrained('knowledge_documents', indexName: 'kd_supersedes_fk')->nullOnDelete();
 
@@ -60,11 +60,11 @@ return new class extends Migration
             $table->timestamp('indexed_at')->nullable();
             $table->string('provider_file_id')->nullable();
 
-            // Erro sanitizado: codigo operacional visivel na tela, sem credencial
-            // e sem conteudo integral do arquivo.
+            // Erro sanitizado: código operacional visível na tela, sem credencial
+            // e sem conteúdo integral do arquivo.
             $table->string('error_message')->nullable();
 
-            // Deteccao de tentativa de injecao de prompt no proprio documento.
+            // Detecção de tentativa de injeção de prompt no próprio documento.
             $table->boolean('injection_flagged')->default(false)->index('kd_injection_idx');
             $table->text('injection_findings')->nullable();
             $table->string('antivirus_result')->nullable();
@@ -79,7 +79,7 @@ return new class extends Migration
             $table->timestamp('obsoleted_at')->nullable();
             $table->timestamps();
 
-            // Deduplicacao por base: o mesmo arquivo pode existir em bases
+            // Deduplicação por base: o mesmo arquivo pode existir em bases
             // diferentes com finalidades diferentes, nunca duas vezes na mesma.
             $table->unique(['knowledge_base_id', 'content_hash'], 'kd_base_hash_uniq');
             $table->index(['knowledge_base_id', 'status'], 'kd_base_status_idx');
@@ -90,8 +90,8 @@ return new class extends Migration
             $table->id();
             $table->foreignId('knowledge_document_id')->constrained(indexName: 'kc_document_fk')->cascadeOnDelete();
 
-            // Base desnormalizada: a recuperacao filtra por base antes de tudo, e
-            // um join a mais em cada consulta nao paga nada aqui.
+            // Base desnormalizada: a recuperação filtra por base antes de tudo, e
+            // um join a mais em cada consulta não paga nada aqui.
             $table->foreignId('knowledge_base_id')->constrained(indexName: 'kc_base_fk')->cascadeOnDelete();
 
             $table->unsignedInteger('chunk_index');
@@ -99,10 +99,10 @@ return new class extends Migration
             $table->longText('content');
 
             /*
-             | Copia normalizada do conteudo: minuscula, sem acento e sem
-             | pontuacao. Existe para que a busca lexica encontre "saude" quando o
+             | Copia normalizada do conteúdo: minúscula, sem acento e sem
+             | pontuação. Existe para que a busca léxica encontre "saude" quando o
              | documento escreveu "saude" com acento — comparar acento no `LIKE`
-             | dependeria de collation e falharia em silencio.
+             | dependeria de collation e falharia em silêncio.
              */
             $table->longText('search_text')->nullable();
 
@@ -112,10 +112,10 @@ return new class extends Migration
             $table->string('section')->nullable();
 
             /*
-             | Embedding como sequencia de floats de 32 bits, nao JSON. BLOB
-             | acomoda ate 16.384 dimensoes, muito acima dos 1.536 do modelo
-             | pequeno em uso. A dimensao fica na propria linha para que trocar de
-             | modelo nao corrompa leitura: vetor de dimensao divergente e
+             | Embedding como sequência de floats de 32 bits, não JSON. BLOB
+             | acomoda até 16.384 dimensões, muito acima dos 1.536 do modelo
+             | pequeno em uso. A dimensão fica na própria linha para que trocar de
+             | modelo não corrompa leitura: vetor de dimensão divergente e
              | ignorado na busca e sinalizado pelo diagnostico.
              |
              | A justificativa completa esta no ADR 0001.
@@ -150,7 +150,7 @@ return new class extends Migration
             $table->foreignId('conversation_flow_id')->nullable()->constrained(indexName: 'kr_flow_fk')->nullOnDelete();
             $table->foreignId('ai_run_id')->nullable()->constrained(indexName: 'kr_run_fk')->nullOnDelete();
 
-            // Consulta truncada. Serve para auditar o que foi buscado, nao para
+            // Consulta truncada. Serve para auditar o que foi buscado, não para
             // reconstruir a mensagem da pessoa.
             $table->text('query_text')->nullable();
             $table->string('strategy');
@@ -176,9 +176,9 @@ return new class extends Migration
 
             /*
              | A chave estrangeira permite navegar; o snapshot permite auditar.
-             | Sem o snapshot, excluir um documento apagaria a explicacao de toda
+             | Sem o snapshot, excluir um documento apagaria a explicação de toda
              | resposta que ele sustentou — e o escopo exige que documento
-             | obsoleto saia da busca sem apagar historico.
+             | obsoleto saia da busca sem apagar histórico.
              */
             $table->foreignId('knowledge_chunk_id')->nullable()->constrained(indexName: 'krc_chunk_fk')->nullOnDelete();
             $table->foreignId('knowledge_document_id')->nullable()->constrained(indexName: 'krc_document_fk')->nullOnDelete();

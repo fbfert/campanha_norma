@@ -18,7 +18,7 @@ class WhatsAppConnectionEventFactory extends Factory
             'whatsapp_connection_id' => WhatsAppConnection::factory(),
             'event_type' => 'service_started',
             'status' => WhatsAppConnectionStatus::Disconnected,
-            'description' => 'Evento tecnico de teste.',
+            'description' => 'Evento técnico de teste.',
             'metadata' => [],
         ];
     }

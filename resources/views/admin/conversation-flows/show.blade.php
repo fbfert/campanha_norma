@@ -6,15 +6,15 @@
         </div>
         <p><strong>Status:</strong> {{ $flow->status->label() }}</p>
         <p>{{ $flow->description }}</p>
-        <p><strong>Modelo de apresentacao:</strong> {{ $flow->presentationTemplate?->name ?? 'Texto livre' }}</p>
-        <p><strong>Texto de apresentacao:</strong></p>
+        <p><strong>Modelo de apresentação:</strong> {{ $flow->presentationTemplate?->name ?? 'Texto livre' }}</p>
+        <p><strong>Texto de apresentação:</strong></p>
         <pre style="white-space:pre-wrap;">{{ $flow->presentation_text }}</pre>
         <p><strong>Texto de agradecimento:</strong></p>
         <pre style="white-space:pre-wrap;">{{ $flow->thank_you_text }}</pre>
         <p><strong>Texto de recusa:</strong></p>
         <pre style="white-space:pre-wrap;">{{ $flow->permission_denied_text }}</pre>
         <p><strong>Perguntas principais:</strong> {{ $flow->max_main_questions }} | <strong>Aprofundamentos:</strong> {{ $flow->max_followups }} | <strong>Validade:</strong> {{ $flow->validity_hours }} horas</p>
-        <p><strong>Avisar que a mensagem e automatica:</strong> {{ $flow->transparency_enabled ? 'Sim' : 'Nao' }}</p>
+        <p><strong>Avisar que a mensagem e automática:</strong> {{ $flow->transparency_enabled ? 'Sim' : 'Não' }}</p>
         <pre style="white-space:pre-wrap;">{{ $flow->transparency_text }}</pre>
         <p class="muted">Criado por {{ $flow->creator?->name ?? '-' }} em {{ $flow->created_at?->format($dateTimeFormat) }} | Atualizado em {{ $flow->updated_at?->format($dateTimeFormat) }}</p>
     </section>
@@ -25,7 +25,7 @@
         </div>
         <div class="table-wrap">
             <table>
-                <thead><tr><th>Titulo interno</th><th>Texto</th><th>Categoria</th><th>Peso</th><th>Ordem</th><th>Ativa</th><th>Versao</th><th>Acoes</th></tr></thead>
+                <thead><tr><th>Título interno</th><th>Texto</th><th>Categoria</th><th>Peso</th><th>Ordem</th><th>Ativa</th><th>Versão</th><th>Ações</th></tr></thead>
                 <tbody>
                     @forelse($flow->questions as $question)
                         <tr>
@@ -34,7 +34,7 @@
                             <td>{{ $question->category ?: '-' }}</td>
                             <td>{{ $question->weight }}</td>
                             <td>{{ $question->display_order }}</td>
-                            <td>{{ $question->is_active ? 'Sim' : 'Nao' }}</td>
+                            <td>{{ $question->is_active ? 'Sim' : 'Não' }}</td>
                             <td>{{ $question->version }}</td>
                             <td class="actions">@can('conversation_automation.manage_questions')<a class="btn ghost" href="{{ route('admin.conversation-flows.questions.edit', [$flow, $question]) }}">Editar</a><form method="post" action="{{ route('admin.conversation-flows.questions.destroy', [$flow, $question]) }}" onsubmit="return confirm('Excluir esta pergunta?')">@csrf @method('delete')<button class="btn danger" type="submit">Excluir</button></form>@endcan</td>
                         </tr>

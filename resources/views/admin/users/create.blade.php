@@ -1,4 +1,4 @@
-<x-layouts.app title="Cadastrar usuario" breadcrumbs="Inicio / Usuarios / Cadastrar">
+<x-layouts.app title="Cadastrar usuário" breadcrumbs="Inicio / Usuarios / Cadastrar">
     <section class="card">
         <form method="post" action="{{ route('admin.users.store') }}">
             @csrf

@@ -7,16 +7,16 @@ use App\Models\ConversationFlow;
 use Illuminate\Support\Carbon;
 
 /**
- * Materializacao das metricas diarias de participacao.
+ * Materialização das métricas diárias de participação.
  *
- * A reconstrucao e idempotente por construcao: a chave natural e (dia, fluxo) e
+ * A reconstrução e idempotente por construção: a chave natural e (dia, fluxo) e
  * a escrita e `updateOrCreate`. Rodar o mesmo dia duas vezes produz o mesmo
- * estado, e reconstruir um dia antigo depois de uma correcao humana substitui
+ * estado, e reconstruir um dia antigo depois de uma correção humana substitui
  * os valores em vez de somar a eles.
  *
  * O fluxo nulo representa o total do dia. A coluna auxiliar `flow_key` existe
- * porque MySQL nao considera dois nulos iguais em indice unico: sem ela, a
- * linha de total viraria uma linha nova a cada reconstrucao.
+ * porque MySQL não considera dois nulos iguais em índice único: sem ela, a
+ * linha de total viraria uma linha nova a cada reconstrução.
  */
 class DailyMetricBuilder
 {
@@ -41,7 +41,7 @@ class DailyMetricBuilder
     }
 
     /**
-     * Reconstroi um unico dia: uma linha por fluxo mais a linha de total.
+     * Reconstroi um único dia: uma linha por fluxo mais a linha de total.
      */
     public function rebuildDay(Carbon $day): int
     {
@@ -67,12 +67,12 @@ class DailyMetricBuilder
         $firstReply = $this->participation->firstReply($start, $end, $flowId);
         $flowKey = $flowId ?? self::TOTAL_KEY;
 
-        // A busca usa `whereDate` de proposito, em vez de `updateOrCreate` com
+        // A busca usa `whereDate` de propósito, em vez de `updateOrCreate` com
         // igualdade simples. Bancos diferentes guardam a coluna de data de
         // formas diferentes — um trunca para `2026-07-30`, outro mantem
-        // `2026-07-30 00:00:00` — e uma comparacao literal acerta em um e erra
+        // `2026-07-30 00:00:00` — e uma comparação literal acerta em um e erra
         // no outro. Errar aqui significa inserir linha nova a cada
-        // reconstrucao, ou seja, perder exatamente a idempotencia que esta
+        // reconstrução, ou seja, perder exatamente a idempotência que esta
         // classe existe para garantir.
         $existing = ConversationDailyMetric::query()
             ->whereDate('date', $start->toDateString())

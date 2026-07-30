@@ -11,18 +11,18 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 /**
- * Subetapa 9E: protecoes transversais.
+ * Subetapa 9E: proteções transversais.
  *
- * Sao tres regras puras que valem para toda tela e toda exportacao. Testadas
- * isoladamente porque, se qualquer uma falhar, ela falha em silencio: uma
- * planilha executa a formula sem avisar, uma celula pequena identifica sem
- * avisar, e um pseudonimo estavel entre arquivos permite cruzamento sem avisar.
+ * São três regras puras que valem para toda tela e toda exportação. Testadas
+ * isoladamente porque, se qualquer uma falhar, ela falha em silêncio: uma
+ * planilha executa a fórmula sem avisar, uma célula pequena identifica sem
+ * avisar, e um pseudônimo estável entre arquivos permite cruzamento sem avisar.
  */
 class AnalyticsProtectionsTest extends TestCase
 {
     use RefreshDatabase;
 
-    // --- Injecao de formula ---------------------------------------------------
+    // --- Injeção de fórmula ---------------------------------------------------
 
     public static function dangerousCells(): array
     {
@@ -49,14 +49,14 @@ class AnalyticsProtectionsTest extends TestCase
     {
         $sanitizer = new SpreadsheetValueSanitizer;
 
-        $this->assertSame('Saude publica', $sanitizer->value('Saude publica'));
+        $this->assertSame('Saúde pública', $sanitizer->value('Saúde pública'));
         $this->assertSame('', $sanitizer->value(''));
         $this->assertNull($sanitizer->value(null));
     }
 
     /**
-     * Numero precisa continuar numero: transformar em texto quebraria soma na
-     * planilha, e o risco de formula esta em texto, nao em inteiro.
+     * Número precisa continuar número: transformar em texto quebraria soma na
+     * planilha, e o risco de fórmula esta em texto, não em inteiro.
      */
     public function test_numbers_are_not_converted_to_text(): void
     {
@@ -74,7 +74,7 @@ class AnalyticsProtectionsTest extends TestCase
         $this->assertSame(['tema' => '\'=HYPERLINK("x")', 'total' => 10], $row);
     }
 
-    // --- Supressao de grupo pequeno -------------------------------------------
+    // --- Supressão de grupo pequeno -------------------------------------------
 
     public function test_a_cell_below_the_minimum_is_suppressed(): void
     {
@@ -87,8 +87,8 @@ class AnalyticsProtectionsTest extends TestCase
     }
 
     /**
-     * Zero nao identifica ninguem, e transformar zero em suprimido esconderia
-     * ausencia de dado — que costuma ser a informacao mais importante da tela.
+     * Zero não identifica ninguém, e transformar zero em suprimido esconderia
+     * ausência de dado — que costuma ser a informação mais importante da tela.
      */
     public function test_zero_is_never_suppressed(): void
     {
@@ -105,15 +105,15 @@ class AnalyticsProtectionsTest extends TestCase
     }
 
     /**
-     * Linha suprimida continua na lista. Remove-la faria a soma das visiveis
-     * nao bater com o total, e quem lesse concluiria que faltam registros.
+     * Linha suprimida continua na lista. Remove-la faria a soma das visíveis
+     * não bater com o total, e quem lesse concluiria que faltam registros.
      */
     public function test_a_suppressed_row_stays_in_the_list_marked(): void
     {
         app(SystemSettingService::class)->updateMany(['analytics.minimum_cell_size' => '5']);
 
         $rows = app(SmallGroupSuppressor::class)->rows([
-            ['name' => 'Saude', 'total' => 40],
+            ['name' => 'Saúde', 'total' => 40],
             ['name' => 'Vila pequena', 'total' => 2],
         ]);
 
@@ -124,7 +124,7 @@ class AnalyticsProtectionsTest extends TestCase
         $this->assertTrue($rows[1]['suppressed']);
     }
 
-    // --- Anonimizacao ---------------------------------------------------------
+    // --- Anonimização ---------------------------------------------------------
 
     public function test_the_phone_keeps_only_the_last_four_digits(): void
     {
@@ -153,9 +153,9 @@ class AnalyticsProtectionsTest extends TestCase
     }
 
     /**
-     * O ponto que sustenta a anonimizacao inteira: com sal fixo, duas
-     * exportacoes de periodos diferentes teriam o mesmo pseudonimo para a mesma
-     * pessoa, e cruzar as duas reconstruiria o historico dela.
+     * O ponto que sustenta a anonimização inteira: com sal fixo, duas
+     * exportações de períodos diferentes teriam o mesmo pseudônimo para a mesma
+     * pessoa, e cruzar as duas reconstruiria o histórico dela.
      */
     public function test_two_exports_never_produce_the_same_pseudonym(): void
     {

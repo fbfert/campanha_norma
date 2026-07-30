@@ -15,49 +15,49 @@ use Illuminate\Support\Facades\Storage;
 /**
  * Diagnostico da camada de conhecimento.
  *
- * Nao chama o provedor de embeddings nem executa o antivirus sobre nenhum
- * arquivo: verifica configuracao e estado. Diagnostico que gasta cota ou tempo
- * de scanner deixa de ser rodado justamente quando e necessario.
+ * Não chama o provedor de embeddings nem executa o antivirus sobre nenhum
+ * arquivo: verifica configuração e estado. Diagnostico que gasta cota ou tempo
+ * de scanner deixa de ser rodado justamente quando e necessário.
  */
 class KnowledgeDiagnoseCommand extends Command
 {
     protected $signature = 'knowledge:diagnose {--base= : Limita a uma base pelo id}';
 
-    protected $description = 'Verifica configuracao, provedores e estado da base de conhecimento.';
+    protected $description = 'Verifica configuração, provedores e estado da base de conhecimento.';
 
     public function handle(
         KnowledgeGuard $guard,
         KnowledgeProviderManager $providers,
         AntivirusScanner $antivirus,
     ): int {
-        $this->line('== Configuracao ==');
-        $this->line('Recuperacao ligada: '.($guard->enabled() ? 'sim' : 'nao'));
-        $this->line('Estrategia: '.$guard->strategy()->value);
+        $this->line('== Configuração ==');
+        $this->line('Recuperação ligada: '.($guard->enabled() ? 'sim' : 'não'));
+        $this->line('Estratégia: '.$guard->strategy()->value);
         $this->line('top_k: '.$guard->topK().' | threshold: '.$guard->threshold().' | contexto: '.$guard->maxContextChars().' caracteres');
-        $this->line('Citacoes visiveis ao contato: '.($guard->showCitationsToContact() ? 'sim' : 'nao'));
+        $this->line('Citações visíveis ao contato: '.($guard->showCitationsToContact() ? 'sim' : 'não'));
 
         $this->newLine();
         $this->line('== Provedores ==');
         $provider = $providers->provider();
         $embeddings = $providers->embeddings();
-        $this->line('Armazenamento: '.$provider->name().' | configurado: '.($provider->isConfigured() ? 'sim' : 'nao'));
-        $this->line('Embeddings: '.$embeddings->name().' | configurado: '.($embeddings->isConfigured() ? 'sim' : 'nao'));
+        $this->line('Armazenamento: '.$provider->name().' | configurado: '.($provider->isConfigured() ? 'sim' : 'não'));
+        $this->line('Embeddings: '.$embeddings->name().' | configurado: '.($embeddings->isConfigured() ? 'sim' : 'não'));
 
         if ($guard->strategy()->usesEmbeddings() && ! $embeddings->isConfigured()) {
-            $this->warn('A estrategia configurada usa vetores, mas nao ha provedor de embeddings configurado.');
+            $this->warn('A estratégia configurada usa vetores, mas não ha provedor de embeddings configurado.');
         }
 
         $this->newLine();
         $this->line('== Ferramentas externas ==');
-        $this->line('Antivirus exigido: '.($antivirus->required() ? 'sim' : 'nao'));
-        $this->line('Antivirus disponivel: '.($antivirus->available() ? 'sim' : 'nao'));
+        $this->line('Antivirus exigido: '.($antivirus->required() ? 'sim' : 'não'));
+        $this->line('Antivirus disponível: '.($antivirus->available() ? 'sim' : 'não'));
 
         if ($antivirus->required() && ! $antivirus->available()) {
-            $this->warn('Antivirus exigido e ausente: todo upload sera recusado.');
+            $this->warn('Antivirus exigido e ausente: todo upload será recusado.');
         }
 
         $pdfCommand = trim((string) config('knowledge.pdf_text_command'));
-        $this->line('Extrator de PDF: '.($pdfCommand === '' ? 'nao configurado' : $pdfCommand));
+        $this->line('Extrator de PDF: '.($pdfCommand === '' ? 'não configurado' : $pdfCommand));
 
         $this->newLine();
         $this->line('== Estado ==');
@@ -96,7 +96,7 @@ class KnowledgeDiagnoseCommand extends Command
             ];
         }
 
-        $this->table(['Base', 'Situacao', 'Fluxos', 'Documentos', 'Aprovados', 'Falhos', 'Trechos'], $rows);
+        $this->table(['Base', 'Situação', 'Fluxos', 'Documentos', 'Aprovados', 'Falhos', 'Trechos'], $rows);
 
         if ($missingFiles > 0) {
             $this->warn("{$missingFiles} documento(s) com arquivo ausente no disco.");

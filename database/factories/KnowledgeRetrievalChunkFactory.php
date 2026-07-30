@@ -27,8 +27,8 @@ class KnowledgeRetrievalChunkFactory extends Factory
             'document_title_snapshot' => 'Canais de atendimento do gabinete',
             'document_version' => 1,
             'chunk_reference' => (string) $this->faker->unique()->numberBetween(1, 100000),
-            // O snapshot e o ponto do model: ele precisa sobreviver a exclusao do
-            // trecho, entao a fixture o preenche sempre.
+            // O snapshot e o ponto do model: ele precisa sobreviver a exclusão do
+            // trecho, então a fixture o preenche sempre.
             'content_snapshot' => $content,
             'score' => 0.9,
             'position' => 0,

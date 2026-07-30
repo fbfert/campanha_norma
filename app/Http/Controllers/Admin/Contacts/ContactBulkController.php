@@ -37,7 +37,7 @@ class ContactBulkController extends Controller
         }
         $audit->log('contacts.bulk_tags', 'Etiquetas aplicadas em massa.', null, null, ['tag' => $tag->name, 'mode' => $data['mode'], 'count' => $count]);
 
-        return back()->with('success', 'Acao em massa concluida.');
+        return back()->with('success', 'Ação em massa concluída.');
     }
 
     public function status(Request $request, ContactQueryService $queryService, ContactDataService $service): RedirectResponse
@@ -59,7 +59,7 @@ class ContactBulkController extends Controller
             $service->setDoNotContact($contact, (bool) $data['do_not_contact'], $data['do_not_contact_reason'] ?? null);
         }
 
-        return back()->with('success', 'Restricao atualizada em massa.');
+        return back()->with('success', 'Restrição atualizada em massa.');
     }
 
     public function destroy(Request $request, ContactQueryService $queryService, ContactDataService $service): RedirectResponse
@@ -69,6 +69,6 @@ class ContactBulkController extends Controller
             $service->delete($contact);
         }
 
-        return back()->with('success', 'Contatos excluidos logicamente.');
+        return back()->with('success', 'Contatos excluídos logicamente.');
     }
 }

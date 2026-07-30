@@ -41,7 +41,7 @@ class ReplyInterruptionService
         $count = $query->update([
             'processing_status' => MessageRecipientProcessingStatus::Skipped,
             'error_code' => 'CONTACT_REPLIED',
-            'error_message' => 'O contato respondeu e saiu dos envios automaticos pendentes.',
+            'error_message' => 'O contato respondeu e saiu dos envios automáticos pendentes.',
             'failed_at' => now(),
             'updated_at' => now(),
         ]);

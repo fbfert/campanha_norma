@@ -7,8 +7,8 @@ use App\Exceptions\Knowledge\KnowledgeProviderException;
 /**
  * Texto plano e Markdown.
  *
- * Markdown e tratado como texto: os marcadores de titulo servem depois para
- * identificar secao no chunker, entao removelos aqui perderia informacao.
+ * Markdown e tratado como texto: os marcadores de título servem depois para
+ * identificar seção no chunker, então removelos aqui perderia informação.
  */
 class PlainTextExtractor implements TextExtractor
 {

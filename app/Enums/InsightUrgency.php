@@ -12,7 +12,7 @@ enum InsightUrgency: string
     {
         return match ($this) {
             self::Low => 'Baixa',
-            self::Medium => 'Media',
+            self::Medium => 'Média',
             self::High => 'Alta',
         };
     }

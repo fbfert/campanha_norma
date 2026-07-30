@@ -13,8 +13,8 @@ use Illuminate\Support\Facades\Http;
 /**
  * Provedor para APIs de chat no formato OpenAI.
  *
- * Serve OpenAI, Azure OpenAI, OpenRouter, Groq e servidores locais compativeis.
- * A troca de fornecedor e feita apenas por configuracao.
+ * Serve OpenAI, Azure OpenAI, OpenRouter, Groq e servidores locais compatíveis.
+ * A troca de fornecedor e feita apenas por configuração.
  */
 class OpenAiCompatibleProvider implements AiProvider
 {
@@ -51,7 +51,7 @@ class OpenAiCompatibleProvider implements AiProvider
                     ['role' => 'system', 'content' => $request->systemPrompt],
                     ['role' => 'user', 'content' => $request->userPrompt],
                 ],
-                // Saida estruturada exigida no proprio protocolo. A validacao
+                // Saída estruturada exigida no próprio protocolo. A validação
                 // local roda de qualquer forma, sem confiar no provedor.
                 'response_format' => [
                     'type' => 'json_schema',
@@ -65,7 +65,7 @@ class OpenAiCompatibleProvider implements AiProvider
         } catch (ConnectionException $exception) {
             throw new AiProviderException(
                 $this->isTimeout($exception) ? AiProviderException::TIMEOUT : AiProviderException::SERVICE_UNAVAILABLE,
-                'Provedor de IA indisponivel.',
+                'Provedor de IA indisponível.',
                 null,
                 $exception::class,
             );
@@ -106,7 +106,7 @@ class OpenAiCompatibleProvider implements AiProvider
             $status === 401 || $status === 403 => AiProviderException::UNAUTHORIZED,
             $status === 408 => AiProviderException::TIMEOUT,
             $status === 429 => AiProviderException::RATE_LIMITED,
-            // Demais erros do cliente indicam pedido invalido para este modelo
+            // Demais erros do cliente indicam pedido inválido para este modelo
             // ou schema. Repetir gastaria tokens sem chance de sucesso.
             $status >= 400 && $status < 500 => AiProviderException::BAD_REQUEST,
             default => AiProviderException::SERVICE_UNAVAILABLE,
@@ -114,7 +114,7 @@ class OpenAiCompatibleProvider implements AiProvider
 
         throw new AiProviderException(
             $code,
-            'Falha na comunicacao com o provedor de IA.',
+            'Falha na comunicação com o provedor de IA.',
             $response->status(),
             $this->detail($response),
         );
@@ -127,7 +127,7 @@ class OpenAiCompatibleProvider implements AiProvider
         if (! is_array($payload)) {
             throw new AiProviderException(
                 AiProviderException::INVALID_RESPONSE,
-                'Resposta do provedor de IA nao e um objeto valido.',
+                'Resposta do provedor de IA não e um objeto valido.',
                 $response->status(),
             );
         }
@@ -137,7 +137,7 @@ class OpenAiCompatibleProvider implements AiProvider
         if (! is_string($content) || trim($content) === '') {
             throw new AiProviderException(
                 AiProviderException::INVALID_RESPONSE,
-                'Resposta do provedor de IA sem conteudo.',
+                'Resposta do provedor de IA sem conteúdo.',
                 $response->status(),
             );
         }

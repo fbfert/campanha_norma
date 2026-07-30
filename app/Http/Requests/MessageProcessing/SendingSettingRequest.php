@@ -34,10 +34,10 @@ class SendingSettingRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'max_per_minute.lte' => 'O limite por minuto nao pode ser superior ao limite por hora.',
-            'max_per_hour.lte' => 'O limite por hora nao pode ser superior ao limite diario.',
+            'max_per_minute.lte' => 'O limite por minuto não pode ser superior ao limite por hora.',
+            'max_per_hour.lte' => 'O limite por hora não pode ser superior ao limite diário.',
             'allowed_weekdays.min' => 'Selecione pelo menos um dia permitido.',
-            'start_time.different' => 'O horario inicial deve ser diferente do horario final.',
+            'start_time.different' => 'O horário inicial deve ser diferente do horário final.',
         ];
     }
 }

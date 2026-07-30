@@ -50,7 +50,7 @@ class InsightTopic extends Model
     }
 
     /**
-     * Sinonimos cadastrados, separados por barra vertical.
+     * Sinônimos cadastrados, separados por barra vertical.
      *
      * @return array<int, string>
      */
@@ -64,8 +64,8 @@ class InsightTopic extends Model
     }
 
     /**
-     * Um tema esta em uso quando ja foi atribuido a algum insight, como tema
-     * principal ou secundario. Temas em uso nunca sao excluidos.
+     * Um tema esta em uso quando já foi atribuído a algum insight, como tema
+     * principal ou secundário. Temas em uso nunca são excluídos.
      */
     public function isInUse(): bool
     {

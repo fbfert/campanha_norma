@@ -1,6 +1,6 @@
 <x-layouts.app title="Temas de insights" breadcrumbs="Inicio / Pesquisa conversacional / Temas">
     <section class="card">
-        <p class="muted">Taxonomia usada para agrupar as respostas. O modelo nunca cria temas: a saida livre e mapeada para um tema cadastrado ou para o tema de fallback.</p>
+        <p class="muted">Taxonomia usada para agrupar as respostas. O modelo nunca cria temas: a saída livre e mapeada para um tema cadastrado ou para o tema de fallback.</p>
         @can('ai_insights.manage_taxonomy')
             <div class="actions"><a class="btn" href="{{ route('admin.insight-topics.create') }}">Novo tema</a></div>
         @endcan
@@ -10,7 +10,7 @@
         <div class="table-wrap">
             <table>
                 <thead>
-                    <tr><th>Ordem</th><th>Tema</th><th>Identificador</th><th>Pai</th><th>Sinonimos</th><th>Insights</th><th>Situacao</th><th>Acoes</th></tr>
+                    <tr><th>Ordem</th><th>Tema</th><th>Identificador</th><th>Pai</th><th>Sinônimos</th><th>Insights</th><th>Situação</th><th>Ações</th></tr>
                 </thead>
                 <tbody>
                     @forelse($topics as $topic)

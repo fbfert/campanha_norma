@@ -5,17 +5,17 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * Etapa 9E. Metricas diarias de participacao.
+ * Etapa 9E. Métricas diárias de participação.
  *
- * Guarda apenas contagem que aparece no painel executivo e nao muda depois do
+ * Guarda apenas contagem que aparece no painel executivo e não muda depois do
  * dia fechado. Tema, geografia e detalhamento ficam em consulta ao vivo, porque
- * sao recortados de muitas formas e mudam quando alguem corrige uma
- * classificacao.
+ * são recortados de muitas formas e mudam quando alguém corrige uma
+ * classificação.
  *
  * A chave natural e (dia, fluxo). O fluxo aceita nulo para representar o total
  * do dia somando todos os fluxos, e a coluna auxiliar `flow_key` existe porque
- * MySQL nao trata nulos como iguais em indice unico: sem ela, reconstruir o
- * mesmo dia criaria linha nova a cada execucao em vez de atualizar.
+ * MySQL não trata nulos como iguais em índice único: sem ela, reconstruir o
+ * mesmo dia criaria linha nova a cada execução em vez de atualizar.
  */
 return new class extends Migration
 {

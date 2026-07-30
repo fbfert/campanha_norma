@@ -50,7 +50,7 @@ class ReportsMonitoringModuleTest extends TestCase
         $this->actingAs($reader)->get(route('admin.histories.messages.index'))->assertOk();
         $this->actingAs($reader)->get(route('admin.histories.messages.show', $recipient))
             ->assertOk()
-            ->assertSee('Conteudo protegido');
+            ->assertSee('Conteúdo protegido');
 
         $this->actingAs($admin)->get(route('admin.histories.messages.show', $recipient))
             ->assertOk()
@@ -62,7 +62,7 @@ class ReportsMonitoringModuleTest extends TestCase
     {
         $admin = $this->userWithRole('administrador');
         $recipient = $this->sentRecipient(['error_code' => null]);
-        $failed = $this->sentRecipient(['processing_status' => MessageRecipientProcessingStatus::FailedPermanent, 'error_code' => 'INVALID_PHONE', 'error_message' => 'Telefone invalido']);
+        $failed = $this->sentRecipient(['processing_status' => MessageRecipientProcessingStatus::FailedPermanent, 'error_code' => 'INVALID_PHONE', 'error_message' => 'Telefone inválido']);
 
         $this->actingAs($admin)->get(route('admin.histories.messages.index', ['message_batch_id' => $recipient->message_batch_id, 'status' => 'sent']))
             ->assertOk()
@@ -148,7 +148,7 @@ class ReportsMonitoringModuleTest extends TestCase
         $batch = MessageBatch::factory()->create(['status' => MessageBatchStatus::Completed, 'total_sent' => 99]);
         MessageBatchRecipient::factory()->create(['message_batch_id' => $batch->id, 'processing_status' => MessageRecipientProcessingStatus::Sent]);
 
-        $this->actingAs($admin)->get(route('admin.monitoring.index'))->assertOk()->assertSee('Saude operacional');
+        $this->actingAs($admin)->get(route('admin.monitoring.index'))->assertOk()->assertSee('Saúde operacional');
         $this->actingAs($admin)->post(route('admin.maintenance.sync-counters'), ['confirm' => '1'])->assertRedirect();
 
         $this->assertSame(1, $batch->fresh()->total_sent);

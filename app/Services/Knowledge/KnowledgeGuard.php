@@ -9,9 +9,9 @@ use App\Services\SystemSettingService;
 /**
  * Porta de entrada da camada de conhecimento.
  *
- * Concentra a unica condicao que liga a recuperacao: a chave global esta ligada e
- * existe base ativa associada ao fluxo. Deixar essa decisao em um lugar so evita
- * que ela seja reimplementada com criterio diferente em cada chamador.
+ * Concentra a única condição que liga a recuperação: a chave global esta ligada e
+ * existe base ativa associada ao fluxo. Deixar essa decisão em um lugar so evita
+ * que ela seja reimplementada com critério diferente em cada chamador.
  */
 class KnowledgeGuard
 {
@@ -23,7 +23,7 @@ class KnowledgeGuard
     }
 
     /**
-     * Bases que participam da recuperacao para este fluxo.
+     * Bases que participam da recuperação para este fluxo.
      *
      * @return array<int, int>
      */
@@ -37,8 +37,8 @@ class KnowledgeGuard
     }
 
     /**
-     * Um fluxo sem base ativa associada nao produz recuperacao alguma. E o
-     * comportamento correto: a base e opt-in por fluxo, nao global.
+     * Um fluxo sem base ativa associada não produz recuperação alguma. E o
+     * comportamento correto: a base e opt-in por fluxo, não global.
      */
     public function groundingEnabledForFlow(?ConversationFlow $flow): bool
     {

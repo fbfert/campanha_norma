@@ -95,7 +95,7 @@ class WhatsAppTestMessageService
     public function recordDuplicateRequest(string $requestId): void
     {
         if (WhatsAppTestMessage::query()->where('request_id', $requestId)->exists()) {
-            throw ValidationException::withMessages(['request_id' => 'Esta solicitacao de envio ja foi registrada.']);
+            throw ValidationException::withMessages(['request_id' => 'Esta solicitação de envio já foi registrada.']);
         }
     }
 
@@ -106,7 +106,7 @@ class WhatsAppTestMessageService
         }
 
         if ($contact->do_not_contact) {
-            throw ValidationException::withMessages(['contact_id' => 'Este contato esta marcado como nao contatar.']);
+            throw ValidationException::withMessages(['contact_id' => 'Este contato esta marcado como não contatar.']);
         }
 
         if (blank($contact->phone_normalized)) {

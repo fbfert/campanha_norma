@@ -8,8 +8,8 @@ use ZipArchive;
 /**
  * DOCX.
  *
- * Um DOCX e um ZIP com XML dentro. `ZipArchive` esta presente no ambiente, entao
- * a extracao nao precisa de nenhuma dependencia nova: lemos
+ * Um DOCX e um ZIP com XML dentro. `ZipArchive` esta presente no ambiente, então
+ * a extração não precisa de nenhuma dependência nova: lemos
  * `word/document.xml`, transformamos fim de paragrafo e quebra de linha em
  * newline e removemos o restante das tags.
  */
@@ -30,7 +30,7 @@ class DocxExtractor implements TextExtractor
         $zip = new ZipArchive;
 
         if ($zip->open($path) !== true) {
-            throw KnowledgeProviderException::code(KnowledgeProviderException::INVALID_RESPONSE, 'DOCX ilegivel.');
+            throw KnowledgeProviderException::code(KnowledgeProviderException::INVALID_RESPONSE, 'DOCX ilegível.');
         }
 
         $xml = $zip->getFromName('word/document.xml');
@@ -41,7 +41,7 @@ class DocxExtractor implements TextExtractor
         }
 
         // Estrutura de paragrafo e quebra viram newline antes de as tags cairem,
-        // senao o documento inteiro colapsa em uma linha unica.
+        // senão o documento inteiro colapsa em uma linha única.
         $xml = preg_replace('/<w:(p|br|tab)\b[^>]*\/?>/', "\n", $xml) ?? $xml;
         $xml = str_replace('</w:p>', "\n", $xml);
 

@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * Registro imutavel de correcao humana. Preserva o valor original.
+ * Registro imutável de correção humana. Preserva o valor original.
  */
 class ConversationInsightCorrection extends Model
 {

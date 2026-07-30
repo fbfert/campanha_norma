@@ -3,10 +3,10 @@
 namespace App\Data\Knowledge;
 
 /**
- * Trecho ja extraido, sanitizado e pronto para indexacao.
+ * Trecho já extraido, sanitizado e pronto para indexação.
  *
- * O embedding e opcional: a estrategia lexica nao precisa dele, e a vetorial o
- * recebe preenchido pelo servico de indexacao.
+ * O embedding e opcional: a estratégia léxica não precisa dele, e a vetorial o
+ * recebe preenchido pelo serviço de indexação.
  */
 readonly class PreparedChunk
 {
@@ -29,8 +29,8 @@ readonly class PreparedChunk
 
     public function tokenEstimate(): int
     {
-        // Estimativa deliberadamente grosseira: serve para limitar contexto, nao
-        // para cobranca. Portugues fica proximo de quatro caracteres por token.
+        // Estimativa deliberadamente grosseira: serve para limitar contexto, não
+        // para cobrança. Português fica próximo de quatro caracteres por token.
         return (int) ceil(mb_strlen($this->content) / 4);
     }
 

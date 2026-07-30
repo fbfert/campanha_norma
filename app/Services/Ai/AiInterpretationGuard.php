@@ -9,26 +9,26 @@ use App\Models\ConversationMessage;
 use App\Services\SystemSettingService;
 
 /**
- * Porta unica antes de qualquer interpretacao.
+ * Porta única antes de qualquer interpretação.
  *
- * As chaves sao deliberadamente separadas por responsabilidade, para que uma
- * unica configuracao nunca misture motor de fluxo, analise por IA e futura
- * geracao de respostas:
+ * As chaves são deliberadamente separadas por responsabilidade, para que uma
+ * única configuração nunca misture motor de fluxo, análise por IA e futura
+ * geração de respostas:
  *
- *   conversation_automation.enabled     motor deterministico da 9A
+ *   conversation_automation.enabled     motor determinístico da 9A
  *   ai.enabled                          chave mestra da infraestrutura de IA
- *   ai.analysis_enabled                 classificacao e extracao da 9B
+ *   ai.analysis_enabled                 classificação e extração da 9B
  *   ai.response_generation_enabled      reservado para a 9C, sempre desligado aqui
  *   ai.auto_send_enabled                reservado para a 9C, sempre desligado aqui
  *
- * Devolve sempre um motivo legivel, para auditoria e para a tela de revisao.
+ * Devolve sempre um motivo legível, para auditoria e para a tela de revisão.
  */
 class AiInterpretationGuard
 {
     public function __construct(private readonly SystemSettingService $settings) {}
 
     /**
-     * Chave mestra da infraestrutura de IA. Sozinha nao habilita nada.
+     * Chave mestra da infraestrutura de IA. Sozinha não habilita nada.
      */
     public function enabled(): bool
     {
@@ -36,7 +36,7 @@ class AiInterpretationGuard
     }
 
     /**
-     * Habilita a analise da 9B: classificacao e extracao.
+     * Habilita a análise da 9B: classificação e extração.
      */
     public function analysisEnabled(): bool
     {
@@ -54,9 +54,9 @@ class AiInterpretationGuard
     }
 
     /**
-     * Reservado para a Etapa 9C. Nenhum caminho de codigo da 9B consulta este
-     * valor para decidir alguma coisa: ele existe para que a separacao de
-     * responsabilidades ja esteja explicita e auditavel.
+     * Reservado para a Etapa 9C. Nenhum caminho de código da 9B consulta este
+     * valor para decidir alguma coisa: ele existe para que a separação de
+     * responsabilidades já esteja explícita e auditável.
      */
     public function responseGenerationEnabled(): bool
     {
@@ -64,7 +64,7 @@ class AiInterpretationGuard
     }
 
     /**
-     * Reservado para a Etapa 9C. Envio automatico de resposta gerada por IA.
+     * Reservado para a Etapa 9C. Envio automático de resposta gerada por IA.
      */
     public function autoSendEnabled(): bool
     {
@@ -88,7 +88,7 @@ class AiInterpretationGuard
             return $this->deny('mensagem_nao_recebida');
         }
 
-        // A 9B interpreta respostas de pesquisa, nao conversas avulsas.
+        // A 9B interpreta respostas de pesquisa, não conversas avulsas.
         if (! $state) {
             return $this->deny('sem_contexto_de_pesquisa');
         }

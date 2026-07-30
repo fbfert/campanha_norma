@@ -22,7 +22,7 @@ class RolePermissionSeeder extends Seeder
 
         $roles = [
             'administrador' => ['Administrador', 'Acesso completo ao sistema.', PermissionSlug::cases()],
-            'operador' => ['Operador', 'Operacao administrativa sem gestao sensivel.', [
+            'operador' => ['Operador', 'Operação administrativa sem gestão sensível.', [
                 PermissionSlug::DashboardView,
                 PermissionSlug::ProfileManage,
                 PermissionSlug::ContactsView,
@@ -80,15 +80,15 @@ class RolePermissionSeeder extends Seeder
                 PermissionSlug::ReplySuggestionsView,
                 PermissionSlug::ReplySuggestionsReject,
                 PermissionSlug::ReplySuggestionsFeedback,
-                // Operador prepara a base, mas nao aprova: publicar conteudo
-                // oficial e ato de responsabilidade, nao de operacao.
+                // Operador prepara a base, mas não aprova: publicar conteúdo
+                // oficial e ato de responsabilidade, não de operação.
                 PermissionSlug::KnowledgeView,
                 PermissionSlug::KnowledgeUploadDocuments,
                 PermissionSlug::KnowledgeTestRetrieval,
-                // Etapa 9E. Operador le agregado e conteudo, porque atende e
-                // precisa entender o que foi dito. Nao recebe identificacao
-                // nem exportacao detalhada: ler no sistema e levar uma
-                // planilha com o que as pessoas escreveram sao coisas
+                // Etapa 9E. Operador le agregado e conteúdo, porque atende e
+                // precisa entender o que foi dito. Não recebe identificação
+                // nem exportação detalhada: ler no sistema e levar uma
+                // planilha com o que as pessoas escreveram são coisas
                 // diferentes.
                 PermissionSlug::AnalyticsViewAggregates,
                 PermissionSlug::AnalyticsViewContent,
@@ -110,7 +110,7 @@ class RolePermissionSeeder extends Seeder
                 PermissionSlug::AiInsightsView,
                 PermissionSlug::ReplySuggestionsView,
                 PermissionSlug::KnowledgeView,
-                // Consulta ve numero, nunca texto e nunca quem escreveu.
+                // Consulta ve número, nunca texto e nunca quem escreveu.
                 PermissionSlug::AnalyticsViewAggregates,
             ]],
         ];

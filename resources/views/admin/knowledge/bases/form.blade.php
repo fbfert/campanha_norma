@@ -24,7 +24,7 @@
             </div>
 
             <div>
-                <label for="description">Descricao</label>
+                <label for="description">Descrição</label>
                 <textarea id="description" name="description" rows="2" maxlength="1000">{{ old('description', $base->description) }}</textarea>
             </div>
 
@@ -34,14 +34,14 @@
             </div>
 
             <div>
-                <label for="usage_policy">Politica de uso</label>
+                <label for="usage_policy">Política de uso</label>
                 <textarea id="usage_policy" name="usage_policy" rows="3" maxlength="2000">{{ old('usage_policy', $base->usage_policy) }}</textarea>
-                <p class="muted">Registre aqui o que esta base pode e nao pode sustentar. E o texto que a equipe consulta antes de aprovar um documento.</p>
+                <p class="muted">Registre aqui o que esta base pode e não pode sustentar. E o texto que a equipe consulta antes de aprovar um documento.</p>
             </div>
 
             <fieldset>
                 <legend>Fluxos que podem consultar esta base</legend>
-                <p class="muted">A base e opt-in por fluxo. Um fluxo sem base associada nao produz nenhuma recuperacao.</p>
+                <p class="muted">A base e opt-in por fluxo. Um fluxo sem base associada não produz nenhuma recuperação.</p>
                 @foreach($flows as $flow)
                     <label>
                         <input type="checkbox" name="flow_ids[]" value="{{ $flow->id }}"

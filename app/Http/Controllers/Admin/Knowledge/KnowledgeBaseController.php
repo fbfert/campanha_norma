@@ -16,10 +16,10 @@ use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 /**
- * Administracao das bases de conhecimento.
+ * Administração das bases de conhecimento.
  *
- * Ativar uma base e o ato que a torna alcancavel pela busca. Por isso ele e
- * separado da edicao e registrado em auditoria.
+ * Ativar uma base e o ato que a torna alcancável pela busca. Por isso ele e
+ * separado da edição e registrado em auditoria.
  */
 class KnowledgeBaseController extends Controller
 {
@@ -63,7 +63,7 @@ class KnowledgeBaseController extends Controller
 
         $base = KnowledgeBase::create($data + [
             'slug' => $this->uniqueSlug($data['name']),
-            // Base nova nasce em rascunho, sempre: existir nao e o mesmo que
+            // Base nova nasce em rascunho, sempre: existir não e o mesmo que
             // estar publicada para uso.
             'status' => KnowledgeBaseStatus::Draft,
             'version' => 1,
@@ -118,10 +118,10 @@ class KnowledgeBaseController extends Controller
     }
 
     /**
-     * Mudanca de situacao da base.
+     * Mudança de situação da base.
      *
-     * Sai da edicao de proposito: ativar uma base muda o que a IA pode afirmar,
-     * e isso nao pode ser efeito colateral de salvar um formulario.
+     * Sai da edição de propósito: ativar uma base muda o que a IA pode afirmar,
+     * e isso não pode ser efeito colateral de salvar um formulário.
      */
     public function status(Request $request, KnowledgeBase $base): RedirectResponse
     {
@@ -141,9 +141,9 @@ class KnowledgeBaseController extends Controller
             'approved_at' => $status === KnowledgeBaseStatus::Active ? now() : $base->approved_at,
         ]);
 
-        $this->audit->log('knowledge_base.status_changed', 'Situacao da base alterada.', $base, $before, ['status' => $status->value], $request->user());
+        $this->audit->log('knowledge_base.status_changed', 'Situação da base alterada.', $base, $before, ['status' => $status->value], $request->user());
 
-        return back()->with('status', 'Situacao da base atualizada para '.$status->label().'.');
+        return back()->with('status', 'Situação da base atualizada para '.$status->label().'.');
     }
 
     /**

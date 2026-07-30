@@ -16,12 +16,12 @@ return new class extends Migration
             $table->foreignId('source_message_id')->constrained('conversation_messages', indexName: 'crs_source_fk')->cascadeOnDelete();
 
             /*
-             | MySQL nao possui indice unico parcial. Esta coluna espelha
-             | `source_message_id` enquanto a sugestao esta viva (pendente ou
-             | aprovada) e vira NULL quando ela sai de circulacao. Como o indice
-             | unico aceita multiplos NULL, o efeito e "no maximo uma sugestao
-             | viva por mensagem recebida", sem impedir o historico de
-             | regeneracoes.
+             | MySQL não possui índice único parcial. Esta coluna espelha
+             | `source_message_id` enquanto a sugestão esta viva (pendente ou
+             | aprovada) e vira NULL quando ela sai de circulação. Como o índice
+             | único aceita múltiplos NULL, o efeito e "no máximo uma sugestão
+             | viva por mensagem recebida", sem impedir o histórico de
+             | regenerações.
              */
             $table->unsignedBigInteger('active_source_message_id')->nullable()->unique('crs_active_source_uniq');
 
@@ -34,7 +34,7 @@ return new class extends Migration
             $table->string('follow_up_type')->nullable();
             $table->foreignId('insight_topic_id')->nullable()->constrained(indexName: 'crs_topic_fk')->nullOnDelete();
 
-            // Texto gerado nunca e sobrescrito; a edicao do operador vai para o final.
+            // Texto gerado nunca e sobrescrito; a edição do operador vai para o final.
             $table->text('generated_text')->nullable();
             $table->text('final_text')->nullable();
 
@@ -75,8 +75,8 @@ return new class extends Migration
         });
 
         Schema::table('conversation_messages', function (Blueprint $table): void {
-            // Metadados de autoria de IA. Colunas relacionais, nao JSON: precisam
-            // ser filtraveis e agregaveis pelos relatorios da subetapa seguinte.
+            // Metadados de autoria de IA. Colunas relacionais, não JSON: precisam
+            // ser filtráveis e agregáveis pelos relatórios da subetapa seguinte.
             $table->boolean('generated_by_ai')->default(false)->after('origin');
             $table->unsignedBigInteger('ai_run_id')->nullable()->after('generated_by_ai');
             $table->string('ai_prompt_version')->nullable()->after('ai_run_id');
@@ -93,7 +93,7 @@ return new class extends Migration
         });
 
         Schema::table('conversation_flow_states', function (Blueprint $table): void {
-            // Contador proprio: aprofundamentos confirmados, nao mensagens automaticas.
+            // Contador próprio: aprofundamentos confirmados, não mensagens automáticas.
             $table->unsignedInteger('followups_count')->default(0)->after('automated_messages_count');
             $table->timestamp('last_suggestion_at')->nullable()->after('last_transition_at');
         });

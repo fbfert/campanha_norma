@@ -21,7 +21,7 @@ class IncomingMessageNormalizerService
             'sender_phone' => ['required', 'string', 'max:30'],
             'sender_name' => ['nullable', 'string', 'max:120'],
             'recipient_phone' => ['nullable', 'string', 'max:30'],
-            'message_type' => ['required', 'string', 'in:text,unknown,unsupported,image,audio,video,document,location,contact,sticker'],
+            'message_type' => ['required', 'string', 'in:text,unknown,unsupported,image,audio,vídeo,document,location,contact,sticker'],
             'text' => ['nullable', 'string', 'max:4096'],
             'sent_at' => ['nullable', 'date'],
             'received_at' => ['nullable', 'date'],

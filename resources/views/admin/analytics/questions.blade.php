@@ -3,14 +3,14 @@
 
     <section class="card">
         <p class="muted">
-            O objetivo aqui e clareza e capacidade de coletar opiniao. Nao existe medida de efeito persuasivo, apoio
-            declarado ou intencao de voto — o que estas colunas levam a fazer e reescrever a pergunta, nunca escolher a pessoa.
+            O objetivo aqui e clareza e capacidade de coletar opinião. Não existe medida de efeito persuasivo, apoio
+            declarado ou intenção de voto — o que estas colunas levam a fazer e reescrever a pergunta, nunca escolher a pessoa.
         </p>
     </section>
 
     <section class="card">
-        <h2>Permissao por fluxo</h2>
-        <p class="muted">A mensagem de apresentacao e a unica coisa que a pessoa leu antes de decidir. Taxa baixa aqui e problema do texto de apresentacao, nao das perguntas.</p>
+        <h2>Permissão por fluxo</h2>
+        <p class="muted">A mensagem de apresentação e a única coisa que a pessoa leu antes de decidir. Taxa baixa aqui e problema do texto de apresentação, não das perguntas.</p>
         @if($permissionByFlow === [])
             @include('admin.analytics.partials.empty')
         @else
@@ -27,10 +27,10 @@
     <section class="card">
         <h2>Por pergunta</h2>
         @if($byQuestion === [])
-            @include('admin.analytics.partials.empty', ['message' => 'Nenhuma pergunta foi utilizada no periodo.'])
+            @include('admin.analytics.partials.empty', ['message' => 'Nenhuma pergunta foi utilizada no período.'])
         @else
             <table>
-                <thead><tr><th>Pergunta</th><th>Vezes</th><th>Taxa de resposta</th><th>Taxa de conclusao</th><th>Handoff</th><th>Tamanho medio</th></tr></thead>
+                <thead><tr><th>Pergunta</th><th>Vezes</th><th>Taxa de resposta</th><th>Taxa de conclusão</th><th>Handoff</th><th>Tamanho médio</th></tr></thead>
                 <tbody>@foreach($byQuestion as $row)
                     <tr>
                         <td>{{ $row['title'] }} @unless($row['is_active'])<span class="muted">(inativa)</span>@endunless</td>

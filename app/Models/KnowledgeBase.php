@@ -67,7 +67,7 @@ class KnowledgeBase extends Model
     }
 
     /**
-     * Bases que podem participar de uma recuperacao.
+     * Bases que podem participar de uma recuperação.
      */
     public function scopeRetrievable(Builder $query): Builder
     {

@@ -24,7 +24,7 @@ class UserService
             $user = User::create($data);
             $user->roles()->sync($roleIds);
 
-            app(AuditLogger::class)->log('user.created', 'Usuario criado.', $user, null, $user->only(['name', 'email', 'status']));
+            app(AuditLogger::class)->log('user.created', 'Usuário criado.', $user, null, $user->only(['name', 'email', 'status']));
 
             return $user;
         });
@@ -45,7 +45,7 @@ class UserService
             $user->roles()->sync($roleIds);
             $user->refresh();
 
-            app(AuditLogger::class)->log('user.updated', 'Usuario atualizado.', $user, $old, $user->only(['name', 'email', 'status']));
+            app(AuditLogger::class)->log('user.updated', 'Usuário atualizado.', $user, $old, $user->only(['name', 'email', 'status']));
 
             return $user;
         });
@@ -54,17 +54,17 @@ class UserService
     public function changeStatus(User $actor, User $user, UserStatus $status): void
     {
         if ($actor->is($user) && $status !== UserStatus::Active) {
-            throw ValidationException::withMessages(['status' => 'Voce nao pode bloquear ou inativar sua propria conta.']);
+            throw ValidationException::withMessages(['status' => 'Você não pode bloquear ou inativar sua própria conta.']);
         }
 
         if ($user->hasRole('administrador') && $status !== UserStatus::Active && $this->activeAdministratorCountExcluding($user) === 0) {
-            throw ValidationException::withMessages(['status' => 'Nao e permitido deixar o sistema sem administrador ativo.']);
+            throw ValidationException::withMessages(['status' => 'Não e permitido deixar o sistema sem administrador ativo.']);
         }
 
         $old = $user->only(['status']);
         $user->update(['status' => $status]);
 
-        app(AuditLogger::class)->log('user.status_changed', 'Status do usuario alterado.', $user, $old, ['status' => $status->value]);
+        app(AuditLogger::class)->log('user.status_changed', 'Status do usuário alterado.', $user, $old, ['status' => $status->value]);
     }
 
     public function resetPassword(User $user): string
@@ -76,7 +76,7 @@ class UserService
             'must_change_password' => true,
         ])->save();
 
-        app(AuditLogger::class)->log('user.password_reset', 'Senha temporaria gerada para usuario.', $user);
+        app(AuditLogger::class)->log('user.password_reset', 'Senha temporária gerada para usuário.', $user);
 
         return $temporaryPassword;
     }
@@ -84,16 +84,16 @@ class UserService
     public function delete(User $actor, User $user): void
     {
         if ($actor->is($user)) {
-            throw ValidationException::withMessages(['user' => 'Voce nao pode excluir sua propria conta.']);
+            throw ValidationException::withMessages(['user' => 'Você não pode excluir sua própria conta.']);
         }
 
         if ($user->hasRole('administrador') && $this->activeAdministratorCountExcluding($user) === 0) {
-            throw ValidationException::withMessages(['user' => 'Nao e permitido remover o ultimo administrador ativo.']);
+            throw ValidationException::withMessages(['user' => 'Não e permitido remover o último administrador ativo.']);
         }
 
         $user->delete();
 
-        app(AuditLogger::class)->log('user.deleted', 'Usuario excluido logicamente.', $user);
+        app(AuditLogger::class)->log('user.deleted', 'Usuário excluído logicamente.', $user);
     }
 
     private function activeAdministratorCountExcluding(User $user): int

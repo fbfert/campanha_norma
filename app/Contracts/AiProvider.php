@@ -14,12 +14,12 @@ interface AiProvider
     public function name(): string;
 
     /**
-     * Modelo efetivo, ja resolvido a partir da configuracao.
+     * Modelo efetivo, já resolvido a partir da configuração.
      */
     public function model(): string;
 
     /**
-     * Executa uma completude com saida estruturada.
+     * Executa uma completude com saída estruturada.
      *
      * @throws AiProviderException
      */

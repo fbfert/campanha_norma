@@ -10,10 +10,10 @@ use App\Models\User;
 use App\Services\AuditLogger;
 
 /**
- * Acoes humanas sobre uma sugestao.
+ * Ações humanas sobre uma sugestão.
  *
- * Toda acao e individual: nao existe caminho que aprove mais de uma sugestao em
- * uma unica operacao.
+ * Toda ação e individual: não existe caminho que aprove mais de uma sugestão em
+ * uma única operação.
  */
 class SuggestionApprovalService
 {
@@ -35,7 +35,7 @@ class SuggestionApprovalService
             return ['sent' => false, 'reason' => 'sugestao_nao_esta_viva'];
         }
 
-        // Obsolescencia verificada antes de qualquer escrita.
+        // Obsolescência verificada antes de qualquer escrita.
         if ($suggestion->isStale()) {
             $suggestion->forceFill([
                 'status' => ReplySuggestionStatus::Superseded,
@@ -55,7 +55,7 @@ class SuggestionApprovalService
             'approved_at' => now(),
         ])->save();
 
-        $this->audit->log('conversation_response.approved_by_user', 'Sugestao aprovada por operador.', $suggestion, null, [
+        $this->audit->log('conversation_response.approved_by_user', 'Sugestão aprovada por operador.', $suggestion, null, [
             'conversation_id' => $suggestion->conversation_id,
             'suggestion_id' => $suggestion->id,
             'edited' => $suggestion->wasEdited(),
@@ -74,15 +74,15 @@ class SuggestionApprovalService
             'rejection_reason' => $reason,
         ])->save();
 
-        $this->audit->log('conversation_response.rejected', 'Sugestao rejeitada.', $suggestion, null, [
+        $this->audit->log('conversation_response.rejected', 'Sugestão rejeitada.', $suggestion, null, [
             'conversation_id' => $suggestion->conversation_id,
             'suggestion_id' => $suggestion->id,
         ], $user);
     }
 
     /**
-     * Regenera com justificativa. A sugestao anterior sai de circulacao mas
-     * continua legivel como historico.
+     * Regenera com justificativa. A sugestão anterior sai de circulação mas
+     * continua legível como histórico.
      */
     public function regenerate(ConversationReplySuggestion $suggestion, User $user, string $justification): ?ConversationReplySuggestion
     {
@@ -100,7 +100,7 @@ class SuggestionApprovalService
             'regeneration_reason' => $justification,
         ])->save();
 
-        $this->audit->log('conversation_response.regenerated', 'Sugestao regenerada.', $suggestion, null, [
+        $this->audit->log('conversation_response.regenerated', 'Sugestão regenerada.', $suggestion, null, [
             'conversation_id' => $suggestion->conversation_id,
             'suggestion_id' => $suggestion->id,
             'justification' => $justification,
@@ -113,7 +113,7 @@ class SuggestionApprovalService
     }
 
     /**
-     * Assume manualmente: pausa a automacao e tira a sugestao de circulacao.
+     * Assume manualmente: pausa a automação e tira a sugestão de circulação.
      */
     public function takeOver(ConversationReplySuggestion $suggestion, User $user): void
     {
@@ -141,7 +141,7 @@ class SuggestionApprovalService
 
         // Registro apenas. Nenhum prompt, modelo, threshold ou allowlist muda
         // por causa deste valor.
-        $this->audit->log('conversation_response.feedback', 'Feedback registrado para sugestao.', $suggestion, null, [
+        $this->audit->log('conversation_response.feedback', 'Feedback registrado para sugestão.', $suggestion, null, [
             'conversation_id' => $suggestion->conversation_id,
             'suggestion_id' => $suggestion->id,
             'feedback' => $feedback->value,

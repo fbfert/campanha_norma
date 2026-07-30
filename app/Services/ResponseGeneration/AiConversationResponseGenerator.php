@@ -34,8 +34,8 @@ use Throwable;
 /**
  * Gerador de resposta apoiado no provedor de IA configurado.
  *
- * Produz apenas uma linha em `conversation_reply_suggestions`. Nao envia nada e
- * nao altera o estado do fluxo.
+ * Produz apenas uma linha em `conversation_reply_suggestions`. Não envia nada e
+ * não altera o estado do fluxo.
  */
 class AiConversationResponseGenerator implements ConversationResponseGenerator
 {
@@ -65,9 +65,9 @@ class AiConversationResponseGenerator implements ConversationResponseGenerator
             return null;
         }
 
-        // A recuperacao acontece antes da chamada ao modelo e fora de qualquer
-        // transacao de registro de mensagem. Falha aqui degrada para o
-        // comportamento da subetapa anterior e nao interrompe nada.
+        // A recuperação acontece antes da chamada ao modelo e fora de qualquer
+        // transação de registro de mensagem. Falha aqui degrada para o
+        // comportamento da subetapa anterior e não interrompe nada.
         [$retrieved, $retrievalLog] = $this->retrieve($message, $state);
         $useGrounded = $retrieved !== null;
 
@@ -110,8 +110,8 @@ class AiConversationResponseGenerator implements ConversationResponseGenerator
             ],
         );
 
-        // Liga o log de recuperacao ao run so agora: a busca precede a chamada, e
-        // sem esse vinculo o log nao explica qual geracao ele sustentou.
+        // Liga o log de recuperação ao run so agora: a busca precede a chamada, e
+        // sem esse vínculo o log não explica qual geração ele sustentou.
         $retrievalLog?->update(['ai_run_id' => $run->id]);
 
         $base = [
@@ -132,7 +132,7 @@ class AiConversationResponseGenerator implements ConversationResponseGenerator
             'expires_at' => now()->addMinutes(max(1, (int) $this->settings->get('ai.response.validity_minutes', 120))),
         ];
 
-        // Falha ou saida invalida nunca viram sugestao aprovavel.
+        // Falha ou saída invalida nunca viram sugestão aprovável.
         if ($run->status !== AiRunStatus::Succeeded) {
             return $this->persist($base + [
                 'status' => ReplySuggestionStatus::Blocked,
@@ -159,7 +159,7 @@ class AiConversationResponseGenerator implements ConversationResponseGenerator
             'confidence' => $confidence,
         ];
 
-        // Acao sem texto para o contato: vira sugestao de encaminhamento.
+        // Ação sem texto para o contato: vira sugestão de encaminhamento.
         if (! $action->producesText()) {
             return $this->persist($attributes + [
                 'status' => ReplySuggestionStatus::Pending,
@@ -171,7 +171,7 @@ class AiConversationResponseGenerator implements ConversationResponseGenerator
             ] + $this->groundingColumns(null));
         }
 
-        // Validacao deterministica do texto, independente do que o modelo disse.
+        // Validação determinística do texto, independente do que o modelo disse.
         $validation = $this->validator->validate($text);
 
         if (! $validation['valid']) {
@@ -183,9 +183,9 @@ class AiConversationResponseGenerator implements ConversationResponseGenerator
             ] + $this->groundingColumns(null));
         }
 
-        // Fundamentacao: o `grounded` do modelo e sinal, e esta conferencia e a
-        // autorizacao. Roda depois da validacao de texto porque texto reprovado
-        // ja nao vai a lugar nenhum, fundamentado ou nao.
+        // Fundamentação: o `grounded` do modelo e sinal, e esta conferência e a
+        // autorização. Roda depois da validação de texto porque texto reprovado
+        // já não vai a lugar nenhum, fundamentado ou não.
         $declared = is_array($data['citations'] ?? null) ? $data['citations'] : [];
 
         $verdict = $retrieved === null
@@ -218,11 +218,11 @@ class AiConversationResponseGenerator implements ConversationResponseGenerator
     }
 
     /**
-     * Recuperacao na base oficial, quando o fluxo tem base ativa associada.
+     * Recuperação na base oficial, quando o fluxo tem base ativa associada.
      *
-     * Devolve `null` quando nao ha base ou quando a recuperacao falhou. Nos dois
-     * casos a geracao segue com o contrato da subetapa anterior: a base pode ficar
-     * indisponivel, a conversa nao pode parar por causa disso.
+     * Devolve `null` quando não ha base ou quando a recuperação falhou. Nos dois
+     * casos a geração segue com o contrato da subetapa anterior: a base pode ficar
+     * indisponível, a conversa não pode parar por causa disso.
      *
      * @return array{0: ?RetrievalResult, 1: ?KnowledgeRetrieval}
      */
@@ -244,7 +244,7 @@ class AiConversationResponseGenerator implements ConversationResponseGenerator
                 'conversation_id' => $message->conversation_id,
                 'source_message_id' => $message->id,
                 'exception' => $exception::class,
-                // Mensagem do provedor pode carregar trecho de requisicao: fica de fora.
+                // Mensagem do provedor pode carregar trecho de requisição: fica de fora.
                 'code' => $exception->getCode(),
             ]);
 
@@ -267,8 +267,8 @@ class AiConversationResponseGenerator implements ConversationResponseGenerator
         }
 
         return [
-            // `grounded` afirma que a resposta se apoia em evidencia conferida.
-            // Texto sem afirmacao factual nao e fundamentado: e dispensado.
+            // `grounded` afirma que a resposta se apoia em evidência conferida.
+            // Texto sem afirmação factual não e fundamentado: e dispensado.
             'grounded' => $verdict->status === GroundingStatus::Grounded,
             'grounding_status' => $verdict->status,
             'grounding_error' => $verdict->errorSummary(),
@@ -286,7 +286,7 @@ class AiConversationResponseGenerator implements ConversationResponseGenerator
         array $declared,
     ): ?ConversationReplySuggestion {
         // `wasRecentlyCreated` falso significa que outro worker venceu a corrida e
-        // ja gravou as citacoes dele: duplicar aqui inventaria fonte.
+        // já gravou as citações dele: duplicar aqui inventaria fonte.
         if ($suggestion === null || $verdict === null || ! $suggestion->wasRecentlyCreated) {
             return $suggestion;
         }
@@ -311,13 +311,13 @@ class AiConversationResponseGenerator implements ConversationResponseGenerator
     {
         $status = $attributes['status'];
 
-        // A coluna espelho ocupa a unicidade apenas enquanto a sugestao vive.
+        // A coluna espelho ocupa a unicidade apenas enquanto a sugestão vive.
         $attributes['active_source_message_id'] = $status->isLive() ? $attributes['source_message_id'] : null;
 
         try {
             return ConversationReplySuggestion::create($attributes);
         } catch (UniqueConstraintViolationException) {
-            // Outro worker ja criou a sugestao viva desta mensagem.
+            // Outro worker já criou a sugestão viva desta mensagem.
             return ConversationReplySuggestion::query()
                 ->where('active_source_message_id', $attributes['source_message_id'])
                 ->first();

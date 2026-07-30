@@ -44,13 +44,13 @@ class ContactDataService
         if ($this->settings->get('contacts.prevent_duplicate_phone', '1') === '1') {
             $duplicate = $this->duplicates->exactPhone($data['phone_normalized'], $contact?->id);
             if ($duplicate) {
-                throw ValidationException::withMessages(['phone' => 'Telefone ja cadastrado no contato #'.$duplicate->id.' - '.$duplicate->name.'.']);
+                throw ValidationException::withMessages(['phone' => 'Telefone já cadastrado no contato #'.$duplicate->id.' - '.$duplicate->name.'.']);
             }
         }
 
         if ($data['do_not_contact']) {
             if (($this->settings->get('contacts.require_do_not_contact_reason', '1') === '1') && blank($data['do_not_contact_reason'] ?? null)) {
-                throw ValidationException::withMessages(['do_not_contact_reason' => 'Informe o motivo para nao contatar.']);
+                throw ValidationException::withMessages(['do_not_contact_reason' => 'Informe o motivo para não contatar.']);
             }
             $data['do_not_contact_at'] ??= now();
         } else {
@@ -98,7 +98,7 @@ class ContactDataService
     {
         $duplicate = $this->duplicates->exactPhone($contact->phone_normalized, $contact->id);
         if ($duplicate) {
-            throw ValidationException::withMessages(['contact' => 'Nao e possivel restaurar: telefone em uso no contato #'.$duplicate->id.'.']);
+            throw ValidationException::withMessages(['contact' => 'Não e possível restaurar: telefone em uso no contato #'.$duplicate->id.'.']);
         }
 
         $contact->restore();
@@ -109,8 +109,8 @@ class ContactDataService
     public function delete(Contact $contact): void
     {
         $contact->delete();
-        $this->history->record($contact, ContactHistoryAction::Deleted, 'Contato excluido logicamente.');
-        $this->audit->log('contact.deleted', 'Contato excluido logicamente.', $contact);
+        $this->history->record($contact, ContactHistoryAction::Deleted, 'Contato excluído logicamente.');
+        $this->audit->log('contact.deleted', 'Contato excluído logicamente.', $contact);
     }
 
     public function setStatus(Contact $contact, ContactStatus $status): void
@@ -124,7 +124,7 @@ class ContactDataService
     public function setDoNotContact(Contact $contact, bool $value, ?string $reason = null): void
     {
         if ($value && ($this->settings->get('contacts.require_do_not_contact_reason', '1') === '1') && blank($reason)) {
-            throw ValidationException::withMessages(['do_not_contact_reason' => 'Informe o motivo para nao contatar.']);
+            throw ValidationException::withMessages(['do_not_contact_reason' => 'Informe o motivo para não contatar.']);
         }
 
         $old = $contact->only(['do_not_contact', 'do_not_contact_reason']);
@@ -136,8 +136,8 @@ class ContactDataService
         ]);
 
         $action = $value ? ContactHistoryAction::MarkedDoNotContact : ContactHistoryAction::UnmarkedDoNotContact;
-        $this->history->record($contact, $action, $value ? 'Contato marcado como nao contatar.' : 'Restricao nao contatar removida.', $old, $contact->only(['do_not_contact', 'do_not_contact_reason']));
-        $this->audit->log($value ? 'contact.marked_do_not_contact' : 'contact.unmarked_do_not_contact', 'Restricao de contato alterada.', $contact, $old, $contact->only(['do_not_contact', 'do_not_contact_reason']));
+        $this->history->record($contact, $action, $value ? 'Contato marcado como não contatar.' : 'Restrição não contatar removida.', $old, $contact->only(['do_not_contact', 'do_not_contact_reason']));
+        $this->audit->log($value ? 'contact.marked_do_not_contact' : 'contact.unmarked_do_not_contact', 'Restrição de contato alterada.', $contact, $old, $contact->only(['do_not_contact', 'do_not_contact_reason']));
     }
 
     public function syncTags(Contact $contact, array $tagIds): void

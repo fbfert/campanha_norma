@@ -7,11 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * Trecho efetivamente devolvido por uma recuperacao.
+ * Trecho efetivamente devolvido por uma recuperação.
  *
- * Guarda snapshot de conteudo, titulo e versao. A chave estrangeira permite
- * navegar; o snapshot permite auditar depois de o documento ter sido substituido
- * ou excluido.
+ * Guarda snapshot de conteúdo, título e versão. A chave estrangeira permite
+ * navegar; o snapshot permite auditar depois de o documento ter sido substituído
+ * ou excluído.
  */
 class KnowledgeRetrievalChunk extends Model
 {

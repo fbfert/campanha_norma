@@ -13,9 +13,9 @@ use Tests\TestCase;
 /**
  * Menu principal agrupado.
  *
- * O risco de reorganizar um menu nao e feio: e sumir com uma tela. Uma entrada
- * removida sem substituto deixa a funcionalidade viva no roteador e inalcancavel
- * na pratica, e ninguem descobre ate precisar dela.
+ * O risco de reorganizar um menu não e feio: e sumir com uma tela. Uma entrada
+ * removida sem substituto deixa a funcionalidade viva no roteador e inalcancável
+ * na prática, e ninguém descobre até precisar dela.
  */
 class NavigationMenuTest extends TestCase
 {
@@ -41,13 +41,13 @@ class NavigationMenuTest extends TestCase
     {
         $response = $this->actingAs($this->userWith('administrador'))->get(route('dashboard'))->assertOk();
 
-        foreach (['Atendimento', 'Pesquisa', 'Contatos', 'Envios', 'Inteligencia', 'Sistema'] as $group) {
+        foreach (['Atendimento', 'Pesquisa', 'Contatos', 'Envios', 'Inteligência', 'Sistema'] as $group) {
             $response->assertSee($group);
         }
     }
 
     /**
-     * Grupos sao `<details>` nativos. Se alguem trocar por uma solucao com
+     * Grupos são `<details>` nativos. Se alguém trocar por uma solução com
      * JavaScript, o menu deixa de funcionar com o script bloqueado e passa a
      * depender de ordem de carregamento.
      */
@@ -68,7 +68,7 @@ class NavigationMenuTest extends TestCase
     }
 
     /**
-     * O contador de nao lidas fica no cabecalho do grupo. Se ficasse so no link
+     * O contador de não lidas fica no cabeçalho do grupo. Se ficasse so no link
      * interno, sumiria justamente quando o grupo esta fechado — que e quando o
      * aviso mais importa.
      */
@@ -83,23 +83,23 @@ class NavigationMenuTest extends TestCase
     // --- Icones ---------------------------------------------------------------
 
     /**
-     * O sprite e desenhado uma vez por pagina e cada uso vira um `<use>`. Se
-     * alguem trocar por uma biblioteca externa, o sistema passa a depender de
-     * rede para desenhar o proprio menu.
+     * O sprite e desenhado uma vez por página e cada uso vira um `<use>`. Se
+     * alguém trocar por uma biblioteca externa, o sistema passa a depender de
+     * rede para desenhar o próprio menu.
      */
     public function test_the_icon_sprite_is_rendered_once_and_referenced_by_use(): void
     {
         $response = $this->actingAs($this->userWith('administrador'))->get(route('dashboard'))->assertOk();
         $html = $response->getContent();
 
-        $this->assertSame(1, substr_count((string) $html, '<g id="i-home">'), 'O sprite deve aparecer uma unica vez.');
+        $this->assertSame(1, substr_count((string) $html, '<g id="i-home">'), 'O sprite deve aparecer uma única vez.');
         $this->assertStringContainsString('<use href="#i-home">', (string) $html);
         $this->assertStringNotContainsString('cdn.', (string) $html);
     }
 
     /**
-     * Icone acompanhado de rotulo em texto e decorativo: anunciar os dois faria
-     * o leitor de tela repetir a mesma informacao.
+     * Icone acompanhado de rótulo em texto e decorativo: anunciar os dois faria
+     * o leitor de tela repetir a mesma informação.
      */
     public function test_icons_are_hidden_from_assistive_technology(): void
     {
@@ -122,16 +122,16 @@ class NavigationMenuTest extends TestCase
             $this->assertStringContainsString(
                 '<g id="i-'.$name.'">',
                 $sprite,
-                "O menu usa o icone '{$name}', que nao existe no sprite."
+                "O menu usa o icone '{$name}', que não existe no sprite."
             );
         }
     }
 
-    // --- Nenhuma tela ficou inalcancavel -------------------------------------
+    // --- Nenhuma tela ficou inalcancável -------------------------------------
 
     /**
-     * As acoes que sairam do menu precisam ter ganho um caminho na propria tela
-     * da secao. Este e o teste que impede a reorganizacao de esconder algo.
+     * As ações que sairam do menu precisam ter ganho um caminho na própria tela
+     * da seção. Este e o teste que impede a reorganização de esconder algo.
      */
     public function test_creating_a_contact_is_reachable_from_the_contact_list(): void
     {
@@ -168,7 +168,7 @@ class NavigationMenuTest extends TestCase
             ->assertDontSee('Status dos envios');
     }
 
-    // --- Permissao ------------------------------------------------------------
+    // --- Permissão ------------------------------------------------------------
 
     public function test_a_query_profile_does_not_see_the_system_group_entries(): void
     {
@@ -191,7 +191,7 @@ class NavigationMenuTest extends TestCase
 
     /**
      * Toda rota citada no menu precisa existir. Um `route()` para nome
-     * inexistente derruba a pagina inteira, e o menu aparece em todas elas.
+     * inexistente derruba a página inteira, e o menu aparece em todas elas.
      */
     public function test_every_route_named_in_the_menu_exists(): void
     {
@@ -204,7 +204,7 @@ class NavigationMenuTest extends TestCase
         foreach (array_unique($matches[1]) as $name) {
             $this->assertNotNull(
                 Route::getRoutes()->getByName($name),
-                "O menu aponta para a rota '{$name}', que nao existe."
+                "O menu aponta para a rota '{$name}', que não existe."
             );
         }
     }

@@ -14,12 +14,12 @@ use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 /**
- * Tela de configuracao do provedor de IA.
+ * Tela de configuração do provedor de IA.
  *
- * Reune numa pagina o que antes exigia editar o arquivo de ambiente e
- * reiniciar o servico: fornecedor, modelo, credencial e limites de transporte.
+ * Reune numa página o que antes exigia editar o arquivo de ambiente e
+ * reiniciar o serviço: fornecedor, modelo, credencial e limites de transporte.
  *
- * A credencial entra, e cifrada e nunca mais sai. Nenhuma acao daqui devolve a
+ * A credencial entra, e cifrada e nunca mais sai. Nenhuma ação daqui devolve a
  * chave para a tela, para o log ou para a auditoria.
  */
 class AiProviderController extends Controller
@@ -75,7 +75,7 @@ class AiProviderController extends Controller
 
         app(AuditLogger::class)->log(
             'ai_provider.updated',
-            'Configuracao do provedor de IA alterada.',
+            'Configuração do provedor de IA alterada.',
             null,
             $old,
             $settings->auditable(),
@@ -83,15 +83,15 @@ class AiProviderController extends Controller
 
         return redirect()
             ->route('admin.ai-provider.edit')
-            ->with('success', 'Configuracao do provedor salva.');
+            ->with('success', 'Configuração do provedor salva.');
     }
 
     /**
-     * Chamada real ao fornecedor, disparada apenas por acao humana.
+     * Chamada real ao fornecedor, disparada apenas por ação humana.
      *
      * Serve para separar "credencial errada" de "modelo inexistente" antes de
-     * ligar a geracao para cidadaos. Usa um pedido minimo e descarta a
-     * resposta: o objetivo e saber se o caminho responde, nao gerar texto.
+     * ligar a geração para cidadãos. Usa um pedido mínimo e descarta a
+     * resposta: o objetivo e saber se o caminho responde, não gerar texto.
      */
     public function test(Request $request, AiProviderManager $providers, AiProviderSettings $settings): RedirectResponse
     {
@@ -119,7 +119,7 @@ class AiProviderController extends Controller
         } catch (AiProviderException $exception) {
             app(AuditLogger::class)->log(
                 'ai_provider.tested',
-                'Teste de conexao com o provedor de IA falhou.',
+                'Teste de conexão com o provedor de IA falhou.',
                 null,
                 null,
                 ['resultado' => 'falha', 'codigo' => $exception->errorCode],
@@ -130,7 +130,7 @@ class AiProviderController extends Controller
 
         app(AuditLogger::class)->log(
             'ai_provider.tested',
-            'Teste de conexao com o provedor de IA.',
+            'Teste de conexão com o provedor de IA.',
             null,
             null,
             ['resultado' => 'sucesso', 'modelo' => $result->model, 'latencia_ms' => $result->latencyMs],
@@ -138,7 +138,7 @@ class AiProviderController extends Controller
 
         return back()->with(
             'success',
-            "Conexao respondeu em {$result->latencyMs} ms usando o modelo {$result->model}."
+            "Conexão respondeu em {$result->latencyMs} ms usando o modelo {$result->model}."
         );
     }
 }

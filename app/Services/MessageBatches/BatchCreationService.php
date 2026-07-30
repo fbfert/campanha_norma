@@ -122,18 +122,18 @@ class BatchCreationService
         }
 
         $batch->forceFill(['random_seed' => $seed, 'updated_by' => $user->id])->save();
-        $this->event($batch, $user, 'random_order_generated', 'Ordem aleatoria gerada.', ['seed' => $seed]);
-        $this->audit->log('message_batch.randomized', 'Ordem aleatoria do lote gerada.', $batch, null, ['seed' => $seed], $user);
+        $this->event($batch, $user, 'random_order_generated', 'Ordem aleatória gerada.', ['seed' => $seed]);
+        $this->audit->log('message_batch.randomized', 'Ordem aleatória do lote gerada.', $batch, null, ['seed' => $seed], $user);
     }
 
     public function prepare(MessageBatch $batch, User $user, string $confirmation): void
     {
         $this->ensureDraft($batch);
         if ($confirmation !== 'Confirmo a criação deste lote com os destinatários e mensagens apresentados.') {
-            throw ValidationException::withMessages(['confirmation' => 'Confirmacao explicita invalida.']);
+            throw ValidationException::withMessages(['confirmation' => 'Confirmação explícita invalida.']);
         }
         if ($batch->eligible_total < 1) {
-            throw ValidationException::withMessages(['batch' => 'O lote precisa ter pelo menos um destinatario apto.']);
+            throw ValidationException::withMessages(['batch' => 'O lote precisa ter pelo menos um destinatário apto.']);
         }
 
         $batch->forceFill(['status' => MessageBatchStatus::Ready, 'prepared_at' => now(), 'updated_by' => $user->id])->save();
@@ -168,7 +168,7 @@ class BatchCreationService
     public function cancel(MessageBatch $batch, User $user, string $reason): void
     {
         if (! in_array($batch->status, [MessageBatchStatus::Draft, MessageBatchStatus::Ready], true)) {
-            throw ValidationException::withMessages(['batch' => 'Este lote nao pode ser cancelado.']);
+            throw ValidationException::withMessages(['batch' => 'Este lote não pode ser cancelado.']);
         }
         if (blank($reason)) {
             throw ValidationException::withMessages(['cancel_reason' => 'Informe o motivo do cancelamento.']);
@@ -241,7 +241,7 @@ class BatchCreationService
         }
 
         if ($ids->count() > 10) {
-            throw ValidationException::withMessages(['message_template_ids' => 'A campanha pode usar no maximo 10 modelos.']);
+            throw ValidationException::withMessages(['message_template_ids' => 'A campanha pode usar no máximo 10 modelos.']);
         }
 
         $templates = MessageTemplate::query()
@@ -260,7 +260,7 @@ class BatchCreationService
 
     private function campaignBody(Collection $templates): string
     {
-        return 'CAMPANHA: modelos sorteados por destinatario - '.$templates->pluck('name')->join(', ');
+        return 'CAMPANHA: modelos sorteados por destinatário - '.$templates->pluck('name')->join(', ');
     }
 
     private function campaignSnapshot(Collection $templates): array
@@ -300,7 +300,7 @@ class BatchCreationService
     private function ensureDraft(MessageBatch $batch): void
     {
         if ($batch->status !== MessageBatchStatus::Draft) {
-            throw ValidationException::withMessages(['batch' => 'Lotes preparados ou cancelados nao podem ser alterados diretamente.']);
+            throw ValidationException::withMessages(['batch' => 'Lotes preparados ou cancelados não podem ser alterados diretamente.']);
         }
     }
 

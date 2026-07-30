@@ -1,10 +1,10 @@
 ## ADDED Requirements
 
 ### Requirement: Knowledge Base Permissions And Menu
-The administration area SHALL expose the knowledge base module behind dedicated permissions, with viewing separated from managing, uploading, approving, deleting, downloading, testing retrieval and managing settings.
+The administration área SHALL expose the knowledge base module behind dedicated permissions, with viewing separated from managing, uploading, approving, deleting, downloading, testing retrieval and managing settings.
 
 #### Scenario: Menu visibility
-- **WHEN** a user with the knowledge viewing permission opens the administration area
+- **WHEN** a user with the knowledge viewing permission opens the administration área
 - **THEN** the menu SHALL show the knowledge base entries
 - **AND** a user without that permission SHALL NOT see them.
 

@@ -181,7 +181,7 @@ The number of deepening questions SHALL be limited, counted idempotently and fol
 - **AND** only the latest message SHALL produce a suggestion.
 
 ### Requirement: Human Handoff
-The system SHALL route a conversation to human handling for explicit request, unanswerable factual or political question, report or accusation, threat, individual help request, legal matter, promise or commitment, low confidence, hostile content, unsupported media, context conflict, turn limit reached and repeated provider failure.
+The system SHALL route a conversation to human handling for explicit request, unanswerable factual or political question, report or accusation, threat, individual help request, legal matter, promise or commitment, low confidence, hostile content, unsupported média, context conflict, turn limit reached and repeated provider failure.
 
 #### Scenario: Performing a handoff
 - **WHEN** a handoff reason is detected

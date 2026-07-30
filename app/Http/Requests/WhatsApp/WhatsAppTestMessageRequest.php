@@ -24,7 +24,7 @@ class WhatsAppTestMessageRequest extends FormRequest
         return [
             'contact_id.required' => 'Selecione um contato.',
             'message.required' => 'Informe a mensagem de teste.',
-            'message.max' => 'A mensagem de teste pode ter no maximo 1000 caracteres.',
+            'message.max' => 'A mensagem de teste pode ter no máximo 1000 caracteres.',
         ];
     }
 }

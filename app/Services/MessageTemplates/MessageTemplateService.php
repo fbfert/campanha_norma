@@ -60,7 +60,7 @@ class MessageTemplateService
 
         if ($bodyChanged) {
             $this->version($template, $user);
-            $this->audit->log('message_template.version_created', 'Versao de modelo preservada.', $template, null, ['version' => $template->version], $user);
+            $this->audit->log('message_template.version_created', 'Versão de modelo preservada.', $template, null, ['version' => $template->version], $user);
         }
 
         $this->audit->log('message_template.updated', 'Modelo de mensagem atualizado.', $template, $old, $template->only(['name', 'description', 'status', 'version']), $user);
@@ -92,7 +92,7 @@ class MessageTemplateService
     public function delete(MessageTemplate $template, User $user): void
     {
         $template->delete();
-        $this->audit->log('message_template.deleted', 'Modelo de mensagem excluido logicamente.', $template, null, ['id' => $template->id], $user);
+        $this->audit->log('message_template.deleted', 'Modelo de mensagem excluído logicamente.', $template, null, ['id' => $template->id], $user);
     }
 
     public function restore(MessageTemplate $template, User $user): void

@@ -21,7 +21,7 @@ enum WhatsAppConnectionStatus: string
     public function label(): string
     {
         return match ($this) {
-            self::NotInitialized => 'Nao inicializado',
+            self::NotInitialized => 'Não inicializado',
             self::Starting => 'Inicializando',
             self::GeneratingQr => 'Gerando QR Code',
             self::WaitingForQrScan => 'Aguardando leitura do QR Code',
@@ -30,10 +30,10 @@ enum WhatsAppConnectionStatus: string
             self::Reconnecting => 'Reconectando',
             self::Disconnecting => 'Desconectando',
             self::Disconnected => 'Desconectado',
-            self::SessionExpired => 'Sessao expirada',
-            self::AuthenticationFailed => 'Falha de autenticacao',
+            self::SessionExpired => 'Sessão expirada',
+            self::AuthenticationFailed => 'Falha de autenticação',
             self::BrowserError => 'Erro no navegador',
-            self::ServiceError => 'Erro no servico',
+            self::ServiceError => 'Erro no serviço',
         };
     }
 

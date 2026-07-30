@@ -7,10 +7,10 @@ use App\Services\ConversationAutomation\PermissionResponseClassifier;
 use Illuminate\Support\Collection;
 
 /**
- * Mapeia a saida livre do modelo para um tema cadastrado.
+ * Mapeia a saída livre do modelo para um tema cadastrado.
  *
- * Deterministico e sem aproximacao semantica: compara slug, nome e sinonimos
- * normalizados. Sem correspondencia, cai no tema de fallback. O modelo nunca
+ * Determinístico e sem aproximação semântica: compara slug, nome e sinônimos
+ * normalizados. Sem correspondência, cai no tema de fallback. O modelo nunca
  * cria tema.
  */
 class InsightTopicMapper
@@ -56,7 +56,7 @@ class InsightTopicMapper
     }
 
     /**
-     * Lista de temas ativos para o prompt, sem expor descricao interna.
+     * Lista de temas ativos para o prompt, sem expor descrição interna.
      *
      * @return array<int, string>
      */

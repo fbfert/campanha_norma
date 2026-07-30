@@ -18,7 +18,7 @@ class SendingWindowService
 
         if (! $crossesMidnight) {
             if (! in_array($now->dayOfWeekIso, $settings->allowed_weekdays ?? [], true)) {
-                return $this->nextAllowedDay($settings, $now, 'Dia nao permitido para envio.');
+                return $this->nextAllowedDay($settings, $now, 'Dia não permitido para envio.');
             }
 
             if ($now->betweenIncluded($start, $end)) {
@@ -26,8 +26,8 @@ class SendingWindowService
             }
 
             return $now->lessThan($start)
-                ? ['allowed' => false, 'next_at' => $start, 'reason' => 'Fora do horario permitido.']
-                : $this->nextAllowedDay($settings, $now->addDay()->startOfDay(), 'Fora do horario permitido.');
+                ? ['allowed' => false, 'next_at' => $start, 'reason' => 'Fora do horário permitido.']
+                : $this->nextAllowedDay($settings, $now->addDay()->startOfDay(), 'Fora do horário permitido.');
         }
 
         $todayAllowed = in_array($now->dayOfWeekIso, $settings->allowed_weekdays ?? [], true);
@@ -38,10 +38,10 @@ class SendingWindowService
         }
 
         if ($todayAllowed && $now->betweenExcluded($end, $start)) {
-            return ['allowed' => false, 'next_at' => $start, 'reason' => 'Fora do horario permitido.'];
+            return ['allowed' => false, 'next_at' => $start, 'reason' => 'Fora do horário permitido.'];
         }
 
-        return $this->nextAllowedDay($settings, $now, 'Dia ou horario nao permitido para envio.');
+        return $this->nextAllowedDay($settings, $now, 'Dia ou horário não permitido para envio.');
     }
 
     private function timeOnDate(CarbonImmutable $date, string $time): CarbonImmutable

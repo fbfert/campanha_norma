@@ -10,28 +10,28 @@ use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\Builder;
 
 /**
- * Reprocessamento seguro da interpretacao.
+ * Reprocessamento seguro da interpretação.
  *
- * Exige ao menos um filtro e pede confirmacao acima do limite configurado.
- * Nao existe forma de reprocessar tudo sem confirmacao explicita.
+ * Exige ao menos um filtro e pede confirmação acima do limite configurado.
+ * Não existe forma de reprocessar tudo sem confirmação explícita.
  */
 class AiReprocessInterpretationCommand extends Command
 {
     protected $signature = 'ai:reprocess
-        {--message= : ID de uma mensagem especifica}
+        {--message= : ID de uma mensagem específica}
         {--conversation= : ID de uma conversa}
         {--from= : Data inicial no formato Y-m-d}
         {--to= : Data final no formato Y-m-d}
         {--limit=500 : Teto de mensagens despachadas}
         {--dry-run : Apenas conta, sem despachar}';
 
-    protected $description = 'Reprocessa a interpretacao por IA de mensagens recebidas, por identificador ou periodo.';
+    protected $description = 'Reprocessa a interpretação por IA de mensagens recebidas, por identificador ou período.';
 
     public function handle(SystemSettingService $settings): int
     {
         if (! $this->hasFilter()) {
             $this->error('Informe ao menos um filtro: --message, --conversation, --from ou --to.');
-            $this->line('Reprocessar toda a base sem filtro nao e permitido.');
+            $this->line('Reprocessar toda a base sem filtro não e permitido.');
 
             return self::FAILURE;
         }
@@ -51,19 +51,19 @@ class AiReprocessInterpretationCommand extends Command
         $this->line("Mensagens encontradas: {$total}.");
 
         if ($total > $limit) {
-            $this->warn("O teto de {$limit} sera aplicado. Ajuste --limit para incluir mais.");
+            $this->warn("O teto de {$limit} será aplicado. Ajuste --limit para incluir mais.");
         }
 
         if ($this->option('dry-run')) {
-            $this->info('Execucao apenas de contagem. Nada foi despachado.');
+            $this->info('Execução apenas de contagem. Nada foi despachado.');
 
             return self::SUCCESS;
         }
 
         $dispatchCount = min($total, $limit);
 
-        if ($dispatchCount > $threshold && ! $this->confirm("Confirmar o despacho de {$dispatchCount} interpretacoes?", false)) {
-            $this->info('Operacao cancelada.');
+        if ($dispatchCount > $threshold && ! $this->confirm("Confirmar o despacho de {$dispatchCount} interpretações?", false)) {
+            $this->info('Operação cancelada.');
 
             return self::SUCCESS;
         }
@@ -75,7 +75,7 @@ class AiReprocessInterpretationCommand extends Command
             $dispatched++;
         });
 
-        $this->info("Interpretacoes enfileiradas: {$dispatched}.");
+        $this->info("Interpretações enfileiradas: {$dispatched}.");
 
         return self::SUCCESS;
     }

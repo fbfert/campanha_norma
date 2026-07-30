@@ -4,10 +4,10 @@
             <div>
                 <h2 style="margin-top:0;">Conversas</h2>
                 @if($latestSync)
-                    <p class="muted">Ultima sincronizacao: {{ $latestSync->status->label() }} @if($latestSync->finished_at)em {{ $latestSync->finished_at->format($dateTimeFormat) }}@endif | chats {{ $latestSync->chats_processed }} | mensagens importadas {{ $latestSync->messages_imported }} | modo {{ data_get($latestSync->options, 'sync_mode') === 'compatibility' ? 'compatibilidade' : 'padrao' }}</p>
+                    <p class="muted">Última sincronização: {{ $latestSync->status->label() }} @if($latestSync->finished_at)em {{ $latestSync->finished_at->format($dateTimeFormat) }}@endif | chats {{ $latestSync->chats_processed }} | mensagens importadas {{ $latestSync->messages_imported }} | modo {{ data_get($latestSync->options, 'sync_mode') === 'compatibility' ? 'compatibilidade' : 'padrao' }}</p>
                     @if($latestSync->error_code)<p class="alert error">{{ $latestSync->error_code }} - {{ $latestSync->error_message }}</p>@endif
                 @else
-                    <p class="muted">Nenhuma sincronizacao executada.</p>
+                    <p class="muted">Nenhuma sincronização executada.</p>
                 @endif
             </div>
             <div class="actions">
@@ -43,11 +43,11 @@
                     @endforeach
                 </select>
             </label>
-            <label>Responsavel
+            <label>Responsável
                 <select name="assigned">
                     <option value="">Todos</option>
                     <option value="me" @selected(request('assigned') === 'me')>Atribuidas a mim</option>
-                    <option value="none" @selected(request('assigned') === 'none')>Sem responsavel</option>
+                    <option value="none" @selected(request('assigned') === 'none')>Sem responsável</option>
                 </select>
             </label>
             <label>Etiqueta
@@ -58,11 +58,11 @@
                     @endforeach
                 </select>
             </label>
-            <label><input type="checkbox" name="unread" value="1" @checked(request()->boolean('unread'))> Somente nao lidas</label>
+            <label><input type="checkbox" name="unread" value="1" @checked(request()->boolean('unread'))> Somente não lidas</label>
             <label><input type="checkbox" name="no_contact" value="1" @checked(request()->boolean('no_contact'))> Sem contato associado</label>
-            <label><input type="checkbox" name="do_not_contact" value="1" @checked(request()->boolean('do_not_contact'))> Nao contatar</label>
+            <label><input type="checkbox" name="do_not_contact" value="1" @checked(request()->boolean('do_not_contact'))> Não contatar</label>
             <label><input type="checkbox" name="archived" value="1" @checked(request()->boolean('archived'))> Arquivadas</label>
-            <label><input type="checkbox" name="not_archived" value="1" @checked(request()->boolean('not_archived'))> Nao arquivadas</label>
+            <label><input type="checkbox" name="not_archived" value="1" @checked(request()->boolean('not_archived'))> Não arquivadas</label>
             <button class="btn" type="submit"><x-icon name="search" size="16" />Filtrar</button>
         </form>
     </section>
@@ -74,23 +74,23 @@
                 @php($displayPhone = $conversation->whatsappPhoneDigits())
                 <a class="conversation-list-item {{ $conversation->unread_count > 0 ? 'unread' : '' }}" href="{{ route('admin.conversations.show', $conversation) }}">
                     <div class="conversation-list-top">
-                        <strong>{{ $conversation->contact?->name ?? ($last?->sender_name_snapshot ?: 'Contato nao identificado') }}</strong>
+                        <strong>{{ $conversation->contact?->name ?? ($last?->sender_name_snapshot ?: 'Contato não identificado') }}</strong>
                         <span class="muted">{{ $conversation->last_message_at?->format($conversation->last_message_at->isToday() ? 'H:i' : $dateFormat) }}</span>
                     </div>
                     <div class="muted">
-                        {{ $conversation->contact?->phone_normalized ? Str::mask($conversation->contact->phone_normalized, '*', 4, -4) : ($displayPhone ? Str::mask($displayPhone, '*', 4, -4) : 'Telefone nao disponivel') }}
+                        {{ $conversation->contact?->phone_normalized ? Str::mask($conversation->contact->phone_normalized, '*', 4, -4) : ($displayPhone ? Str::mask($displayPhone, '*', 4, -4) : 'Telefone não disponível') }}
                     </div>
                     @if(! $displayPhone && $conversation->whatsappIdentifierForDisplay())
                         <div class="muted">ID WhatsApp: {{ $conversation->whatsappIdentifierForDisplay() }}</div>
                     @endif
-                    <div class="conversation-preview">@can('inbox.view_message_content'){{ Str::limit($last?->body ?: ($last?->has_media ? '[midia]' : 'Sem mensagens'), 90) }}@else Conteudo protegido @endcan</div>
+                    <div class="conversation-preview">@can('inbox.view_message_content'){{ Str::limit($last?->body ?: ($last?->has_media ? '[midia]' : 'Sem mensagens'), 90) }}@else Conteúdo protegido @endcan</div>
                     <div class="conversation-meta">
                         <span class="badge">{{ $conversation->status->label() }}</span>
                         <span class="badge">{{ $conversation->priority->label() }}</span>
-                        <span>{{ $conversation->assignee?->name ?? 'Sem responsavel' }}</span>
+                        <span>{{ $conversation->assignee?->name ?? 'Sem responsável' }}</span>
                         @if($conversation->unread_count > 0)<span class="unread-pill">{{ $conversation->unread_count }}</span>@endif
                     </div>
-                    @if($conversation->contact?->do_not_contact)<div class="conversation-warning">Nao contatar</div>@endif
+                    @if($conversation->contact?->do_not_contact)<div class="conversation-warning">Não contatar</div>@endif
                 </a>
             @empty
                 <div class="card">Nenhuma conversa encontrada.</div>

@@ -9,23 +9,23 @@ use App\Services\SystemSettingService;
 use Illuminate\Console\Command;
 
 /**
- * Reindexacao de documentos.
+ * Reindexação de documentos.
  *
- * Enfileira, nunca indexa em linha: extracao e embedding sao trabalho de fila, e
+ * Enfileira, nunca indexa em linha: extração e embedding são trabalho de fila, e
  * um comando que os executa no processo do operador esconde o custo real.
  *
- * Reindexar revoga a aprovacao. E intencional: conteudo novo precisa de leitura
+ * Reindexar revoga a aprovação. E intencional: conteúdo novo precisa de leitura
  * humana nova.
  */
 class KnowledgeIndexCommand extends Command
 {
     protected $signature = 'knowledge:index
         {--base= : Limita a uma base pelo id}
-        {--document= : Indexa um documento especifico}
+        {--document= : Indexa um documento específico}
         {--failed : Somente documentos que falharam}
         {--dry-run : Apenas lista o que seria enfileirado}';
 
-    protected $description = 'Enfileira a indexacao de documentos da base de conhecimento.';
+    protected $description = 'Enfileira a indexação de documentos da base de conhecimento.';
 
     public function handle(SystemSettingService $settings): int
     {
@@ -60,7 +60,7 @@ class KnowledgeIndexCommand extends Command
         });
 
         $this->info("{$enqueued} documento(s) enfileirados na fila {$queue}.");
-        $this->warn('A aprovacao anterior de cada documento sera revogada ao fim da indexacao.');
+        $this->warn('A aprovação anterior de cada documento será revogada ao fim da indexação.');
 
         return self::SUCCESS;
     }

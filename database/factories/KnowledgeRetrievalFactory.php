@@ -16,7 +16,7 @@ class KnowledgeRetrievalFactory extends Factory
     public function definition(): array
     {
         return [
-            'query_text' => 'horario de atendimento do gabinete',
+            'query_text' => 'horário de atendimento do gabinete',
             'strategy' => RetrievalStrategy::Lexical,
             'top_k' => 5,
             'threshold' => 0.25,

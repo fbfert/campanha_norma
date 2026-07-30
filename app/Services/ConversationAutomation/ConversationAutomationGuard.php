@@ -8,8 +8,8 @@ use App\Services\SystemSettingService;
 use Illuminate\Support\Carbon;
 
 /**
- * Porta unica de verificacao antes de qualquer acao automatica.
- * Retorna sempre um motivo legivel para auditoria e para a tela de estado.
+ * Porta única de verificação antes de qualquer ação automática.
+ * Retorna sempre um motivo legível para auditoria e para a tela de estado.
  */
 class ConversationAutomationGuard
 {
@@ -26,7 +26,7 @@ class ConversationAutomationGuard
     }
 
     /**
-     * Pode avaliar a conversa? Nao decide envio, apenas processamento do fluxo.
+     * Pode avaliar a conversa? Não decide envio, apenas processamento do fluxo.
      *
      * @return array{allowed: bool, reason: ?string}
      */
@@ -57,7 +57,7 @@ class ConversationAutomationGuard
     }
 
     /**
-     * Pode criar e enfileirar uma mensagem automatica?
+     * Pode criar e enfileirar uma mensagem automática?
      *
      * @return array{allowed: bool, reason: ?string}
      */
@@ -102,7 +102,7 @@ class ConversationAutomationGuard
     }
 
     /**
-     * Janela de horario permitida para envio automatico.
+     * Janela de horário permitida para envio automático.
      */
     public function withinWindow(?Carbon $now = null): bool
     {
@@ -116,7 +116,7 @@ class ConversationAutomationGuard
         $now ??= now();
         $current = $now->format('H:i');
 
-        // Janela que nao cruza a meia-noite.
+        // Janela que não cruza a meia-noite.
         if ($start < $end) {
             return $current >= $start && $current <= $end;
         }

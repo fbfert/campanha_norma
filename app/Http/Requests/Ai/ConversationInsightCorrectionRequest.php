@@ -34,7 +34,7 @@ class ConversationInsightCorrectionRequest extends FormRequest
     }
 
     /**
-     * Somente os campos do insight, sem classificacao nem motivo.
+     * Somente os campos do insight, sem classificação nem motivo.
      *
      * @return array<string, mixed>
      */

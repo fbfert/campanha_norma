@@ -11,10 +11,10 @@ use App\Services\SystemSettingService;
 use Illuminate\Support\Facades\Log;
 
 /**
- * Executa uma chamada de IA com disjuntor, tentativas, backoff, validacao de
- * schema e registro auditavel de cada tentativa.
+ * Executa uma chamada de IA com disjuntor, tentativas, backoff, validação de
+ * schema e registro auditável de cada tentativa.
  *
- * Cada tentativa vira uma linha em `ai_runs`. O log e append-only de proposito:
+ * Cada tentativa vira uma linha em `ai_runs`. O log e append-only de propósito:
  * uma nova tentativa nunca apaga o rastro da anterior.
  */
 class AiClient
@@ -57,13 +57,13 @@ class AiClient
                 $validation = $this->validator->validate($result->rawContent, $schema);
 
                 if (! $validation['valid']) {
-                    // Saida invalida e problema de conteudo, nao de disponibilidade:
-                    // nao conta para o disjuntor e nao vale nova tentativa.
+                    // Saída invalida e problema de conteúdo, não de disponibilidade:
+                    // não conta para o disjuntor e não vale nova tentativa.
                     $this->circuit->recordSuccess($provider->name());
 
                     $this->finishRun($run, AiRunStatus::InvalidOutput, [
                         'error_code' => AiProviderException::INVALID_RESPONSE,
-                        'error_message' => 'Saida do modelo fora do schema: '.implode(', ', array_slice($validation['errors'], 0, 5)),
+                        'error_message' => 'Saída do modelo fora do schema: '.implode(', ', array_slice($validation['errors'], 0, 5)),
                         'latency_ms' => $result->latencyMs,
                         'prompt_tokens' => $result->promptTokens,
                         'completion_tokens' => $result->completionTokens,
@@ -159,7 +159,7 @@ class AiClient
     }
 
     /**
-     * Log tecnico com identificadores e codigos apenas.
+     * Log técnico com identificadores e códigos apenas.
      */
     private function logOutcome(AiRun $run, string $event): void
     {

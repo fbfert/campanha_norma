@@ -7,29 +7,29 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Agregacao por cidade e regiao.
+ * Agregação por cidade e região.
  *
- * Duas fontes, ambas ja existentes e ambas legitimas:
+ * Duas fontes, ambas já existentes e ambas legitimas:
  *
  * - o cadastro do contato, preenchido por quem importou a lista;
- * - a localidade que a propria pessoa declarou na resposta, normalizada pela
- *   interpretacao.
+ * - a localidade que a própria pessoa declarou na resposta, normalizada pela
+ *   interpretação.
  *
- * Nao existe deducao por DDD nem por qualquer outro indicio. O DDD diz onde a
- * linha foi habilitada, nao onde a pessoa mora — quem mudou de cidade e manteve
- * o numero seria contado no lugar errado, e o mapa resultante teria aparencia
- * de certo. Um dado geografico errado com cara de exato e pior que a ausencia
+ * Não existe dedução por DDD nem por qualquer outro indício. O DDD diz onde a
+ * linha foi habilitada, não onde a pessoa mora — quem mudou de cidade e manteve
+ * o número seria contado no lugar errado, e o mapa resultante teria aparência
+ * de certo. Um dado geografico errado com cara de exato e pior que a ausência
  * dele.
  *
- * Nao ha cruzamento com atributo sensivel. Isso nao e uma opcao desligada por
- * padrao: nao existe metodo para ligar.
+ * Não ha cruzamento com atributo sensível. Isso não e uma opção desligada por
+ * padrão: não existe método para ligar.
  */
 class GeographyMetricsService
 {
     public function __construct(private readonly SmallGroupSuppressor $suppressor) {}
 
     /**
-     * Respostas por cidade declarada pela propria pessoa.
+     * Respostas por cidade declarada pela própria pessoa.
      *
      * @return array<int, array<string, mixed>>
      */
@@ -82,10 +82,10 @@ class GeographyMetricsService
     }
 
     /**
-     * Quantas respostas nao tem nenhuma origem geografica conhecida.
+     * Quantas respostas não tem nenhuma origem geografica conhecida.
      *
-     * Exposto de proposito. Sem esse numero, um mapa com poucas cidades parece
-     * um mapa completo de poucas cidades, e nao um mapa cheio de buracos.
+     * Exposto de propósito. Sem esse número, um mapa com poucas cidades parece
+     * um mapa completo de poucas cidades, e não um mapa cheio de buracos.
      */
     public function withoutLocality(Carbon $from, Carbon $to, ?int $flowId = null): int
     {

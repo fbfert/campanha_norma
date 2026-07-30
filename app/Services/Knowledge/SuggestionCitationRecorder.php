@@ -9,21 +9,21 @@ use App\Models\KnowledgeRetrievalChunk;
 use App\Models\ReplySuggestionCitation;
 
 /**
- * Grava as fontes de uma sugestao fundamentada.
+ * Grava as fontes de uma sugestão fundamentada.
  *
- * A citacao guarda snapshot de titulo, versao e conteudo. E duplicacao proposital:
- * a explicacao de uma resposta ja enviada nao pode deixar de existir porque o
- * documento foi substituido ou removido depois.
+ * A citação guarda snapshot de título, versão e conteúdo. E duplicação proposital:
+ * a explicação de uma resposta já enviada não pode deixar de existir porque o
+ * documento foi substituído ou removido depois.
  *
- * Citacao recusada tambem vira linha, com o motivo e sem vinculo de documento: o
- * identificador que o modelo inventou nao aponta para nada, e forcar uma chave
+ * Citação recusada também vira linha, com o motivo e sem vínculo de documento: o
+ * identificador que o modelo inventou não aponta para nada, e forçar uma chave
  * estrangeira nele transformaria auditoria em erro de integridade.
  */
 class SuggestionCitationRecorder
 {
     /**
-     * @param  array<int, array<string, mixed>>  $declared  citacoes cruas devolvidas pelo modelo
-     * @return int quantidade de citacoes validas gravadas
+     * @param  array<int, array<string, mixed>>  $declared  citações cruas devolvidas pelo modelo
+     * @return int quantidade de citações validas gravadas
      */
     public function record(
         ConversationReplySuggestion $suggestion,
@@ -91,7 +91,7 @@ class SuggestionCitationRecorder
     }
 
     /**
-     * Referencia do trecho para o id da linha de log correspondente.
+     * Referência do trecho para o id da linha de log correspondente.
      *
      * @return array<string, int>
      */

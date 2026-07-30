@@ -10,9 +10,9 @@
     <div class="alert error">{{ session('error') }}</div>
 @endif
 
-{{-- `$errors` e compartilhado pelo middleware de sessao. Uma pagina renderizada
-     fora dele - o 404 de um endereco que nao casa com rota nenhuma, por exemplo
-     - nao o recebe, e chamar `any()` em nulo derrubava a propria tela de erro. --}}
+{{-- `$errors` e compartilhado pelo middleware de sessão. Uma página renderizada
+     fora dele - o 404 de um endereço que não casa com rota nenhuma, por exemplo
+     - não o recebe, e chamar `any()` em nulo derrubava a própria tela de erro. --}}
 @if (isset($errors) && $errors->any())
     <div class="alert error">
         <strong>Corrija os campos destacados.</strong>

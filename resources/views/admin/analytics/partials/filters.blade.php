@@ -1,11 +1,11 @@
-{{-- Filtros preservados na URL: a tela toda e compartilhavel por link. --}}
+{{-- Filtros preservados na URL: a tela toda e compartilhável por link. --}}
 <form method="get" class="card">
     <div>
         <label for="from">De</label>
         <input id="from" name="from" type="date" value="{{ $from->toDateString() }}">
     </div>
     <div>
-        <label for="to">Ate</label>
+        <label for="to">Até</label>
         <input id="to" name="to" type="date" value="{{ $to->toDateString() }}">
     </div>
     <div>

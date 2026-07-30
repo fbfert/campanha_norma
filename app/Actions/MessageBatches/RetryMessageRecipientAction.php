@@ -17,7 +17,7 @@ class RetryMessageRecipientAction
     public function execute(MessageBatchRecipient $recipient, User $user): MessageBatchRecipient
     {
         if ($recipient->processing_status !== MessageRecipientProcessingStatus::FailedTemporary) {
-            throw new RuntimeException('Somente falhas temporarias podem ser tentadas novamente.');
+            throw new RuntimeException('Somente falhas temporárias podem ser tentadas novamente.');
         }
 
         $recipient->forceFill([

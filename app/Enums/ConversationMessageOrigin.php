@@ -14,7 +14,7 @@ enum ConversationMessageOrigin: string
     {
         return match ($this) {
             self::Manual => 'Manual',
-            self::Automation => 'Automatica',
+            self::Automation => 'Automática',
             self::ApprovedAi => 'Sugerida por IA',
             self::Incoming => 'Recebida',
             self::Sync => 'Sincronizada',

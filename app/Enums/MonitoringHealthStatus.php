@@ -12,9 +12,9 @@ enum MonitoringHealthStatus: string
     public function label(): string
     {
         return match ($this) {
-            self::Healthy => 'Saudavel',
-            self::Warning => 'Atencao',
-            self::Critical => 'Critico',
+            self::Healthy => 'Saudável',
+            self::Warning => 'Atenção',
+            self::Critical => 'Crítico',
             self::Unknown => 'Desconhecido',
         };
     }

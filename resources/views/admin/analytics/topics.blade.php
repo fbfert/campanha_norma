@@ -7,7 +7,7 @@
             @include('admin.analytics.partials.empty')
         @else
             <table>
-                <thead><tr><th>Tema</th><th>Mencoes</th><th>Confianca media</th><th>Revisados por humano</th></tr></thead>
+                <thead><tr><th>Tema</th><th>Menções</th><th>Confiança média</th><th>Revisados por humano</th></tr></thead>
                 <tbody>
                 @foreach($mostMentioned as $row)
                     <tr>
@@ -21,27 +21,27 @@
             </table>
             @include('admin.analytics.partials.suppression')
         @endif
-        <p class="muted">Insights sem tema atribuido no periodo: <strong>{{ $unclassified }}</strong>. Contados a parte para nao esconder falha de classificacao dentro de um tema legitimo.</p>
+        <p class="muted">Insights sem tema atribuído no período: <strong>{{ $unclassified }}</strong>. Contados a parte para não esconder falha de classificação dentro de um tema legítimo.</p>
     </section>
 
     <section class="card">
         <h2>Temas emergentes</h2>
-        <p class="muted">Aparecem neste periodo e nao apareciam no anterior.</p>
+        <p class="muted">Aparecem neste período e não apareciam no anterior.</p>
         @if($emerging === [])
-            @include('admin.analytics.partials.empty', ['message' => 'Nenhum tema novo no periodo.'])
+            @include('admin.analytics.partials.empty', ['message' => 'Nenhum tema novo no período.'])
         @else
-            <ul>@foreach($emerging as $row)<li>{{ $row['name'] }} — {{ $row['total'] }} mencao(oes)</li>@endforeach</ul>
+            <ul>@foreach($emerging as $row)<li>{{ $row['name'] }} — {{ $row['total'] }} menção(oes)</li>@endforeach</ul>
         @endif
     </section>
 
     <section class="card">
-        <h2>Qualidade da extracao</h2>
+        <h2>Qualidade da extração</h2>
         <table><tbody>
             <tr><th>Total de insights</th><td>{{ $quality['total'] }}</td></tr>
             <tr><th>Revisados por humano</th><td>{{ $quality['reviewed'] }}</td></tr>
-            <tr><th>Abaixo da confianca minima ({{ $quality['threshold'] }})</th><td>{{ $quality['low_confidence'] }}</td></tr>
-            <tr><th>Marcados para revisao</th><td>{{ $quality['needs_review'] }}</td></tr>
-            <tr><th>Confianca media</th><td>{{ $quality['average_confidence'] === null ? '—' : number_format($quality['average_confidence'], 3, ',', '.') }}</td></tr>
+            <tr><th>Abaixo da confiança mínima ({{ $quality['threshold'] }})</th><td>{{ $quality['low_confidence'] }}</td></tr>
+            <tr><th>Marcados para revisão</th><td>{{ $quality['needs_review'] }}</td></tr>
+            <tr><th>Confiança média</th><td>{{ $quality['average_confidence'] === null ? '—' : number_format($quality['average_confidence'], 3, ',', '.') }}</td></tr>
         </tbody></table>
     </section>
 
@@ -58,7 +58,7 @@
                 <label for="format">Formato</label>
                 <select id="format" name="format"><option value="csv">CSV</option><option value="xlsx">XLSX</option></select>
                 <button class="btn" type="submit">Exportar agregado</button>
-                <p class="muted">A exportacao agregada leva contagem e rotulo. Nao leva nome, telefone nem texto de mensagem.</p>
+                <p class="muted">A exportação agregada leva contagem e rótulo. Não leva nome, telefone nem texto de mensagem.</p>
             </form>
         </section>
     @endcan

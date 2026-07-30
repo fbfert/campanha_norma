@@ -5,11 +5,11 @@ namespace App\Services\Knowledge;
 use App\Services\SystemSettingService;
 
 /**
- * Normalizacao usada na indexacao e na busca.
+ * Normalização usada na indexação e na busca.
  *
- * A mesma funcao roda nos dois lados de proposito: se o texto do documento e a
- * consulta forem normalizados por regras diferentes, a busca lexica erra de um
- * jeito que nao aparece em teste unitario nenhum dos dois lados isolado.
+ * A mesma função roda nos dois lados de propósito: se o texto do documento e a
+ * consulta forem normalizados por regras diferentes, a busca léxica erra de um
+ * jeito que não aparece em teste unitário nenhum dos dois lados isolado.
  */
 class TextNormalizer
 {
@@ -24,15 +24,15 @@ class TextNormalizer
             $text = $converted;
         }
 
-        // Digitos permanecem: numero e data importam para a validacao de
-        // fundamentacao.
+        // Digitos permanecem: número e data importam para a validação de
+        // fundamentação.
         $text = (string) preg_replace('/[^a-z0-9]+/', ' ', $text);
 
         return trim((string) preg_replace('/\s+/', ' ', $text));
     }
 
     /**
-     * Termos uteis de uma consulta, sem palavras vazias e sem termo curto.
+     * Termos úteis de uma consulta, sem palavras vazias e sem termo curto.
      *
      * @return array<int, string>
      */

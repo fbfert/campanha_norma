@@ -31,15 +31,15 @@ class ManualReplyService
         }
 
         if ($conversation->contact->do_not_contact || $conversation->contact->status->value !== 'active') {
-            throw ValidationException::withMessages(['conversation' => 'Este contato nao pode receber resposta pelo sistema.']);
+            throw ValidationException::withMessages(['conversation' => 'Este contato não pode receber resposta pelo sistema.']);
         }
 
         if (! (bool) $this->settings->get('inbox.allow_unassigned_reply', false) && $conversation->assigned_user_id !== $user->id) {
             throw ValidationException::withMessages(['conversation' => 'Assuma a conversa antes de responder.']);
         }
 
-        // As validacoes acima sao especificas da resposta manual e continuam
-        // aqui. A criacao da mensagem passa pelo servico de saida compartilhado,
+        // As validações acima são específicas da resposta manual e continuam
+        // aqui. A criação da mensagem passa pelo serviço de saída compartilhado,
         // com exatamente os mesmos campos, evento, auditoria e fila de antes.
         $message = $this->replies->createPending(
             conversation: $conversation,

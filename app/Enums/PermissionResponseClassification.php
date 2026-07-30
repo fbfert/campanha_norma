@@ -12,10 +12,10 @@ enum PermissionResponseClassification: string
     public function label(): string
     {
         return match ($this) {
-            self::PermissionYes => 'Permissao concedida',
-            self::PermissionNo => 'Permissao negada',
-            self::OptOut => 'Pedido de nao contatar',
-            self::Ambiguous => 'Ambiguo',
+            self::PermissionYes => 'Permissão concedida',
+            self::PermissionNo => 'Permissão negada',
+            self::OptOut => 'Pedido de não contatar',
+            self::Ambiguous => 'Ambíguo',
         };
     }
 }

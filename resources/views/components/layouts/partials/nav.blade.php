@@ -1,18 +1,18 @@
 {{--
     Menu principal, agrupado por tarefa.
 
-    Antes eram 34 links numa lista plana, ordenados por ordem de construcao do
-    sistema: a conexao do WhatsApp, que precisa funcionar antes de qualquer
-    outra coisa, ficava na posicao 33.
+    Antes eram 34 links numa lista plana, ordenados por ordem de construção do
+    sistema: a conexão do WhatsApp, que precisa funcionar antes de qualquer
+    outra coisa, ficava na posição 33.
 
     Cada grupo e um `<details>` nativo. O grupo que contem a tela atual abre
     sozinho e os demais ficam fechados, o que reduz o que se le de 34 linhas
-    para algo em torno de oito. Nao ha JavaScript envolvido: `<details>` ja
-    resolve abrir e fechar, ja e navegavel por teclado e ja e anunciado por
+    para algo em torno de oito. Não ha JavaScript envolvido: `<details>` já
+    resolve abrir e fechar, já e navegável por teclado e já e anunciado por
     leitor de tela.
 
-    O grupo Atendimento mostra o contador de conversas nao lidas no proprio
-    cabecalho quando esta fechado, senao o aviso desapareceria justamente
+    O grupo Atendimento mostra o contador de conversas não lidas no próprio
+    cabeçalho quando esta fechado, senão o aviso desapareceria justamente
     quando o menu esta recolhido.
 --}}
 @php
@@ -27,7 +27,7 @@
 @endphp
 
 <nav aria-label="Menu principal" class="sidebar-nav">
-    <a href="{{ route('dashboard') }}" @class(['nav-root', 'active' => request()->routeIs('dashboard')])><x-icon name="home" /><span>Inicio</span></a>
+    <a href="{{ route('dashboard') }}" @class(['nav-root', 'active' => request()->routeIs('dashboard')])><x-icon name="home" /><span>Início</span></a>
 
     @can('inbox.view')
         <details class="nav-group" @if($atendimentoAtivo) open @endif>
@@ -41,7 +41,7 @@
                 <x-icon name="chat" /><span>Conversas</span>
             </a>
             @can('reply_suggestions.view')
-                <a href="{{ route('admin.reply-suggestions.index') }}" @class(['active' => request()->routeIs('admin.reply-suggestions.*')])><x-icon name="reply" /><span>Sugestoes de resposta</span></a>
+                <a href="{{ route('admin.reply-suggestions.index') }}" @class(['active' => request()->routeIs('admin.reply-suggestions.*')])><x-icon name="reply" /><span>Sugestões de resposta</span></a>
             @endcan
         </details>
     @endcan
@@ -68,7 +68,7 @@
             <summary><x-icon name="users" />Contatos</summary>
             <a href="{{ route('admin.contacts.index') }}" @class(['active' => request()->routeIs('admin.contacts.index', 'admin.contacts.show', 'admin.contacts.edit', 'admin.contacts.create')])><x-icon name="users" /><span>Todos os contatos</span></a>
             @can('contacts.import')
-                <a href="{{ route('admin.contacts.imports.index') }}" @class(['active' => request()->routeIs('admin.contacts.imports.*', 'admin.contacts.import')])><x-icon name="upload" /><span>Importacoes</span></a>
+                <a href="{{ route('admin.contacts.imports.index') }}" @class(['active' => request()->routeIs('admin.contacts.imports.*', 'admin.contacts.import')])><x-icon name="upload" /><span>Importações</span></a>
             @endcan
             @can('contacts.manage_tags')
                 <a href="{{ route('admin.tags.index') }}" @class(['active' => request()->routeIs('admin.tags.*')])><x-icon name="tag" /><span>Etiquetas</span></a>
@@ -89,23 +89,23 @@
                 <a href="{{ route('admin.message-processing.index') }}" @class(['active' => request()->routeIs('admin.message-processing.*')])><x-icon name="play" /><span>Processamento</span></a>
             @endcan
             @can('histories.view')
-                <a href="{{ route('admin.histories.messages.index') }}" @class(['active' => request()->routeIs('admin.histories.*')])><x-icon name="clock" /><span>Historico de mensagens</span></a>
+                <a href="{{ route('admin.histories.messages.index') }}" @class(['active' => request()->routeIs('admin.histories.*')])><x-icon name="clock" /><span>Histórico de mensagens</span></a>
             @endcan
             @can('reports.view')
-                <a href="{{ route('admin.reports.index') }}" @class(['active' => request()->routeIs('admin.reports.index', 'admin.reports.batches', 'admin.reports.messages', 'admin.reports.contacts', 'admin.reports.errors', 'admin.reports.templates', 'admin.reports.attempts', 'admin.reports.not-sent', 'admin.reports.rate-limits')])><x-icon name="report" /><span>Relatorios de envio</span></a>
-                <a href="{{ route('admin.reports.conversations') }}" @class(['active' => request()->routeIs('admin.reports.conversations')])><x-icon name="report" /><span>Relatorio de conversas</span></a>
+                <a href="{{ route('admin.reports.index') }}" @class(['active' => request()->routeIs('admin.reports.index', 'admin.reports.batches', 'admin.reports.messages', 'admin.reports.contacts', 'admin.reports.errors', 'admin.reports.templates', 'admin.reports.attempts', 'admin.reports.not-sent', 'admin.reports.rate-limits')])><x-icon name="report" /><span>Relatórios de envio</span></a>
+                <a href="{{ route('admin.reports.conversations') }}" @class(['active' => request()->routeIs('admin.reports.conversations')])><x-icon name="report" /><span>Relatório de conversas</span></a>
             @endcan
             @can('reports.export')
-                <a href="{{ route('admin.report-exports.index') }}" @class(['active' => request()->routeIs('admin.report-exports.*')])><x-icon name="download" /><span>Exportacoes</span></a>
+                <a href="{{ route('admin.report-exports.index') }}" @class(['active' => request()->routeIs('admin.report-exports.*')])><x-icon name="download" /><span>Exportações</span></a>
             @endcan
         </details>
     @endif
 
     @if(auth()->user()->can('ai_insights.view') || auth()->user()->can('knowledge.view') || auth()->user()->can('ai.provider.manage'))
         <details class="nav-group" @if($inteligenciaAtiva) open @endif>
-            <summary><x-icon name="sparkles" />Inteligencia</summary>
+            <summary><x-icon name="sparkles" />Inteligência</summary>
             @can('ai_insights.view')
-                <a href="{{ route('admin.ai-insights.index') }}" @class(['active' => request()->routeIs('admin.ai-insights.*')])><x-icon name="sparkles" /><span>Interpretacao por IA</span></a>
+                <a href="{{ route('admin.ai-insights.index') }}" @class(['active' => request()->routeIs('admin.ai-insights.*')])><x-icon name="sparkles" /><span>Interpretação por IA</span></a>
                 <a href="{{ route('admin.insight-topics.index') }}" @class(['active' => request()->routeIs('admin.insight-topics.*')])><x-icon name="tree" /><span>Taxonomia de temas</span></a>
             @endcan
             @can('knowledge.view')
@@ -130,28 +130,28 @@
         <details class="nav-group" @if($sistemaAtivo) open @endif>
             <summary><x-icon name="settings" />Sistema</summary>
             @can('whatsapp.connection.view')
-                <a href="{{ route('admin.whatsapp.connection') }}" @class(['active' => request()->routeIs('admin.whatsapp.connection')])><x-icon name="phone" /><span>Conexao WhatsApp</span></a>
+                <a href="{{ route('admin.whatsapp.connection') }}" @class(['active' => request()->routeIs('admin.whatsapp.connection')])><x-icon name="phone" /><span>Conexão WhatsApp</span></a>
             @endcan
             @can('whatsapp.events.view')
                 <a href="{{ route('admin.whatsapp.events') }}" @class(['active' => request()->routeIs('admin.whatsapp.events')])><x-icon name="bell" /><span>Eventos WhatsApp</span></a>
             @endcan
             @can('view-users')
-                <a href="{{ route('admin.users.index') }}" @class(['active' => request()->routeIs('admin.users.*')])><x-icon name="user" /><span>Usuarios</span></a>
+                <a href="{{ route('admin.users.index') }}" @class(['active' => request()->routeIs('admin.users.*')])><x-icon name="user" /><span>Usuários</span></a>
             @endcan
             @can('view-settings')
-                <a href="{{ route('admin.settings.edit') }}" @class(['active' => request()->routeIs('admin.settings.*')])><x-icon name="settings" /><span>Configuracoes</span></a>
+                <a href="{{ route('admin.settings.edit') }}" @class(['active' => request()->routeIs('admin.settings.*')])><x-icon name="settings" /><span>Configurações</span></a>
             @endcan
             @can('message_processing.manage_settings')
-                <a href="{{ route('admin.message-settings.edit') }}" @class(['active' => request()->routeIs('admin.message-settings.*')])><x-icon name="send" /><span>Configuracoes de envio</span></a>
+                <a href="{{ route('admin.message-settings.edit') }}" @class(['active' => request()->routeIs('admin.message-settings.*')])><x-icon name="send" /><span>Configurações de envio</span></a>
             @endcan
             @can('analytics.view_governance')
-                <a href="{{ route('admin.analytics.governance') }}" @class(['active' => request()->routeIs('admin.analytics.governance')])><x-icon name="shield" /><span>Governanca</span></a>
+                <a href="{{ route('admin.analytics.governance') }}" @class(['active' => request()->routeIs('admin.analytics.governance')])><x-icon name="shield" /><span>Governança</span></a>
             @endcan
             @can('monitoring.view')
-                <a href="{{ route('admin.monitoring.index') }}" @class(['active' => request()->routeIs('admin.monitoring.*')])><x-icon name="pulse" /><span>Saude do sistema</span></a>
+                <a href="{{ route('admin.monitoring.index') }}" @class(['active' => request()->routeIs('admin.monitoring.*')])><x-icon name="pulse" /><span>Saúde do sistema</span></a>
             @endcan
             @can('maintenance.view')
-                <a href="{{ route('admin.maintenance.index') }}" @class(['active' => request()->routeIs('admin.maintenance.*')])><x-icon name="wrench" /><span>Manutencao</span></a>
+                <a href="{{ route('admin.maintenance.index') }}" @class(['active' => request()->routeIs('admin.maintenance.*')])><x-icon name="wrench" /><span>Manutenção</span></a>
             @endcan
             @can('view-audit')
                 <a href="{{ route('admin.audit-logs.index') }}" @class(['active' => request()->routeIs('admin.audit-logs.*')])><x-icon name="scroll" /><span>Auditoria</span></a>
@@ -160,7 +160,7 @@
     @endif
 
     {{-- Sem `@can`: quem entrou no sistema pode ler como o sistema funciona.
-         Fica por ultimo porque e material de consulta, nao de operacao. --}}
+         Fica por último porque e material de consulta, não de operação. --}}
     <details class="nav-group" @if($manualAtivo) open @endif>
         <summary><x-icon name="book" />Manual</summary>
         <a href="{{ route('manual.index') }}" @class(['active' => request()->routeIs('manual.index')])><x-icon name="book" /><span>Manual de uso</span></a>

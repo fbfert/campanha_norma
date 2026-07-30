@@ -1,7 +1,7 @@
 # admin-foundation Specification
 
 ## Purpose
-TBD - created by archiving change etapa-1-fundacao. Update Purpose after archive.
+TBD - created by archiving change etapa-1-fundação. Update Purpose after archive.
 ## Requirements
 ### Requirement: Laravel Foundation Configuration
 The system SHALL be a Laravel administrative application configured with Brazilian Portuguese locale, `America/Sao_Paulo` timezone, MySQL defaults, database-backed sessions, database cache, database queue, Blade, Livewire, Alpine.js, Vite, and Apache deployment support.

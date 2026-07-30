@@ -9,15 +9,15 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
 /**
- * Pedido de exportacao analitica.
+ * Pedido de exportação analítica.
  *
- * O escopo decide a permissao exigida. Agregado precisa de
+ * O escopo decide a permissão exigida. Agregado precisa de
  * `analytics.export_aggregates`; detalhado precisa de
  * `analytics.export_detailed` mais uma finalidade escrita.
  *
- * A finalidade e obrigatoria por escrito e nao e conferida por ninguem no ato.
+ * A finalidade e obrigatória por escrito e não e conferida por ninguém no ato.
  * O que ela faz e deixar registrado quem pediu, quando e para que — de modo que
- * uma exportacao de conteudo tenha dono.
+ * uma exportação de conteúdo tenha dono.
  */
 class AnalyticsExportController extends Controller
 {
@@ -32,7 +32,7 @@ class AnalyticsExportController extends Controller
             'flow' => ['nullable', 'integer'],
             'purpose' => ['nullable', 'string', 'min:10', 'max:500', 'required_if:scope,'.AnalyticsExportService::SCOPE_DETAILED],
         ], [
-            'purpose.required_if' => 'A exportacao detalhada exige finalidade escrita.',
+            'purpose.required_if' => 'A exportação detalhada exige finalidade escrita.',
             'purpose.min' => 'Descreva a finalidade em pelo menos dez caracteres.',
         ]);
 
@@ -57,6 +57,6 @@ class AnalyticsExportController extends Controller
 
         return redirect()
             ->route('admin.report-exports.show', $export)
-            ->with('success', 'Exportacao solicitada. O arquivo expira em '.$export->expires_at?->format('d/m/Y H:i').'.');
+            ->with('success', 'Exportação solicitada. O arquivo expira em '.$export->expires_at?->format('d/m/Y H:i').'.');
     }
 }

@@ -17,7 +17,7 @@ class MessageHistoryController extends Controller
     public function index(Request $request, MessageHistoryQuery $query, AuditLogger $audit): View
     {
         abort_unless($request->user()->can('histories.view'), 403);
-        $audit->log('history.viewed', 'Historico consolidado de mensagens visualizado.', null, null, $request->only(['q', 'status', 'message_batch_id']));
+        $audit->log('history.viewed', 'Histórico consolidado de mensagens visualizado.', null, null, $request->only(['q', 'status', 'message_batch_id']));
 
         return view('admin.histories.messages.index', [
             'recipients' => $query->build($request)->paginate(25)->withQueryString(),

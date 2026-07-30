@@ -45,7 +45,7 @@
 
         <p class="muted">
             Janela atual: {{ $window['allowed'] ? 'aberta' : 'fechada' }}.
-            Proximo envio possivel: {{ $window['next_at']?->format($dateTimeFormat) ?? $limits['next_at']?->format($dateTimeFormat) ?? '-' }}.
+            Próximo envio possível: {{ $window['next_at']?->format($dateTimeFormat) ?? $limits['next_at']?->format($dateTimeFormat) ?? '-' }}.
             Limites: minuto {{ $limits['counters']['minute'] ?? 0 }}/{{ $settings->max_per_minute }},
             hora {{ $limits['counters']['hour'] ?? 0 }}/{{ $settings->max_per_hour }},
             dia {{ $limits['counters']['day'] ?? 0 }}/{{ $settings->max_per_day }}.
@@ -53,19 +53,19 @@
     </div>
 
     <div class="panel">
-        <div class="panel-header"><h2>Destinatarios</h2></div>
+        <div class="panel-header"><h2>Destinatários</h2></div>
         <div class="table-wrap">
             <table>
                 <thead>
                     <tr>
-                        <th>Posicao</th>
+                        <th>Posição</th>
                         <th>Nome</th>
                         <th>Telefone</th>
                         <th>Status</th>
                         <th>Tentativas</th>
-                        <th>Proxima tentativa</th>
+                        <th>Próxima tentativa</th>
                         <th>Erro</th>
-                        <th>Acoes</th>
+                        <th>Ações</th>
                     </tr>
                 </thead>
                 <tbody>

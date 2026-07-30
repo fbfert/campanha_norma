@@ -1,4 +1,4 @@
-<x-layouts.app title="Editar usuario" breadcrumbs="Inicio / Usuarios / Editar">
+<x-layouts.app title="Editar usuário" breadcrumbs="Inicio / Usuarios / Editar">
     <section class="card">
         <form method="post" action="{{ route('admin.users.update', $user) }}">
             @csrf

@@ -11,8 +11,8 @@ interface EmbeddingProvider
     public function model(): string;
 
     /**
-     * Dimensao esperada dos vetores deste provedor. Persistida junto de cada
-     * embedding para que trocar de modelo nao corrompa leitura.
+     * Dimensão esperada dos vetores deste provedor. Persistida junto de cada
+     * embedding para que trocar de modelo não corrompa leitura.
      */
     public function dimensions(): int;
 

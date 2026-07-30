@@ -27,10 +27,10 @@
     @include('admin.contacts.history', ['history' => $contact->history])
     <div class="grid grid-2" style="margin-top:16px;">
         @can('histories.view')
-            <section class="card"><strong>Historico de mensagens</strong><p>Envios consolidados deste contato.</p><a class="btn ghost" href="{{ route('admin.contacts.message-history', $contact) }}">Abrir historico</a></section>
+            <section class="card"><strong>Histórico de mensagens</strong><p>Envios consolidados deste contato.</p><a class="btn ghost" href="{{ route('admin.contacts.message-history', $contact) }}">Abrir histórico</a></section>
         @endcan
-        @foreach(['Respostas', 'Ultimo envio recebido'] as $future)
-            <section class="card"><strong>{{ $future }}</strong><p class="muted">Modulo ainda nao implementado</p></section>
+        @foreach(['Respostas', 'Último envio recebido'] as $future)
+            <section class="card"><strong>{{ $future }}</strong><p class="muted">Módulo ainda não implementado</p></section>
         @endforeach
     </div>
 </x-layouts.app>

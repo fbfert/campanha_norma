@@ -20,7 +20,7 @@ enum KnowledgeBaseStatus: string
     }
 
     /**
-     * Somente base ativa participa da recuperacao.
+     * Somente base ativa participa da recuperação.
      */
     public function isRetrievable(): bool
     {

@@ -43,8 +43,8 @@ readonly class RetrievalResult
     }
 
     /**
-     * Referencias validas para citacao. Uma citacao fora deste conjunto e, por
-     * definicao, invencao.
+     * Referências validas para citação. Uma citação fora deste conjunto e, por
+     * definição, invenção.
      *
      * @return array<int, string>
      */

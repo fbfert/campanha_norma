@@ -12,30 +12,30 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
 
 /**
- * Anonimizacao de conteudo conversacional.
+ * Anonimização de conteúdo conversacional.
  *
- * Atende dois casos: retencao por politica (conteudo mais antigo que N dias) e
- * pedido de titular sobre os proprios dados (por contato).
+ * Atende dois casos: retenção por política (conteúdo mais antigo que N dias) e
+ * pedido de titular sobre os próprios dados (por contato).
  *
  * O que sai: texto da mensagem, nome e telefone gravados no instantaneo da
  * mensagem, e os campos livres do insight. O que fica: a linha, as datas, o
- * tema classificado e as contagens. A distincao e proposital — apagar a linha
- * inteira quebraria a integridade referencial e faria os agregados historicos
- * mudarem de valor sem explicacao, enquanto esvaziar o conteudo preserva a
- * estatistica e elimina o que identifica.
+ * tema classificado e as contagens. A distinção e proposital — apagar a linha
+ * inteira quebraria a integridade referencial e faria os agregados históricos
+ * mudarem de valor sem explicação, enquanto esvaziar o conteúdo preserva a
+ * estatística e elimina o que identifica.
  *
- * A auditoria da propria execucao e preservada, porque um apagamento sem
- * registro de que aconteceu e indistinguivel de perda de dado.
+ * A auditoria da própria execução e preservada, porque um apagamento sem
+ * registro de que aconteceu e indistinguível de perda de dado.
  */
 class AnalyticsAnonymizeContentCommand extends Command
 {
     protected $signature = 'analytics:anonymize
-        {--contact= : Anonimiza todo o conteudo de um contato}
-        {--before= : Anonimiza conteudo anterior a esta data (AAAA-MM-DD)}
-        {--retention : Usa a retencao configurada em analytics.content_retention_days}
+        {--contact= : Anonimiza todo o conteúdo de um contato}
+        {--before= : Anonimiza conteúdo anterior a esta data (AAAA-MM-DD)}
+        {--retention : Usa a retenção configurada em analytics.content_retention_days}
         {--dry-run : Apenas relata o que seria afetado}';
 
-    protected $description = 'Anonimiza conteudo de mensagens e insights preservando contagens e auditoria.';
+    protected $description = 'Anonimiza conteúdo de mensagens e insights preservando contagens e auditoria.';
 
     public function handle(SystemSettingService $settings, DailyMetricBuilder $builder, AuditLogger $audit): int
     {
@@ -50,7 +50,7 @@ class AnalyticsAnonymizeContentCommand extends Command
         }
 
         if ($contactId !== null && ! Contact::query()->whereKey($contactId)->exists()) {
-            $this->error("Contato {$contactId} nao existe.");
+            $this->error("Contato {$contactId} não existe.");
 
             return self::FAILURE;
         }
@@ -71,7 +71,7 @@ class AnalyticsAnonymizeContentCommand extends Command
         $this->line("Insights no escopo: {$insightCount}");
 
         if ($dryRun) {
-            $this->warn('Execucao de teste. Nada foi alterado.');
+            $this->warn('Execução de teste. Nada foi alterado.');
 
             return self::SUCCESS;
         }
@@ -106,7 +106,7 @@ class AnalyticsAnonymizeContentCommand extends Command
 
         $audit->log(
             'analytics.content_anonymized',
-            'Conteudo conversacional anonimizado.',
+            'Conteúdo conversacional anonimizado.',
             null,
             null,
             [
@@ -136,7 +136,7 @@ class AnalyticsAnonymizeContentCommand extends Command
         $days = (int) $settings->get('analytics.content_retention_days', 0);
 
         if ($days <= 0) {
-            $this->warn('A retencao de conteudo esta desligada (zero dias). Nada sera anonimizado.');
+            $this->warn('A retenção de conteúdo esta desligada (zero dias). Nada será anonimizado.');
 
             return null;
         }

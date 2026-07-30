@@ -12,11 +12,11 @@ use App\Models\KnowledgeRetrievalChunk;
 use Illuminate\Support\Facades\Log;
 
 /**
- * Executa a recuperacao e registra o que foi buscado e devolvido.
+ * Executa a recuperação e registra o que foi buscado e devolvido.
  *
- * Cada trecho retornado e gravado com snapshot de conteudo, titulo e versao. E
- * duplicacao de texto de proposito: sem ela, excluir um documento apagaria a
- * explicacao de toda resposta que ele sustentou.
+ * Cada trecho retornado e gravado com snapshot de conteúdo, título e versão. E
+ * duplicação de texto de propósito: sem ela, excluir um documento apagaria a
+ * explicação de toda resposta que ele sustentou.
  */
 class KnowledgeRetrievalService
 {
@@ -44,7 +44,7 @@ class KnowledgeRetrievalService
         );
 
         if ($baseIds === []) {
-            // Sem base associada nao ha o que registrar: nenhuma busca aconteceu.
+            // Sem base associada não ha o que registrar: nenhuma busca aconteceu.
             return ['result' => RetrievalResult::empty($query->strategy, 'sem_base_associada'), 'retrieval' => null];
         }
 
@@ -69,7 +69,7 @@ class KnowledgeRetrievalService
             'source_message_id' => $context['source_message_id'] ?? null,
             'conversation_flow_id' => $flow?->id,
             'ai_run_id' => $context['ai_run_id'] ?? null,
-            // Consulta truncada: auditar o que foi buscado nao exige guardar a
+            // Consulta truncada: auditar o que foi buscado não exige guardar a
             // mensagem inteira da pessoa em uma segunda tabela.
             'query_text' => mb_substr($query->text, 0, 1000),
             'strategy' => $result->strategy,

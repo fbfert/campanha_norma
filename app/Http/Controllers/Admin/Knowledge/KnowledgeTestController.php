@@ -16,9 +16,9 @@ use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 /**
- * Teste de busca e de fundamentacao, sem envio.
+ * Teste de busca e de fundamentação, sem envio.
  *
- * Nada aqui produz mensagem para ninguem. E a tela que responde a pergunta
+ * Nada aqui produz mensagem para ninguém. E a tela que responde a pergunta
  * "o que a base devolveria para esta consulta", que e o que permite homologar a
  * base antes de liga-la.
  */
@@ -62,7 +62,7 @@ class KnowledgeTestController extends Controller
 
             // O teste de resposta usa um texto digitado pela pessoa que administra.
             // Nenhuma chamada ao provedor de IA acontece aqui: o que se testa e a
-            // validacao de fundamentacao, nao a geracao.
+            // validação de fundamentação, não a geração.
             if (filled($data['answer'] ?? null)) {
                 $verdict = $this->grounding->validate(
                     $data['answer'],
@@ -92,8 +92,8 @@ class KnowledgeTestController extends Controller
     /**
      * Cita tudo o que foi recuperado.
      *
-     * No teste manual quem escreve o texto nao declara citacoes; conferir contra
-     * o conjunto inteiro responde a pergunta util: "o que eu escrevi se sustenta
+     * No teste manual quem escreve o texto não declara citações; conferir contra
+     * o conjunto inteiro responde a pergunta útil: "o que eu escrevi se sustenta
      * no que a base devolveu?".
      *
      * @return array<int, array<string, mixed>>

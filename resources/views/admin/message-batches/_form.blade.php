@@ -4,12 +4,12 @@
 @endphp
 <input type="hidden" name="is_campaign" value="{{ $isCampaign ? '1' : '0' }}">
 <div class="card">
-    <h2>1. Identificacao</h2>
+    <h2>1. Identificação</h2>
     <div class="grid grid-2">
         <div><label for="name">{{ $isCampaign ? 'Nome da campanha' : 'Nome do lote' }}</label><input id="name" name="name" value="{{ old('name', $batch->name ?? '') }}" required></div>
-        <div><label for="selection_type">Selecao</label><select id="selection_type" name="selection_type">@foreach($selectionTypes as $type)<option value="{{ $type->value }}" @selected(old('selection_type', $batch->selection_type?->value ?? 'manual') === $type->value)>{{ $type->label() }}</option>@endforeach</select></div>
+        <div><label for="selection_type">Seleção</label><select id="selection_type" name="selection_type">@foreach($selectionTypes as $type)<option value="{{ $type->value }}" @selected(old('selection_type', $batch->selection_type?->value ?? 'manual') === $type->value)>{{ $type->label() }}</option>@endforeach</select></div>
     </div>
-    <div style="margin-top:12px;"><label for="description">Descricao</label><textarea id="description" name="description" rows="2">{{ old('description', $batch->description ?? '') }}</textarea></div>
+    <div style="margin-top:12px;"><label for="description">Descrição</label><textarea id="description" name="description" rows="2">{{ old('description', $batch->description ?? '') }}</textarea></div>
 </div>
 <div class="card" style="margin-top:16px;">
     <h2>2. Mensagem</h2>
@@ -33,7 +33,7 @@
 </div>
 <div class="card" style="margin-top:16px;">
     <h2>3. Contatos</h2>
-    <p class="muted">Os filtros abaixo valem tanto para a selecao manual quanto para "todos os filtrados" e "amostra aleatoria" (escolhidos em 1. Identificacao).</p>
-    <div><label for="random_quantity">Quantidade aleatoria</label><input id="random_quantity" name="random_quantity" type="number" min="1" max="1000" value="{{ old('random_quantity') }}" style="max-width:200px;"></div>
+    <p class="muted">Os filtros abaixo valem tanto para a seleção manual quanto para "todos os filtrados" e "amostra aleatória" (escolhidos em 1. Identificação).</p>
+    <div><label for="random_quantity">Quantidade aleatória</label><input id="random_quantity" name="random_quantity" type="number" min="1" max="1000" value="{{ old('random_quantity') }}" style="max-width:200px;"></div>
     @livewire(\App\Http\Livewire\CampaignContactPicker::class, ['initialSelectedIds' => collect(old('contact_ids', []))->map(fn ($id) => (int) $id)->all()])
 </div>

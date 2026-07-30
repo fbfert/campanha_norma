@@ -62,7 +62,7 @@ class WhatsAppModuleTest extends TestCase
 
         $this->actingAs($admin)->get(route('admin.whatsapp.connection'))
             ->assertOk()
-            ->assertSee('Conexao WhatsApp')
+            ->assertSee('Conexão WhatsApp')
             ->assertSee('Conta teste');
 
         $this->assertDatabaseHas('whatsapp_connections', [
@@ -79,20 +79,20 @@ class WhatsAppModuleTest extends TestCase
 
         $this->actingAs($admin)->get(route('admin.whatsapp.connection'))
             ->assertOk()
-            ->assertSee('servico de conexao com o WhatsApp esta indisponivel');
+            ->assertSee('serviço de conexão com o WhatsApp esta indisponível');
     }
 
     public function test_erro_de_autenticacao_interna_e_tratado(): void
     {
         Http::fake(['http://127.0.0.1:3100/api/connect' => Http::response([
             'success' => false,
-            'error' => ['code' => 'UNAUTHORIZED_SERVICE_REQUEST', 'message' => 'Token invalido.'],
+            'error' => ['code' => 'UNAUTHORIZED_SERVICE_REQUEST', 'message' => 'Token inválido.'],
         ], 401)]);
 
         $admin = $this->userWithRole('administrador');
 
         $this->actingAs($admin)->post(route('admin.whatsapp.connect'))
-            ->assertSessionHas('error', 'A autenticacao interna com o servico do WhatsApp falhou.')
+            ->assertSessionHas('error', 'A autenticação interna com o serviço do WhatsApp falhou.')
             ->assertSessionDoesntHaveErrors();
     }
 
@@ -101,7 +101,7 @@ class WhatsAppModuleTest extends TestCase
         Http::fake(fn () => throw new ConnectionException('timeout'));
 
         $admin = $this->userWithRole('administrador');
-        $message = 'O servico de conexao com o WhatsApp esta indisponivel. Verifique o processo do Node.js na VPS.';
+        $message = 'O serviço de conexão com o WhatsApp esta indisponível. Verifique o processo do Node.js na VPS.';
 
         $this->actingAs($admin)
             ->from(route('admin.whatsapp.connection'))
@@ -143,7 +143,7 @@ class WhatsAppModuleTest extends TestCase
     {
         Http::fake(['http://127.0.0.1:3100/api/session' => Http::response($this->success([
             'status' => 'disconnected',
-            'message' => 'Sessao removida.',
+            'message' => 'Sessão removida.',
         ]))]);
 
         $operator = $this->userWithRole('operador');
@@ -152,7 +152,7 @@ class WhatsAppModuleTest extends TestCase
         $this->actingAs($operator)->delete(route('admin.whatsapp.session.clear'))->assertForbidden();
         $this->actingAs($admin)->delete(route('admin.whatsapp.session.clear'), [
             'current_password' => 'senha-errada',
-            'confirmation' => 'EXCLUIR SESSAO',
+            'confirmation' => 'EXCLUIR SESSÃO',
         ])->assertSessionHasErrors('current_password');
     }
 

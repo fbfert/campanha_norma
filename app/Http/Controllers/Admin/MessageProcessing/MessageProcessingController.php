@@ -95,7 +95,7 @@ class MessageProcessingController extends Controller
         abort_unless($request->user()->can('message_processing.cancel_recipient'), 403);
         abort_unless($recipient->message_batch_id === $messageBatch->id, 404);
 
-        return $this->run(fn () => $action->execute($recipient, $request->user()), 'Destinatario cancelado.');
+        return $this->run(fn () => $action->execute($recipient, $request->user()), 'Destinatário cancelado.');
     }
 
     public function retryRecipient(Request $request, MessageBatch $messageBatch, MessageBatchRecipient $recipient, RetryMessageRecipientAction $action): RedirectResponse

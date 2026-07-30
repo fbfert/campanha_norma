@@ -11,7 +11,7 @@ class RebuildReportMetricsCommand extends Command
 {
     protected $signature = 'reports:rebuild-metrics {--date=} {--from=} {--to=} {--batch=} {--force}';
 
-    protected $description = 'Reconstroi metricas diarias de mensagens.';
+    protected $description = 'Reconstroi métricas diárias de mensagens.';
 
     public function handle(ReportMetricsService $metrics): int
     {
@@ -37,7 +37,7 @@ class RebuildReportMetricsCommand extends Command
             $days++;
         }
 
-        $this->info("Metricas reconstruidas para {$days} dia(s).");
+        $this->info("Métricas reconstruidas para {$days} dia(s).");
 
         return self::SUCCESS;
     }

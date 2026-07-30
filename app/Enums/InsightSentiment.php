@@ -3,10 +3,10 @@
 namespace App\Enums;
 
 /**
- * Sentimento descritivo do conteudo expresso.
+ * Sentimento descritivo do conteúdo expresso.
  *
  * Existe para caracterizar o relato, nunca para classificar a pessoa, ranquear
- * contatos ou orientar persuasao individual.
+ * contatos ou orientar persuasão individual.
  */
 enum InsightSentiment: string
 {

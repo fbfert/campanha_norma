@@ -1,31 +1,31 @@
 ## Why
 
-A 9A envia uma pergunta e encerra. A 9B interpreta a resposta, mas nao devolve nada a pessoa. O resultado e uma pesquisa de turno unico: quando alguem escreve "falta medico aqui", nao ha como pedir o detalhe que transforma esse relato em informacao util.
+A 9A envia uma pergunta e encerra. A 9B interpreta a resposta, mas não devolve nada a pessoa. O resultado e uma pesquisa de turno único: quando alguém escreve "falta médico aqui", não ha como pedir o detalhe que transforma esse relato em informação útil.
 
-A subetapa 9C adiciona geracao de resposta contextualizada com um proposito estreito: **aprofundar a opiniao da propria pessoa**, com no maximo duas perguntas, sempre a partir do que ela mesma escreveu.
+A subetapa 9C adiciona geração de resposta contextualizada com um propósito estreito: **aprofundar a opinião da própria pessoa**, com no máximo duas perguntas, sempre a partir do que ela mesma escreveu.
 
-O modo padrao e obrigatorio de entrada em producao e sugerir para aprovacao humana. Nenhum texto gerado chega ao contato sem um operador aprovar. O autoenvio existe, nasce desligado, e so pode funcionar para categorias explicitamente permitidas, com confianca alta e sob todos os guards.
+O modo padrão e obrigatório de entrada em produção e sugerir para aprovação humana. Nenhum texto gerado chega ao contato sem um operador aprovar. O autoenvio existe, nasce desligado, e so pode funcionar para categorias explicitamente permitidas, com confiança alta e sob todos os guards.
 
 ## What Changes
 
-- Adicionar gerador de resposta por interface independente de fornecedor, com saida JSON validada por schema, prompts versionados e execucao ligada ao run de classificacao e ao insight da 9B.
-- Adicionar contrato estruturado com seis acoes permitidas: `suggest_reply`, `thank_and_complete`, `request_clarification`, `handoff_human`, `no_reply` e `opt_out`.
-- Adicionar validador deterministico do texto gerado, aplicado depois do modelo, cobrindo idioma, tamanho, quantidade de perguntas, promessa, pedido de voto, comparacao com adversarios, urgencia artificial, simulacao de intimidade e alegacao de leitura pessoal.
-- Adicionar caixa de aprovacao com edicao antes do envio, aprovacao individual, rejeicao, regeneracao com justificativa, assuncao manual e bloqueio de sugestao obsoleta.
-- Adicionar quatro modos de operacao: `disabled`, `draft_only`, `approval_required` e `auto_send_limited`, com o modo do fluxo podendo ser mais restritivo que o global, nunca menos.
-- Adicionar autoenvio limitado, desligado por padrao, condicionado a lista de categorias permitidas, threshold de confianca, ausencia de sinalizacao sensivel, elegibilidade do contato, janela de horario, limite de turnos, trava e validacao deterministica do texto.
-- Adicionar handoff humano com treze motivos, pausa da automacao, mudanca de estado, elevacao de prioridade, evento e exibicao do motivo, sem nenhum texto improvisado.
-- Adicionar limite de aprofundamento com contagem idempotente de turnos, agradecimento e encerramento ao atingir o limite, e agrupamento de mensagens consecutivas por debounce configuravel.
-- Refatorar o envio manual e o automatico para compartilhar um servico de saida unico, preservando integralmente o comportamento do envio manual atual.
+- Adicionar gerador de resposta por interface independente de fornecedor, com saída JSON validada por schema, prompts versionados e execução ligada ao run de classificação e ao insight da 9B.
+- Adicionar contrato estruturado com seis ações permitidas: `suggest_reply`, `thank_and_complete`, `request_clarification`, `handoff_human`, `no_reply` e `opt_out`.
+- Adicionar validador determinístico do texto gerado, aplicado depois do modelo, cobrindo idioma, tamanho, quantidade de perguntas, promessa, pedido de voto, comparação com adversários, urgência artificial, simulação de intimidade e alegação de leitura pessoal.
+- Adicionar caixa de aprovação com edição antes do envio, aprovação individual, rejeição, regeneração com justificativa, assunção manual e bloqueio de sugestão obsoleta.
+- Adicionar quatro modos de operação: `disabled`, `draft_only`, `approval_required` e `auto_send_limited`, com o modo do fluxo podendo ser mais restritivo que o global, nunca menos.
+- Adicionar autoenvio limitado, desligado por padrão, condicionado a lista de categorias permitidas, threshold de confiança, ausência de sinalização sensível, elegibilidade do contato, janela de horário, limite de turnos, trava e validação determinística do texto.
+- Adicionar handoff humano com treze motivos, pausa da automação, mudança de estado, elevação de prioridade, evento e exibição do motivo, sem nenhum texto improvisado.
+- Adicionar limite de aprofundamento com contagem idempotente de turnos, agradecimento e encerramento ao atingir o limite, e agrupamento de mensagens consecutivas por debounce configurável.
+- Refatorar o envio manual e o automático para compartilhar um serviço de saída único, preservando integralmente o comportamento do envio manual atual.
 - Adicionar metadados de origem e autoria de IA nas mensagens de conversa, com selo na linha do tempo.
-- Adicionar feedback operacional por sugestao, sem qualquer efeito automatico sobre prompt ou modelo.
-- Adicionar telas, permissoes proprias, observabilidade, testes e documentacao.
+- Adicionar feedback operacional por sugestão, sem qualquer efeito automático sobre prompt ou modelo.
+- Adicionar telas, permissões próprias, observabilidade, testes e documentação.
 
 ## Impact
 
 - Affected specs: `ai-response-generation` (nova), `ai-interpretation`, `conversation-automation`, `conversations-sync`, `admin-foundation`, `history-compliance`, `project-foundation`
-- Affected code: migrations, enums, models, contrato e servicos de geracao, servico de saida unificado, jobs, controllers, rotas, views, seeders, testes e documentacao Laravel.
-- Nao afetado: servico Node.js `whatsapp-service/` permanece inalterado; o envio continua pelo `WhatsAppProvider` existente; a interpretacao da 9B continua sem gerar texto.
-- Correcao de divergencia: a spec `conversations-sync` afirmava que a continuacao permaneceria manual e que nenhuma resposta automatica existiria. A 9A ja havia introduzido envio automatico de pergunta sem atualizar essa spec. Esta mudanca corrige o texto para descrever o comportamento real e os limites que o cercam.
-- Constraints desta subetapa: sem recuperacao vetorial, sem base de conhecimento oficial, sem relatorios finais da 9E, sem conversa infinita e sem qualquer envio nao aprovado no modo padrao.
-- Seguranca e LGPD: aprovacao humana por padrao, opt-out prevalecendo sobre qualquer sugestao pendente, contexto restrito a propria conversa, ausencia de microdirecionamento e transparencia sobre atendimento automatizado.
+- Affected code: migrations, enums, models, contrato e serviços de geração, serviço de saída unificado, jobs, controllers, rotas, views, seeders, testes e documentação Laravel.
+- Não afetado: serviço Node.js `whatsapp-service/` permanece inalterado; o envio continua pelo `WhatsAppProvider` existente; a interpretação da 9B continua sem gerar texto.
+- Correção de divergência: a spec `conversations-sync` afirmava que a continuação permaneceria manual e que nenhuma resposta automática existiria. A 9A já havia introduzido envio automático de pergunta sem atualizar essa spec. Esta mudança corrige o texto para descrever o comportamento real e os limites que o cercam.
+- Constraints desta subetapa: sem recuperação vetorial, sem base de conhecimento oficial, sem relatórios finais da 9E, sem conversa infinita e sem qualquer envio não aprovado no modo padrão.
+- Segurança e LGPD: aprovação humana por padrão, opt-out prevalecendo sobre qualquer sugestão pendente, contexto restrito a própria conversa, ausência de microdirecionamento e transparência sobre atendimento automatizado.

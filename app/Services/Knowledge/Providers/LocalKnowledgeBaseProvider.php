@@ -14,13 +14,13 @@ use Illuminate\Support\Facades\DB;
 /**
  * Armazenamento relacional dos trechos e embeddings.
  *
- * A justificativa tecnica, os limites medidos e o gatilho de migracao estao em
+ * A justificativa técnica, os limites medidos e o gatilho de migração estão em
  * `docs/adr/0001-armazenamento-vetorial-e-provedor-de-conhecimento.md`. Em
- * resumo: o corpus admissivel e curado e pequeno, e nessa faixa um segundo banco
- * de dados custa mais em operacao do que economiza em consulta.
+ * resumo: o corpus admissível e curado e pequeno, e nessa faixa um segundo banco
+ * de dados custa mais em operação do que economiza em consulta.
  *
- * Nao existe armazenamento remoto: `external_chunk_id` recebe a chave local,
- * para que a citacao continue resolvivel apos uma futura troca de provedor.
+ * Não existe armazenamento remoto: `external_chunk_id` recebe a chave local,
+ * para que a citação continue resolvível após uma futura troca de provedor.
  */
 class LocalKnowledgeBaseProvider implements KnowledgeBaseProvider
 {
@@ -48,7 +48,7 @@ class LocalKnowledgeBaseProvider implements KnowledgeBaseProvider
 
     public function deleteStore(KnowledgeBase $base): void
     {
-        // Os trechos saem por cascata da propria base.
+        // Os trechos saem por cascata da própria base.
     }
 
     /**
@@ -59,8 +59,8 @@ class LocalKnowledgeBaseProvider implements KnowledgeBaseProvider
         $ids = [];
 
         DB::transaction(function () use ($document, $chunks, &$ids): void {
-            // Reindexar substitui: trecho antigo do mesmo documento nao pode
-            // sobreviver a uma nova extracao e continuar sendo recuperado.
+            // Reindexar substitui: trecho antigo do mesmo documento não pode
+            // sobreviver a uma nova extração e continuar sendo recuperado.
             KnowledgeChunk::query()->where('knowledge_document_id', $document->id)->delete();
 
             foreach ($chunks as $chunk) {

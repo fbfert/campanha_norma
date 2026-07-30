@@ -12,8 +12,8 @@ class AiProviderManager
     {
         return match ((string) config('ai.provider')) {
             'openai' => app(OpenAiCompatibleProvider::class),
-            // Fornecedor desconhecido nunca vira erro fatal em producao: cai no
-            // provedor inerte, que falha de forma controlada e auditavel.
+            // Fornecedor desconhecido nunca vira erro fatal em produção: cai no
+            // provedor inerte, que falha de forma controlada e auditável.
             default => app(NullAiProvider::class),
         };
     }

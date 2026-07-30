@@ -1,10 +1,10 @@
-<x-layouts.app title="Tentativas do destinatario" breadcrumbs="Mensagens / Processamento / Tentativas">
+<x-layouts.app title="Tentativas do destinatário" breadcrumbs="Mensagens / Processamento / Tentativas">
     <div class="panel">
         <h2>{{ $recipient->contact_name_snapshot }}</h2>
         <p class="muted">Request ID: {{ Str::mask($recipient->request_id ?? '', '*', 8, -8) }}</p>
         <div class="table-wrap">
             <table>
-                <thead><tr><th>Tentativa</th><th>Status</th><th>Inicio</th><th>Fim</th><th>Erro</th><th>ID externo</th></tr></thead>
+                <thead><tr><th>Tentativa</th><th>Status</th><th>Início</th><th>Fim</th><th>Erro</th><th>ID externo</th></tr></thead>
                 <tbody>
                     @forelse($attempts as $attempt)
                         <tr>

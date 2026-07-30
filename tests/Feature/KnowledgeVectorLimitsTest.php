@@ -19,7 +19,7 @@ use Tests\TestCase;
  * Subetapa 9D: limites do armazenamento vetorial.
  *
  * O ADR 0001 escolheu guardar vetores em coluna `blob` de um banco relacional em
- * vez de introduzir um banco vetorial. Estes testes sao a contrapartida dessa
+ * vez de introduzir um banco vetorial. Estes testes são a contrapartida dessa
  * escolha: eles falham se o comportamento sair da faixa documentada la.
  */
 class KnowledgeVectorLimitsTest extends TestCase
@@ -58,7 +58,7 @@ class KnowledgeVectorLimitsTest extends TestCase
     }
 
     // =========================================================================
-    // Serializacao
+    // Serialização
     // =========================================================================
 
     public function test_a_vector_survives_the_round_trip_within_float32_precision(): void
@@ -70,7 +70,7 @@ class KnowledgeVectorLimitsTest extends TestCase
         $this->assertCount(1536, $recovered);
 
         foreach ($original as $position => $value) {
-            $this->assertEqualsWithDelta($value, $recovered[$position], 1e-6, "Divergencia na posicao {$position}.");
+            $this->assertEqualsWithDelta($value, $recovered[$position], 1e-6, "Divergência na posição {$position}.");
         }
     }
 
@@ -82,7 +82,7 @@ class KnowledgeVectorLimitsTest extends TestCase
     }
 
     /**
-     * O numero que sustenta a decisao do ADR: 6.144 bytes por trecho.
+     * O número que sustenta a decisão do ADR: 6.144 bytes por trecho.
      */
     public function test_the_documented_corpus_estimate_still_holds(): void
     {
@@ -95,14 +95,14 @@ class KnowledgeVectorLimitsTest extends TestCase
 
     /**
      * Teto da coluna. Se um modelo futuro passar disso, o ADR precisa ser
-     * revisitado antes de o vetor ser truncado em silencio pelo banco.
+     * revisitado antes de o vetor ser truncado em silêncio pelo banco.
      */
     public function test_the_column_ceiling_is_above_every_model_in_use(): void
     {
         $maximumDimensions = intdiv(self::BLOB_CAPACITY, self::BYTES_PER_FLOAT);
 
         $this->assertSame(16383, $maximumDimensions);
-        $this->assertGreaterThan(3072, $maximumDimensions, 'O maior modelo comercial em uso hoje usa 3.072 dimensoes.');
+        $this->assertGreaterThan(3072, $maximumDimensions, 'O maior modelo comercial em uso hoje usa 3.072 dimensões.');
         $this->assertLessThanOrEqual(self::BLOB_CAPACITY, 3072 * self::BYTES_PER_FLOAT);
     }
 
@@ -181,7 +181,7 @@ class KnowledgeVectorLimitsTest extends TestCase
         }
 
         $result = app(KnowledgeRetriever::class)->retrieve(new RetrievalQuery(
-            text: 'horario de atendimento do gabinete',
+            text: 'horário de atendimento do gabinete',
             baseIds: [$base->id],
             strategy: RetrievalStrategy::Hybrid,
             topK: 5,
@@ -190,7 +190,7 @@ class KnowledgeVectorLimitsTest extends TestCase
         ));
 
         $this->assertSame('limite_de_candidatos_excedido', $result->degradedReason);
-        $this->assertFalse($result->isEmpty(), 'A recusa vetorial nao pode zerar a busca: a lexica responde.');
+        $this->assertFalse($result->isEmpty(), 'A recusa vetorial não pode zerar a busca: a léxica responde.');
     }
 
     // =========================================================================
@@ -206,7 +206,7 @@ class KnowledgeVectorLimitsTest extends TestCase
         $base = KnowledgeBase::factory()->active()->create();
         $document = KnowledgeDocument::factory()->for($base, 'base')->approved()->create();
 
-        // Trecho gravado por um modelo antigo, com outra dimensao.
+        // Trecho gravado por um modelo antigo, com outra dimensão.
         KnowledgeChunk::factory()
             ->for($document, 'document')
             ->withContent('Trecho do modelo antigo sobre atendimento.')
@@ -226,6 +226,6 @@ class KnowledgeVectorLimitsTest extends TestCase
             maxContextChars: 4000,
         ));
 
-        $this->assertTrue($result->isEmpty(), 'Comparar vetores de modelos diferentes produziria numero sem sentido.');
+        $this->assertTrue($result->isEmpty(), 'Comparar vetores de modelos diferentes produziria número sem sentido.');
     }
 }

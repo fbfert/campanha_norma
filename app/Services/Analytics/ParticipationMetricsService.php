@@ -10,23 +10,23 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Metricas de participacao da pesquisa conversacional.
+ * Métricas de participação da pesquisa conversacional.
  *
- * Cada taxa declara numerador, denominador e exclusoes. Isso nao e formalidade:
- * "taxa de resposta de 100%" sobre duas conversas e um numero verdadeiro e
- * inutil, e a diferenca so aparece quando o denominador esta a vista. Por isso
- * toda taxa devolvida carrega junto os dois numeros que a formaram.
+ * Cada taxa declara numerador, denominador e exclusões. Isso não e formalidade:
+ * "taxa de resposta de 100%" sobre duas conversas e um número verdadeiro e
+ * inutil, e a diferença so aparece quando o denominador esta a vista. Por isso
+ * toda taxa devolvida carrega junto os dois números que a formaram.
  *
- * Os estagios sao lidos do estado atual da conversa. Um estagio terminal
+ * Os estagios são lidos do estado atual da conversa. Um estagio terminal
  * (`completed`, `opted_out`, `permission_denied`, `waiting_human`, `failed`)
- * nao volta atras, entao contar por estado atual e equivalente a contar por
- * evento — e nao exige um historico de transicoes que a 9A nao guarda para
+ * não volta atrás, então contar por estado atual e equivalente a contar por
+ * evento — e não exige um histórico de transições que a 9A não guarda para
  * esse fim.
  */
 class ParticipationMetricsService
 {
     /**
-     * Estagios que so sao alcancados depois de a pessoa autorizar.
+     * Estagios que so são alcancados depois de a pessoa autorizar.
      *
      * @var list<string>
      */
@@ -42,8 +42,8 @@ class ParticipationMetricsService
     private const ANSWERED_STAGES = ['answer_received', 'completed'];
 
     /**
-     * Contagens brutas do periodo. E a fonte tanto da tela quanto da
-     * materializacao diaria, para que os dois nunca discordem.
+     * Contagens brutas do período. E a fonte tanto da tela quanto da
+     * materialização diária, para que os dois nunca discordem.
      *
      * @return array<string, int>
      */
@@ -79,12 +79,12 @@ class ParticipationMetricsService
     }
 
     /**
-     * Tempo ate a primeira resposta, em segundos.
+     * Tempo até a primeira resposta, em segundos.
      *
-     * Medido do inicio do fluxo ate a primeira mensagem recebida daquela
-     * conversa depois do inicio. Conversas sem nenhuma resposta ficam de fora
-     * do denominador: incluir silencio como tempo infinito, ou como zero,
-     * distorceria a media nos dois sentidos.
+     * Medido do início do fluxo até a primeira mensagem recebida daquela
+     * conversa depois do início. Conversas sem nenhuma resposta ficam de fora
+     * do denominador: incluir silêncio como tempo infinito, ou como zero,
+     * distorceria a média nos dois sentidos.
      *
      * @return array{total: int, samples: int, average: float|null}
      */
@@ -134,8 +134,8 @@ class ParticipationMetricsService
         $totals = $this->totals($from, $to, $flowId);
         $firstReply = $this->firstReply($from, $to, $flowId);
 
-        // Denominador da taxa de permissao: apenas quem respondeu ao pedido.
-        // Quem ainda nao respondeu nao e uma negativa, e contar silencio como
+        // Denominador da taxa de permissão: apenas quem respondeu ao pedido.
+        // Quem ainda não respondeu não e uma negativa, e contar silêncio como
         // recusa produziria uma taxa que so cai com o tempo.
         $answeredPermission = $totals['permission_granted'] + $totals['permission_denied'] + $totals['opted_out'];
 
@@ -156,11 +156,11 @@ class ParticipationMetricsService
     }
 
     /**
-     * Comparacao entre dois periodos.
+     * Comparação entre dois períodos.
      *
-     * Devolve os dois lados e a diferenca. Nao calcula variacao percentual
-     * quando o periodo anterior e zero, e nao afirma causa: dois numeros lado a
-     * lado sao um fato, e a explicacao para a diferenca nao esta nos dados.
+     * Devolve os dois lados e a diferença. Não calcula variação percentual
+     * quando o período anterior e zero, e não afirma causa: dois números lado a
+     * lado são um fato, e a explicação para a diferença não esta nos dados.
      *
      * @return array<string, mixed>
      */
@@ -178,7 +178,7 @@ class ParticipationMetricsService
     }
 
     /**
-     * Serie diaria para o grafico de participacao.
+     * Série diária para o gráfico de participação.
      *
      * @return array<int, array<string, mixed>>
      */
@@ -200,8 +200,8 @@ class ParticipationMetricsService
     }
 
     /**
-     * Taxa com denominador explicito. Sem denominador nao ha taxa: devolve
-     * nulo, e a tela mostra um traco em vez de zero por cento.
+     * Taxa com denominador explícito. Sem denominador não ha taxa: devolve
+     * nulo, e a tela mostra um traço em vez de zero por cento.
      *
      * @return array{value: float|null, numerator: int, denominator: int}
      */

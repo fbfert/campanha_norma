@@ -21,9 +21,9 @@ use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
- * Administracao dos documentos de uma base.
+ * Administração dos documentos de uma base.
  *
- * Aprovar e o unico ato que torna um documento alcancavel pela busca, e ele nao
+ * Aprovar e o único ato que torna um documento alcancável pela busca, e ele não
  * pode ser encadeado com o envio: quem aprova declara ter lido o que aprovou.
  */
 class KnowledgeDocumentController extends Controller
@@ -68,14 +68,14 @@ class KnowledgeDocumentController extends Controller
         try {
             $document = $this->ingestion->store($base, $request->file('file'), $data, $request->user());
         } catch (KnowledgeProviderException $exception) {
-            // Codigo de erro, nunca a mensagem do provedor: ela pode carregar
-            // caminho de arquivo ou trecho de requisicao.
+            // Código de erro, nunca a mensagem do provedor: ela pode carregar
+            // caminho de arquivo ou trecho de requisição.
             return back()->withInput()->withErrors(['file' => 'Falha no envio: '.$exception->errorCode.'.']);
         }
 
         return redirect()
             ->route('admin.knowledge.documents.show', [$base, $document])
-            ->with('status', 'Documento enviado. A indexacao acontece em segundo plano.');
+            ->with('status', 'Documento enviado. A indexação acontece em segundo plano.');
     }
 
     public function show(Request $request, KnowledgeBase $base, KnowledgeDocument $document): View
@@ -102,7 +102,7 @@ class KnowledgeDocumentController extends Controller
 
         $this->indexing->approve($document, $request->user());
 
-        return back()->with('status', 'Documento aprovado e disponivel para busca.');
+        return back()->with('status', 'Documento aprovado e disponível para busca.');
     }
 
     public function reject(Request $request, KnowledgeBase $base, KnowledgeDocument $document): RedirectResponse
@@ -126,7 +126,7 @@ class KnowledgeDocumentController extends Controller
 
         $this->indexing->obsolete($document, $request->user(), $data['reason'] ?? null);
 
-        return back()->with('status', 'Documento marcado como obsoleto. O historico das respostas que ele sustentou continua intacto.');
+        return back()->with('status', 'Documento marcado como obsoleto. O histórico das respostas que ele sustentou continua intacto.');
     }
 
     public function reprocess(Request $request, KnowledgeBase $base, KnowledgeDocument $document, SystemSettingService $settings): RedirectResponse
@@ -135,7 +135,7 @@ class KnowledgeDocumentController extends Controller
         abort_unless($document->knowledge_base_id === $base->id, 404);
 
         if (! $document->status->canBeReprocessed()) {
-            return back()->withErrors(['status' => 'Este documento nao pode ser reprocessado na situacao atual.']);
+            return back()->withErrors(['status' => 'Este documento não pode ser reprocessado na situação atual.']);
         }
 
         $document->update(['status' => KnowledgeDocumentStatus::Processing, 'error_message' => null]);
@@ -145,7 +145,7 @@ class KnowledgeDocumentController extends Controller
 
         $this->audit->log('knowledge_document.reprocess_requested', 'Reprocessamento solicitado.', $document, null, null, $request->user());
 
-        return back()->with('status', 'Reprocessamento enfileirado. A aprovacao anterior sera revogada.');
+        return back()->with('status', 'Reprocessamento enfileirado. A aprovação anterior será revogada.');
     }
 
     public function destroy(Request $request, KnowledgeBase $base, KnowledgeDocument $document): RedirectResponse
@@ -157,14 +157,14 @@ class KnowledgeDocumentController extends Controller
 
         return redirect()
             ->route('admin.knowledge.bases.show', $base)
-            ->with('status', 'Documento excluido. As citacoes ja registradas continuam existindo com o conteudo que sustentou cada resposta.');
+            ->with('status', 'Documento excluído. As citações já registradas continuam existindo com o conteúdo que sustentou cada resposta.');
     }
 
     /**
      * Download do arquivo original.
      *
-     * O caminho vem do banco, nunca da requisicao, e o disco e privado. Nao ha
-     * parametro de caminho para travessia acontecer.
+     * O caminho vem do banco, nunca da requisição, e o disco e privado. Não ha
+     * parâmetro de caminho para travessia acontecer.
      */
     public function download(Request $request, KnowledgeBase $base, KnowledgeDocument $document): StreamedResponse
     {

@@ -1,3 +1,3 @@
-<x-layouts.app title="Relatorio de nao enviados" breadcrumbs="Relatorios / Nao enviados">
+<x-layouts.app title="Relatório de não enviados" breadcrumbs="Relatorios / Nao enviados">
     <section class="card"><div class="table-wrap"><table><thead><tr><th>Contato</th><th>Lote</th><th>Status</th><th>Motivo</th><th>Data</th></tr></thead><tbody>@foreach($recipients as $recipient)<tr><td>{{ $recipient->contact_name_snapshot }}</td><td>{{ $recipient->batch?->name }}</td><td>{{ $recipient->processing_status?->label() }}</td><td>{{ $recipient->error_code }} - {{ $recipient->error_message }}</td><td>{{ $recipient->updated_at?->format($dateTimeFormat) }}</td></tr>@endforeach</tbody></table></div>{{ $recipients->links() }}</section>
 </x-layouts.app>

@@ -31,12 +31,12 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         // Etapa 9C: o gerador de resposta e resolvido por contrato, para que a
-        // troca de implementacao nao exija tocar em nenhum servico.
+        // troca de implementação não exija tocar em nenhum serviço.
         $this->app->bind(ConversationResponseGenerator::class, AiConversationResponseGenerator::class);
 
-        // Etapa 9D: os quatro contratos de conhecimento sao resolvidos aqui. Os
-        // provedores passam pelo manager para que a troca seja uma mudanca de
-        // configuracao, e nao de codigo.
+        // Etapa 9D: os quatro contratos de conhecimento são resolvidos aqui. Os
+        // provedores passam pelo manager para que a troca seja uma mudança de
+        // configuração, e não de código.
         $this->app->bind(KnowledgeRetriever::class, LocalKnowledgeRetriever::class);
         $this->app->bind(AnswerGroundingValidator::class, GroundingValidator::class);
         $this->app->bind(KnowledgeBaseProvider::class, fn ($app) => $app->make(KnowledgeProviderManager::class)->provider());
@@ -167,20 +167,20 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('analytics.view_governance', fn (User $user): bool => $user->hasPermission('analytics.view_governance'));
 
         // O provedor configurado pela tela sobrescreve o do arquivo de
-        // ambiente. Fica dentro de try porque este boot tambem roda antes de a
-        // tabela existir, na primeira migracao: falhar ali impediria instalar o
-        // sistema por causa de uma configuracao que ainda nao pode existir.
+        // ambiente. Fica dentro de try porque este boot também roda antes de a
+        // tabela existir, na primeira migração: falhar ali impediria instalar o
+        // sistema por causa de uma configuração que ainda não pode existir.
         try {
             app(AiProviderSettings::class)->applyToConfig();
         } catch (\Throwable) {
-            // Sem banco disponivel, vale o que estiver no `.env`.
+            // Sem banco disponível, vale o que estiver no `.env`.
         }
 
-        // Etapa 9B: a interpretacao observa o ponto de extensao da 9A sem que a
+        // Etapa 9B: a interpretação observa o ponto de extensão da 9A sem que a
         // 9A precise conhecer a camada de IA.
         Event::listen(ConversationMessageEvaluated::class, DispatchConversationInterpretation::class);
 
-        // Etapa 9C: geracao de resposta observa o mesmo ponto de extensao.
+        // Etapa 9C: geração de resposta observa o mesmo ponto de extensão.
         Event::listen(ConversationMessageEvaluated::class, DispatchConversationReplyGeneration::class);
 
         view()->composer('*', function ($view): void {

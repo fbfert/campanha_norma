@@ -15,10 +15,10 @@ enum AiRunStatus: string
     {
         return match ($this) {
             self::Pending => 'Pendente',
-            self::Running => 'Em execucao',
-            self::Succeeded => 'Concluida',
+            self::Running => 'Em execução',
+            self::Succeeded => 'Concluída',
             self::Failed => 'Falhou',
-            self::InvalidOutput => 'Saida invalida',
+            self::InvalidOutput => 'Saída invalida',
             self::Skipped => 'Ignorada',
         };
     }

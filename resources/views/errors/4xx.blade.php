@@ -1,15 +1,15 @@
 @php
-    // O Laravel procura `errors/{codigo}` e cai neste arquivo quando nao acha.
-    // Um mapa aqui evita um arquivo quase identico por codigo.
+    // O Laravel procura `errors/{código}` e cai neste arquivo quando não acha.
+    // Um mapa aqui evita um arquivo quase identico por código.
     $status = $exception?->getStatusCode() ?? 400;
 
     [$title, $message] = match ($status) {
-        401 => ['Sessao encerrada', 'Entre novamente para continuar de onde parou.'],
-        403 => ['Sem permissao', 'Seu perfil nao tem acesso a esta tela. Se voce precisa dela para trabalhar, peca a um administrador.'],
-        404 => ['Pagina nao encontrada', 'O endereco nao existe, ou o registro que estava aqui foi removido.'],
-        419 => ['A pagina expirou', 'O formulario ficou aberto tempo demais. Abra a tela de novo e refaca a acao - nada foi salvo.'],
+        401 => ['Sessão encerrada', 'Entre novamente para continuar de onde parou.'],
+        403 => ['Sem permissão', 'Seu perfil não tem acesso a esta tela. Se você precisa dela para trabalhar, peca a um administrador.'],
+        404 => ['Página não encontrada', 'O endereço não existe, ou o registro que estava aqui foi removido.'],
+        419 => ['A página expirou', 'O formulário ficou aberto tempo demais. Abra a tela de novo e refaca a ação - nada foi salvo.'],
         429 => ['Pedidos demais', 'Espere alguns instantes antes de tentar outra vez.'],
-        default => ['Nao foi possivel abrir', 'O sistema nao conseguiu atender a este pedido.'],
+        default => ['Não foi possível abrir', 'O sistema não conseguiu atender a este pedido.'],
     };
 @endphp
 

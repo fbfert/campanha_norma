@@ -9,12 +9,12 @@ class ExpireReportExportsCommand extends Command
 {
     protected $signature = 'reports:expire-exports';
 
-    protected $description = 'Expira exportacoes de relatorios vencidas.';
+    protected $description = 'Expira exportações de relatórios vencidas.';
 
     public function handle(MaintenanceService $maintenance): int
     {
         $count = $maintenance->expireExports();
-        $this->info("Exportacoes expiradas: {$count}");
+        $this->info("Exportações expiradas: {$count}");
 
         return self::SUCCESS;
     }

@@ -16,13 +16,13 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Retrato unico do que esta ligado, do que esta em uso e do que esta pendente.
+ * Retrato único do que esta ligado, do que esta em uso e do que esta pendente.
  *
- * A parte mais util nao sao os totais, e `divergences()`. Um sistema com quatro
- * interruptores independentes tem estados intermediarios que parecem
- * funcionando e nao estao: geracao ligada sem provedor, base ligada sem
- * documento aprovado, automacao ligada sem fluxo ativo. Cada um desses produz
- * silencio, nao erro — ninguem reclama, e nada acontece.
+ * A parte mais útil não são os totais, e `divergences()`. Um sistema com quatro
+ * interruptores independentes tem estados intermediários que parecem
+ * funcionando e não estão: geração ligada sem provedor, base ligada sem
+ * documento aprovado, automação ligada sem fluxo ativo. Cada um desses produz
+ * silêncio, não erro — ninguém reclama, e nada acontece.
  */
 class GovernanceReportService
 {
@@ -107,12 +107,12 @@ class GovernanceReportService
     public function thresholds(): array
     {
         return [
-            'classificacao minima' => (string) $this->settings->get('ai.min_classification_confidence', '-'),
-            'extracao minima' => (string) $this->settings->get('ai.min_extraction_confidence', '-'),
-            'resposta minima' => (string) $this->settings->get('ai.response.min_confidence', '-'),
-            'busca minima' => (string) $this->settings->get('knowledge.score_threshold', '-'),
-            'celula minima em relatorio' => (string) $this->settings->get('analytics.minimum_cell_size', '5'),
-            'maximo de turnos automaticos' => (string) $this->settings->get('conversation_automation.max_automated_messages', '-'),
+            'classificação mínima' => (string) $this->settings->get('ai.min_classification_confidence', '-'),
+            'extração mínima' => (string) $this->settings->get('ai.min_extraction_confidence', '-'),
+            'resposta mínima' => (string) $this->settings->get('ai.response.min_confidence', '-'),
+            'busca mínima' => (string) $this->settings->get('knowledge.score_threshold', '-'),
+            'célula mínima em relatório' => (string) $this->settings->get('analytics.minimum_cell_size', '5'),
+            'máximo de turnos automáticos' => (string) $this->settings->get('conversation_automation.max_automated_messages', '-'),
         ];
     }
 
@@ -158,7 +158,7 @@ class GovernanceReportService
     }
 
     /**
-     * Combinacoes que parecem ligadas e nao produzem efeito.
+     * Combinações que parecem ligadas e não produzem efeito.
      *
      * @return array<int, string>
      */
@@ -168,35 +168,35 @@ class GovernanceReportService
         $divergences = [];
 
         if ($switches['interpretation'] && (string) config('ai.provider') === 'null') {
-            $divergences[] = 'A interpretacao esta ligada e nenhum provedor de IA esta configurado. Nenhuma mensagem sera interpretada.';
+            $divergences[] = 'A interpretação esta ligada e nenhum provedor de IA esta configurado. Nenhuma mensagem será interpretada.';
         }
 
         if ($switches['generation'] && ! $switches['interpretation']) {
-            $divergences[] = 'A geracao de respostas esta ligada e a interpretacao esta desligada. A geracao depende da classificacao da mensagem.';
+            $divergences[] = 'A geração de respostas esta ligada e a interpretação esta desligada. A geração depende da classificação da mensagem.';
         }
 
         if ($switches['knowledge'] && $this->documents()['approved'] === 0) {
-            $divergences[] = 'A base de conhecimento esta ligada e nao existe documento aprovado. Nenhuma resposta sera fundamentada.';
+            $divergences[] = 'A base de conhecimento esta ligada e não existe documento aprovado. Nenhuma resposta será fundamentada.';
         }
 
         if ($switches['automation'] && $this->activeFlowCount() === 0) {
-            $divergences[] = 'A automacao esta ligada e nao existe fluxo ativo. Nenhuma conversa avancara.';
+            $divergences[] = 'A automação esta ligada e não existe fluxo ativo. Nenhuma conversa avancara.';
         }
 
         if ($switches['auto_send'] && ! $switches['automation']) {
-            $divergences[] = 'O envio automatico esta ligado e a automacao esta desligada. O envio nao acontece.';
+            $divergences[] = 'O envio automático esta ligado e a automação esta desligada. O envio não acontece.';
         }
 
         if ((string) $this->settings->get('knowledge.retrieval_strategy', 'lexical') !== 'lexical'
             && (string) config('knowledge.embeddings.provider') === 'null') {
-            $divergences[] = 'A estrategia de busca exige embeddings e nenhum provedor de embeddings esta configurado. A busca cai para lexica.';
+            $divergences[] = 'A estratégia de busca exige embeddings e nenhum provedor de embeddings esta configurado. A busca cai para léxica.';
         }
 
         return $divergences;
     }
 
     /**
-     * Ultimas alteracoes de configuracao registradas na auditoria.
+     * Últimas alterações de configuração registradas na auditoria.
      *
      * @return array<int, array<string, mixed>>
      */

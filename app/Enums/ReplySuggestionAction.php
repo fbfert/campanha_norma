@@ -18,18 +18,18 @@ enum ReplySuggestionAction: string
             self::ThankAndComplete => 'Agradecer e concluir',
             self::RequestClarification => 'Pedir esclarecimento',
             self::HandoffHuman => 'Encaminhar para humano',
-            self::NoReply => 'Nao responder',
+            self::NoReply => 'Não responder',
             self::OptOut => 'Pedido de parada',
         };
     }
 
-    /** Acoes que produzem texto para o contato. */
+    /** Ações que produzem texto para o contato. */
     public function producesText(): bool
     {
         return in_array($this, [self::SuggestReply, self::ThankAndComplete, self::RequestClarification], true);
     }
 
-    /** Acoes que contam como aprofundamento quando enviadas. */
+    /** Ações que contam como aprofundamento quando enviadas. */
     public function isDeepening(): bool
     {
         return $this === self::SuggestReply || $this === self::RequestClarification;

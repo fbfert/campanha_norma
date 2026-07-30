@@ -15,9 +15,9 @@ enum ConversationSyncStatus: string
     {
         return match ($this) {
             self::Pending => 'Pendente',
-            self::Running => 'Em execucao',
-            self::Completed => 'Concluida',
-            self::CompletedWithErrors => 'Concluida com erros',
+            self::Running => 'Em execução',
+            self::Completed => 'Concluída',
+            self::CompletedWithErrors => 'Concluída com erros',
             self::Failed => 'Falhou',
             self::Cancelled => 'Cancelada',
         };

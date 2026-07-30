@@ -13,8 +13,8 @@
                         <th>Enviados</th>
                         <th>Falhas</th>
                         <th>Cancelados</th>
-                        <th>Proximo envio</th>
-                        <th>Acoes</th>
+                        <th>Próximo envio</th>
+                        <th>Ações</th>
                     </tr>
                 </thead>
                 <tbody>

@@ -10,8 +10,8 @@ use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Cache;
 
 /**
- * Avalia o fluxo conversacional apos uma mensagem recebida.
- * Nunca envia diretamente: apenas decide e cria mensagem pendente pelo servico.
+ * Avalia o fluxo conversacional após uma mensagem recebida.
+ * Nunca envia diretamente: apenas decide e cria mensagem pendente pelo serviço.
  */
 class EvaluateConversationFlowJob implements ShouldQueue
 {
@@ -37,7 +37,7 @@ class EvaluateConversationFlowJob implements ShouldQueue
             return;
         }
 
-        // Trava por conversa para nao permitir dois workers avaliando o mesmo fluxo.
+        // Trava por conversa para não permitir dois workers avaliando o mesmo fluxo.
         $lock = Cache::lock("conversation-flow:{$message->conversation_id}", 60);
 
         if (! $lock->get()) {

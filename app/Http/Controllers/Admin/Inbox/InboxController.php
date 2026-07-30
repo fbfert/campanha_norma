@@ -86,10 +86,10 @@ class InboxController extends Controller
     /**
      * Escolher um contato para iniciar uma conversa.
      *
-     * A tela mostra tambem quem nao pode ser contatado, marcado e com o motivo,
+     * A tela mostra também quem não pode ser contatado, marcado e com o motivo,
      * em vez de sumir com essas pessoas da lista. Sumir esconde o motivo: quem
-     * procura um contato e nao o encontra tende a cadastra-lo de novo, e ai o
-     * pedido de nao contatar se perde num registro duplicado.
+     * procura um contato e não o encontra tende a cadastra-lo de novo, e ai o
+     * pedido de não contatar se perde num registro duplicado.
      */
     public function create(Request $request): View
     {
@@ -114,9 +114,9 @@ class InboxController extends Controller
             ->when($request->filled('state'), fn ($query) => $query->where('state', 'like', '%'.trim((string) $request->query('state')).'%'))
             ->when($request->filled('status'), fn ($query) => $query->where('status', $request->string('status')))
             ->when($request->filled('tag_id'), fn ($query) => $query->whereHas('tags', fn ($tag) => $tag->where('tags.id', $request->integer('tag_id'))))
-            // Padrao ligado: quem abre esta tela quer falar com alguem, e o
-            // caminho comum nao deveria comecar por uma lista cheia de gente
-            // com quem nao se pode falar.
+            // Padrão ligado: quem abre esta tela quer falar com alguém, e o
+            // caminho comum não deveria começar por uma lista cheia de gente
+            // com quem não se pode falar.
             ->when($request->boolean('only_eligible', true), function ($query): void {
                 $query->where('do_not_contact', false)
                     ->where('status', ContactStatus::Active->value)
@@ -137,9 +137,9 @@ class InboxController extends Controller
     /**
      * Abrir a conversa com o contato escolhido.
      *
-     * Isto nao envia nada. Cria (ou reencontra) a conversa e leva para a tela
+     * Isto não envia nada. Cria (ou reencontra) a conversa e leva para a tela
      * dela, onde a primeira mensagem e escrita e revisada como qualquer outra.
-     * A conversa ja nasce atribuida a quem a iniciou, senao a primeira tentativa
+     * A conversa já nasce atribuída a quem a iniciou, senão a primeira tentativa
      * de responder esbarraria em "assuma a conversa antes de responder".
      */
     public function store(Request $request, ConversationResolverService $resolver, ConversationEventService $events, AuditLogger $audit): RedirectResponse
@@ -150,7 +150,7 @@ class InboxController extends Controller
         $contact = Contact::findOrFail($validated['contact_id']);
 
         if ($contact->do_not_contact) {
-            throw ValidationException::withMessages(['contact_id' => 'Este contato esta marcado como nao contatar.']);
+            throw ValidationException::withMessages(['contact_id' => 'Este contato esta marcado como não contatar.']);
         }
 
         if ($contact->status !== ContactStatus::Active) {
@@ -158,7 +158,7 @@ class InboxController extends Controller
         }
 
         if (blank($contact->phone_normalized)) {
-            throw ValidationException::withMessages(['contact_id' => 'Este contato nao tem telefone valido.']);
+            throw ValidationException::withMessages(['contact_id' => 'Este contato não tem telefone valido.']);
         }
 
         $conversation = $resolver->resolve($contact, 'principal', false, $contact->phone_normalized);
@@ -182,7 +182,7 @@ class InboxController extends Controller
         return redirect()
             ->route('admin.conversations.show', $conversation)
             ->with('success', $existed
-                ? 'Ja havia uma conversa aberta com este contato.'
+                ? 'Já havia uma conversa aberta com este contato.'
                 : 'Conversa iniciada. Escreva a primeira mensagem abaixo.');
     }
 
@@ -243,7 +243,7 @@ class InboxController extends Controller
         abort_unless($request->user()->can('inbox.sync'), 403);
 
         if (! (bool) $settings->get('conversations.sync_enabled', true)) {
-            return back()->with('error', 'Sincronizacao de conversas desativada.');
+            return back()->with('error', 'Sincronização de conversas desativada.');
         }
 
         try {
@@ -251,16 +251,16 @@ class InboxController extends Controller
                 return back()->with('error', 'Conecte o WhatsApp antes de sincronizar conversas.');
             }
         } catch (\Throwable) {
-            return back()->with('error', 'Nao foi possivel verificar a conexao do WhatsApp.');
+            return back()->with('error', 'Não foi possível verificar a conexão do WhatsApp.');
         }
 
         if (ConversationSyncRun::whereIn('status', [ConversationSyncStatus::Pending->value, ConversationSyncStatus::Running->value])->exists()) {
-            return back()->with('error', 'Ja existe uma sincronizacao em andamento.');
+            return back()->with('error', 'Já existe uma sincronização em andamento.');
         }
 
         $lock = Cache::lock('conversations:sync:active', 1);
         if (! $lock->get()) {
-            return back()->with('error', 'Ja existe uma sincronizacao em andamento.');
+            return back()->with('error', 'Já existe uma sincronização em andamento.');
         }
 
         $lock->release();
@@ -277,9 +277,9 @@ class InboxController extends Controller
         ]);
 
         SyncWhatsAppConversationsJob::dispatch($run->id)->onQueue('whatsapp-conversation-sync');
-        $audit->log('conversation.sync_requested', 'Sincronizacao de conversas solicitada.', $run, null, ['run_id' => $run->id], $request->user());
+        $audit->log('conversation.sync_requested', 'Sincronização de conversas solicitada.', $run, null, ['run_id' => $run->id], $request->user());
 
-        return back()->with('success', 'Sincronizacao de conversas iniciada.');
+        return back()->with('success', 'Sincronização de conversas iniciada.');
     }
 
     public function reply(Request $request, Conversation $conversation, ManualReplyService $replies): RedirectResponse
@@ -298,10 +298,10 @@ class InboxController extends Controller
         $userId = $request->integer('assigned_user_id') ?: $request->user()->id;
         $conversation->update(['assigned_user_id' => $userId]);
         $conversation->assignments()->create(['assigned_user_id' => $userId, 'assigned_by' => $request->user()->id, 'assigned_at' => now(), 'reason' => $request->input('reason')]);
-        $events->record($conversation, 'assigned', 'Conversa atribuida.', null, $request->user(), ['assigned_user_id' => $userId]);
-        $audit->log('conversation.assigned', 'Conversa atribuida.', $conversation, null, ['assigned_user_id' => $userId], $request->user());
+        $events->record($conversation, 'assigned', 'Conversa atribuída.', null, $request->user(), ['assigned_user_id' => $userId]);
+        $audit->log('conversation.assigned', 'Conversa atribuída.', $conversation, null, ['assigned_user_id' => $userId], $request->user());
 
-        return back()->with('success', 'Conversa atribuida.');
+        return back()->with('success', 'Conversa atribuída.');
     }
 
     public function unassign(Request $request, Conversation $conversation, ConversationEventService $events): RedirectResponse
@@ -309,9 +309,9 @@ class InboxController extends Controller
         abort_unless($request->user()->can('inbox.assign'), 403);
         $conversation->assignments()->whereNull('unassigned_at')->update(['unassigned_at' => now(), 'unassigned_by' => $request->user()->id]);
         $conversation->update(['assigned_user_id' => null]);
-        $events->record($conversation, 'unassigned', 'Atribuicao removida.', null, $request->user());
+        $events->record($conversation, 'unassigned', 'Atribuição removida.', null, $request->user());
 
-        return back()->with('success', 'Atribuicao removida.');
+        return back()->with('success', 'Atribuição removida.');
     }
 
     public function status(Request $request, Conversation $conversation, ConversationEventService $events): RedirectResponse
@@ -452,9 +452,9 @@ class InboxController extends Controller
         $validated = $request->validate(['reason' => ['required', 'string', 'max:255']]);
         $conversation->contact->update(['do_not_contact' => true, 'do_not_contact_at' => now(), 'do_not_contact_reason' => $validated['reason']]);
         $interruption->interrupt($conversation->contact, $conversation->contact->phone_normalized);
-        $events->record($conversation, 'blocked', 'Contato marcado como nao contatar.', null, $request->user());
+        $events->record($conversation, 'blocked', 'Contato marcado como não contatar.', null, $request->user());
 
-        return back()->with('success', 'Contato marcado como nao contatar.');
+        return back()->with('success', 'Contato marcado como não contatar.');
     }
 
     private function scope(Request $request, Conversation $conversation): void

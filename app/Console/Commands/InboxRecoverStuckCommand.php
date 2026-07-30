@@ -21,11 +21,11 @@ class InboxRecoverStuckCommand extends Command
             ->update([
                 'status' => ConversationMessageStatus::Unknown,
                 'error_code' => 'MANUAL_REPLY_RESULT_UNKNOWN',
-                'error_message' => 'Resultado da resposta manual precisa de revisao.',
+                'error_message' => 'Resultado da resposta manual precisa de revisão.',
                 'failed_at' => now(),
             ]);
 
-        $this->info("Mensagens presas marcadas para revisao: {$count}.");
+        $this->info("Mensagens presas marcadas para revisão: {$count}.");
 
         return self::SUCCESS;
     }

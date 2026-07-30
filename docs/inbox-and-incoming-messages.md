@@ -2,7 +2,7 @@
 
 ## Arquitetura
 
-O WhatsApp Web permanece isolado no servico Node.js. Quando uma mensagem e recebida, o Node.js normaliza o evento, assina o payload e chama o webhook interno do Laravel.
+O WhatsApp Web permanece isolado no serviço Node.js. Quando uma mensagem e recebida, o Node.js normaliza o evento, assina o payload e chama o webhook interno do Laravel.
 
 Fluxo:
 
@@ -10,7 +10,7 @@ Fluxo:
 WhatsApp Web -> Node.js -> webhook assinado -> Laravel -> fila whatsapp-incoming -> conversa
 ```
 
-O navegador do usuario nunca chama o Node.js diretamente.
+O navegador do usuário nunca chama o Node.js diretamente.
 
 ## Webhook interno
 
@@ -20,7 +20,7 @@ Endpoint:
 POST /internal/whatsapp/incoming
 ```
 
-Cabecalhos obrigatorios:
+Cabeçalhos obrigatórios:
 
 ```text
 X-Webhook-Timestamp
@@ -37,10 +37,10 @@ timestamp + "." + nonce + "." + corpo_bruto
 O Laravel valida:
 
 - `Content-Type: application/json`
-- tamanho maximo do corpo
-- timestamp dentro da tolerancia
-- nonce nao reutilizado
-- assinatura com comparacao segura
+- tamanho máximo do corpo
+- timestamp dentro da tolerância
+- nonce não reutilizado
+- assinatura com comparação segura
 
 ## Payload
 
@@ -63,18 +63,18 @@ has_media
 metadata
 ```
 
-Mensagens de grupo sao ignoradas. Midias sao registradas apenas por metadados nesta etapa.
+Mensagens de grupo são ignoradas. Midias são registradas apenas por metadados nesta etapa.
 
-## Idempotencia
+## Idempotência
 
-A idempotencia usa:
+A idempotência usa:
 
 ```text
 provider + external_message_id
 event_id
 ```
 
-Eventos duplicados nao criam novas mensagens, conversas ou interrupcoes de fila.
+Eventos duplicados não criam novas mensagens, conversas ou interrupções de fila.
 
 ## Conversas
 
@@ -110,20 +110,20 @@ high
 urgent
 ```
 
-## Associacao de contato
+## Associação de contato
 
-O telefone recebido e normalizado pelo mesmo servico usado no cadastro de contatos.
+O telefone recebido e normalizado pelo mesmo serviço usado no cadastro de contatos.
 
-Resultados possiveis:
+Resultados possíveis:
 
 - `matched`
 - `not_found`
 - `multiple_matches`
 - `invalid_phone`
 
-Contato nao encontrado cria conversa sem `contact_id`. O usuario deve associar manualmente ou criar contato em fluxo controlado.
+Contato não encontrado cria conversa sem `contact_id`. O usuário deve associar manualmente ou criar contato em fluxo controlado.
 
-## Interrupcao dos lotes
+## Interrupção dos lotes
 
 Ao receber uma resposta de contato identificado, o sistema marca:
 
@@ -133,14 +133,14 @@ first_replied_at
 last_replied_at
 ```
 
-Destinatarios pendentes do contato sao marcados como:
+Destinatários pendentes do contato são marcados como:
 
 ```text
 processing_status = skipped
 error_code = CONTACT_REPLIED
 ```
 
-Mensagens em processamento ou ja enviadas nao sao canceladas silenciosamente.
+Mensagens em processamento ou já enviadas não são canceladas silenciosamente.
 
 ## CONVERSAS
 
@@ -153,31 +153,31 @@ Rota:
 
 Recursos:
 
-- filtros por status, responsavel, nao lidas e busca
+- filtros por status, responsável, não lidas e busca
 - interface em lista de conversas, linha do tempo e detalhes
 - conversa detalhada
 - leitura interna
-- atribuicao
+- atribuição
 - status e prioridade
 - notas internas
 - etiquetas de conversa
-- associacao manual de contato
-- marcacao de nao contatar
+- associação manual de contato
+- marcação de não contatar
 - resposta manual
-- sincronizacao controlada dos chats disponiveis na sessao atual do WhatsApp Web
+- sincronização controlada dos chats disponíveis na sessão atual do WhatsApp Web
 
-As rotas antigas `/admin/inbox` continuam validas por compatibilidade. A nomenclatura visivel no menu administrativo e `CONVERSAS`.
+As rotas antigas `/admin/inbox` continuam validas por compatibilidade. A nomenclatura visível no menu administrativo e `CONVERSAS`.
 
-## Sincronizacao do WhatsApp Web
+## Sincronização do WhatsApp Web
 
-A sincronizacao usa a sessao atual do WhatsApp Web por meio do servico Node.js privado:
+A sincronização usa a sessão atual do WhatsApp Web por meio do serviço Node.js privado:
 
 ```text
 Laravel -> WhatsAppProvider -> Node.js /api/conversations -> whatsapp-web.js getChats()
 Laravel -> WhatsAppProvider -> Node.js /api/conversations/{chatId}/messages -> chat.fetchMessages()
 ```
 
-Limites padrao:
+Limites padrão:
 
 ```text
 conversations.sync_enabled = true
@@ -197,52 +197,52 @@ Limites absolutos de backend:
 365 dias retroativos
 ```
 
-A sincronizacao:
+A sincronização:
 
 - importa apenas conversas individuais
 - ignora grupos, status, canais, comunidades e listas
 - importa mensagens recebidas e enviadas por outros dispositivos
-- nao baixa midias
-- nao promete recuperar todo o historico, apenas o que a sessao atual disponibilizar
-- usa idempotencia por `provider + external_message_id`
-- registra execucoes em `conversation_sync_runs`
+- não baixa midias
+- não promete recuperar todo o histórico, apenas o que a sessão atual disponibilizar
+- usa idempotência por `provider + external_message_id`
+- registra execuções em `conversation_sync_runs`
 - usa a fila `whatsapp-conversation-sync`
 
-## Atualizacao em tempo real da conversa
+## Atualização em tempo real da conversa
 
-A tela `/admin/conversations/{conversation}` busca mensagens novas sem recarregar a pagina:
+A tela `/admin/conversations/{conversation}` busca mensagens novas sem recarregar a página:
 
 ```text
 GET /admin/inbox/{conversation}/messages?after_id={ultimo_id_conhecido}
 ```
 
-- Consulta automatica a cada 30 segundos, pausada quando a aba do navegador nao esta visivel (`document.hidden`).
-- Botao "Atualizar mensagens" para forcar a consulta a qualquer momento, sempre com retorno visivel (quantidade de mensagens novas, "nenhuma mensagem nova" ou erro).
-- Ao encontrar mensagens novas, marca as recebidas nao lidas como lidas e zera `unread_count`, igual ao comportamento de abrir a conversa.
-- Mensagens sao exibidas com as mais recentes primeiro.
+- Consulta automática a cada 30 segundos, pausada quando a aba do navegador não esta visível (`document.hidden`).
+- Botão "Atualizar mensagens" para forçar a consulta a qualquer momento, sempre com retorno visível (quantidade de mensagens novas, "nenhuma mensagem nova" ou erro).
+- Ao encontrar mensagens novas, marca as recebidas não lidas como lidas e zera `unread_count`, igual ao comportamento de abrir a conversa.
+- Mensagens são exibidas com as mais recentes primeiro.
 
 ## Emoji
 
-O componente `<x-emoji-picker target="id_do_campo">` (`resources/views/components/emoji-picker.blade.php`) insere emojis na posicao do cursor do campo de texto indicado. Usado na resposta manual, no editor de modelos de mensagem e na mensagem avulsa de campanhas/lotes.
+O componente `<x-emoji-picker target="id_do_campo">` (`resources/views/components/emoji-picker.blade.php`) insere emojis na posição do cursor do campo de texto indicado. Usado na resposta manual, no editor de modelos de mensagem e na mensagem avulsa de campanhas/lotes.
 
-Toda a cadeia ja suporta emoji (colunas `utf8mb4`, validacao multibyte). Dois pontos de atencao tratados:
+Toda a cadeia já suporta emoji (colunas `utf8mb4`, validação multibyte). Dois pontos de atenção tratados:
 
-- O cliente HTTP Laravel -> servico Node codifica o corpo com `JSON_UNESCAPED_UNICODE` em `WhatsAppServiceClient::send()`, evitando que emojis inflem ~3x de tamanho ao serem escapados como `\uXXXX`.
-- O servico Node aceita corpos de requisicao ate 256kb (`express.json({ limit: '256kb' })`), suficiente mesmo para mensagens de 4096 caracteres compostas majoritariamente por emoji.
+- O cliente HTTP Laravel -> serviço Node codifica o corpo com `JSON_UNESCAPED_UNICODE` em `WhatsAppServiceClient::send()`, evitando que emojis inflem ~3x de tamanho ao serem escapados como `\uXXXX`.
+- O serviço Node aceita corpos de requisição até 256kb (`express.json({ limit: '256kb' })`), suficiente mesmo para mensagens de 4096 caracteres compostas majoritariamente por emoji.
 
 ## Resposta manual
 
 A resposta manual:
 
-- exige usuario autenticado e permissao
+- exige usuário autenticado e permissão
 - exige contato identificado
-- respeita contato bloqueado ou nao contatar
-- exige conversa atribuida, salvo configuracao
+- respeita contato bloqueado ou não contatar
+- exige conversa atribuída, salvo configuração
 - gera `request_id`
 - entra na fila `whatsapp-manual-replies`
 - usa `WhatsAppProvider`
 
-Nao ha resposta automatica, chatbot, IA ou gatilho por palavra.
+Não ha resposta automática, chatbot, IA ou gatilho por palavra.
 
 ## Filas
 
@@ -329,30 +329,30 @@ A central de monitoramento inclui:
 - fila `whatsapp-manual-replies`
 - fila `whatsapp-conversation-sync`
 - respostas manuais presas
-- ultima sincronizacao de conversas
-- sincronizacao presa
+- última sincronização de conversas
+- sincronização presa
 - filas e jobs falhos
 
 ## Privacidade
 
-Nao registrar em logs gerais:
+Não registrar em logs gerais:
 
 - segredo do webhook
-- corpo completo por padrao
-- sessao do WhatsApp
+- corpo completo por padrão
+- sessão do WhatsApp
 - QR Code
 - cookies
 - midias
 
-Mensagens completas ficam nas tabelas protegidas do modulo.
+Mensagens completas ficam nas tabelas protegidas do módulo.
 
-## Solucao de problemas
+## Solução de problemas
 
 - Assinatura invalida: conferir segredo, timestamp, nonce e corpo bruto.
 - Replay detectado: confirmar se o Node.js esta reusando nonce.
-- Mensagem nao aparece: verificar fila `whatsapp-incoming` e `failed_jobs`.
+- Mensagem não aparece: verificar fila `whatsapp-incoming` e `failed_jobs`.
 - Resposta manual presa: executar `php artisan inbox:recover-stuck`.
 - Contador incorreto: executar `php artisan inbox:sync-unread-counts`.
-- Conversas nao sincronizam: verificar conexao WhatsApp, fila `whatsapp-conversation-sync` e ultimo registro em `conversation_sync_runs`.
+- Conversas não sincronizam: verificar conexão WhatsApp, fila `whatsapp-conversation-sync` e último registro em `conversation_sync_runs`.
 - Mensagens de contatos diferentes aparecendo na mesma conversa sem contato: `ConversationResolverService::resolve()` escopa conversas sem `contact_id` pelo telefone do remetente (`sender_phone_snapshot`/`recipient_phone_snapshot`); sem telefone conhecido, so reaproveita conversas sem nenhuma mensagem ainda.
-- Telefone exibido na lista de conversas nao bate com a conversa: `Conversation::whatsappPhoneDigits()` so deve olhar mensagens da propria conversa; um `orWhereNotNull` fora do escopo correto ja causou vazamento do telefone de outra conversa no passado (corrigido).
+- Telefone exibido na lista de conversas não bate com a conversa: `Conversation::whatsappPhoneDigits()` so deve olhar mensagens da própria conversa; um `orWhereNotNull` fora do escopo correto já causou vazamento do telefone de outra conversa no passado (corrigido).

@@ -16,10 +16,10 @@ use Illuminate\Support\Facades\Cache;
 use Throwable;
 
 /**
- * Envia a resposta ja aprovada ou autorizada, pelo mesmo caminho das demais.
+ * Envia a resposta já aprovada ou autorizada, pelo mesmo caminho das demais.
  *
  * Revalida a elegibilidade do contato imediatamente antes de disparar: opt-out
- * ou desativacao entre a aprovacao e o envio cancelam a operacao.
+ * ou desativação entre a aprovação e o envio cancelam a operação.
  */
 class SendApprovedReplyJob implements ShouldQueue
 {

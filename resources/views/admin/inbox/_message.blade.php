@@ -2,11 +2,11 @@
     <div class="message-meta">
         <strong>{{ $message->direction->label() }}</strong>
         @if($message->origin === \App\Enums\ConversationMessageOrigin::Automation)
-            <span class="badge" style="background:#5b6776;color:#fff;">Automatica</span>
+            <span class="badge" style="background:#5b6776;color:#fff;">Automática</span>
         @endif
         @if($message->generated_by_ai)
             <span class="badge" style="background:#4f46e5;color:#fff;" title="Texto sugerido por IA{{ $message->approver ? ', aprovado por '.$message->approver->name : '' }}">
-                Sugerida por IA{{ $message->approver ? ' - aprovada por '.$message->approver->name : ' - envio automatico' }}
+                Sugerida por IA{{ $message->approver ? ' - aprovada por '.$message->approver->name : ' - envio automático' }}
             </span>
         @endif
         <span>{{ ($message->sent_at ?? $message->received_at ?? $message->created_at)?->format($dateTimeFormat) }}</span>
@@ -16,9 +16,9 @@
         @endif
     </div>
     @can('inbox.view_message_content')
-        <p>{{ $message->body ?: ($message->has_media ? '[midia nao baixada]' : '') }}</p>
+        <p>{{ $message->body ?: ($message->has_media ? '[midia não baixada]' : '') }}</p>
     @else
-        <p class="muted">Conteudo protegido.</p>
+        <p class="muted">Conteúdo protegido.</p>
     @endcan
     @if($message->error_code)
         <div class="alert error">{{ $message->error_code }} - {{ $message->error_message }}</div>

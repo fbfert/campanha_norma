@@ -12,21 +12,21 @@ use Illuminate\Support\Facades\DB;
 /**
  * Desempenho de cada pergunta do fluxo.
  *
- * O objetivo declarado e clareza e capacidade de coletar opiniao. Nao existe
- * aqui nenhuma medida de efeito persuasivo, apoio declarado ou intencao de
- * voto, e nao ha ordenacao por nada disso — otimizar pergunta para persuadir e
+ * O objetivo declarado e clareza e capacidade de coletar opinião. Não existe
+ * aqui nenhuma medida de efeito persuasivo, apoio declarado ou intenção de
+ * voto, e não ha ordenação por nada disso — otimizar pergunta para persuadir e
  * exatamente o uso que a etapa proibe.
  *
  * O que a tela permite concluir e: esta pergunta e entendida? Ela rende
- * resposta util? Ela manda gente para atendimento humano com frequencia
- * anormal? As tres levam a reescrever a pergunta, nao a pessoa.
+ * resposta útil? Ela manda gente para atendimento humano com frequência
+ * anormal? As três levam a reescrever a pergunta, não a pessoa.
  */
 class QuestionQualityMetricsService
 {
     public function __construct(private readonly SmallGroupSuppressor $suppressor) {}
 
     /**
-     * Uma linha por pergunta utilizada no periodo.
+     * Uma linha por pergunta utilizada no período.
      *
      * @return array<int, array<string, mixed>>
      */
@@ -90,10 +90,10 @@ class QuestionQualityMetricsService
     }
 
     /**
-     * Taxa de permissao da mensagem de apresentacao, por fluxo.
+     * Taxa de permissão da mensagem de apresentação, por fluxo.
      *
-     * A mensagem inicial e a unica coisa que a pessoa leu antes de decidir se
-     * autoriza. Uma taxa baixa aqui e problema de texto de apresentacao, nao
+     * A mensagem inicial e a única coisa que a pessoa leu antes de decidir se
+     * autoriza. Uma taxa baixa aqui e problema de texto de apresentação, não
      * das perguntas.
      *
      * @return array<int, array<string, mixed>>

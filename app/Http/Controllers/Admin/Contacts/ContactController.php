@@ -77,7 +77,7 @@ class ContactController extends Controller
         abort_unless($request->user()->can('contacts.delete'), 403);
         $service->delete($contact);
 
-        return redirect()->route('admin.contacts.index')->with('success', 'Contato excluido logicamente.');
+        return redirect()->route('admin.contacts.index')->with('success', 'Contato excluído logicamente.');
     }
 
     public function restore(Request $request, int $contact, ContactDataService $service): RedirectResponse
@@ -107,7 +107,7 @@ class ContactController extends Controller
         ]);
         $service->setDoNotContact($contact, (bool) $data['do_not_contact'], $data['do_not_contact_reason'] ?? null);
 
-        return back()->with('success', 'Restricao atualizada.');
+        return back()->with('success', 'Restrição atualizada.');
     }
 
     public function export(Request $request, ContactQueryService $queryService, ContactExportService $export): BinaryFileResponse

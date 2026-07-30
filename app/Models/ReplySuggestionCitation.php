@@ -7,10 +7,10 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * Fonte usada por uma sugestao fundamentada.
+ * Fonte usada por uma sugestão fundamentada.
  *
- * Citacao invalida tambem e persistida, com o motivo: saber que o modelo citou
- * algo que nao existia e informacao de auditoria, nao ruido a descartar.
+ * Citação invalida também e persistida, com o motivo: saber que o modelo citou
+ * algo que não existia e informação de auditoria, não ruído a descartar.
  */
 class ReplySuggestionCitation extends Model
 {

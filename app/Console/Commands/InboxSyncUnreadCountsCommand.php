@@ -9,7 +9,7 @@ class InboxSyncUnreadCountsCommand extends Command
 {
     protected $signature = 'inbox:sync-unread-counts';
 
-    protected $description = 'Recalcula contadores de mensagens nao lidas das conversas.';
+    protected $description = 'Recalcula contadores de mensagens não lidas das conversas.';
 
     public function handle(): int
     {

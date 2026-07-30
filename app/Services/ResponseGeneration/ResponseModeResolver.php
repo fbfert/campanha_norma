@@ -7,9 +7,9 @@ use App\Models\ConversationFlow;
 use App\Services\SystemSettingService;
 
 /**
- * Resolve o modo efetivo de operacao.
+ * Resolve o modo efetivo de operação.
  *
- * O fluxo so consegue restringir. Desligar globalmente e um botao de parada
+ * O fluxo so consegue restringir. Desligar globalmente e um botão de parada
  * real: nenhum fluxo consegue continuar gerando.
  */
 class ResponseModeResolver

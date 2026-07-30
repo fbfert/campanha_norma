@@ -16,12 +16,12 @@ use OpenSpout\Writer\XLSX\Writer as XlsxWriter;
 use Throwable;
 
 /**
- * Exportacao de historico de mensagens.
+ * Exportação de histórico de mensagens.
  *
- * Etapa 9E: as celulas passam pelo sanitizador antes de serem escritas. O
- * conteudo exportado inclui mensagem recebida de terceiros, e uma mensagem que
- * comeca com `=` virava formula ao abrir a planilha. E correcao de
- * vulnerabilidade existente, nao mudanca de escopo.
+ * Etapa 9E: as células passam pelo sanitizador antes de serem escritas. O
+ * conteúdo exportado inclui mensagem recebida de terceiros, e uma mensagem que
+ * começa com `=` virava fórmula ao abrir a planilha. E correção de
+ * vulnerabilidade existente, não mudança de escopo.
  */
 class ReportExportService
 {
@@ -54,7 +54,7 @@ class ReportExportService
             $this->process($export);
         }
 
-        $this->audit->log('report.export_requested', 'Exportacao de relatorio solicitada.', $export, null, ['report_type' => $type, 'format' => $format, 'total_rows' => $rows], $user);
+        $this->audit->log('report.export_requested', 'Exportação de relatório solicitada.', $export, null, ['report_type' => $type, 'format' => $format, 'total_rows' => $rows], $user);
 
         return $export->refresh();
     }
@@ -87,7 +87,7 @@ class ReportExportService
                 'finished_at' => now(),
             ]);
         } catch (Throwable $exception) {
-            $export->update(['status' => ReportExportStatus::Failed, 'finished_at' => now(), 'error_code' => 'EXPORT_FAILED', 'error_message' => 'Falha ao gerar exportacao.']);
+            $export->update(['status' => ReportExportStatus::Failed, 'finished_at' => now(), 'error_code' => 'EXPORT_FAILED', 'error_message' => 'Falha ao gerar exportação.']);
         }
 
         return $export->refresh();

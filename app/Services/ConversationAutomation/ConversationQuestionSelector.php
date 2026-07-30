@@ -10,17 +10,17 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Sorteio ponderado de pergunta ainda nao usada na conversa.
+ * Sorteio ponderado de pergunta ainda não usada na conversa.
  *
- * A exclusividade real e garantida pelo indice unico
- * (conversation_id, conversation_flow_question_id); a transacao e o lock
+ * A exclusividade real e garantida pelo índice único
+ * (conversation_id, conversation_flow_question_id); a transação e o lock
  * apenas evitam o trabalho duplicado antes de chegar no banco.
  */
 class ConversationQuestionSelector
 {
     /**
-     * Seleciona e registra o uso de uma pergunta. Retorna null quando nao ha
-     * pergunta ativa disponivel ou quando outro worker ganhou a corrida.
+     * Seleciona e registra o uso de uma pergunta. Retorna null quando não ha
+     * pergunta ativa disponível ou quando outro worker ganhou a corrida.
      */
     public function select(ConversationFlowState $state): ?ConversationFlowQuestionUsage
     {
@@ -60,7 +60,7 @@ class ConversationQuestionSelector
     }
 
     /**
-     * Sorteio ponderado deterministico dado o gerador aleatorio do PHP,
+     * Sorteio ponderado determinístico dado o gerador aleatório do PHP,
      * o que permite fixar o resultado em teste com mt_srand.
      *
      * @param  Collection<int, ConversationFlowQuestion>  $questions
@@ -70,7 +70,7 @@ class ConversationQuestionSelector
         $eligible = $questions->filter(fn (ConversationFlowQuestion $question): bool => $question->weight > 0);
 
         if ($eligible->isEmpty()) {
-            // Sem peso positivo nao ha sorteio ponderado possivel.
+            // Sem peso positivo não ha sorteio ponderado possível.
             return $questions->first();
         }
 

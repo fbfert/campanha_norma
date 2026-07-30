@@ -20,7 +20,7 @@ use App\Services\SystemSettingService;
 use Throwable;
 
 /**
- * Orquestrador do fluxo conversacional deterministico da subetapa 9A.
+ * Orquestrador do fluxo conversacional determinístico da subetapa 9A.
  */
 class ConversationFlowService
 {
@@ -38,8 +38,8 @@ class ConversationFlowService
     ) {}
 
     /**
-     * Ativa o fluxo apos o envio da mensagem inicial de campanha.
-     * Idempotente: se ja existe estado para a conversa, nao recria.
+     * Ativa o fluxo após o envio da mensagem inicial de campanha.
+     * Idempotente: se já existe estado para a conversa, não recria.
      */
     public function activateForConversation(Conversation $conversation, ConversationFlow $flow): ?ConversationFlowState
     {
@@ -88,21 +88,21 @@ class ConversationFlowService
             return;
         }
 
-        // Idempotencia: mensagem ja processada nao produz efeito novo.
+        // Idempotência: mensagem já processada não produz efeito novo.
         if ($state->last_processed_message_id !== null && $state->last_processed_message_id >= $message->id) {
             return;
         }
 
         $blockedReason = $this->runDeterministicFlow($state, $message);
 
-        // Ponto de extensao: disparado depois que as regras deterministicas ja
-        // decidiram, inclusive quando o motor esta desligado. A 9A nao conhece
-        // nenhum ouvinte e nao depende de nenhum.
+        // Ponto de extensão: disparado depois que as regras deterministicas já
+        // decidiram, inclusive quando o motor esta desligado. A 9A não conhece
+        // nenhum ouvinte e não depende de nenhum.
         $this->notifyEvaluated($message, $state->refresh(), $blockedReason);
     }
 
     /**
-     * Executa o motor deterministico. Devolve o motivo do bloqueio, quando houver.
+     * Executa o motor determinístico. Devolve o motivo do bloqueio, quando houver.
      */
     private function runDeterministicFlow(ConversationFlowState $state, ConversationMessage $message): ?string
     {
@@ -113,7 +113,7 @@ class ConversationFlowService
             return $evaluate['reason'];
         }
 
-        // Mensagem fora de ordem nao reinicia fluxo ja encerrado.
+        // Mensagem fora de ordem não reinicia fluxo já encerrado.
         if ($state->current_stage->isTerminal()) {
             $this->recordBlocked($state, $message, 'fluxo_encerrado');
 
@@ -135,8 +135,8 @@ class ConversationFlowService
     }
 
     /**
-     * Uma falha em um ouvinte jamais invalida o processamento deterministico
-     * que ja ocorreu.
+     * Uma falha em um ouvinte jamais invalida o processamento determinístico
+     * que já ocorreu.
      */
     private function notifyEvaluated(ConversationMessage $message, ConversationFlowState $state, ?string $blockedReason): void
     {
@@ -252,7 +252,7 @@ class ConversationFlowService
         $contact = $state->conversation?->contact;
 
         if ($contact) {
-            $this->contacts->setDoNotContact($contact, true, 'Pedido de nao contatar recebido na pesquisa conversacional.');
+            $this->contacts->setDoNotContact($contact, true, 'Pedido de não contatar recebido na pesquisa conversacional.');
             $this->interruption->interrupt($contact, $contact->phone_normalized);
         }
 
@@ -280,13 +280,13 @@ class ConversationFlowService
         $behavior = (string) $this->settings->get('conversation_automation.ambiguous_behavior', 'waiting_human');
 
         if ($behavior === 'keep_waiting') {
-            $this->events->record($state->conversation, 'automation_ambiguous_reply', 'Resposta ambigua mantida em espera.', $message, null, $metadata);
+            $this->events->record($state->conversation, 'automation_ambiguous_reply', 'Resposta ambígua mantida em espera.', $message, null, $metadata);
 
             return;
         }
 
         $this->machine->markForHuman($state, 'permission_classified', $message, PermissionResponseClassification::Ambiguous->value);
-        $this->events->record($state->conversation, 'automation_waiting_human', 'Resposta ambigua encaminhada para atendimento humano.', $message, null, $metadata);
+        $this->events->record($state->conversation, 'automation_waiting_human', 'Resposta ambígua encaminhada para atendimento humano.', $message, null, $metadata);
     }
 
     private function applyNoQuestionAvailable(ConversationFlowState $state, ConversationMessage $message): void
@@ -300,15 +300,15 @@ class ConversationFlowService
             $this->machine->markForHuman($state, 'no_question_available', $message);
         }
 
-        $this->events->record($state->conversation, 'automation_no_question_available', 'Nenhuma pergunta ativa disponivel para esta conversa.', $message);
-        $this->audit->log('conversation_automation.no_question_available', 'Nenhuma pergunta ativa disponivel.', $state, null, [
+        $this->events->record($state->conversation, 'automation_no_question_available', 'Nenhuma pergunta ativa disponível para esta conversa.', $message);
+        $this->audit->log('conversation_automation.no_question_available', 'Nenhuma pergunta ativa disponível.', $state, null, [
             'conversation_id' => $state->conversation_id,
             'flow_id' => $state->conversation_flow_id,
         ]);
     }
 
     /**
-     * Resposta a pergunta principal. Na 9A nao ha aprofundamento: agradece e encerra.
+     * Resposta a pergunta principal. Na 9A não ha aprofundamento: agradece e encerra.
      */
     private function handleAnswer(ConversationFlowState $state, ConversationMessage $message): void
     {
@@ -336,7 +336,7 @@ class ConversationFlowService
 
     private function recordBlocked(ConversationFlowState $state, ?ConversationMessage $message, ?string $reason): void
     {
-        $this->events->record($state->conversation, 'automation_blocked', 'Automacao bloqueada.', $message, null, ['reason' => $reason]);
+        $this->events->record($state->conversation, 'automation_blocked', 'Automação bloqueada.', $message, null, ['reason' => $reason]);
     }
 
     private function contactEligible(?Contact $contact): bool
@@ -354,20 +354,20 @@ class ConversationFlowService
     {
         $state->forceFill(['is_paused' => true])->save();
         $this->machine->transition($state, ConversationFlowStage::Paused, 'paused_by_user', null, null, $user);
-        $this->audit->log('conversation_automation.paused', 'Automacao pausada.', $state, null, ['conversation_id' => $state->conversation_id], $user);
+        $this->audit->log('conversation_automation.paused', 'Automação pausada.', $state, null, ['conversation_id' => $state->conversation_id], $user);
     }
 
     public function resume(ConversationFlowState $state, User $user): void
     {
         $state->forceFill(['is_paused' => false])->save();
         $this->machine->transition($state, ConversationFlowStage::WaitingPermission, 'resumed_by_user', null, null, $user);
-        $this->audit->log('conversation_automation.resumed', 'Automacao retomada.', $state, null, ['conversation_id' => $state->conversation_id], $user);
+        $this->audit->log('conversation_automation.resumed', 'Automação retomada.', $state, null, ['conversation_id' => $state->conversation_id], $user);
     }
 
     public function finishManually(ConversationFlowState $state, User $user): void
     {
         $this->machine->finish($state, ConversationFlowStage::Completed, 'encerrado_manualmente', 'finished_by_user', null, null, $user);
-        $this->audit->log('conversation_automation.finished', 'Automacao encerrada manualmente.', $state, null, ['conversation_id' => $state->conversation_id], $user);
+        $this->audit->log('conversation_automation.finished', 'Automação encerrada manualmente.', $state, null, ['conversation_id' => $state->conversation_id], $user);
     }
 
     public function takeOver(ConversationFlowState $state, User $user): void

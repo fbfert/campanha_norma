@@ -15,8 +15,8 @@ class KnowledgeProviderManager
     {
         return match ((string) config('knowledge.provider')) {
             'local' => app(LocalKnowledgeBaseProvider::class),
-            // Fornecedor desconhecido nunca vira erro fatal em producao: cai no
-            // provedor inerte, que falha de forma controlada e auditavel.
+            // Fornecedor desconhecido nunca vira erro fatal em produção: cai no
+            // provedor inerte, que falha de forma controlada e auditável.
             default => app(NullKnowledgeBaseProvider::class),
         };
     }

@@ -21,11 +21,11 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 /**
- * Subetapa 9E: formulas, permissoes e materializacao.
+ * Subetapa 9E: fórmulas, permissões e materialização.
  *
- * O criterio de aceitacao mais importante da etapa nao e um numero certo, e um
- * numero que nao aparece: perfil de consulta nao ve texto nem telefone, celula
- * pequena e suprimida e taxa sem denominador vira traco.
+ * O critério de aceitação mais importante da etapa não e um número certo, e um
+ * número que não aparece: perfil de consulta não ve texto nem telefone, célula
+ * pequena e suprimida e taxa sem denominador vira traço.
  */
 class AnalyticsReportsTest extends TestCase
 {
@@ -60,7 +60,7 @@ class AnalyticsReportsTest extends TestCase
         ] + $extra);
     }
 
-    // --- Formulas -------------------------------------------------------------
+    // --- Fórmulas -------------------------------------------------------------
 
     public function test_participation_totals_count_each_stage_once(): void
     {
@@ -82,8 +82,8 @@ class AnalyticsReportsTest extends TestCase
     }
 
     /**
-     * Denominador da taxa de permissao e quem respondeu ao pedido. Incluir
-     * quem ainda nao respondeu como recusa produziria uma taxa que so cai com
+     * Denominador da taxa de permissão e quem respondeu ao pedido. Incluir
+     * quem ainda não respondeu como recusa produziria uma taxa que so cai com
      * o tempo, sem que nada tenha piorado.
      */
     public function test_the_permission_rate_excludes_who_has_not_answered_yet(): void
@@ -112,7 +112,7 @@ class AnalyticsReportsTest extends TestCase
 
     /**
      * Conversa sem resposta nenhuma fica fora do denominador. Conta-la como
-     * tempo zero puxaria a media para baixo; como tempo infinito, para cima.
+     * tempo zero puxaria a média para baixo; como tempo infinito, para cima.
      */
     public function test_conversations_without_a_reply_stay_out_of_the_average(): void
     {
@@ -139,7 +139,7 @@ class AnalyticsReportsTest extends TestCase
         $this->assertEqualsWithDelta(300, $result['average'], 60);
     }
 
-    // --- Materializacao -------------------------------------------------------
+    // --- Materialização -------------------------------------------------------
 
     public function test_rebuilding_the_same_day_twice_does_not_duplicate(): void
     {
@@ -180,7 +180,7 @@ class AnalyticsReportsTest extends TestCase
         $this->assertDatabaseCount('conversation_daily_metrics', 2);
     }
 
-    // --- Permissoes -----------------------------------------------------------
+    // --- Permissões -----------------------------------------------------------
 
     public static function screens(): array
     {
@@ -208,20 +208,20 @@ class AnalyticsReportsTest extends TestCase
     }
 
     /**
-     * A separacao que a etapa existe para garantir: numero sim, texto nao.
+     * A separação que a etapa existe para garantir: número sim, texto não.
      */
     public function test_a_query_profile_never_sees_message_content(): void
     {
         ConversationInsight::factory()->reviewed()->create([
             'conversation_flow_id' => $this->flow->id,
-            'identified_problem' => 'SEGREDO DO CIDADAO',
+            'identified_problem' => 'SEGREDO DO CIDADÃO',
         ]);
 
         $this->actingAs($this->userWith('consulta'))
             ->get(route('admin.analytics.demands'))
             ->assertOk()
-            ->assertDontSee('SEGREDO DO CIDADAO')
-            ->assertSee('exigem a permissao de ver conteudo');
+            ->assertDontSee('SEGREDO DO CIDADÃO')
+            ->assertSee('exigem a permissão de ver conteúdo');
     }
 
     public function test_an_operator_sees_content_examples(): void
@@ -242,7 +242,7 @@ class AnalyticsReportsTest extends TestCase
         $this->actingAs($this->userWith('operador'))
             ->get(route('admin.analytics.ai-quality'))
             ->assertOk()
-            ->assertSee('exigem a permissao de ver custos');
+            ->assertSee('exigem a permissão de ver custos');
     }
 
     public function test_an_administrator_opens_governance(): void
@@ -253,7 +253,7 @@ class AnalyticsReportsTest extends TestCase
             ->assertSee('Interruptores');
     }
 
-    // --- Supressao na tela ----------------------------------------------------
+    // --- Supressão na tela ----------------------------------------------------
 
     public function test_a_small_locality_is_suppressed_on_screen(): void
     {
@@ -274,8 +274,8 @@ class AnalyticsReportsTest extends TestCase
 
     /**
      * Com tudo desligado e nada coletado, as telas precisam abrir e dizer que
-     * nao ha dado. Um relatorio que quebra quando o sistema esta parado nao
-     * serve justamente no dia em que alguem quer saber por que esta parado.
+     * não ha dado. Um relatório que quebra quando o sistema esta parado não
+     * serve justamente no dia em que alguém quer saber por que esta parado.
      */
     #[DataProvider('screens')]
     public function test_every_screen_opens_with_no_data_at_all(string $route): void

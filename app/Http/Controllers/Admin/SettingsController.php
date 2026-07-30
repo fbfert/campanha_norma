@@ -26,8 +26,8 @@ class SettingsController extends Controller
 
         $old = $settings->updateMany($flattened);
 
-        app(AuditLogger::class)->log('settings.updated', 'Configuracoes gerais alteradas.', null, $old, $flattened);
+        app(AuditLogger::class)->log('settings.updated', 'Configurações gerais alteradas.', null, $old, $flattened);
 
-        return back()->with('success', 'Configuracoes atualizadas com sucesso.');
+        return back()->with('success', 'Configurações atualizadas com sucesso.');
     }
 }

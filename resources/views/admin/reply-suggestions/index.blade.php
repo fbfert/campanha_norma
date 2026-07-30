@@ -1,16 +1,16 @@
-<x-layouts.app title="Sugestoes de resposta" breadcrumbs="Inicio / Pesquisa conversacional / Sugestoes">
+<x-layouts.app title="Sugestões de resposta" breadcrumbs="Inicio / Pesquisa conversacional / Sugestoes">
     <section class="card">
         <p class="muted">
-            Respostas sugeridas por IA para aprofundar a opiniao da propria pessoa. Modo global atual:
+            Respostas sugeridas por IA para aprofundar a opinião da própria pessoa. Modo global atual:
             <strong>{{ $globalMode->label() }}</strong>.
             @if(! $globalMode->allowsSending())
-                Nenhuma sugestao pode ser enviada neste modo.
+                Nenhuma sugestão pode ser enviada neste modo.
             @endif
         </p>
-        <p class="muted">Cada sugestao e aprovada individualmente. Nao existe aprovacao em massa.</p>
+        <p class="muted">Cada sugestão e aprovada individualmente. Não existe aprovação em massa.</p>
         <form method="get" class="grid grid-3">
             <div>
-                <label for="status">Situacao</label>
+                <label for="status">Situação</label>
                 <select id="status" name="status">
                     @foreach($statuses as $status)
                         <option value="{{ $status->value }}" @selected(request('status', 'pending') === $status->value)>{{ $status->label() }}</option>
@@ -31,11 +31,11 @@
                     <tr>
                         <th>Contato</th>
                         <th>Mensagem da pessoa</th>
-                        <th>Sugestao</th>
-                        <th>Acao</th>
+                        <th>Sugestão</th>
+                        <th>Ação</th>
                         <th>Tema</th>
-                        <th>Confianca</th>
-                        <th>Situacao</th>
+                        <th>Confiança</th>
+                        <th>Situação</th>
                         <th>Criada</th>
                         <th></th>
                     </tr>
@@ -45,9 +45,9 @@
                         <tr>
                             <td>
                                 @if($canSeeContactData)
-                                    {{ $suggestion->conversation?->contact?->name ?? 'Contato nao identificado' }}
+                                    {{ $suggestion->conversation?->contact?->name ?? 'Contato não identificado' }}
                                 @else
-                                    {{ $suggestion->conversation?->contact?->phone_normalized ? Str::mask($suggestion->conversation->contact->phone_normalized, '*', 4, -4) : 'Contato nao identificado' }}
+                                    {{ $suggestion->conversation?->contact?->phone_normalized ? Str::mask($suggestion->conversation->contact->phone_normalized, '*', 4, -4) : 'Contato não identificado' }}
                                 @endif
                             </td>
                             <td>{{ Str::limit($suggestion->sourceMessage?->body ?? '-', 70) }}</td>
@@ -65,7 +65,7 @@
                             <td class="actions"><a class="btn ghost" href="{{ route('admin.reply-suggestions.show', $suggestion) }}">Revisar</a></td>
                         </tr>
                     @empty
-                        <tr><td colspan="9">Nenhuma sugestao nesta situacao.</td></tr>
+                        <tr><td colspan="9">Nenhuma sugestão nesta situação.</td></tr>
                     @endforelse
                 </tbody>
             </table>

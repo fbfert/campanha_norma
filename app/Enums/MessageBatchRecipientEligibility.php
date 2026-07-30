@@ -12,8 +12,8 @@ enum MessageBatchRecipientEligibility: string
     {
         return match ($this) {
             self::Eligible => 'Apto',
-            self::Ineligible => 'Nao apto',
-            self::Excluded => 'Excluido',
+            self::Ineligible => 'Não apto',
+            self::Excluded => 'Excluído',
         };
     }
 }

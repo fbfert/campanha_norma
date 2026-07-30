@@ -7,33 +7,33 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
 
 /**
- * Reconstrucao das metricas diarias de participacao.
+ * Reconstrução das métricas diárias de participação.
  *
- * Segue o mesmo padrao do `reports:rebuild-metrics` da Etapa 6: intervalo
- * explicito, escrita por chave natural e repeticao segura. Nao apaga nada e nao
- * altera conversa nenhuma — le o que ja aconteceu e grava a contagem.
+ * Segue o mesmo padrão do `reports:rebuild-metrics` da Etapa 6: intervalo
+ * explícito, escrita por chave natural e repetição segura. Não apaga nada e não
+ * altera conversa nenhuma — le o que já aconteceu e grava a contagem.
  */
 class AnalyticsRebuildMetricsCommand extends Command
 {
     protected $signature = 'analytics:rebuild-metrics
-        {--date= : Reconstroi um unico dia (AAAA-MM-DD)}
-        {--from= : Inicio do intervalo}
+        {--date= : Reconstroi um único dia (AAAA-MM-DD)}
+        {--from= : Início do intervalo}
         {--to= : Fim do intervalo}
-        {--days= : Reconstroi os ultimos N dias}';
+        {--days= : Reconstroi os últimos N dias}';
 
-    protected $description = 'Reconstroi as metricas diarias de participacao da pesquisa conversacional.';
+    protected $description = 'Reconstroi as métricas diárias de participação da pesquisa conversacional.';
 
     public function handle(DailyMetricBuilder $builder): int
     {
         [$from, $to] = $this->interval();
 
         if ($from->gt($to)) {
-            $this->error('O inicio do intervalo e posterior ao fim.');
+            $this->error('O início do intervalo e posterior ao fim.');
 
             return self::FAILURE;
         }
 
-        $this->line("Reconstruindo de {$from->toDateString()} ate {$to->toDateString()}.");
+        $this->line("Reconstruindo de {$from->toDateString()} até {$to->toDateString()}.");
 
         $rows = $builder->rebuild($from, $to);
 

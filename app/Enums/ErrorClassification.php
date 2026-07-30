@@ -12,7 +12,7 @@ enum ErrorClassification: string
     public function label(): string
     {
         return match ($this) {
-            self::Temporary => 'Temporario',
+            self::Temporary => 'Temporário',
             self::Permanent => 'Permanente',
             self::Structural => 'Estrutural',
             self::Unknown => 'Desconhecido',

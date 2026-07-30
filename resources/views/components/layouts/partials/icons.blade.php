@@ -1,21 +1,21 @@
 {{--
     Sprite de icones.
 
-    SVG inline em vez de biblioteca externa. Tres razoes:
+    SVG inline em vez de biblioteca externa. Três razões:
 
-    - nenhuma dependencia nova para versionar, atualizar e auditar;
+    - nenhuma dependência nova para versionar, atualizar e auditar;
     - funciona sem rede e sem CDN, o que importa num sistema que roda em
-      servidor proprio e precisa abrir mesmo com a internet ruim;
-    - `currentColor` faz o icone herdar a cor do texto ao redor, entao ele
+      servidor próprio e precisa abrir mesmo com a internet ruim;
+    - `currentColor` faz o icone herdar a cor do texto ao redor, então ele
       acompanha estado ativo, foco e tema sem uma linha de CSS extra.
 
-    Todos os desenhos usam a mesma gramatica: traco de 2, sem preenchimento,
+    Todos os desenhos usam a mesma gramática: traço de 2, sem preenchimento,
     pontas e junções arredondadas, dentro de uma caixa de 24. Icones de origens
-    diferentes numa mesma tela sao a forma mais rapida de um sistema parecer
+    diferentes numa mesma tela são a forma mais rapida de um sistema parecer
     remendado.
 
-    O sprite e renderizado uma vez por pagina e cada uso vira um `<use>`, que
-    nao repete o desenho no HTML.
+    O sprite e renderizado uma vez por página e cada uso vira um `<use>`, que
+    não repete o desenho no HTML.
 --}}
 <svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
     <defs>

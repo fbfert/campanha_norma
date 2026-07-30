@@ -3,10 +3,10 @@
 
     <section class="card">
         <p class="muted">
-            A localidade vem de duas fontes: o cadastro do contato e o que a propria pessoa declarou na resposta. Nada e
-            deduzido de DDD — o DDD diz onde a linha foi habilitada, nao onde a pessoa mora.
+            A localidade vem de duas fontes: o cadastro do contato e o que a própria pessoa declarou na resposta. Nada e
+            deduzido de DDD — o DDD diz onde a linha foi habilitada, não onde a pessoa mora.
         </p>
-        <p class="muted">Nao existe filtro cruzando geografia com atributo sensivel. Nao esta desligado: nao foi construido.</p>
+        <p class="muted">Não existe filtro cruzando geografia com atributo sensível. Não esta desligado: não foi construído.</p>
     </section>
 
     <section class="card">
@@ -15,7 +15,7 @@
             @include('admin.analytics.partials.empty')
         @else
             <table>
-                <thead><tr><th>Localidade</th><th>Regiao</th><th>Respostas</th></tr></thead>
+                <thead><tr><th>Localidade</th><th>Região</th><th>Respostas</th></tr></thead>
                 <tbody>@foreach($declared as $row)
                     <tr><td>{{ $row['locality'] }}</td><td>{{ $row['region'] ?? '—' }}</td>
                         <td>{{ $row['suppressed'] ? 'suprimido' : $row['total'] }}</td></tr>
@@ -38,6 +38,6 @@
                 @endforeach</tbody>
             </table>
         @endif
-        <p class="muted">Respostas sem nenhuma origem geografica conhecida: <strong>{{ $withoutLocality }}</strong>. Sem esse numero, um mapa com poucas cidades parece completo.</p>
+        <p class="muted">Respostas sem nenhuma origem geografica conhecida: <strong>{{ $withoutLocality }}</strong>. Sem esse número, um mapa com poucas cidades parece completo.</p>
     </section>
 </x-layouts.app>

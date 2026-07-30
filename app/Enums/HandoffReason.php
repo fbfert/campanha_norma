@@ -5,8 +5,8 @@ namespace App\Enums;
 /**
  * Motivos de encaminhamento para atendimento humano.
  *
- * Todos sao decididos por regra do sistema. O campo equivalente devolvido pelo
- * modelo e tratado como sinal, nunca como autorizacao.
+ * Todos são decididos por regra do sistema. O campo equivalente devolvido pelo
+ * modelo e tratado como sinal, nunca como autorização.
  */
 enum HandoffReason: string
 {
@@ -30,22 +30,22 @@ enum HandoffReason: string
     public function label(): string
     {
         return match ($this) {
-            self::ExplicitRequest => 'Pedido explicito de atendimento humano',
+            self::ExplicitRequest => 'Pedido explícito de atendimento humano',
             self::FactualQuestion => 'Pergunta factual sem base aprovada',
-            self::ReportOrAccusation => 'Denuncia ou acusacao',
+            self::ReportOrAccusation => 'Denuncia ou acusação',
             self::Threat => 'Ameaca',
             self::IndividualHelpRequest => 'Pedido de ajuda individual',
             self::LegalMatter => 'Assunto juridico',
             self::PromiseOrCommitment => 'Promessa ou compromisso',
-            self::LowConfidence => 'Confianca abaixo do limite',
-            self::HostileContent => 'Conteudo hostil',
-            self::UnsupportedMedia => 'Midia nao suportada',
+            self::LowConfidence => 'Confiança abaixo do limite',
+            self::HostileContent => 'Conteúdo hostil',
+            self::UnsupportedMedia => 'Midia não suportada',
             self::ContextConflict => 'Conflito de contexto',
             self::TurnLimitReached => 'Limite de aprofundamentos atingido',
             self::RepeatedProviderFailure => 'Falha repetida do provedor',
-            self::InvalidGeneratedText => 'Texto gerado reprovado na validacao',
-            self::UngroundedAnswer => 'Resposta reprovada na validacao de fundamentacao',
-            self::InsufficientEvidence => 'Pergunta factual sem evidencia aprovada suficiente',
+            self::InvalidGeneratedText => 'Texto gerado reprovado na validação',
+            self::UngroundedAnswer => 'Resposta reprovada na validação de fundamentação',
+            self::InsufficientEvidence => 'Pergunta factual sem evidência aprovada suficiente',
         };
     }
 
@@ -63,8 +63,8 @@ enum HandoffReason: string
     }
 
     /**
-     * Traducao dos motivos de revisao da subetapa anterior, para que a decisao
-     * ja tomada pela interpretacao nao seja reavaliada por outro criterio.
+     * Tradução dos motivos de revisão da subetapa anterior, para que a decisão
+     * já tomada pela interpretação não seja reavaliada por outro critério.
      */
     public static function fromReviewReason(?string $reviewReason): ?self
     {
@@ -83,7 +83,7 @@ enum HandoffReason: string
     }
 
     /**
-     * Traducao das categorias da subetapa anterior que nunca devem receber
+     * Tradução das categorias da subetapa anterior que nunca devem receber
      * resposta gerada.
      */
     public static function fromClassification(MessageClassification $classification): ?self

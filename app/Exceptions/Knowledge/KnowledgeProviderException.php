@@ -7,9 +7,9 @@ use RuntimeException;
 /**
  * Falha operacional na camada de conhecimento.
  *
- * A mensagem e sempre um codigo operacional acompanhado de detalhe truncado.
- * Nunca carrega credencial nem conteudo integral de documento: o codigo e o que
- * vai para `knowledge_documents.error_message`, que fica visivel na tela.
+ * A mensagem e sempre um código operacional acompanhado de detalhe truncado.
+ * Nunca carrega credencial nem conteúdo integral de documento: o código e o que
+ * vai para `knowledge_documents.error_message`, que fica visível na tela.
  */
 class KnowledgeProviderException extends RuntimeException
 {
@@ -57,8 +57,8 @@ class KnowledgeProviderException extends RuntimeException
     }
 
     /**
-     * Codigos em que uma nova tentativa faz sentido. Falta de configuracao,
-     * extrator ausente e arquivo infectado nao melhoram com repeticao.
+     * Códigos em que uma nova tentativa faz sentido. Falta de configuração,
+     * extrator ausente e arquivo infectado não melhoram com repetição.
      */
     public function isRetryable(): bool
     {

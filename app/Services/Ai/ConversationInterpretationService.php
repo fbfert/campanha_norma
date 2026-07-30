@@ -11,9 +11,9 @@ use App\Services\Conversations\ConversationEventService;
 use App\Services\SystemSettingService;
 
 /**
- * Orquestrador do pipeline de interpretacao da subetapa 9B.
+ * Orquestrador do pipeline de interpretação da subetapa 9B.
  *
- * Nunca cria nem envia mensagem. O unico efeito permitido sobre o fluxo da 9A e
+ * Nunca cria nem envia mensagem. O único efeito permitido sobre o fluxo da 9A e
  * marcar a conversa como precisando de atendimento humano.
  */
 class ConversationInterpretationService
@@ -55,11 +55,11 @@ class ConversationInterpretationService
     }
 
     /**
-     * Extrai quando a classificacao diz que e resposta a pergunta, ou quando o
-     * proprio fluxo registra que esta mensagem respondeu a pergunta sorteada.
+     * Extrai quando a classificação diz que e resposta a pergunta, ou quando o
+     * próprio fluxo registra que esta mensagem respondeu a pergunta sorteada.
      *
-     * O estagio corrente nao serve como criterio: a 9A ja pode ter encerrado a
-     * conversa antes do job de interpretacao rodar.
+     * O estagio corrente não serve como critério: a 9A já pode ter encerrado a
+     * conversa antes do job de interpretação rodar.
      */
     private function shouldExtract(
         ConversationMessageClassification $classification,
@@ -98,7 +98,7 @@ class ConversationInterpretationService
         }
 
         if ($state && ! $state->needs_human_review) {
-            // Apenas a marcacao de revisao. O estagio continua sendo decidido
+            // Apenas a marcação de revisão. O estagio continua sendo decidido
             // exclusivamente pelas regras deterministicas da 9A.
             $state->forceFill(['needs_human_review' => true])->save();
         }
@@ -107,7 +107,7 @@ class ConversationInterpretationService
             $this->events->record(
                 $message->conversation,
                 'ai_review_required',
-                'Interpretacao encaminhou a conversa para atendimento humano.',
+                'Interpretação encaminhou a conversa para atendimento humano.',
                 $message,
                 null,
                 [
@@ -128,7 +128,7 @@ class ConversationInterpretationService
         $this->events->record(
             $message->conversation,
             'ai_interpretation_blocked',
-            'Interpretacao bloqueada.',
+            'Interpretação bloqueada.',
             $message,
             null,
             ['reason' => $reason],

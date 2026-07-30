@@ -51,7 +51,7 @@ class ConversationFlowQuestionController extends Controller
         $data = $request->validated();
         $data['is_active'] = $request->boolean('is_active');
         $data['updated_by'] = $request->user()->id;
-        // Alterar o texto gera nova versao; snapshots ja enviados permanecem intactos.
+        // Alterar o texto gera nova versão; snapshots já enviados permanecem intactos.
         $data['version'] = $data['text'] !== $question->text ? $question->version + 1 : $question->version;
 
         $old = $question->only(['internal_title', 'text', 'is_active', 'weight']);
@@ -66,10 +66,10 @@ class ConversationFlowQuestionController extends Controller
         abort_unless($request->user()->can('conversation_automation.manage_questions'), 403);
         abort_unless($question->conversation_flow_id === $conversationFlow->id, 404);
 
-        // Exclusao apenas logica: perguntas ja utilizadas preservam o historico.
+        // Exclusão apenas lógica: perguntas já utilizadas preservam o histórico.
         $question->delete();
-        $audit->log('conversation_flow_question.deleted', 'Pergunta excluida logicamente.', $question, null, null, $request->user());
+        $audit->log('conversation_flow_question.deleted', 'Pergunta excluída logicamente.', $question, null, null, $request->user());
 
-        return redirect()->route('admin.conversation-flows.show', $conversationFlow)->with('success', 'Pergunta excluida logicamente.');
+        return redirect()->route('admin.conversation-flows.show', $conversationFlow)->with('success', 'Pergunta excluída logicamente.');
     }
 }

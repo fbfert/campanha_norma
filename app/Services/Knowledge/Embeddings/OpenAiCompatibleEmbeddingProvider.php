@@ -11,9 +11,9 @@ use Illuminate\Support\Facades\Http;
 /**
  * Provedor de embeddings para APIs no formato OpenAI.
  *
- * Serve OpenAI, Azure OpenAI, servidores locais compativeis e qualquer endpoint
+ * Serve OpenAI, Azure OpenAI, servidores locais compatíveis e qualquer endpoint
  * que exponha `/embeddings` com o mesmo contrato. A troca e feita apenas por
- * configuracao.
+ * configuração.
  */
 class OpenAiCompatibleEmbeddingProvider implements EmbeddingProvider
 {
@@ -53,8 +53,8 @@ class OpenAiCompatibleEmbeddingProvider implements EmbeddingProvider
 
         $vectors = [];
 
-        // Lotes limitados: um documento longo nao vira uma requisicao unica de
-        // tamanho imprevisivel.
+        // Lotes limitados: um documento longo não vira uma requisição única de
+        // tamanho imprevisível.
         foreach (array_chunk($texts, max(1, (int) config('knowledge.embedding_batch_size'))) as $batch) {
             foreach ($this->requestBatch(array_values($batch)) as $vector) {
                 $vectors[] = $vector;
@@ -114,7 +114,7 @@ class OpenAiCompatibleEmbeddingProvider implements EmbeddingProvider
             $status === 401 || $status === 403 => KnowledgeProviderException::UNAUTHORIZED,
             $status === 408 => KnowledgeProviderException::TIMEOUT,
             $status === 429 => KnowledgeProviderException::RATE_LIMITED,
-            // Erro de cliente que nao e limite nem timeout indica pedido invalido
+            // Erro de cliente que não e limite nem timeout indica pedido inválido
             // para este modelo. Repetir gastaria chamadas sem chance de sucesso.
             $status >= 400 && $status < 500 => KnowledgeProviderException::BAD_REQUEST,
             default => KnowledgeProviderException::SERVICE_UNAVAILABLE,
@@ -135,8 +135,8 @@ class OpenAiCompatibleEmbeddingProvider implements EmbeddingProvider
             throw KnowledgeProviderException::code(KnowledgeProviderException::INVALID_RESPONSE);
         }
 
-        // A ordem devolvida nao e garantida pelo contrato: reordenamos pelo
-        // indice declarado em cada item.
+        // A ordem devolvida não e garantida pelo contrato: reordenamos pelo
+        // índice declarado em cada item.
         $ordered = [];
 
         foreach ($data as $position => $item) {

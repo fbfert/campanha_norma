@@ -3,11 +3,11 @@
 namespace App\Enums;
 
 /**
- * Veredito da validacao de fundamentacao.
+ * Veredito da validação de fundamentação.
  *
- * `NotRequired` cobre a resposta que nao afirma nada factual — uma pergunta de
- * aprofundamento, um agradecimento. Ela nao precisa de evidencia porque nao faz
- * afirmacao sobre o mundo.
+ * `NotRequired` cobre a resposta que não afirma nada factual — uma pergunta de
+ * aprofundamento, um agradecimento. Ela não precisa de evidência porque não faz
+ * afirmação sobre o mundo.
  */
 enum GroundingStatus: string
 {
@@ -24,12 +24,12 @@ enum GroundingStatus: string
     public function label(): string
     {
         return match ($this) {
-            self::NotRequired => 'Sem afirmacao factual',
+            self::NotRequired => 'Sem afirmação factual',
             self::Grounded => 'Fundamentada',
-            self::NoEvidence => 'Afirmacao factual sem evidencia',
-            self::InvalidCitation => 'Citacao fora do conjunto recuperado',
-            self::ObsoleteCitation => 'Citacao de documento nao recuperavel',
-            self::UnsupportedNumber => 'Numero sem suporte nos trechos citados',
+            self::NoEvidence => 'Afirmação factual sem evidência',
+            self::InvalidCitation => 'Citação fora do conjunto recuperado',
+            self::ObsoleteCitation => 'Citação de documento não recuperável',
+            self::UnsupportedNumber => 'Número sem suporte nos trechos citados',
             self::UnsupportedDate => 'Data sem suporte nos trechos citados',
             self::UnsupportedCommitment => 'Compromisso sem suporte nos trechos citados',
             self::GroundedWithoutCitation => 'Declarada fundamentada sem citar nada',

@@ -60,7 +60,7 @@ class BatchDispatcherService
                 'processing_version' => $processingVersion,
             ])->save();
 
-            $this->events->record($batch, 'recipient_queued', 'Destinatario liberado para envio.', $recipient);
+            $this->events->record($batch, 'recipient_queued', 'Destinatário liberado para envio.', $recipient);
             $this->progress->sync($batch);
 
             SendMessageRecipientJob::dispatch($recipient->id, $processingVersion)->onQueue('whatsapp-messages');

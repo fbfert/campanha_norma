@@ -16,10 +16,10 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 /**
- * Recebe o arquivo, valida, verifica e enfileira a indexacao.
+ * Recebe o arquivo, valida, verifica e enfileira a indexação.
  *
- * A validacao tambem existe na regra de formulario. Aqui ela e a garantia: uma
- * chamada de comando ou de teste que passe por fora do formulario nao pode
+ * A validação também existe na regra de formulário. Aqui ela e a garantia: uma
+ * chamada de comando ou de teste que passe por fora do formulário não pode
  * introduzir arquivo grande, tipo inesperado ou duplicata.
  */
 class DocumentIngestionService
@@ -50,8 +50,8 @@ class DocumentIngestionService
 
         /*
          | O nome armazenado e gerado aqui, nunca derivado do que veio no upload.
-         | Isso encerra path traversal na origem: nao existe caminho em que o nome
-         | enviado pelo usuario participe da montagem do caminho em disco.
+         | Isso encerra path traversal na origem: não existe caminho em que o nome
+         | enviado pelo usuário participe da montagem do caminho em disco.
          */
         $storedName = Str::uuid()->toString().$this->extensionSuffix($file);
         $path = $file->storeAs($directory, $storedName, $disk);
@@ -63,7 +63,7 @@ class DocumentIngestionService
         try {
             $antivirusResult = $this->antivirus->scan(Storage::disk($disk)->path($path));
         } catch (KnowledgeProviderException $exception) {
-            // Arquivo suspeito ou nao verificavel nao fica no disco.
+            // Arquivo suspeito ou não verificável não fica no disco.
             Storage::disk($disk)->delete($path);
 
             throw $exception;
@@ -129,13 +129,13 @@ class DocumentIngestionService
     {
         if ($file->getSize() === false || $file->getSize() > $this->maxFileSizeKb() * 1024) {
             throw ValidationException::withMessages([
-                'file' => 'Arquivo acima do tamanho maximo permitido.',
+                'file' => 'Arquivo acima do tamanho máximo permitido.',
             ]);
         }
 
         if (! in_array($this->mimeOf($file), $this->acceptedMimeTypes(), true)) {
             throw ValidationException::withMessages([
-                'file' => 'Tipo de arquivo nao aceito na base de conhecimento.',
+                'file' => 'Tipo de arquivo não aceito na base de conhecimento.',
             ]);
         }
     }
@@ -149,13 +149,13 @@ class DocumentIngestionService
 
         if ($existing) {
             throw ValidationException::withMessages([
-                'file' => 'Este arquivo ja existe nesta base como o documento #'.$existing->id.'.',
+                'file' => 'Este arquivo já existe nesta base como o documento #'.$existing->id.'.',
             ]);
         }
     }
 
     /**
-     * MIME real do arquivo, nao o declarado pelo cliente.
+     * MIME real do arquivo, não o declarado pelo cliente.
      */
     private function mimeOf(UploadedFile $file): string
     {
@@ -173,7 +173,7 @@ class DocumentIngestionService
     }
 
     /**
-     * Nome apenas para exibicao e download. Nunca participa do caminho em disco.
+     * Nome apenas para exibição e download. Nunca participa do caminho em disco.
      */
     private function safeDisplayName(string $name): string
     {

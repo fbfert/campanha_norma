@@ -38,7 +38,7 @@ class ProfileController extends Controller
             'must_change_password' => false,
         ])->save();
 
-        app(AuditLogger::class)->log('profile.password_changed', 'Senha do proprio perfil alterada.', $request->user());
+        app(AuditLogger::class)->log('profile.password_changed', 'Senha do próprio perfil alterada.', $request->user());
 
         return back()->with('success', 'Senha alterada com sucesso.');
     }

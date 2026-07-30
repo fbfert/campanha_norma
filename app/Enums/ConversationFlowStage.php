@@ -23,13 +23,13 @@ enum ConversationFlowStage: string
         return match ($this) {
             self::Inactive => 'Inativo',
             self::InitialMessageSent => 'Mensagem inicial enviada',
-            self::WaitingPermission => 'Aguardando permissao',
-            self::PermissionGranted => 'Permissao concedida',
-            self::PermissionDenied => 'Permissao negada',
+            self::WaitingPermission => 'Aguardando permissão',
+            self::PermissionGranted => 'Permissão concedida',
+            self::PermissionDenied => 'Permissão negada',
             self::QuestionSelected => 'Pergunta selecionada',
             self::WaitingAnswer => 'Aguardando resposta',
             self::AnswerReceived => 'Resposta recebida',
-            self::Completed => 'Concluido',
+            self::Completed => 'Concluído',
             self::OptedOut => 'Opt-out',
             self::Paused => 'Pausado',
             self::WaitingHuman => 'Aguardando humano',
@@ -38,7 +38,7 @@ enum ConversationFlowStage: string
     }
 
     /**
-     * Estagios terminais nao podem voltar para tras por mensagem fora de ordem.
+     * Estagios terminais não podem voltar para trás por mensagem fora de ordem.
      */
     public function isTerminal(): bool
     {

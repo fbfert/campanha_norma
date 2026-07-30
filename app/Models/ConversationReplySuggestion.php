@@ -14,10 +14,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
- * Sugestao de resposta gerada com apoio de IA.
+ * Sugestão de resposta gerada com apoio de IA.
  *
- * O texto gerado nunca e sobrescrito: a edicao do operador vai para `final_text`
- * e os dois ficam disponiveis para auditoria.
+ * O texto gerado nunca e sobrescrito: a edição do operador vai para `final_text`
+ * e os dois ficam disponíveis para auditoria.
  */
 class ConversationReplySuggestion extends Model
 {
@@ -173,7 +173,7 @@ class ConversationReplySuggestion extends Model
     }
 
     /**
-     * Obsoleta quando ja existe mensagem recebida mais nova que a de origem.
+     * Obsoleta quando já existe mensagem recebida mais nova que a de origem.
      */
     public function isStale(): bool
     {

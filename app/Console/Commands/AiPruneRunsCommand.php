@@ -8,23 +8,23 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
 
 /**
- * Retencao das execucoes de IA.
+ * Retenção das execuções de IA.
  *
- * Remove apenas o log de execucao. Insights persistidos, classificacoes e as
+ * Remove apenas o log de execução. Insights persistidos, classificações e as
  * mensagens originais permanecem intactos.
  */
 class AiPruneRunsCommand extends Command
 {
-    protected $signature = 'ai:prune-runs {--days= : Sobrescreve a retencao configurada} {--dry-run : Apenas conta}';
+    protected $signature = 'ai:prune-runs {--days= : Sobrescreve a retenção configurada} {--dry-run : Apenas conta}';
 
-    protected $description = 'Aplica a retencao configurada as execucoes de IA.';
+    protected $description = 'Aplica a retenção configurada as execuções de IA.';
 
     public function handle(SystemSettingService $settings): int
     {
         $days = (int) ($this->option('days') ?: $settings->get('ai.runs_retention_days', 90));
 
         if ($days < 1) {
-            $this->error('A retencao deve ser de ao menos um dia.');
+            $this->error('A retenção deve ser de ao menos um dia.');
 
             return self::FAILURE;
         }
@@ -41,7 +41,7 @@ class AiPruneRunsCommand extends Command
 
         $deleted = $query->delete();
 
-        $this->info("Execucoes de IA removidas: {$deleted} (retencao de {$days} dias).");
+        $this->info("Execuções de IA removidas: {$deleted} (retenção de {$days} dias).");
 
         return self::SUCCESS;
     }

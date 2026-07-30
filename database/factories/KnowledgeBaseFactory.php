@@ -22,9 +22,9 @@ class KnowledgeBaseFactory extends Factory
             'name' => $name,
             'slug' => Str::slug($name),
             'description' => $this->faker->sentence(),
-            'purpose' => 'Conteudo oficial aprovado para consulta.',
-            'usage_policy' => 'Somente conteudo publicado e aprovado pela equipe responsavel.',
-            // Padrao rascunho: o estado que permite busca precisa ser pedido.
+            'purpose' => 'Conteúdo oficial aprovado para consulta.',
+            'usage_policy' => 'Somente conteúdo publicado e aprovado pela equipe responsável.',
+            // Padrão rascunho: o estado que permite busca precisa ser pedido.
             'status' => KnowledgeBaseStatus::Draft,
             'version' => 1,
             'provider' => 'local',

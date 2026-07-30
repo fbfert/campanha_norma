@@ -15,15 +15,15 @@ class ClearWhatsAppSessionRequest extends FormRequest
     {
         return [
             'current_password' => ['required', 'current_password'],
-            'confirmation' => ['required', 'in:EXCLUIR SESSAO'],
+            'confirmation' => ['required', 'in:EXCLUIR SESSÃO'],
         ];
     }
 
     public function messages(): array
     {
         return [
-            'confirmation.in' => 'Digite exatamente EXCLUIR SESSAO para confirmar.',
-            'current_password.current_password' => 'A senha atual nao confere.',
+            'confirmation.in' => 'Digite exatamente EXCLUIR SESSÃO para confirmar.',
+            'current_password.current_password' => 'A senha atual não confere.',
         ];
     }
 }

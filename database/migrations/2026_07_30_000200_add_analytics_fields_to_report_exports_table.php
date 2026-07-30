@@ -5,17 +5,17 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * Etapa 9E. Campos de finalidade e anonimizacao na exportacao.
+ * Etapa 9E. Campos de finalidade e anonimização na exportação.
  *
- * A tabela da Etapa 6 ja controla status, filtros, expiracao e arquivo privado.
+ * A tabela da Etapa 6 já controla status, filtros, expiração e arquivo privado.
  * O que falta para a 9E e o registro de responsabilidade: qual o escopo, se o
- * conteudo foi anonimizado e para que a exportacao foi pedida.
+ * conteúdo foi anonimizado e para que a exportação foi pedida.
  *
- * `pseudonym_salt` guarda o sal usado para derivar o pseudonimo daquela
- * exportacao. Ele fica aqui apenas para permitir reprocessar o mesmo arquivo em
- * caso de falha; nao e exibido em tela nem exportado, e sem ele o pseudonimo e
- * irreversivel. Duas exportacoes do mesmo periodo recebem sais diferentes, e
- * por isso nao podem ser cruzadas para reidentificar alguem.
+ * `pseudonym_salt` guarda o sal usado para derivar o pseudônimo daquela
+ * exportação. Ele fica aqui apenas para permitir reprocessar o mesmo arquivo em
+ * caso de falha; não e exibido em tela nem exportado, e sem ele o pseudônimo e
+ * irreversível. Duas exportações do mesmo período recebem sais diferentes, e
+ * por isso não podem ser cruzadas para reidentificar alguém.
  */
 return new class extends Migration
 {

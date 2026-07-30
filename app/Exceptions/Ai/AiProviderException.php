@@ -5,11 +5,11 @@ namespace App\Exceptions\Ai;
 use RuntimeException;
 
 /**
- * Falha na comunicacao com o provedor de IA.
+ * Falha na comunicação com o provedor de IA.
  *
  * A mensagem e sempre operacional e nunca carrega corpo de mensagem do contato,
- * telefone ou credencial. O detalhe tecnico do fornecedor fica em `providerDetail`,
- * ja truncado, para diagnostico sem vazamento.
+ * telefone ou credencial. O detalhe técnico do fornecedor fica em `providerDetail`,
+ * já truncado, para diagnostico sem vazamento.
  */
 class AiProviderException extends RuntimeException
 {
@@ -21,7 +21,7 @@ class AiProviderException extends RuntimeException
 
     public const SERVICE_UNAVAILABLE = 'SERVICE_UNAVAILABLE';
 
-    /** Pedido malformado ou recusado pelo fornecedor. Repetir nao ajuda. */
+    /** Pedido malformado ou recusado pelo fornecedor. Repetir não ajuda. */
     public const BAD_REQUEST = 'BAD_REQUEST';
 
     public const INVALID_RESPONSE = 'INVALID_RESPONSE';
@@ -40,7 +40,7 @@ class AiProviderException extends RuntimeException
     }
 
     /**
-     * Codigos em que uma nova tentativa faz sentido.
+     * Códigos em que uma nova tentativa faz sentido.
      */
     public function isRetryable(): bool
     {
@@ -53,7 +53,7 @@ class AiProviderException extends RuntimeException
 
     /**
      * Falhas que devem contar para o disjuntor. Resposta invalida e problema de
-     * conteudo, nao de disponibilidade, e por isso nao abre o circuito.
+     * conteúdo, não de disponibilidade, e por isso não abre o circuito.
      */
     public function countsTowardsCircuit(): bool
     {

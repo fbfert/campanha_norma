@@ -26,8 +26,8 @@ use Illuminate\Support\Facades\DB;
 /**
  * Orquestrador da subetapa 9C.
  *
- * O caminho padrao termina em sugestao pendente. O autoenvio e um ramo separado
- * e explicito, condicionado a todos os guards.
+ * O caminho padrão termina em sugestão pendente. O autoenvio e um ramo separado
+ * e explícito, condicionado a todos os guards.
  */
 class ConversationSuggestionService
 {
@@ -63,14 +63,14 @@ class ConversationSuggestionService
             return null;
         }
 
-        // Agrupamento: se ja chegou mensagem mais nova, o job dela fara o
-        // trabalho com o texto completo. Nao geramos sobre um fragmento.
+        // Agrupamento: se já chegou mensagem mais nova, o job dela fará o
+        // trabalho com o texto completo. Não geramos sobre um fragmento.
         if ($this->hasNewerIncoming($message)) {
             return null;
         }
 
-        // Opt-out, pausa ou encerramento invalidam qualquer sugestao viva: nada
-        // pendente pode sobreviver a uma decisao de parar.
+        // Opt-out, pausa ou encerramento invalidam qualquer sugestão viva: nada
+        // pendente pode sobreviver a uma decisão de parar.
         if ($state->is_paused || $state->current_stage->isTerminal()) {
             $this->handoff->invalidateLiveSuggestions(
                 $state,
@@ -106,7 +106,7 @@ class ConversationSuggestionService
     }
 
     /**
-     * Decide o destino da sugestao recem-criada.
+     * Decide o destino da sugestão recem-criada.
      */
     private function afterGeneration(ConversationFlowState $state, ConversationReplySuggestion $suggestion, ConversationMessage $message): void
     {
@@ -115,7 +115,7 @@ class ConversationSuggestionService
         $this->events->record(
             $state->conversation,
             'ai_suggestion_created',
-            'Sugestao de resposta gerada.',
+            'Sugestão de resposta gerada.',
             $message,
             null,
             [
@@ -126,7 +126,7 @@ class ConversationSuggestionService
             ],
         );
 
-        // Acao de encerramento decidida pelo modelo, ainda sob aprovacao humana
+        // Ação de encerramento decidida pelo modelo, ainda sob aprovação humana
         // quando o modo exigir.
         if ($suggestion->action === ReplySuggestionAction::OptOut) {
             $this->handoff->handoff($state, HandoffReason::ExplicitRequest, $message);
@@ -143,7 +143,7 @@ class ConversationSuggestionService
 
         $auto = $this->guard->canAutoSend($suggestion);
 
-        // O motivo da decisao de autoenvio e sempre registrado, permita ou nao.
+        // O motivo da decisão de autoenvio e sempre registrado, permita ou não.
         $this->events->record(
             $state->conversation,
             'ai_auto_send_decision',
@@ -159,7 +159,7 @@ class ConversationSuggestionService
     }
 
     /**
-     * Envia a sugestao. Usado pela aprovacao humana e pelo autoenvio.
+     * Envia a sugestão. Usado pela aprovação humana e pelo autoenvio.
      *
      * @return array{sent: bool, reason: ?string}
      */
@@ -173,8 +173,8 @@ class ConversationSuggestionService
             return ['sent' => false, 'reason' => $check['reason']];
         }
 
-        // Trava por conversa e revalidacao dentro da transacao: duas aprovacoes
-        // simultaneas produzem um unico envio.
+        // Trava por conversa e revalidação dentro da transação: duas aprovações
+        // simultaneas produzem um único envio.
         return DB::transaction(function () use ($suggestion, $user, $auto): array {
             $fresh = ConversationReplySuggestion::query()
                 ->whereKey($suggestion->id)
@@ -232,7 +232,7 @@ class ConversationSuggestionService
     }
 
     /**
-     * Registra a recusa e tira a sugestao de circulacao quando definitiva.
+     * Registra a recusa e tira a sugestão de circulação quando definitiva.
      */
     private function refuse(ConversationReplySuggestion $suggestion, ?string $reason): void
     {
@@ -248,14 +248,14 @@ class ConversationSuggestionService
             $this->events->record(
                 $suggestion->conversation,
                 'ai_reply_refused',
-                'Envio de sugestao recusado.',
+                'Envio de sugestão recusado.',
                 $suggestion->sourceMessage,
                 null,
                 ['suggestion_id' => $suggestion->id, 'reason' => $reason],
             );
         }
 
-        $this->audit->log('conversation_response.send_refused', 'Envio de sugestao recusado.', $suggestion, null, [
+        $this->audit->log('conversation_response.send_refused', 'Envio de sugestão recusado.', $suggestion, null, [
             'conversation_id' => $suggestion->conversation_id,
             'reason' => $reason,
         ]);
@@ -291,7 +291,7 @@ class ConversationSuggestionService
     }
 
     /**
-     * Categorias e sinalizacoes que nunca recebem resposta gerada.
+     * Categorias e sinalizações que nunca recebem resposta gerada.
      */
     private function forcedHandoffReason(ConversationMessage $message): ?HandoffReason
     {

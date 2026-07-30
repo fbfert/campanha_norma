@@ -10,7 +10,7 @@ class RecoverConversationSyncCommand extends Command
 {
     protected $signature = 'conversations:recover-sync {--minutes=30}';
 
-    protected $description = 'Marca sincronizacoes de conversas presas como falhas tecnicas.';
+    protected $description = 'Marca sincronizações de conversas presas como falhas técnicas.';
 
     public function handle(): int
     {
@@ -22,11 +22,11 @@ class RecoverConversationSyncCommand extends Command
                 'status' => ConversationSyncStatus::Failed,
                 'finished_at' => now(),
                 'error_code' => 'SYNC_STUCK',
-                'error_message' => 'Sincronizacao marcada como presa pelo comando de recuperacao.',
+                'error_message' => 'Sincronização marcada como presa pelo comando de recuperação.',
                 'updated_at' => now(),
             ]);
 
-        $this->info("Sincronizacoes recuperadas: {$updated}");
+        $this->info("Sincronizações recuperadas: {$updated}");
 
         return self::SUCCESS;
     }

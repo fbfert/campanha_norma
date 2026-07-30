@@ -26,7 +26,7 @@ class ReportExportController extends Controller
 
         $export = $service->request($request->user(), $data['report_type'], $data['format'], $request->except(['_token', 'columns', 'format', 'report_type']), $data['columns'] ?? null);
 
-        return redirect()->route('admin.report-exports.show', $export)->with('success', 'Exportacao solicitada.');
+        return redirect()->route('admin.report-exports.show', $export)->with('success', 'Exportação solicitada.');
     }
 
     public function index(Request $request): View
@@ -47,7 +47,7 @@ class ReportExportController extends Controller
     {
         abort_unless($request->user()->can('reports.export') || $request->user()->can('histories.export'), 403);
         abort_unless($export->status === ReportExportStatus::Completed && $export->file_path && ! $export->expires_at?->isPast(), 404);
-        $audit->log('report.export_downloaded', 'Exportacao baixada.', $export, null, ['report_type' => $export->report_type, 'format' => $export->format], $request->user());
+        $audit->log('report.export_downloaded', 'Exportação baixada.', $export, null, ['report_type' => $export->report_type, 'format' => $export->format], $request->user());
 
         return response()->download(Storage::disk('local')->path($export->file_path));
     }
@@ -58,7 +58,7 @@ class ReportExportController extends Controller
         abort_unless($export->status === ReportExportStatus::Failed, 403);
         $service->process($export);
 
-        return back()->with('success', 'Exportacao reprocessada.');
+        return back()->with('success', 'Exportação reprocessada.');
     }
 
     public function destroy(Request $request, ReportExport $export): RedirectResponse
@@ -69,6 +69,6 @@ class ReportExportController extends Controller
         }
         $export->update(['status' => ReportExportStatus::Cancelled]);
 
-        return back()->with('success', 'Exportacao cancelada.');
+        return back()->with('success', 'Exportação cancelada.');
     }
 }

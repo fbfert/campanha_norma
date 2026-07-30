@@ -1,8 +1,8 @@
 # Gerenciador de Mensagens
 
-Aplicacao Laravel para a fundacao administrativa do futuro gerenciador de contatos e mensagens iniciais pelo WhatsApp.
+Aplicação Laravel para a fundação administrativa do futuro gerenciador de contatos e mensagens iniciais pelo WhatsApp.
 
-A automacao do projeto deve se limitar ao primeiro contato. Depois da resposta do destinatario, a conversa continua manualmente e de forma humana pelo WhatsApp.
+A automação do projeto deve se limitar ao primeiro contato. Depois da resposta do destinatário, a conversa continua manualmente e de forma humana pelo WhatsApp.
 
 ## Requisitos
 
@@ -12,10 +12,10 @@ A automacao do projeto deve se limitar ao primeiro contato. Depois da resposta d
 - MySQL.
 - Apache com `mod_rewrite`.
 - Redis previsto para etapas futuras.
-- OpenSpout `openspout/openspout` para importacao e exportacao CSV/XLSX.
-- Servico Node.js privado em `whatsapp-service/` para validacao inicial do WhatsApp Web por QR Code.
+- OpenSpout `openspout/openspout` para importação e exportação CSV/XLSX.
+- Serviço Node.js privado em `whatsapp-service/` para validação inicial do WhatsApp Web por QR Code.
 
-## Instalacao
+## Instalação
 
 ```bash
 composer install
@@ -38,9 +38,9 @@ ADMIN_EMAIL="admin@example.com"
 ADMIN_PASSWORD=
 ```
 
-Se `ADMIN_PASSWORD` ficar vazio, o seeder gera uma senha temporaria segura e informa no terminal.
+Se `ADMIN_PASSWORD` ficar vazio, o seeder gera uma senha temporária segura e informa no terminal.
 
-A politica local de senha exige apenas no minimo 6 caracteres e confirmacao. Nao ha exigencia de letra maiuscula, minuscula, numero ou simbolo.
+A política local de senha exige apenas no mínimo 6 caracteres e confirmação. Não ha exigência de letra maiúscula, minúscula, número ou símbolo.
 
 Execute migrations e seeders:
 
@@ -54,7 +54,7 @@ Compile os assets:
 npm run build
 ```
 
-Execucao local:
+Execução local:
 
 ```bash
 php artisan serve
@@ -67,7 +67,7 @@ Testes:
 php artisan test
 ```
 
-Formatacao:
+Formatação:
 
 ```bash
 ./vendor/bin/pint
@@ -90,16 +90,16 @@ O `DocumentRoot` deve apontar para:
 /var/www/gerenciador-mensagens/public
 ```
 
-Garanta permissoes de escrita para:
+Garanta permissões de escrita para:
 
 ```text
 storage
 bootstrap/cache
 ```
 
-O arquivo `.env` nunca deve ficar publico. HTTPS e obrigatorio em producao.
+O arquivo `.env` nunca deve ficar público. HTTPS e obrigatório em produção.
 
-## Producao
+## Produção
 
 Use no `.env`:
 
@@ -111,7 +111,7 @@ SESSION_HTTP_ONLY=true
 SESSION_SAME_SITE=lax
 ```
 
-Comandos de manutencao:
+Comandos de manutenção:
 
 ```bash
 php artisan optimize
@@ -119,7 +119,7 @@ php artisan migrate --force
 php artisan queue:work
 ```
 
-O cron sera usado em etapas futuras:
+O cron será usado em etapas futuras:
 
 ```cron
 * * * * * cd /var/www/gerenciador-mensagens && php artisan schedule:run >> /dev/null 2>&1
@@ -127,38 +127,38 @@ O cron sera usado em etapas futuras:
 
 ## Escopo implementado — Etapa 1
 
-- Projeto Laravel configurado em portugues do Brasil e fuso `America/Sao_Paulo`.
-- Autenticacao, logout, recuperacao e redefinicao de senha.
-- Bloqueio de usuarios inativos ou bloqueados.
-- Troca obrigatoria de senha temporaria.
-- Perfis e permissoes: Administrador, Operador e Consulta.
-- Gestao administrativa de usuarios.
-- Perfil do usuario e alteracao da propria senha.
+- Projeto Laravel configurado em português do Brasil e fuso `America/Sao_Paulo`.
+- Autenticação, logout, recuperação e redefinição de senha.
+- Bloqueio de usuários inativos ou bloqueados.
+- Troca obrigatória de senha temporária.
+- Perfis e permissões: Administrador, Operador e Consulta.
+- Gestão administrativa de usuários.
+- Perfil do usuário e alteração da própria senha.
 - Dashboard inicial.
-- Configuracoes gerais via servico.
+- Configurações gerais via serviço.
 - Auditoria basica.
 - Seeders, factories, migrations e testes.
 - Layout administrativo responsivo com Blade, Livewire, Alpine.js e Vite.
-- Documentacao de Apache.
+- Documentação de Apache.
 
 ## Escopo implementado — Etapa 2
 
-- Cadastro, edicao, visualizacao, status, exclusao logica e restauracao autorizada de contatos.
-- Normalizacao de telefone para formato internacional numerico.
-- Prevencao de duplicidade exata por telefone normalizado.
-- Filtros combinados por busca, status, cidade, estado, etiqueta, presenca de telefone/e-mail e exclusao logica.
-- Etiquetas com cor, situacao, exclusao logica e quantidade de contatos.
-- Acoes em massa para etiquetas, status, nao contatar e exclusao logica.
-- Lista de nao contatar com motivo e prioridade sobre importacoes futuras.
-- Historico especifico de contatos e auditoria geral.
-- Importacao CSV/XLSX com upload, armazenamento privado, leitura de cabecalhos, pre-validacao, confirmacao, processamento e relatorio por linha.
-- Exportacao CSV/XLSX de contatos filtrados ou selecionados.
-- Modelo de planilha para importacao.
-- Dashboard com metricas reais de contatos.
-- Permissoes de contatos para Administrador, Operador e Consulta.
-- Testes automatizados do modulo de contatos.
+- Cadastro, edição, visualização, status, exclusão lógica e restauração autorizada de contatos.
+- Normalização de telefone para formato internacional numerico.
+- Prevenção de duplicidade exata por telefone normalizado.
+- Filtros combinados por busca, status, cidade, estado, etiqueta, presença de telefone/e-mail e exclusão lógica.
+- Etiquetas com cor, situação, exclusão lógica e quantidade de contatos.
+- Ações em massa para etiquetas, status, não contatar e exclusão lógica.
+- Lista de não contatar com motivo e prioridade sobre importações futuras.
+- Histórico específico de contatos e auditoria geral.
+- Importação CSV/XLSX com upload, armazenamento privado, leitura de cabeçalhos, pre-validação, confirmação, processamento e relatório por linha.
+- Exportação CSV/XLSX de contatos filtrados ou selecionados.
+- Modelo de planilha para importação.
+- Dashboard com métricas reais de contatos.
+- Permissões de contatos para Administrador, Operador e Consulta.
+- Testes automatizados do módulo de contatos.
 
-Dependencia externa:
+Dependência externa:
 
 ```bash
 composer require openspout/openspout
@@ -166,7 +166,7 @@ composer require openspout/openspout
 
 Finalidade: leitura e escrita de arquivos `.csv` e `.xlsx` sem exigir `ext-gd`.
 
-Configuracoes seedadas em `system_settings`:
+Configurações seedadas em `system_settings`:
 
 ```text
 contacts.default_country = BR
@@ -182,24 +182,24 @@ contacts.require_do_not_contact_reason = true
 
 ## Escopo implementado — Etapa 3
 
-- Servico Node.js separado para WhatsApp Web em `whatsapp-service/`.
-- API privada autenticada em `127.0.0.1:3100` com endpoints de health, status, conexao, QR Code, reconexao, desconexao, exclusao de sessao e mensagem individual de teste.
-- QR Code transitorio exibido pelo Laravel apenas a usuarios autorizados.
-- Persistencia segura da sessao fora do diretorio publico.
-- Camada Laravel `WhatsAppProvider` com implementacao `WhatsAppWebProvider`.
+- Serviço Node.js separado para WhatsApp Web em `whatsapp-service/`.
+- API privada autenticada em `127.0.0.1:3100` com endpoints de health, status, conexão, QR Code, reconexão, desconexão, exclusão de sessão e mensagem individual de teste.
+- QR Code transitorio exibido pelo Laravel apenas a usuários autorizados.
+- Persistência segura da sessão fora do diretório público.
+- Camada Laravel `WhatsAppProvider` com implementação `WhatsAppWebProvider`.
 - Cliente HTTP Laravel com timeout, token interno e tratamento de erros.
-- Tabelas de conexao, eventos tecnicos e mensagens individuais de teste.
-- Tela administrativa de conexao WhatsApp e eventos.
+- Tabelas de conexão, eventos técnicos e mensagens individuais de teste.
+- Tela administrativa de conexão WhatsApp e eventos.
 - Dashboard com status real do WhatsApp.
-- Permissoes `whatsapp.*` para conexao, eventos e envio de teste.
-- Envio manual de uma unica mensagem individual de teste para contato ativo, com telefone valido e sem `nao contatar`.
-- O envio pelo WhatsApp Web aceita telefone com ou sem `+`; o sistema normaliza para digitos e valida o numero pelo cliente Web antes de chamar `sendMessage`.
-- Quando o WhatsApp Web confirma o envio mas nao retorna identificador externo, o sistema registra sucesso com `external_message_id` vazio em vez de tratar como falha.
-- Idempotencia por `request_id`.
+- Permissões `whatsapp.*` para conexão, eventos e envio de teste.
+- Envio manual de uma única mensagem individual de teste para contato ativo, com telefone valido e sem `nao contatar`.
+- O envio pelo WhatsApp Web aceita telefone com ou sem `+`; o sistema normaliza para digitos e valida o número pelo cliente Web antes de chamar `sendMessage`.
+- Quando o WhatsApp Web confirma o envio mas não retorna identificador externo, o sistema registra sucesso com `external_message_id` vazio em vez de tratar como falha.
+- Idempotência por `request_id`.
 - Exemplo de systemd e procedimento manual controlado.
 - Testes automatizados Laravel com HTTP fake e testes Node.js com runtime mockado.
 
-Dependencias externas do servico Node:
+Dependências externas do serviço Node:
 
 ```bash
 cd whatsapp-service
@@ -218,7 +218,7 @@ supertest 7.2.2
 typescript 7.0.2
 ```
 
-Variaveis Laravel:
+Variáveis Laravel:
 
 ```env
 WHATSAPP_PROVIDER=web
@@ -230,7 +230,7 @@ WHATSAPP_STATUS_CACHE_SECONDS=5
 WHATSAPP_TEST_MESSAGE_ENABLED=true
 ```
 
-Comandos do servico Node:
+Comandos do serviço Node:
 
 ```bash
 cd whatsapp-service
@@ -239,7 +239,7 @@ npm test
 npm run lint
 ```
 
-Documentacao complementar:
+Documentação complementar:
 
 - `whatsapp-service/README.md`
 - `whatsapp-service/deploy/gerenciador-whatsapp.service`
@@ -248,30 +248,30 @@ Documentacao complementar:
 
 ## Escopo implementado — Etapa 4
 
-- Cadastro, edicao, visualizacao, duplicacao, ativacao, inativacao, exclusao logica e restauracao de modelos de mensagens.
+- Cadastro, edição, visualização, duplicação, ativação, inativação, exclusão lógica e restauração de modelos de mensagens.
 - Versionamento de modelos em `message_template_versions`.
 - Catalogo centralizado de placeholders: `{nome}`, `{primeiro_nome}`, `{telefone}`, `{email}`, `{cidade}`, `{estado}` e `{pais}`.
 - Parser de placeholders com bloqueio de desconhecidos, incompletos, aninhados ou com sintaxe invalida.
-- Renderizacao textual segura, sem Blade, PHP, JavaScript, HTML ou `eval()`.
-- Validacao de valores vazios nos contatos usados por placeholders.
-- Pre-visualizacao personalizada de modelo por contato.
-- Criacao de lotes em rascunho com selecao manual, todos os filtrados e amostra aleatoria.
-- Funcao `CAMPANHA` em `/admin/campaigns/create`, permitindo escolher contatos e ate 10 modelos ativos.
+- Renderização textual segura, sem Blade, PHP, JavaScript, HTML ou `eval()`.
+- Validação de valores vazios nos contatos usados por placeholders.
+- Pre-visualização personalizada de modelo por contato.
+- Criação de lotes em rascunho com seleção manual, todos os filtrados e amostra aleatória.
+- Função `CAMPANHA` em `/admin/campaigns/create`, permitindo escolher contatos e até 10 modelos ativos.
 - Em campanhas, a ordem de envio dos contatos e sorteada e preservada em `random_position`.
-- Em campanhas, cada destinatario recebe um modelo sorteado entre os modelos escolhidos; o modelo, a versao e a mensagem renderizada ficam congelados no destinatario.
-- Validacao backend de aptidao: ativo, nao bloqueado, nao marcado como nao contatar, telefone valido, placeholders preenchidos e mensagem dentro do tamanho permitido.
-- Geracao e preservacao de ordem aleatoria por `random_position`.
+- Em campanhas, cada destinatário recebe um modelo sorteado entre os modelos escolhidos; o modelo, a versão e a mensagem renderizada ficam congelados no destinatário.
+- Validação backend de aptidão: ativo, não bloqueado, não marcado como não contatar, telefone valido, placeholders preenchidos e mensagem dentro do tamanho permitido.
+- Geração e preservação de ordem aleatória por `random_position`.
 - Snapshots de contato e mensagem renderizada em `message_batch_recipients`.
-- Preparacao de lote com status `ready`, sem processamento automatico.
-- Duplicacao de lote pronto para novo rascunho sem copiar destinatarios congelados.
-- Cancelamento de lote com motivo, usuario e data.
-- Historico de lote em `message_batch_events`.
-- Exportacao de previa de destinatarios em CSV/XLSX.
-- Dashboard com metricas reais de modelos e lotes.
-- Permissoes de modelos e lotes para Administrador, Operador e Consulta.
-- Testes automatizados do modulo de modelos, placeholders e lotes.
+- Preparação de lote com status `ready`, sem processamento automático.
+- Duplicação de lote pronto para novo rascunho sem copiar destinatários congelados.
+- Cancelamento de lote com motivo, usuário e data.
+- Histórico de lote em `message_batch_events`.
+- Exportação de previa de destinatários em CSV/XLSX.
+- Dashboard com métricas reais de modelos e lotes.
+- Permissões de modelos e lotes para Administrador, Operador e Consulta.
+- Testes automatizados do módulo de modelos, placeholders e lotes.
 
-Configuracoes seedadas em `system_settings`:
+Configurações seedadas em `system_settings`:
 
 ```text
 messages.maximum_length = 4096 caracteres
@@ -289,19 +289,19 @@ messages.maximum_batch_size = 1000 destinatarios
 ## Escopo implementado — Etapa 5
 
 - Redis e Laravel Queue configurados para a fila `whatsapp-messages`.
-- Inicio manual de lotes preparados.
-- Processamento assíncrono por worker, sem envio dentro de requisicoes HTTP.
-- Limites por minuto, hora e dia, intervalo minimo entre mensagens e janela de horario.
-- Dias permitidos e fuso horario configuraveis.
-- Pausa, retomada, parada definitiva, cancelamento de destinatario e nova tentativa manual.
-- Historico de tentativas em `message_send_attempts`.
-- Eventos tecnicos em `message_processing_events`.
+- Início manual de lotes preparados.
+- Processamento assíncrono por worker, sem envio dentro de requisições HTTP.
+- Limites por minuto, hora e dia, intervalo mínimo entre mensagens e janela de horário.
+- Dias permitidos e fuso horário configuráveis.
+- Pausa, retomada, parada definitiva, cancelamento de destinatário e nova tentativa manual.
+- Histórico de tentativas em `message_send_attempts`.
+- Eventos técnicos em `message_processing_events`.
 - Tela de acompanhamento de processamento.
-- Tela de configuracoes de envio.
-- Comandos de operacao: `messages:dispatch-pending`, `messages:recalculate-batch`, `messages:recover-stuck` e `messages:sync-counters`.
+- Tela de configurações de envio.
+- Comandos de operação: `messages:dispatch-pending`, `messages:recalculate-batch`, `messages:recover-stuck` e `messages:sync-counters`.
 - Supervisor e cron documentados em `docs/message-processing.md`.
 
-Configuracoes principais:
+Configurações principais:
 
 ```text
 QUEUE_CONNECTION=redis
@@ -311,23 +311,23 @@ REDIS_QUEUE=whatsapp-messages
 
 ## Escopo implementado — Etapa 6
 
-- Historico consolidado de mensagens em `/admin/histories/messages`, com filtros por periodo, lote, status, contato, telefone, cidade e erro.
-- Detalhe do envio com dados do lote, snapshots usados, mensagem protegida por permissao, tentativas, eventos e classificacao do erro.
-- Historico de mensagens por contato em `/admin/contacts/{contact}/message-history`, preservando snapshots mesmo quando o cadastro atual muda.
-- Relatorios operacionais de lotes, mensagens, erros, nao enviados, tentativas, limites, contatos e modelos.
-- Formulas documentadas para taxa de sucesso, falha, cancelamento, repeticao e tempo medio.
-- Exportacoes CSV/XLSX protegidas por permissao, com arquivos fora do diretorio publico e expiracao configuravel.
-- Central de exportacoes em `/admin/report-exports`.
-- Dashboard operacional com mensagens enviadas, falhas, lotes ativos, resultados incertos, uso do limite diario e saude de Redis, workers e Scheduler.
+- Histórico consolidado de mensagens em `/admin/histories/messages`, com filtros por período, lote, status, contato, telefone, cidade e erro.
+- Detalhe do envio com dados do lote, snapshots usados, mensagem protegida por permissão, tentativas, eventos e classificação do erro.
+- Histórico de mensagens por contato em `/admin/contacts/{contact}/message-history`, preservando snapshots mesmo quando o cadastro atual muda.
+- Relatórios operacionais de lotes, mensagens, erros, não enviados, tentativas, limites, contatos e modelos.
+- Fórmulas documentadas para taxa de sucesso, falha, cancelamento, repetição e tempo médio.
+- Exportações CSV/XLSX protegidas por permissão, com arquivos fora do diretório público e expiração configurável.
+- Central de exportações em `/admin/report-exports`.
+- Dashboard operacional com mensagens enviadas, falhas, lotes ativos, resultados incertos, uso do limite diário e saúde de Redis, workers e Scheduler.
 - Central de monitoramento para Laravel, banco, Redis, filas, workers, Scheduler, Node.js, armazenamento, mensagens presas e lotes inconsistentes.
 - Heartbeats em `worker_heartbeats` e `scheduler_heartbeats`.
-- Ferramentas de manutencao para sincronizar contadores, detectar inconsistencias, recuperar mensagens presas, limpar exportacoes expiradas e aplicar retencao.
-- Metricas diarias em `daily_message_metrics`.
-- Permissoes de historicos, relatorios, monitoramento e manutencao.
-- Auditoria de visualizacoes, exportacoes, diagnosticos e acoes de manutencao.
-- Documentacao operacional em `docs/reports-and-monitoring.md`.
+- Ferramentas de manutenção para sincronizar contadores, detectar inconsistências, recuperar mensagens presas, limpar exportações expiradas e aplicar retenção.
+- Métricas diárias em `daily_message_metrics`.
+- Permissões de históricos, relatórios, monitoramento e manutenção.
+- Auditoria de visualizações, exportações, diagnosticos e ações de manutenção.
+- Documentação operacional em `docs/reports-and-monitoring.md`.
 
-Configuracoes principais:
+Configurações principais:
 
 ```text
 reports.synchronous_export_max_rows = 1000 linhas
@@ -360,26 +360,26 @@ php artisan maintenance:apply-retention
 
 ## Escopo implementado — Etapa 7
 
-- Recebimento de mensagens pelo servico Node.js e encaminhamento assinado para o Laravel.
+- Recebimento de mensagens pelo serviço Node.js e encaminhamento assinado para o Laravel.
 - Webhook interno `POST /internal/whatsapp/incoming` com HMAC-SHA256, timestamp, nonce, limite de corpo e Content-Type.
-- Idempotencia por `provider + external_message_id` e `event_id`.
+- Idempotência por `provider + external_message_id` e `event_id`.
 - Processamento assíncrono na fila `whatsapp-incoming`.
-- Criacao de conversas e mensagens em `conversations` e `conversation_messages`.
-- Identificacao de contato por telefone normalizado.
-- Conversas sem contato identificado para associacao manual posterior.
-- Marcacao de contatos respondidos com `has_replied`, `first_replied_at` e `last_replied_at`.
-- Interrupcao de destinatarios pendentes com `CONTACT_REPLIED`.
+- Criação de conversas e mensagens em `conversations` e `conversation_messages`.
+- Identificação de contato por telefone normalizado.
+- Conversas sem contato identificado para associação manual posterior.
+- Marcação de contatos respondidos com `has_replied`, `first_replied_at` e `last_replied_at`.
+- Interrupção de destinatários pendentes com `CONTACT_REPLIED`.
 - Caixa de entrada em `/admin/inbox`.
-- Leitura interna e contador de nao lidas.
-- Atribuicao de conversa, status, prioridade, arquivamento, etiquetas e notas internas.
+- Leitura interna e contador de não lidas.
+- Atribuição de conversa, status, prioridade, arquivamento, etiquetas e notas internas.
 - Resposta manual por operador pela fila `whatsapp-manual-replies`, usando `WhatsAppProvider`.
-- Relatorio basico de conversas em `/admin/reports/conversations`.
+- Relatório básico de conversas em `/admin/reports/conversations`.
 - Dashboard com indicadores de atendimento.
-- Comandos `inbox:*` para sincronizacao, recuperacao, reconstrução e arquivamento.
-- Alteracoes no Node.js para listeners de mensagens recebidas e envio de webhook assinado.
+- Comandos `inbox:*` para sincronização, recuperação, reconstrução e arquivamento.
+- Alterações no Node.js para listeners de mensagens recebidas e envio de webhook assinado.
 - Testes automatizados Laravel e Node.js.
 
-Variaveis Laravel:
+Variáveis Laravel:
 
 ```env
 WHATSAPP_INCOMING_ENABLED=true
@@ -389,7 +389,7 @@ WHATSAPP_INCOMING_MAX_BODY_SIZE=262144
 WHATSAPP_INCOMING_QUEUE=whatsapp-incoming
 ```
 
-Variaveis Node.js:
+Variáveis Node.js:
 
 ```env
 LARAVEL_INCOMING_WEBHOOK_URL=https://mensagens.exemplo.com/internal/whatsapp/incoming
@@ -401,26 +401,26 @@ INCOMING_MESSAGE_ENABLED=true
 INCOMING_MESSAGE_LOG_BODY=false
 ```
 
-Documentacao complementar:
+Documentação complementar:
 
 - `docs/inbox-and-incoming-messages.md`
 
 ## Escopo implementado — Etapa 8
 
-- Menu administrativo `CONVERSAS`, reaproveitando integralmente o modulo existente de inbox.
-- Rotas amigaveis `/admin/conversations` e `/admin/conversations/{conversation}`, mantendo `/admin/inbox`.
+- Menu administrativo `CONVERSAS`, reaproveitando integralmente o módulo existente de inbox.
+- Rotas amigáveis `/admin/conversations` e `/admin/conversations/{conversation}`, mantendo `/admin/inbox`.
 - Interface de atendimento com lista de conversas, linha do tempo, resposta manual e painel de detalhes.
-- Badge de conversas nao lidas com escopo por permissao e cache curto.
-- Sincronizacao controlada dos chats individuais disponiveis na sessao atual do WhatsApp Web.
+- Badge de conversas não lidas com escopo por permissão e cache curto.
+- Sincronização controlada dos chats individuais disponíveis na sessão atual do WhatsApp Web.
 - Endpoints privados Node.js `GET /api/conversations` e `GET /api/conversations/:chatId/messages`.
-- Importacao idempotente em `conversations` e `conversation_messages` usando `provider + external_message_id`.
-- Registro de execucoes em `conversation_sync_runs`.
+- Importação idempotente em `conversations` e `conversation_messages` usando `provider + external_message_id`.
+- Registro de execuções em `conversation_sync_runs`.
 - Fila `whatsapp-conversation-sync`, job `SyncWhatsAppConversationsJob` e comandos `conversations:*`.
-- Permissao `inbox.sync`.
-- Configuracoes `conversations.sync_*`.
-- Documentacao operacional em `docs/conversations-and-sync.md`.
+- Permissão `inbox.sync`.
+- Configurações `conversations.sync_*`.
+- Documentação operacional em `docs/conversations-and-sync.md`.
 
-Configuracoes principais:
+Configurações principais:
 
 ```text
 conversations.sync_enabled = true
@@ -434,23 +434,23 @@ conversations.polling_interval_seconds = 10
 
 ## Escopo implementado — Etapa 9A
 
-Fundacao deterministica do fluxo de pesquisa conversacional. **Sem IA, embeddings, RAG ou classificacao por similaridade nesta subetapa**: toda decisao deriva de estado persistido e de regras configuraveis.
+Fundação determinística do fluxo de pesquisa conversacional. **Sem IA, embeddings, RAG ou classificação por similaridade nesta subetapa**: toda decisão deriva de estado persistido e de regras configuráveis.
 
-- Administracao de fluxos conversacionais com status rascunho/ativo/pausado/arquivado, texto de apresentacao ou modelo, agradecimento final, texto de recusa, limite de perguntas principais, limite de aprofundamentos (zero nesta subetapa), validade e transparencia sobre automacao.
-- Administracao de perguntas por fluxo com titulo interno, texto, categoria, peso para sorteio, ordem administrativa, status, versao e exclusao apenas logica.
-- Estado persistente por conversa em `conversation_flow_states`, com os treze estagios exigidos, contadores, motivo de encerramento, pausa, revisao humana e validade.
-- Historico completo de transicoes em `conversation_flow_transitions`, com estado anterior, novo, evento, mensagem, decisao e responsavel.
-- Registro de uso de perguntas em `conversation_flow_question_usages`, com indice unico garantindo que a mesma pergunta nunca seja sorteada duas vezes na mesma conversa.
-- Classificador deterministico de permissao (`permission_yes`, `permission_no`, `opt_out`, `ambiguous`) com normalizacao de caixa, espacos, pontuacao, acentos e emojis, prioridade absoluta para opt-out, recusa de classificacao por aproximacao em textos longos e listas de expressoes editaveis em `system_settings`.
-- Sorteio ponderado de pergunta em transacao com trava por conversa, congelamento do texto e criacao de uma unica mensagem automatica pendente.
-- Associacao opcional entre campanha/lote e fluxo, com snapshot preservado e sem alterar campanhas antigas.
-- Ativacao do estado como `waiting_permission` quando o destinatario da campanha e enviado, respeitando elegibilidade do contato.
-- Avaliacao despachada apos o commit da mensagem recebida, em filas proprias, sem atrasar o registro nem chamar servico externo dentro da transacao.
-- Opt-out reaproveitando `ContactDataService` e `ReplyInterruptionService`; recusa simples nao marca `nao contatar` por padrao.
+- Administração de fluxos conversacionais com status rascunho/ativo/pausado/arquivado, texto de apresentação ou modelo, agradecimento final, texto de recusa, limite de perguntas principais, limite de aprofundamentos (zero nesta subetapa), validade e transparência sobre automação.
+- Administração de perguntas por fluxo com título interno, texto, categoria, peso para sorteio, ordem administrativa, status, versão e exclusão apenas lógica.
+- Estado persistente por conversa em `conversation_flow_states`, com os treze estagios exigidos, contadores, motivo de encerramento, pausa, revisão humana e validade.
+- Histórico completo de transições em `conversation_flow_transitions`, com estado anterior, novo, evento, mensagem, decisão e responsável.
+- Registro de uso de perguntas em `conversation_flow_question_usages`, com índice único garantindo que a mesma pergunta nunca seja sorteada duas vezes na mesma conversa.
+- Classificador determinístico de permissão (`permission_yes`, `permission_no`, `opt_out`, `ambiguous`) com normalização de caixa, espaços, pontuação, acentos e emojis, prioridade absoluta para opt-out, recusa de classificação por aproximação em textos longos e listas de expressões editáveis em `system_settings`.
+- Sorteio ponderado de pergunta em transação com trava por conversa, congelamento do texto e criação de uma única mensagem automática pendente.
+- Associação opcional entre campanha/lote e fluxo, com snapshot preservado e sem alterar campanhas antigas.
+- Ativação do estado como `waiting_permission` quando o destinatário da campanha e enviado, respeitando elegibilidade do contato.
+- Avaliação despachada após o commit da mensagem recebida, em filas próprias, sem atrasar o registro nem chamar serviço externo dentro da transação.
+- Opt-out reaproveitando `ContactDataService` e `ReplyInterruptionService`; recusa simples não marca `nao contatar` por padrão.
 - Telas administrativas de fluxos, perguntas e estado das conversas, com pausar, retomar, encerrar e assumir manualmente.
-- Mensagens automaticas identificadas na linha do tempo da conversa.
-- Permissoes `conversation_automation.*`, gates, papeis e menu.
-- Testes unitarios do classificador e testes de feature dos seis criterios de aceitacao, incluindo idempotencia e regressao das etapas 1 a 8.
+- Mensagens automáticas identificadas na linha do tempo da conversa.
+- Permissões `conversation_automation.*`, gates, papeis e menu.
+- Testes unitários do classificador e testes de feature dos seis critérios de aceitação, incluindo idempotência e regressão das etapas 1 a 8.
 
 Filas novas:
 
@@ -459,7 +459,7 @@ conversation-automation
 conversation-automation-send
 ```
 
-Configuracoes principais (desligadas por padrao ate homologacao):
+Configurações principais (desligadas por padrão até homologação):
 
 ```text
 conversation_automation.enabled = 0
@@ -474,40 +474,40 @@ conversation_automation.no_question_behavior = waiting_human
 conversation_automation.mark_do_not_contact_on_refusal = 0
 ```
 
-Documentacao complementar:
+Documentação complementar:
 
 - `docs/conversation-automation.md`
 - `docs/tests/conversational-manual-etapa-9a.md`
 
 ## Escopo implementado — Etapa 9B
 
-Interpretacao por IA e banco estruturado de opinioes. A IA **le, resume e categoriza**: nao conversa, nao gera texto de resposta e nao envia nada. A conversa bruta continua sendo a fonte primaria e imutavel; todo resultado de IA e derivado, versionado e reprocessavel.
+Interpretação por IA e banco estruturado de opiniões. A IA **le, resume e categoriza**: não conversa, não gera texto de resposta e não envia nada. A conversa bruta continua sendo a fonte primária e imutável; todo resultado de IA e derivado, versionado e reprocessável.
 
-- Abstracao de provedor de IA independente de fornecedor (`App\Contracts\AiProvider`), com implementacao compativel com APIs de chat no formato OpenAI, provedor inerte para ambiente sem credencial, timeout, tentativas com backoff, disjuntor simples e erros sanitizados.
-- Saida JSON obrigatoriamente validada por schema no servidor, sem confiar na promessa do fornecedor: JSON parseavel, campos obrigatorios, tipos, valores enumerados, limites de tamanho e recusa de campos desconhecidos.
-- Registro auditavel de cada tentativa em `ai_runs`, com finalidade, provedor, modelo, versao de prompt, versao de schema, status, hash da requisicao, resultado, tokens, latencia, custo estimado opcional, confianca, erro sanitizado, tentativa e marcos de tempo. Nunca guarda chave, cabecalho secreto ou payload desnecessario.
-- Classificacao ampliada em treze categorias, com **precedencia estrutural** da regra deterministica da 9A: quando ela conclui, o caminho de codigo nao chega ao provedor.
-- Extracao estruturada e pesquisavel com resumo, tema principal relacional, temas secundarios em tabela pivo, problema, acao sugerida, resultado desejado, grupo afetado, localidade declarada, regiao, urgencia, sentimento descritivo, palavras-chave, confianca e sinalizacao de revisao.
-- Taxonomia administrativa de temas e subtemas com sinonimos, ordenacao, cor, ativo/inativo, tema de fallback obrigatorio e protecao contra exclusao de tema em uso. O modelo nunca cria tema.
-- Pipeline assincrono em fila propria que persiste a mensagem antes de qualquer analise e nunca chama servico externo dentro da transacao de registro.
-- Prompts versionados em arquivo (`resources/ai/prompts/`), com versao ativa por finalidade em `system_settings` e reprocessamento por versao.
-- Thresholds de confianca configuraveis e deteccao deterministica de conteudo sensivel sobre o texto original, que roda inclusive quando a IA falha.
-- Correcao humana auditada com preservacao do valor original, sem qualquer retroalimentacao automatica do modelo.
-- Contexto minimo enviado ao modelo: pergunta, mensagem truncada, poucas mensagens da mesma conversa e taxonomia. Nome, telefone, etiquetas e conversas de terceiros nunca entram no prompt.
-- Telas de fila de revisao, detalhe do insight, correcao, reprocessamento, historico de versoes, CRUD de temas e monitoramento, todas com permissoes proprias e telefone mascarado nas visoes analiticas.
-- Comandos `ai:reprocess` (exige filtro, confirma acima do limite) e `ai:prune-runs` (retencao configuravel).
-- 126 testes de feature e 15 unitarios cobrindo sucesso, matriz completa de falhas do provedor (400, 401, 403, 404, 422, 429, 500, 503, timeout, conexao indisponivel, corpo vazio, JSON invalido, schema invalido, propriedades extras, classificacao desconhecida, confianca invalida), disjuntor, idempotencia, concorrencia, isolamento de contexto, permissoes e regressao das etapas 1 a 9A.
+- Abstração de provedor de IA independente de fornecedor (`App\Contracts\AiProvider`), com implementação compatível com APIs de chat no formato OpenAI, provedor inerte para ambiente sem credencial, timeout, tentativas com backoff, disjuntor simples e erros sanitizados.
+- Saída JSON obrigatoriamente validada por schema no servidor, sem confiar na promessa do fornecedor: JSON parseável, campos obrigatórios, tipos, valores enumerados, limites de tamanho e recusa de campos desconhecidos.
+- Registro auditável de cada tentativa em `ai_runs`, com finalidade, provedor, modelo, versão de prompt, versão de schema, status, hash da requisição, resultado, tokens, latência, custo estimado opcional, confiança, erro sanitizado, tentativa e marcos de tempo. Nunca guarda chave, cabeçalho secreto ou payload desnecessário.
+- Classificação ampliada em treze categorias, com **precedência estrutural** da regra determinística da 9A: quando ela conclui, o caminho de código não chega ao provedor.
+- Extração estruturada e pesquisável com resumo, tema principal relacional, temas secundários em tabela pivô, problema, ação sugerida, resultado desejado, grupo afetado, localidade declarada, região, urgência, sentimento descritivo, palavras-chave, confiança e sinalização de revisão.
+- Taxonomia administrativa de temas e subtemas com sinônimos, ordenação, cor, ativo/inativo, tema de fallback obrigatório e proteção contra exclusão de tema em uso. O modelo nunca cria tema.
+- Pipeline assíncrono em fila própria que persiste a mensagem antes de qualquer análise e nunca chama serviço externo dentro da transação de registro.
+- Prompts versionados em arquivo (`resources/ai/prompts/`), com versão ativa por finalidade em `system_settings` e reprocessamento por versão.
+- Thresholds de confiança configuráveis e detecção determinística de conteúdo sensível sobre o texto original, que roda inclusive quando a IA falha.
+- Correção humana auditada com preservação do valor original, sem qualquer retroalimentação automática do modelo.
+- Contexto mínimo enviado ao modelo: pergunta, mensagem truncada, poucas mensagens da mesma conversa e taxonomia. Nome, telefone, etiquetas e conversas de terceiros nunca entram no prompt.
+- Telas de fila de revisão, detalhe do insight, correção, reprocessamento, histórico de versões, CRUD de temas e monitoramento, todas com permissões próprias e telefone mascarado nas visões analíticas.
+- Comandos `ai:reprocess` (exige filtro, confirma acima do limite) e `ai:prune-runs` (retenção configurável).
+- 126 testes de feature e 15 unitários cobrindo sucesso, matriz completa de falhas do provedor (400, 401, 403, 404, 422, 429, 500, 503, timeout, conexão indisponível, corpo vazio, JSON inválido, schema inválido, propriedades extras, classificação desconhecida, confiança invalida), disjuntor, idempotência, concorrência, isolamento de contexto, permissões e regressão das etapas 1 a 9A.
 
-### Revisao e estabilizacao aplicadas apos a implementacao
+### Revisão e estabilização aplicadas após a implementação
 
-- Feature flags separadas por responsabilidade, com `ai.analysis_enabled` proprio e duas chaves reservadas para a 9C criadas ja desligadas.
-- Desacoplamento da 9A e da 9B por evento de extensao: `ConversationFlowService` deixou de referenciar qualquer classe de IA, o que torna as duas subetapas revisaveis e reversiveis em separado.
-- **Correcao de defeito da 9A**: `denuncia` estava na lista `conversation_automation.opt_out_expressions`. Quem escrevia "quero fazer uma denuncia" era marcado como nao contatar e tinha os lotes pendentes interrompidos, em vez de ser encaminhado para atendimento humano. O termo foi removido do opt-out e permanece na deteccao de conteudo sensivel da 9B.
-- Listas de opt-out completadas com variacoes ausentes: "retire meu numero", "remova meu contato", "nao quero receber mais mensagens" e outras.
-- Precedencia explicita `opt_out > permission_no > permission_yes > ambiguous`, com a negativa avaliada antes da positiva tambem na correspondencia exata.
-- **Correcao no provedor**: erros HTTP 4xx que nao sao 408 nem 429 passaram a usar o codigo `BAD_REQUEST`, nao retentavel. Antes eram tratados como indisponibilidade e repetidos tres vezes sem chance de sucesso.
-- Indices de agregacao adicionados para os recortes previsiveis da futura 9E (por tema, por fluxo e por periodo), evitando migration de indice sobre tabela cheia depois.
-- Migrations da 9A e da 9B validadas em MariaDB 10.5 real, com ciclo completo de rollback e reaplicacao.
+- Feature flags separadas por responsabilidade, com `ai.analysis_enabled` próprio e duas chaves reservadas para a 9C criadas já desligadas.
+- Desacoplamento da 9A e da 9B por evento de extensão: `ConversationFlowService` deixou de referenciar qualquer classe de IA, o que torna as duas subetapas revisáveis e reversíveis em separado.
+- **Correção de defeito da 9A**: `denuncia` estava na lista `conversation_automation.opt_out_expressions`. Quem escrevia "quero fazer uma denuncia" era marcado como não contatar e tinha os lotes pendentes interrompidos, em vez de ser encaminhado para atendimento humano. O termo foi removido do opt-out e permanece na detecção de conteúdo sensível da 9B.
+- Listas de opt-out completadas com variações ausentes: "retire meu número", "remova meu contato", "não quero receber mais mensagens" e outras.
+- Precedência explícita `opt_out > permission_no > permission_yes > ambiguous`, com a negativa avaliada antes da positiva também na correspondência exata.
+- **Correção no provedor**: erros HTTP 4xx que não são 408 nem 429 passaram a usar o código `BAD_REQUEST`, não retentável. Antes eram tratados como indisponibilidade e repetidos três vezes sem chance de sucesso.
+- Índices de agregação adicionados para os recortes previsíveis da futura 9E (por tema, por fluxo e por período), evitando migration de índice sobre tabela cheia depois.
+- Migrations da 9A e da 9B validadas em MariaDB 10.5 real, com ciclo completo de rollback e reaplicação.
 
 Fila nova:
 
@@ -515,7 +515,7 @@ Fila nova:
 ai-interpretation
 ```
 
-Configuracao de ambiente (chave, URL e modelo nunca vao para o banco):
+Configuração de ambiente (chave, URL e modelo nunca vao para o banco):
 
 ```env
 AI_PROVIDER=null
@@ -524,7 +524,7 @@ AI_OPENAI_KEY=
 AI_OPENAI_MODEL=gpt-4o-mini
 ```
 
-Feature flags separadas por responsabilidade — nenhuma chave mistura motor de fluxo, analise por IA e futura geracao de respostas:
+Feature flags separadas por responsabilidade — nenhuma chave mistura motor de fluxo, análise por IA e futura geração de respostas:
 
 ```text
 conversation_automation.enabled       0   motor deterministico da 9A
@@ -534,11 +534,11 @@ ai.response_generation_enabled        0   RESERVADA para a 9C, nao implementada
 ai.auto_send_enabled                  0   RESERVADA para a 9C, nao implementada
 ```
 
-Ligar a analise exige **duas** chaves: `ai.enabled` e `ai.analysis_enabled`. A 9B nao depende de `conversation_automation.enabled`, mas exige contexto valido de pesquisa (a conversa precisa ter estado de fluxo).
+Ligar a análise exige **duas** chaves: `ai.enabled` e `ai.analysis_enabled`. A 9B não depende de `conversation_automation.enabled`, mas exige contexto valido de pesquisa (a conversa precisa ter estado de fluxo).
 
-A 9A publica o evento `ConversationMessageEvaluated` como ponto de extensao e nao referencia nenhuma classe da camada de IA. Sem ouvintes registrados, o comportamento da 9A e identico ao de antes.
+A 9A pública o evento `ConversationMessageEvaluated` como ponto de extensão e não referência nenhuma classe da camada de IA. Sem ouvintes registrados, o comportamento da 9A e identico ao de antes.
 
-Configuracoes principais (desligadas por padrao ate homologacao):
+Configurações principais (desligadas por padrão até homologação):
 
 ```text
 ai.classification_enabled = 1
@@ -551,29 +551,29 @@ ai.circuit_failure_threshold = 5
 ai.runs_retention_days = 90
 ```
 
-Documentacao complementar:
+Documentação complementar:
 
 - `docs/ai-interpretation.md`
 - `docs/tests/ai-interpretation-manual-etapa-9b.md`
 
 ## Escopo implementado — Etapa 9C
 
-Geracao de respostas contextualizadas, aprovacao humana e handoff. O objetivo e **aprofundar a opiniao da propria pessoa**, com no maximo duas perguntas, sempre a partir do que ela mesma escreveu. O modo padrao e sugerir para aprovacao humana: nenhum texto gerado chega ao contato sem um operador aprovar.
+Geração de respostas contextualizadas, aprovação humana e handoff. O objetivo e **aprofundar a opinião da própria pessoa**, com no máximo duas perguntas, sempre a partir do que ela mesma escreveu. O modo padrão e sugerir para aprovação humana: nenhum texto gerado chega ao contato sem um operador aprovar.
 
-- Gerador de resposta por contrato independente de fornecedor, com saida JSON validada por schema, prompt versionado e execucao ligada a classificacao e ao insight da 9B.
-- Contrato com seis acoes: `suggest_reply`, `thank_and_complete`, `request_clarification`, `handoff_human`, `no_reply` e `opt_out`.
-- Validador deterministico do texto aplicado **depois** do modelo, cobrindo tamanho, quantidade de perguntas, promessa, pedido de voto, comparacao com adversarios, urgencia artificial, intimidade simulada, alegacao de leitura pessoal e coleta de dado pessoal. Texto reprovado nunca e enviado, nem por aprovacao.
-- Quatro modos de operacao (`disabled`, `draft_only`, `approval_required`, `auto_send_limited`), com o modo do fluxo podendo apenas restringir o global.
-- Caixa de aprovacao com edicao antes do envio, aprovacao individual, rejeicao, regeneracao com justificativa obrigatoria e assuncao manual. **Sem aprovacao em massa**, por decisao de projeto.
-- Protecao contra sugestao obsoleta: chegou mensagem nova, a sugestao anterior nao pode mais ser enviada. Garantia de no maximo uma sugestao viva por mensagem recebida, imposta por indice unico no banco.
-- Texto gerado e texto final armazenados separadamente: o original nunca e sobrescrito pela edicao do operador.
-- Autoenvio limitado, desligado por padrao e com allowlist de categorias vazia, condicionado a treze guards com registro do motivo de cada recusa.
-- Handoff humano com quatorze motivos, pausando a automacao, elevando prioridade quando cabe e sem nenhum texto improvisado.
+- Gerador de resposta por contrato independente de fornecedor, com saída JSON validada por schema, prompt versionado e execução ligada a classificação e ao insight da 9B.
+- Contrato com seis ações: `suggest_reply`, `thank_and_complete`, `request_clarification`, `handoff_human`, `no_reply` e `opt_out`.
+- Validador determinístico do texto aplicado **depois** do modelo, cobrindo tamanho, quantidade de perguntas, promessa, pedido de voto, comparação com adversários, urgência artificial, intimidade simulada, alegação de leitura pessoal e coleta de dado pessoal. Texto reprovado nunca e enviado, nem por aprovação.
+- Quatro modos de operação (`disabled`, `draft_only`, `approval_required`, `auto_send_limited`), com o modo do fluxo podendo apenas restringir o global.
+- Caixa de aprovação com edição antes do envio, aprovação individual, rejeição, regeneração com justificativa obrigatória e assunção manual. **Sem aprovação em massa**, por decisão de projeto.
+- Proteção contra sugestão obsoleta: chegou mensagem nova, a sugestão anterior não pode mais ser enviada. Garantia de no máximo uma sugestão viva por mensagem recebida, imposta por índice único no banco.
+- Texto gerado e texto final armazenados separadamente: o original nunca e sobrescrito pela edição do operador.
+- Autoenvio limitado, desligado por padrão e com allowlist de categorias vazia, condicionado a treze guards com registro do motivo de cada recusa.
+- Handoff humano com quatorze motivos, pausando a automação, elevando prioridade quando cabe e sem nenhum texto improvisado.
 - Limite de aprofundamentos com contagem idempotente, agradecimento e encerramento ao atingir o limite, e agrupamento de mensagens consecutivas por debounce.
-- Servico de saida unificado compartilhado por envio manual, automatico e aprovado, sem regressao do envio manual.
+- Serviço de saída unificado compartilhado por envio manual, automático e aprovado, sem regressão do envio manual.
 - Metadados de autoria de IA nas mensagens, com selo na linha do tempo indicando quem aprovou.
-- Feedback operacional por sugestao, sem qualquer efeito automatico sobre prompt, modelo ou thresholds.
-- 51 testes de feature cobrindo os criterios de aceitacao, sugestao obsoleta, aprovacao concorrente, autoenvio duplicado, limite de turnos, handoff, opt-out e desativacao entre geracao e envio, textos proibidos, falha de provedor, os quatro modos e regressao da resposta manual.
+- Feedback operacional por sugestão, sem qualquer efeito automático sobre prompt, modelo ou thresholds.
+- 51 testes de feature cobrindo os critérios de aceitação, sugestão obsoleta, aprovação concorrente, autoenvio duplicado, limite de turnos, handoff, opt-out e desativação entre geração e envio, textos proibidos, falha de provedor, os quatro modos e regressão da resposta manual.
 
 Filas novas:
 
@@ -582,7 +582,7 @@ ai-response-generation
 ai-response-send
 ```
 
-Configuracoes principais (desligadas por padrao):
+Configurações principais (desligadas por padrão):
 
 ```text
 ai.response.mode = disabled
@@ -593,30 +593,30 @@ ai.response.debounce_seconds = 20
 ai.response.factual_behavior = handoff
 ```
 
-Sem base de conhecimento aprovada nesta subetapa, pergunta factual sobre a Professora Norma e encaminhada para atendimento humano ou respondida com texto institucional fixo. O modelo nunca inventa conteudo factual.
+Sem base de conhecimento aprovada nesta subetapa, pergunta factual sobre a Professora Norma e encaminhada para atendimento humano ou respondida com texto institucional fixo. O modelo nunca inventa conteúdo factual.
 
-Documentacao complementar:
+Documentação complementar:
 
 - `docs/ai-response-generation.md`
 - `docs/tests/ai-response-manual-etapa-9c.md`
 
 ## Escopo implementado — Etapa 9D
 
-Base de conhecimento oficial e aprovada, com recuperacao e validacao de fundamentacao. O objetivo e permitir resposta a pergunta factual **somente** com apoio em documento aprovado, com rastreabilidade ate o trecho usado. Sem evidencia, a resposta nao sai: vira encaminhamento para atendimento humano.
+Base de conhecimento oficial e aprovada, com recuperação e validação de fundamentação. O objetivo e permitir resposta a pergunta factual **somente** com apoio em documento aprovado, com rastreabilidade até o trecho usado. Sem evidência, a resposta não sai: vira encaminhamento para atendimento humano.
 
-- Quatro contratos proprios (`KnowledgeBaseProvider`, `EmbeddingProvider`, `KnowledgeRetriever`, `AnswerGroundingValidator`), resolvidos por configuracao, com provedor inerte e provedor local relacional.
-- **Aprovacao humana como condicao de existencia na busca**: sete situacoes de documento, e somente `approved` dentro de base `active` associada ao fluxo e recuperavel. Indexar nunca aprova; reprocessar revoga a aprovacao anterior.
-- Ingestao com disco privado fora de `public/`, nome em disco gerado por UUID (path traversal encerrado na origem), MIME conferido pelo conteudo real, deduplicacao por hash e por base, antivirus configuravel com comportamento explicito na ausencia do scanner.
-- Extratores nativos de texto plano, Markdown, HTML e DOCX; PDF por binario configuravel, com falha limpa quando ausente. Nenhum texto e adivinhado.
-- Tres estrategias de recuperacao — `lexical` (padrao, sem dependencia externa), `vector` e `hybrid` — com teto explicito de candidatos, recusa registrada e queda para a estrategia lexica em vez de degradacao silenciosa.
-- Defesa contra injecao de prompt em duas camadas: neutralizacao de instrucoes na ingestao, com o achado visivel antes da aprovacao, e bloco delimitado no prompt declarado como dado, com a instrucao explicita de ignorar ordens internas. O prompt de sistema prevalece sempre.
-- Prompt e schema fundamentados em versao propria (`v2`/`2`), selecionados apenas quando ha base ativa associada ao fluxo. Sem base, a 9C segue com `v1`/`1` sem nenhuma alteracao.
-- Validacao de fundamentacao deterministica **depois** do modelo, com nove vereditos. O campo `grounded` devolvido pelo modelo e sinal, nunca autorizacao. Reprovacao nunca produz texto alternativo: produz bloqueio e handoff.
-- Rastreabilidade por snapshot: log de recuperacao e citacoes guardam copia do conteudo, do titulo e da versao. Excluir ou substituir um documento nao apaga a explicacao de nenhuma resposta ja enviada.
-- Isolamento estrutural: o recuperador consulta apenas as tabelas `knowledge_*`, e um teste le o codigo-fonte e falha se `Conversation`, `Contact` ou `ConversationInsight` aparecerem. A opiniao da populacao nunca e fonte de resposta individual.
-- Telas de bases, documentos, previa de texto extraido e de trechos, teste de busca e de fundamentacao sem envio, e exibicao das fontes na sugestao. Oito permissoes proprias; aprovar e baixar o original ficam com administrador.
-- 116 testes novos (465 no total) cobrindo os criterios de aceitacao, injecao em documento, citacao inventada, documento obsoleto, exclusao, troca de versao, limite de vetores, isolamento estrutural, comandos de operacao e regressao das Etapas 1 a 9C.
-- Migrations validadas em MariaDB 10.5 real, com ciclo completo de rollback e reaplicacao. As colunas de fundamentacao ficam em migration propria, separada da criacao das tabelas de conhecimento, porque as duas mudancas tem perfis de reversao diferentes.
+- Quatro contratos próprios (`KnowledgeBaseProvider`, `EmbeddingProvider`, `KnowledgeRetriever`, `AnswerGroundingValidator`), resolvidos por configuração, com provedor inerte e provedor local relacional.
+- **Aprovação humana como condição de existência na busca**: sete situações de documento, e somente `approved` dentro de base `active` associada ao fluxo e recuperável. Indexar nunca aprova; reprocessar revoga a aprovação anterior.
+- Ingestão com disco privado fora de `public/`, nome em disco gerado por UUID (path traversal encerrado na origem), MIME conferido pelo conteúdo real, deduplicação por hash e por base, antivirus configurável com comportamento explícito na ausência do scanner.
+- Extratores nativos de texto plano, Markdown, HTML e DOCX; PDF por binário configurável, com falha limpa quando ausente. Nenhum texto e adivinhado.
+- Três estratégias de recuperação — `lexical` (padrão, sem dependência externa), `vector` e `hybrid` — com teto explícito de candidatos, recusa registrada e queda para a estratégia léxica em vez de degradação silenciosa.
+- Defesa contra injeção de prompt em duas camadas: neutralização de instruções na ingestão, com o achado visível antes da aprovação, e bloco delimitado no prompt declarado como dado, com a instrução explícita de ignorar ordens internas. O prompt de sistema prevalece sempre.
+- Prompt e schema fundamentados em versão própria (`v2`/`2`), selecionados apenas quando ha base ativa associada ao fluxo. Sem base, a 9C segue com `v1`/`1` sem nenhuma alteração.
+- Validação de fundamentação determinística **depois** do modelo, com nove vereditos. O campo `grounded` devolvido pelo modelo e sinal, nunca autorização. Reprovação nunca produz texto alternativo: produz bloqueio e handoff.
+- Rastreabilidade por snapshot: log de recuperação e citações guardam copia do conteúdo, do título e da versão. Excluir ou substituir um documento não apaga a explicação de nenhuma resposta já enviada.
+- Isolamento estrutural: o recuperador consulta apenas as tabelas `knowledge_*`, e um teste le o código-fonte e falha se `Conversation`, `Contact` ou `ConversationInsight` aparecerem. A opinião da população nunca e fonte de resposta individual.
+- Telas de bases, documentos, previa de texto extraido e de trechos, teste de busca e de fundamentação sem envio, e exibição das fontes na sugestão. Oito permissões próprias; aprovar e baixar o original ficam com administrador.
+- 116 testes novos (465 no total) cobrindo os critérios de aceitação, injeção em documento, citação inventada, documento obsoleto, exclusão, troca de versão, limite de vetores, isolamento estrutural, comandos de operação e regressão das Etapas 1 a 9C.
+- Migrations validadas em MariaDB 10.5 real, com ciclo completo de rollback e reaplicação. As colunas de fundamentação ficam em migration própria, separada da criação das tabelas de conhecimento, porque as duas mudanças tem perfis de reversão diferentes.
 
 Fila nova:
 
@@ -624,7 +624,7 @@ Fila nova:
 knowledge-indexing
 ```
 
-Configuracoes principais (desligadas por padrao):
+Configurações principais (desligadas por padrão):
 
 ```text
 knowledge.enabled                  = 0
@@ -635,11 +635,11 @@ knowledge.antivirus_required       = 1
 knowledge.show_citations_to_contact = 0
 ```
 
-Ligar a recuperacao exige **quatro** condicoes simultaneas: `knowledge.enabled`, base `active`, base associada ao fluxo e documento `approved`. Desligar qualquer uma interrompe a busca sem apagar nada. O rollback e `knowledge.enabled = 0` e nao exige deploy nem migration.
+Ligar a recuperação exige **quatro** condições simultaneas: `knowledge.enabled`, base `active`, base associada ao fluxo e documento `approved`. Desligar qualquer uma interrompe a busca sem apagar nada. O rollback e `knowledge.enabled = 0` e não exige deploy nem migration.
 
-Pendencia de ambiente: `pdftotext` nao esta instalado neste servidor. Ate `dnf install poppler-utils`, upload de PDF falha de forma limpa e o documento fica em `failed`. ClamAV esta presente e exigido.
+Pendência de ambiente: `pdftotext` não esta instalado neste servidor. Até `dnf install poppler-utils`, upload de PDF falha de forma limpa e o documento fica em `failed`. ClamAV esta presente e exigido.
 
-Documentacao complementar:
+Documentação complementar:
 
 - `docs/knowledge-base-rag.md`
 - `docs/tests/knowledge-base-manual-etapa-9d.md`
@@ -647,218 +647,218 @@ Documentacao complementar:
 
 ## Escopo implementado — Etapa 9E
 
-Relatorios analiticos, exportacao, governanca e retencao. Somente leitura: nenhuma tela desta subetapa envia mensagem, altera conversa ou liga automacao.
+Relatórios analíticos, exportação, governança e retenção. Somente leitura: nenhuma tela desta subetapa envia mensagem, altera conversa ou liga automação.
 
-- Painel executivo de participacao com abordados, permissoes, opt-outs, respostas, conclusoes, aguardando humano, taxas, tempo ate a primeira resposta e media de turnos, por periodo e por fluxo.
-- Relatorio de temas com mais mencionados, emergentes, nao classificados contados a parte, confianca media e revisao humana.
-- Relatorio de geografia usando apenas cidade do cadastro e localidade declarada pela propria pessoa. Nada e deduzido de DDD.
-- Relatorio de demandas com problemas, acoes, resultados, urgencia, exemplos anonimizados e fila de baixa confianca.
-- Relatorio de qualidade da IA com aprovacao sem edicao, aprovacao com edicao, recusas com motivo, handoff, falhas por provedor, modelo e versao de prompt, latencia e custo.
-- Relatorio de qualidade das perguntas com taxa de resposta, conclusao, handoff e tamanho medio da resposta por pergunta.
-- Relatorio de governanca com interruptores, fluxos, documentos vigentes, versoes, limiares, eventos sensiveis, pendencias, falhas e **divergencias de configuracao**.
-- Supressao de celula agregada abaixo do minimo configurado, aplicada no servico e nao na tela.
-- Exportacao agregada sem identificacao e exportacao detalhada com permissao elevada, finalidade escrita, nome removido, telefone mascarado e pseudonimo com sal proprio por exportacao.
-- Neutralizacao de injecao de formula em CSV e XLSX, aplicada tambem a exportacao existente da Etapa 6.
-- Materializacao diaria idempotente em `conversation_daily_metrics`, reconstruivel por comando sem duplicacao.
-- Comando de anonimizacao por contato ou periodo, preservando linha, integridade referencial e auditoria, com reprocessamento dos dias afetados.
-- Sete permissoes novas separando agregado, conteudo, identificacao, exportacao agregada, exportacao detalhada, custo e governanca.
-- Documentacao de formulas com numerador, denominador e exclusoes de cada taxa.
+- Painel executivo de participação com abordados, permissões, opt-outs, respostas, conclusões, aguardando humano, taxas, tempo até a primeira resposta e média de turnos, por período e por fluxo.
+- Relatório de temas com mais mencionados, emergentes, não classificados contados a parte, confiança média e revisão humana.
+- Relatório de geografia usando apenas cidade do cadastro e localidade declarada pela própria pessoa. Nada e deduzido de DDD.
+- Relatório de demandas com problemas, ações, resultados, urgência, exemplos anonimizados e fila de baixa confiança.
+- Relatório de qualidade da IA com aprovação sem edição, aprovação com edição, recusas com motivo, handoff, falhas por provedor, modelo e versão de prompt, latência e custo.
+- Relatório de qualidade das perguntas com taxa de resposta, conclusão, handoff e tamanho médio da resposta por pergunta.
+- Relatório de governança com interruptores, fluxos, documentos vigentes, versões, limiares, eventos sensíveis, pendências, falhas e **divergências de configuração**.
+- Supressão de célula agregada abaixo do mínimo configurado, aplicada no serviço e não na tela.
+- Exportação agregada sem identificação e exportação detalhada com permissão elevada, finalidade escrita, nome removido, telefone mascarado e pseudônimo com sal próprio por exportação.
+- Neutralização de injeção de fórmula em CSV e XLSX, aplicada também a exportação existente da Etapa 6.
+- Materialização diária idempotente em `conversation_daily_metrics`, reconstruível por comando sem duplicação.
+- Comando de anonimização por contato ou período, preservando linha, integridade referencial e auditoria, com reprocessamento dos dias afetados.
+- Sete permissões novas separando agregado, conteúdo, identificação, exportação agregada, exportação detalhada, custo e governança.
+- Documentação de fórmulas com numerador, denominador e exclusões de cada taxa.
 
-## Nao implementado nesta etapa — Etapa 9E
+## Não implementado nesta etapa — Etapa 9E
 
-- Biblioteca de graficos. Os graficos pedidos sao barra, serie simples e tabela; uma dependencia de terceiros acrescentaria bundle, superficie de atualizacao e ponto de falha no build sem melhorar a leitura.
+- Biblioteca de gráficos. Os gráficos pedidos são barra, série simples e tabela; uma dependência de terceiros acrescentaria bundle, superfície de atualização e ponto de falha no build sem melhorar a leitura.
 - Mapas geograficos. Sem biblioteca aprovada, os dados aparecem em tabela.
-- Backup dedicado de metadados analiticos. O backup do banco cobre as tabelas.
-- Painel de custo por indexacao e apuracao financeira consolidada.
-- Promocao automatica de versao de prompt a partir das metricas. Mudar o que responde a cidadao continua sendo decisao humana.
-- Filtros por atributo sensivel. Nao estao desligados: nao foram construidos.
+- Backup dedicado de metadados analíticos. O backup do banco cobre as tabelas.
+- Painel de custo por indexação e apuração financeira consolidada.
+- Promoção automática de versão de prompt a partir das métricas. Mudar o que responde a cidadão continua sendo decisão humana.
+- Filtros por atributo sensível. Não estão desligados: não foram construidos.
 
-## Nao implementado nesta etapa — Etapa 9D
+## Não implementado nesta etapa — Etapa 9D
 
-- Provedor gerenciado de vetores ou banco vetorial dedicado. Ver ADR 0001: a decisao foi documentada com limites medidos e procedimento de troca, e o corpus previsto nao a justifica.
-- Reranking por modelo, expansao de consulta e busca semantica multilingue.
-- Ingestao automatica a partir de site, feed ou repositorio externo.
+- Provedor gerenciado de vetores ou banco vetorial dedicado. Ver ADR 0001: a decisão foi documentada com limites medidos e procedimento de troca, e o corpus previsto não a justifica.
+- Reranking por modelo, expansao de consulta e busca semântica multilingue.
+- Ingestão automática a partir de site, feed ou repositório externo.
 - Resposta livre fora do fluxo da pesquisa.
-- Citacao visivel ao contato por padrao.
-- Relatorios analiticos finais (9E).
+- Citação visível ao contato por padrão.
+- Relatórios analíticos finais (9E).
 
-## Nao implementado nesta etapa — Etapa 9C
+## Não implementado nesta etapa — Etapa 9C
 
-- Relatorios analiticos finais (9E).
+- Relatórios analíticos finais (9E).
 - Conversa aberta fora do fluxo da pesquisa.
-- Aprendizado automatico a partir de feedback ou correcoes.
-- Envio de qualquer texto gerado sem aprovacao humana no modo padrao.
+- Aprendizado automático a partir de feedback ou correções.
+- Envio de qualquer texto gerado sem aprovação humana no modo padrão.
 
-## Nao implementado nesta etapa — Etapa 9B
+## Não implementado nesta etapa — Etapa 9B
 
-- Geracao de resposta contextual e autoenvio.
+- Geração de resposta contextual e autoenvio.
 - RAG, embeddings e busca por similaridade.
-- Dashboards analiticos completos.
-- Inferencia de atributo sensivel, intencao de voto ou microdirecionamento individual.
-- Treinamento ou ajuste automatico a partir de correcoes humanas.
-- Adivinhacao de cidade, regiao ou qualquer caracteristica nao declarada pelo contato.
+- Dashboards analíticos completos.
+- Inferência de atributo sensível, intenção de voto ou microdirecionamento individual.
+- Treinamento ou ajuste automático a partir de correções humanas.
+- Adivinhação de cidade, região ou qualquer caracteristica não declarada pelo contato.
 
-## Nao implementado nesta etapa — Etapa 9A
+## Não implementado nesta etapa — Etapa 9A
 
-- Classificacao por IA, embeddings, RAG ou similaridade.
+- Classificação por IA, embeddings, RAG ou similaridade.
 - Aprofundamento de perguntas.
 - Conversa infinita ou sem limite de turnos.
-- Analise de sentimento, sumarizacao ou geracao de texto.
-- Chatbot generico fora do fluxo especificado.
+- Análise de sentimento, sumarização ou geração de texto.
+- Chatbot genérico fora do fluxo especificado.
 - Grupos, listas de transmissao, canais e midias.
 - API oficial da Meta.
 
-## Ajustes pos-implantacao (producao)
+## Ajustes pos-implantação (produção)
 
-Correcoes e melhorias aplicadas apos a entrada em producao, fora do escopo formal das etapas numeradas acima.
+Correções e melhorias aplicadas após a entrada em produção, fora do escopo formal das etapas numeradas acima.
 
-- Contorno de bug conhecido do `whatsapp-web.js` upstream que impedia o evento `ready` de disparar apos `authenticated`: `webVersionCache` fixado em uma versao compativel do WhatsApp Web.
-- Resolucao de identificadores `@lid` (dispositivos vinculados) para telefone real via `client.getContactLidAndPhone()`, usada na sincronizacao de conversas e no encaminhamento de mensagens recebidas.
-- Correcao de correspondencia de contato para o "nono digito" de celulares brasileiros: numeros com e sem o 9 adicional (`5549XXXXXXXX` e `55499XXXXXXXX`) sao tratados como o mesmo contato em `PhoneNormalizerService`, `ContactMatcherService` e `ContactDuplicateService`.
-- Correcao no `ConversationResolverService`: conversas sem contato identificado passam a ser distinguidas por telefone do remetente (nao apenas pela mais recente sem contato), evitando misturar mensagens de pessoas diferentes na mesma conversa.
-- Correcao no `Conversation::whatsappPhoneDigits()`: uma consulta com `orWhere` sem escopo podia exibir na lista de conversas o telefone de uma conversa completamente diferente. Escopo da consulta corrigido.
-- `ConversationSyncService` nao recria mais, na proxima sincronizacao, conversas removidas intencionalmente (soft delete) que nao tinham contato, mensagem ou telefone identificavel.
+- Contorno de bug conhecido do `whatsapp-web.js` upstream que impedia o evento `ready` de disparar após `authenticated`: `webVersionCache` fixado em uma versão compatível do WhatsApp Web.
+- Resolução de identificadores `@lid` (dispositivos vinculados) para telefone real via `client.getContactLidAndPhone()`, usada na sincronização de conversas e no encaminhamento de mensagens recebidas.
+- Correção de correspondência de contato para o "nono digito" de celulares brasileiros: números com e sem o 9 adicional (`5549XXXXXXXX` e `55499XXXXXXXX`) são tratados como o mesmo contato em `PhoneNormalizerService`, `ContactMatcherService` e `ContactDuplicateService`.
+- Correção no `ConversationResolverService`: conversas sem contato identificado passam a ser distinguidas por telefone do remetente (não apenas pela mais recente sem contato), evitando misturar mensagens de pessoas diferentes na mesma conversa.
+- Correção no `Conversation::whatsappPhoneDigits()`: uma consulta com `orWhere` sem escopo podia exibir na lista de conversas o telefone de uma conversa completamente diferente. Escopo da consulta corrigido.
+- `ConversationSyncService` não recria mais, na próxima sincronização, conversas removidas intencionalmente (soft delete) que não tinham contato, mensagem ou telefone identificável.
 - Tela de conversa (`/admin/conversations/{id}`):
-  - Atualizacao automatica a cada 30 segundos (pausada quando a aba nao esta visivel), via `GET /admin/inbox/{conversation}/messages`.
-  - Botao "Atualizar mensagens" para atualizacao sob demanda, com confirmacao visivel do resultado (mensagens novas encontradas, nenhuma novidade ou erro).
+  - Atualização automática a cada 30 segundos (pausada quando a aba não esta visível), via `GET /admin/inbox/{conversation}/messages`.
+  - Botão "Atualizar mensagens" para atualização sob demanda, com confirmação visível do resultado (mensagens novas encontradas, nenhuma novidade ou erro).
   - Campo de resposta manual reposicionado acima da lista de mensagens.
   - Mensagens mais recentes exibidas primeiro.
-  - Atalho para cadastrar e associar um novo contato direto na tela, quando o numero ainda nao esta na base.
-- Selecao de emoji (componente `<x-emoji-picker>`) na resposta manual, em modelos de mensagem e em campanhas/lotes.
-- Codificacao correta de emojis na comunicacao Laravel -> servico Node (`JSON_UNESCAPED_UNICODE`) e aumento do limite de corpo da requisicao no servico Node (16kb -> 256kb) para mensagens longas com muitos emojis.
-- Migalha de navegacao (breadcrumb) com links funcionais para as paginas anteriores, em todas as telas administrativas.
-- Selecao de contatos em campanhas com busca dinamica, filtros adicionais e contador ao vivo (`CampaignContactPicker`, componente Livewire), substituindo a lista estatica anterior.
-- Limpeza pontual de conversas vazias (sem contato, sem mensagem, sem telefone identificavel) criadas por sincronizacoes anteriores com resolucao de `@lid` malsucedida.
+  - Atalho para cadastrar e associar um novo contato direto na tela, quando o número ainda não esta na base.
+- Seleção de emoji (componente `<x-emoji-picker>`) na resposta manual, em modelos de mensagem e em campanhas/lotes.
+- Codificação correta de emojis na comunicação Laravel -> serviço Node (`JSON_UNESCAPED_UNICODE`) e aumento do limite de corpo da requisição no serviço Node (16kb -> 256kb) para mensagens longas com muitos emojis.
+- Migalha de navegação (breadcrumb) com links funcionais para as páginas anteriores, em todas as telas administrativas.
+- Seleção de contatos em campanhas com busca dinamica, filtros adicionais e contador ao vivo (`CampaignContactPicker`, componente Livewire), substituindo a lista estatica anterior.
+- Limpeza pontual de conversas vazias (sem contato, sem mensagem, sem telefone identificável) criadas por sincronizações anteriores com resolução de `@lid` malsucedida.
 
-## Nao implementado nesta etapa — Etapa 1
+## Não implementado nesta etapa — Etapa 1
 
 - Contatos.
 - WhatsApp.
 - QR Code.
-- Servico Node.js.
+- Serviço Node.js.
 - Mensagens.
 - Placeholders.
 - Lotes.
 - Filas de mensagens.
 - Limites de envio.
-- Historico de mensagens.
+- Histórico de mensagens.
 - Recebimento de respostas.
 - API oficial da Meta.
 
-## Nao implementado nesta etapa — Etapa 2
+## Não implementado nesta etapa — Etapa 2
 
-- Integracao com WhatsApp.
-- Verificacao de existencia do numero no WhatsApp.
+- Integração com WhatsApp.
+- Verificação de existência do número no WhatsApp.
 - QR Code.
-- Servico Node.js.
+- Serviço Node.js.
 - Modelos de mensagens.
 - Placeholders.
 - Lotes.
 - Filas.
 - Limites por minuto, hora ou dia.
-- Horarios de envio.
-- Historico de envios.
+- Horários de envio.
+- Histórico de envios.
 - Recebimento de respostas.
 - API oficial da Meta.
 
-## Nao implementado nesta etapa — Etapa 3
+## Não implementado nesta etapa — Etapa 3
 
 - Modelos de mensagens.
 - Placeholders.
-- Selecao multipla para envio.
-- Ordem aleatoria.
+- Seleção multipla para envio.
+- Ordem aleatória.
 - Lotes.
 - Filas de disparo.
 - Limites por minuto, hora ou dia.
 - Agendamento.
-- Historico de campanhas.
+- Histórico de campanhas.
 - Caixa de entrada.
-- Respostas automaticas.
+- Respostas automáticas.
 - Chatbot.
 - Anexos.
 - Grupos.
-- Multiplas contas de WhatsApp.
+- Múltiplas contas de WhatsApp.
 - API oficial da Meta.
 
-## Nao implementado nesta etapa — Etapa 4
+## Não implementado nesta etapa — Etapa 4
 
 - Fila de processamento.
 - Workers de envio.
 - Limites por minuto, hora ou dia.
-- Horarios permitidos.
-- Processamento automatico de lotes.
+- Horários permitidos.
+- Processamento automático de lotes.
 - Pausa e retomada de processamento.
-- Tentativas automaticas.
-- Historico de envio.
+- Tentativas automáticas.
+- Histórico de envio.
 - Caixa de entrada.
 - API oficial da Meta.
 
-## Nao implementado nesta etapa — Etapa 5
+## Não implementado nesta etapa — Etapa 5
 
 - Caixa de entrada.
 - Leitura de respostas.
 - Chatbot.
-- Respostas automaticas.
+- Respostas automáticas.
 - Anexos.
 - Envio para grupos.
-- Multiplas contas.
+- Múltiplas contas.
 - API oficial da Meta.
-- Relatorios estatisticos avancados.
+- Relatórios estatisticos avancados.
 
-## Nao implementado nesta etapa — Etapa 6
+## Não implementado nesta etapa — Etapa 6
 
 - Mensagens recebidas.
 - Caixa de entrada.
-- Respostas automaticas.
+- Respostas automáticas.
 - Chatbot.
 - Anexos.
 - Envio para grupos.
-- Multiplas contas.
+- Múltiplas contas.
 - API oficial da Meta.
-- Integracao com CRM externo.
-- Conversao, engajamento ou classificacao baseada em respostas.
+- Integração com CRM externo.
+- Conversão, engajamento ou classificação baseada em respostas.
 
-## Nao implementado nesta etapa — Etapa 7
+## Não implementado nesta etapa — Etapa 7
 
-- Respostas automaticas.
+- Respostas automáticas.
 - Chatbot.
-- Inteligencia artificial.
+- Inteligência artificial.
 - Fluxos por palavras-chave.
 - Anexos enviados pelo sistema.
 - Download ou armazenamento de midias recebidas.
 - Mensagens para grupos.
-- Multiplas contas.
+- Múltiplas contas.
 - API oficial da Meta.
 - CRM externo.
 
-## Nao implementado nesta etapa — Etapa 8
+## Não implementado nesta etapa — Etapa 8
 
 - Chatbot.
-- Inteligencia artificial.
-- Respostas automaticas.
+- Inteligência artificial.
+- Respostas automáticas.
 - Fluxos por palavras-chave.
 - Grupos.
 - Listas de transmissao.
 - Canais.
 - Status do WhatsApp.
 - Download ou envio de midias.
-- Multiplas contas.
+- Múltiplas contas.
 - API oficial da Meta.
 
 ## Fonte do planejamento
 
 - `projeto_gerenciador_whatsapp.md`: documento original do projeto.
-- `docs/gerenciador-whatsapp.md`: resumo tecnico consolidado.
+- `docs/gerenciador-whatsapp.md`: resumo técnico consolidado.
 
 ## Specs
 
-As specs aprovadas ficam em `openspec/specs/` e sao a fonte de verdade para implementacao.
+As specs aprovadas ficam em `openspec/specs/` e são a fonte de verdade para implementação.
 
-Antes de alterar codigo, leia `.codex/rules.md` e as specs aplicaveis.
+Antes de alterar código, leia `.codex/rules.md` e as specs aplicáveis.
 
-## Validacao
+## Validação
 
-Use OpenSpec para validar specs e mudancas:
+Use OpenSpec para validar specs e mudanças:
 
 ```bash
 openspec validate --specs

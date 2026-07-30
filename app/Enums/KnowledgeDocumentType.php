@@ -3,12 +3,12 @@
 namespace App\Enums;
 
 /**
- * Tipos de conteudo admissiveis na base oficial.
+ * Tipos de conteúdo admissíveis na base oficial.
  *
- * A lista e fechada de proposito. Rumor, material nao aprovado, dado pessoal
- * privado, estrategia eleitoral confidencial, conversa de outro contato,
- * inferencia de voto, informacao de adversario usada para ataque e promessa nao
- * formalizada nao tem tipo aqui — e a ausencia do tipo e a barreira estrutural.
+ * A lista e fechada de propósito. Rumor, material não aprovado, dado pessoal
+ * privado, estratégia eleitoral confidencial, conversa de outro contato,
+ * inferência de voto, informação de adversário usada para ataque e promessa não
+ * formalizada não tem tipo aqui — e a ausência do tipo e a barreira estrutural.
  */
 enum KnowledgeDocumentType: string
 {
@@ -25,11 +25,11 @@ enum KnowledgeDocumentType: string
     {
         return match ($this) {
             self::Biography => 'Biografia aprovada',
-            self::PublicHistory => 'Historico publico',
-            self::InstitutionalCompetence => 'Competencias institucionais',
+            self::PublicHistory => 'Histórico público',
+            self::InstitutionalCompetence => 'Competências institucionais',
             self::ApprovedProposal => 'Proposta aprovada',
-            self::OfficialPosition => 'Posicao oficialmente publicada',
-            self::PublicAgenda => 'Agenda publica autorizada',
+            self::OfficialPosition => 'Posição oficialmente publicada',
+            self::PublicAgenda => 'Agenda pública autorizada',
             self::Faq => 'Perguntas frequentes',
             self::ContactChannel => 'Canais de contato',
         };

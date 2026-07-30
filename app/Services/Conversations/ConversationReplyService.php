@@ -12,15 +12,15 @@ use App\Services\AuditLogger;
 use Illuminate\Support\Str;
 
 /**
- * Servico de saida unificado.
+ * Serviço de saída unificado.
  *
  * Concentra o que e comum e perigoso em qualquer envio: elegibilidade do
- * contato, criacao da mensagem pendente, identificador de requisicao unico,
+ * contato, criação da mensagem pendente, identificador de requisição único,
  * snapshots, evento e auditoria. O despacho para a fila continua a cargo de
- * quem chama, porque manual, automatico e aprovado usam filas diferentes.
+ * quem chama, porque manual, automático e aprovado usam filas diferentes.
  *
- * Nao contem regra de negocio especifica de nenhuma origem: as validacoes
- * proprias do envio manual continuam em `ManualReplyService`, e as da automacao
+ * Não contem regra de negócio específica de nenhuma origem: as validações
+ * próprias do envio manual continuam em `ManualReplyService`, e as da automação
  * em `ConversationAutomationGuard`.
  */
 class ConversationReplyService
@@ -31,7 +31,7 @@ class ConversationReplyService
     ) {}
 
     /**
-     * Elegibilidade minima comum a qualquer envio pelo sistema.
+     * Elegibilidade mínima comum a qualquer envio pelo sistema.
      *
      * @return array{allowed: bool, reason: ?string}
      */
@@ -59,7 +59,7 @@ class ConversationReplyService
     }
 
     /**
-     * Cria a mensagem de saida pendente. Nunca chama o provedor.
+     * Cria a mensagem de saída pendente. Nunca chama o provedor.
      *
      * @param  array<string, mixed>  $metadata  Metadados de autoria de IA.
      * @param  array<string, mixed>  $eventPayload  Dados extras do evento registrado.

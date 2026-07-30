@@ -65,8 +65,8 @@ class ProcessIncomingMessageJob implements ShouldQueue
         $status = $data['is_from_me'] ? ConversationMessageStatus::Sent : ConversationMessageStatus::Received;
 
         DB::transaction(function () use ($data, $contact, $direction, $status, $resolver, $events, $interruption, $audit): void {
-            // A avaliacao do fluxo e despachada apenas apos o commit desta transacao,
-            // em fila propria, para nunca atrasar o registro da mensagem recebida.
+            // A avaliação do fluxo e despachada apenas após o commit desta transação,
+            // em fila própria, para nunca atrasar o registro da mensagem recebida.
             $conversation = $resolver->resolve($contact, $data['connection_id'], $direction === ConversationMessageDirection::Incoming, (string) $data['sender_phone']);
             $recipient = $this->findInitialRecipient($contact?->id, $data['sender_phone']);
 
@@ -124,7 +124,7 @@ class ProcessIncomingMessageJob implements ShouldQueue
             }
 
             if (! $contact && $direction === ConversationMessageDirection::Incoming) {
-                $events->record($conversation, 'contact_match_failed', 'Contato nao identificado.', $message, null, ['phone' => $data['sender_phone']]);
+                $events->record($conversation, 'contact_match_failed', 'Contato não identificado.', $message, null, ['phone' => $data['sender_phone']]);
                 $audit->log('incoming_message.contact_not_found', 'Mensagem recebida sem contato identificado.', $message, null, ['conversation_id' => $conversation->id]);
             }
 
@@ -135,7 +135,7 @@ class ProcessIncomingMessageJob implements ShouldQueue
     }
 
     /**
-     * Somente mensagens recebidas de texto entram na avaliacao do fluxo.
+     * Somente mensagens recebidas de texto entram na avaliação do fluxo.
      */
     private function shouldEvaluateFlow(ConversationMessageDirection $direction, ConversationMessage $message): bool
     {

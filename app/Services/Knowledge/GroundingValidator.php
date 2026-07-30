@@ -11,12 +11,12 @@ use App\Models\KnowledgeDocument;
 use App\Services\SystemSettingService;
 
 /**
- * Validacao de fundamentacao, deterministica e posterior ao modelo.
+ * Validação de fundamentação, determinística e posterior ao modelo.
  *
- * O campo `grounded` que o modelo devolve e sinal, nunca autorizacao. Esta classe
- * existe exatamente para o caso em que ele afirma estar fundamentado e nao esta.
+ * O campo `grounded` que o modelo devolve e sinal, nunca autorização. Esta classe
+ * existe exatamente para o caso em que ele afirma estar fundamentado e não esta.
  *
- * Nenhuma reprovacao produz texto alternativo: produz recusa e handoff.
+ * Nenhuma reprovação produz texto alternativo: produz recusa e handoff.
  */
 class GroundingValidator implements AnswerGroundingValidator
 {
@@ -37,7 +37,7 @@ class GroundingValidator implements AnswerGroundingValidator
         $text = trim((string) $text);
 
         if ($text === '') {
-            // Acao sem texto para o contato nao afirma nada sobre o mundo.
+            // Ação sem texto para o contato não afirma nada sobre o mundo.
             return new GroundingVerdict(GroundingStatus::NotRequired);
         }
 
@@ -70,15 +70,15 @@ class GroundingValidator implements AnswerGroundingValidator
             return new GroundingVerdict(
                 GroundingStatus::NoEvidence,
                 [],
-                ['afirmacao factual sem nenhuma citacao valida'],
+                ['afirmação factual sem nenhuma citação valida'],
                 true,
             );
         }
 
         $support = $this->citedContent($resolved['valid']);
 
-        // Data antes de numero: uma data e feita de numeros, e conferir numero
-        // primeiro faria toda data sem suporte ser reportada como numero sem
+        // Data antes de número: uma data e feita de números, e conferir número
+        // primeiro faria toda data sem suporte ser reportada como número sem
         // suporte. A recusa seria a mesma, o motivo registrado seria enganoso.
         if (($missing = $this->unsupportedDates($text, $support)) !== []) {
             return new GroundingVerdict(
@@ -93,7 +93,7 @@ class GroundingValidator implements AnswerGroundingValidator
             return new GroundingVerdict(
                 GroundingStatus::UnsupportedNumber,
                 $resolved['valid'],
-                ['numeros sem suporte: '.implode(', ', array_slice($missing, 0, 5))],
+                ['números sem suporte: '.implode(', ', array_slice($missing, 0, 5))],
                 true,
             );
         }
@@ -102,7 +102,7 @@ class GroundingValidator implements AnswerGroundingValidator
             return new GroundingVerdict(
                 GroundingStatus::UnsupportedCommitment,
                 $resolved['valid'],
-                ['compromisso sem suporte explicito nos trechos citados'],
+                ['compromisso sem suporte explícito nos trechos citados'],
                 true,
             );
         }
@@ -111,10 +111,10 @@ class GroundingValidator implements AnswerGroundingValidator
     }
 
     /**
-     * Casa cada citacao declarada com o conjunto efetivamente recuperado.
+     * Casa cada citação declarada com o conjunto efetivamente recuperado.
      *
-     * Citacao invalida tambem e devolvida com motivo: saber que o modelo citou
-     * algo inexistente e informacao de auditoria, nao ruido.
+     * Citação invalida também e devolvida com motivo: saber que o modelo citou
+     * algo inexistente e informação de auditoria, não ruído.
      *
      * @param  array<int, array<string, mixed>>  $citations
      * @return array{valid: array<int, array<string, mixed>>, invalid: array<int, string>, invalidStatus: GroundingStatus}
@@ -127,7 +127,7 @@ class GroundingValidator implements AnswerGroundingValidator
 
         foreach ($citations as $citation) {
             if (! is_array($citation)) {
-                $invalid[] = 'citacao malformada';
+                $invalid[] = 'citação malformada';
 
                 continue;
             }
@@ -137,28 +137,28 @@ class GroundingValidator implements AnswerGroundingValidator
 
             $chunk = $reference === '' ? null : $retrieval->findByReference($reference);
 
-            // Sem referencia de trecho utilizavel, aceitamos o documento desde que
+            // Sem referência de trecho utilizável, aceitamos o documento desde que
             // ele esteja no conjunto recuperado: o modelo acertou a fonte e errou o
-            // identificador interno, que nao e informacao que ele deva inventar.
+            // identificador interno, que não e informação que ele deva inventar.
             if ($chunk === null && $documentId > 0) {
                 $chunk = $retrieval->forDocument($documentId)[0] ?? null;
             }
 
             if ($chunk === null) {
-                $invalid[] = 'citacao fora do conjunto recuperado: '.($reference !== '' ? $reference : 'documento '.$documentId);
+                $invalid[] = 'citação fora do conjunto recuperado: '.($reference !== '' ? $reference : 'documento '.$documentId);
 
                 continue;
             }
 
             if ($documentId > 0 && $documentId !== $chunk->documentId) {
-                $invalid[] = 'documento citado nao corresponde ao trecho: '.$documentId;
+                $invalid[] = 'documento citado não corresponde ao trecho: '.$documentId;
 
                 continue;
             }
 
             if (! $this->documentIsRetrievable($chunk->documentId)) {
                 $invalidStatus = GroundingStatus::ObsoleteCitation;
-                $invalid[] = 'documento nao recuperavel: '.$chunk->documentId;
+                $invalid[] = 'documento não recuperável: '.$chunk->documentId;
 
                 continue;
             }
@@ -169,8 +169,8 @@ class GroundingValidator implements AnswerGroundingValidator
                 'chunk_reference' => $chunk->reference(),
                 'document_title' => $chunk->documentTitle,
                 'document_version' => $chunk->documentVersion,
-                // Pagina e secao vem do trecho recuperado, nao do que o modelo
-                // disse: metadado de citacao nao e coisa que ele deva escolher.
+                // Página e seção vem do trecho recuperado, não do que o modelo
+                // disse: metadado de citação não e coisa que ele deva escolher.
                 'page' => $chunk->page,
                 'section' => $chunk->section,
                 'score' => $chunk->score,
@@ -214,8 +214,8 @@ class GroundingValidator implements AnswerGroundingValidator
     }
 
     /**
-     * Afirmacao factual: numero relevante, data, valor, ou expressao configurada
-     * que caracterize declaracao sobre a pessoa representada.
+     * Afirmação factual: número relevante, data, valor, ou expressão configurada
+     * que caracterize declaração sobre a pessoa representada.
      */
     public function isFactual(string $text): bool
     {
@@ -235,10 +235,10 @@ class GroundingValidator implements AnswerGroundingValidator
     }
 
     /**
-     * Numeros que caracterizam afirmacao factual.
+     * Números que caracterizam afirmação factual.
      *
-     * Digito unico e ignorado de proposito: "uma pergunta" e "1 pergunta" nao sao
-     * afirmacao sobre o mundo, e exigir evidencia para eles faria todo texto cair
+     * Digito único e ignorado de propósito: "uma pergunta" e "1 pergunta" não são
+     * afirmação sobre o mundo, e exigir evidência para eles faria todo texto cair
      * em handoff.
      *
      * @return array<int, string>
@@ -268,7 +268,7 @@ class GroundingValidator implements AnswerGroundingValidator
     {
         $tokens = [];
 
-        // Data numerica e ano de quatro digitos.
+        // Data numérica e ano de quatro digitos.
         preg_match_all('/\b\d{1,2}\/\d{1,2}(?:\/\d{2,4})?\b|\b(?:19|20)\d{2}\b/u', $text, $matches);
         foreach ($matches[0] ?? [] as $token) {
             $tokens[] = trim($token);
@@ -313,8 +313,8 @@ class GroundingValidator implements AnswerGroundingValidator
     {
         $missing = [];
 
-        // Datas ja foram conferidas e nao devem ser reavaliadas em pedacos: o ano
-        // de uma data com suporte nao e um numero solto sem suporte.
+        // Datas já foram conferidas e não devem ser reavaliadas em pedacos: o ano
+        // de uma data com suporte não e um número solto sem suporte.
         foreach ($this->relevantNumbers($this->withoutDates($text)) as $token) {
             if ($this->isSupported($token, $support)) {
                 continue;
@@ -327,7 +327,7 @@ class GroundingValidator implements AnswerGroundingValidator
     }
 
     /**
-     * Texto sem os trechos ja reconhecidos como data.
+     * Texto sem os trechos já reconhecidos como data.
      */
     private function withoutDates(string $text): string
     {
@@ -358,11 +358,11 @@ class GroundingValidator implements AnswerGroundingValidator
     }
 
     /**
-     * Suporte por ocorrencia literal ou por sequencia de digitos.
+     * Suporte por ocorrência literal ou por sequência de digitos.
      *
-     * A comparacao por digitos existe porque "1.500", "1500" e "1 500" sao o mesmo
-     * numero escrito de tres formas, e reprovar por formatacao produziria handoff
-     * onde havia evidencia.
+     * A comparação por digitos existe porque "1.500", "1500" e "1 500" são o mesmo
+     * número escrito de três formas, e reprovar por formatação produziria handoff
+     * onde havia evidência.
      *
      * @param  array{raw: string, normalized: string, digits: string}  $support
      */
@@ -405,7 +405,7 @@ class GroundingValidator implements AnswerGroundingValidator
             return false;
         }
 
-        // Compromisso so passa quando o trecho citado tambem fala em termos de
+        // Compromisso so passa quando o trecho citado também fala em termos de
         // proposta, projeto ou programa formalizado.
         foreach ($this->expressions('knowledge.commitment_support_markers') as $marker) {
             if (str_contains($support['normalized'], $marker)) {
@@ -432,7 +432,7 @@ class GroundingValidator implements AnswerGroundingValidator
     }
 
     /**
-     * Trechos usados, prontos para persistir como citacao.
+     * Trechos usados, prontos para persistir como citação.
      *
      * @param  array<int, array<string, mixed>>  $citations
      * @return array<int, RetrievedChunk>

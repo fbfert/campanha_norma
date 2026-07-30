@@ -22,10 +22,10 @@ use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
 /**
- * Subetapa 9D: recuperacao na base oficial.
+ * Subetapa 9D: recuperação na base oficial.
  *
- * O criterio central: aprovacao e a condicao de existencia na busca. Um trecho
- * que nao passou por aprovacao humana nao pode ser alcancado por nenhum caminho.
+ * O critério central: aprovação e a condição de existência na busca. Um trecho
+ * que não passou por aprovação humana não pode ser alcançado por nenhum caminho.
  */
 class KnowledgeRetrievalTest extends TestCase
 {
@@ -66,7 +66,7 @@ class KnowledgeRetrievalTest extends TestCase
     }
 
     // =========================================================================
-    // Criterio: somente conteudo aprovado aparece na busca
+    // Critério: somente conteúdo aprovado aparece na busca
     // =========================================================================
 
     public function test_approved_document_in_an_active_base_is_retrieved(): void
@@ -75,15 +75,15 @@ class KnowledgeRetrievalTest extends TestCase
         $document = KnowledgeDocument::factory()->for($base, 'base')->approved()->create();
         $this->chunk($document, 'O gabinete atende de segunda a sexta, das nove as dezessete horas.');
 
-        $result = $this->search($base, 'qual o horario de atendimento do gabinete');
+        $result = $this->search($base, 'qual o horário de atendimento do gabinete');
 
         $this->assertFalse($result->isEmpty());
         $this->assertSame($document->id, $result->chunks[0]->documentId);
     }
 
     /**
-     * Todo status que nao seja aprovado precisa ser invisivel para a busca, sem
-     * excecao: e o unico jeito de garantir que rascunho nao vira resposta.
+     * Todo status que não seja aprovado precisa ser invisível para a busca, sem
+     * exceção: e o único jeito de garantir que rascunho não vira resposta.
      */
     public function test_document_that_is_not_approved_is_never_retrieved(): void
     {
@@ -101,9 +101,9 @@ class KnowledgeRetrievalTest extends TestCase
             $this->chunk($document, 'O gabinete atende de segunda a sexta, das nove as dezessete horas.');
         }
 
-        $result = $this->search($base, 'qual o horario de atendimento do gabinete');
+        $result = $this->search($base, 'qual o horário de atendimento do gabinete');
 
-        $this->assertTrue($result->isEmpty(), 'Nenhum status alem de aprovado pode ser recuperado.');
+        $this->assertTrue($result->isEmpty(), 'Nenhum status além de aprovado pode ser recuperado.');
     }
 
     public function test_approved_document_in_an_inactive_base_is_not_retrieved(): void
@@ -112,7 +112,7 @@ class KnowledgeRetrievalTest extends TestCase
         $document = KnowledgeDocument::factory()->for($base, 'base')->approved()->create();
         $this->chunk($document, 'O gabinete atende de segunda a sexta.');
 
-        $this->assertTrue($this->search($base, 'horario de atendimento do gabinete')->isEmpty());
+        $this->assertTrue($this->search($base, 'horário de atendimento do gabinete')->isEmpty());
     }
 
     public function test_obsolete_document_stops_being_retrieved_without_erasing_history(): void
@@ -121,14 +121,14 @@ class KnowledgeRetrievalTest extends TestCase
         $document = KnowledgeDocument::factory()->for($base, 'base')->approved()->create();
         $this->chunk($document, 'O gabinete atende de segunda a sexta, das nove as dezessete horas.');
 
-        $before = $this->search($base, 'horario de atendimento do gabinete');
+        $before = $this->search($base, 'horário de atendimento do gabinete');
         $this->assertFalse($before->isEmpty());
 
         $document->update(['status' => KnowledgeDocumentStatus::Obsolete, 'obsoleted_at' => now()]);
 
-        $this->assertTrue($this->search($base, 'horario de atendimento do gabinete')->isEmpty());
+        $this->assertTrue($this->search($base, 'horário de atendimento do gabinete')->isEmpty());
         $this->assertDatabaseHas('knowledge_documents', ['id' => $document->id]);
-        $this->assertSame(1, KnowledgeChunk::where('knowledge_document_id', $document->id)->count(), 'Obsolescencia nao apaga trecho.');
+        $this->assertSame(1, KnowledgeChunk::where('knowledge_document_id', $document->id)->count(), 'Obsolescência não apaga trecho.');
     }
 
     public function test_base_of_another_flow_does_not_leak_into_the_query(): void
@@ -139,11 +139,11 @@ class KnowledgeRetrievalTest extends TestCase
         $document = KnowledgeDocument::factory()->for($other, 'base')->approved()->create();
         $this->chunk($document, 'O gabinete atende de segunda a sexta, das nove as dezessete horas.');
 
-        $this->assertTrue($this->search($mine, 'horario de atendimento do gabinete')->isEmpty());
+        $this->assertTrue($this->search($mine, 'horário de atendimento do gabinete')->isEmpty());
     }
 
     // =========================================================================
-    // Limites e degradacao
+    // Limites e degradação
     // =========================================================================
 
     public function test_query_without_usable_terms_returns_empty_with_a_reason(): void
@@ -159,7 +159,7 @@ class KnowledgeRetrievalTest extends TestCase
     public function test_query_without_an_associated_base_returns_empty_with_a_reason(): void
     {
         $result = app(KnowledgeRetriever::class)->retrieve(new RetrievalQuery(
-            text: 'horario de atendimento',
+            text: 'horário de atendimento',
             baseIds: [],
             strategy: RetrievalStrategy::Lexical,
             topK: 5,
@@ -177,7 +177,7 @@ class KnowledgeRetrievalTest extends TestCase
         $document = KnowledgeDocument::factory()->for($base, 'base')->approved()->create();
 
         for ($i = 0; $i < 8; $i++) {
-            $this->chunk($document, "Trecho {$i} sobre atendimento no gabinete da regiao.", $i);
+            $this->chunk($document, "Trecho {$i} sobre atendimento no gabinete da região.", $i);
         }
 
         $result = app(KnowledgeRetriever::class)->retrieve(new RetrievalQuery(
@@ -196,7 +196,7 @@ class KnowledgeRetrievalTest extends TestCase
     {
         $base = KnowledgeBase::factory()->active()->create();
         $document = KnowledgeDocument::factory()->for($base, 'base')->approved()->create();
-        $this->chunk($document, str_repeat('atendimento no gabinete da regiao serrana. ', 200));
+        $this->chunk($document, str_repeat('atendimento no gabinete da região serrana. ', 200));
 
         $result = app(KnowledgeRetriever::class)->retrieve(new RetrievalQuery(
             text: 'atendimento no gabinete',
@@ -207,7 +207,7 @@ class KnowledgeRetrievalTest extends TestCase
             maxContextChars: 300,
         ));
 
-        $this->assertFalse($result->isEmpty(), 'Um trecho grande demais e cortado, nao descartado.');
+        $this->assertFalse($result->isEmpty(), 'Um trecho grande demais e cortado, não descartado.');
         $this->assertLessThanOrEqual(300, mb_strlen($result->chunks[0]->content));
     }
 
@@ -216,7 +216,7 @@ class KnowledgeRetrievalTest extends TestCase
         $this->settings(['knowledge.max_vector_candidates' => '2']);
 
         // Provedor apenas configurado, nunca chamado: a recusa por limite acontece
-        // antes de qualquer requisicao, e e isso que o teste precisa provar.
+        // antes de qualquer requisição, e e isso que o teste precisa provar.
         Config::set('knowledge.embeddings.provider', 'openai');
         Config::set('knowledge.embeddings.openai.key', 'chave-de-teste');
         Http::fake(['*' => Http::response([], 500)]);
@@ -244,9 +244,9 @@ class KnowledgeRetrievalTest extends TestCase
         $document = KnowledgeDocument::factory()->for($base, 'base')->approved()->create();
         $this->chunk($document, 'O gabinete atende de segunda a sexta, das nove as dezessete horas.');
 
-        $result = $this->search($base, 'horario de atendimento do gabinete', RetrievalStrategy::Hybrid);
+        $result = $this->search($base, 'horário de atendimento do gabinete', RetrievalStrategy::Hybrid);
 
-        $this->assertFalse($result->isEmpty(), 'Sem vetor a busca hibrida ainda entrega o resultado lexico.');
+        $this->assertFalse($result->isEmpty(), 'Sem vetor a busca híbrida ainda entrega o resultado léxico.');
     }
 
     // =========================================================================
@@ -262,7 +262,7 @@ class KnowledgeRetrievalTest extends TestCase
         $flow = ConversationFlow::factory()->create();
         $flow->knowledgeBases()->attach($base->id, ['priority' => 0]);
 
-        $outcome = app(KnowledgeRetrievalService::class)->retrieveForFlow($flow, 'horario de atendimento do gabinete');
+        $outcome = app(KnowledgeRetrievalService::class)->retrieveForFlow($flow, 'horário de atendimento do gabinete');
 
         $this->assertNotNull($outcome['retrieval']);
         $this->assertSame(1, $outcome['retrieval']->returned_count);
@@ -281,12 +281,12 @@ class KnowledgeRetrievalTest extends TestCase
         $flow = ConversationFlow::factory()->create();
         $flow->knowledgeBases()->attach($base->id, ['priority' => 0]);
 
-        $outcome = app(KnowledgeRetrievalService::class)->retrieveForFlow($flow, 'horario de atendimento do gabinete');
+        $outcome = app(KnowledgeRetrievalService::class)->retrieveForFlow($flow, 'horário de atendimento do gabinete');
         $chunk->delete();
 
         $logged = KnowledgeRetrievalChunk::where('knowledge_retrieval_id', $outcome['retrieval']->id)->firstOrFail();
 
-        $this->assertNull($logged->knowledge_chunk_id, 'O vinculo cai...');
+        $this->assertNull($logged->knowledge_chunk_id, 'O vínculo cai...');
         $this->assertStringContainsString('gabinete atende', (string) $logged->content_snapshot, '...mas a explicacao continua existindo.');
     }
 
@@ -294,9 +294,9 @@ class KnowledgeRetrievalTest extends TestCase
     {
         $flow = ConversationFlow::factory()->create();
 
-        $outcome = app(KnowledgeRetrievalService::class)->retrieveForFlow($flow, 'horario de atendimento');
+        $outcome = app(KnowledgeRetrievalService::class)->retrieveForFlow($flow, 'horário de atendimento');
 
-        $this->assertNull($outcome['retrieval'], 'Sem base associada nenhuma busca aconteceu, entao nao ha o que registrar.');
+        $this->assertNull($outcome['retrieval'], 'Sem base associada nenhuma busca aconteceu, então não ha o que registrar.');
         $this->assertSame(0, KnowledgeRetrieval::count());
     }
 
@@ -311,7 +311,7 @@ class KnowledgeRetrievalTest extends TestCase
         $flow = ConversationFlow::factory()->create();
         $flow->knowledgeBases()->attach($base->id, ['priority' => 0]);
 
-        $outcome = app(KnowledgeRetrievalService::class)->retrieveForFlow($flow, 'horario de atendimento do gabinete');
+        $outcome = app(KnowledgeRetrievalService::class)->retrieveForFlow($flow, 'horário de atendimento do gabinete');
 
         $this->assertTrue($outcome['result']->isEmpty());
         $this->assertNull($outcome['retrieval']);
@@ -322,9 +322,9 @@ class KnowledgeRetrievalTest extends TestCase
     // =========================================================================
 
     /**
-     * A proibicao de usar conversa de terceiro ou opiniao da populacao como fonte
-     * precisa ser estrutural. Este teste le o proprio arquivo do recuperador: se
-     * alguem acrescentar uma consulta a conversa, o teste quebra antes da revisao.
+     * A proibição de usar conversa de terceiro ou opinião da população como fonte
+     * precisa ser estrutural. Este teste le o próprio arquivo do recuperador: se
+     * alguém acrescentar uma consulta a conversa, o teste quebra antes da revisão.
      */
     public function test_the_retriever_never_references_conversation_or_contact_data(): void
     {
@@ -343,7 +343,7 @@ class KnowledgeRetrievalTest extends TestCase
             $this->assertStringNotContainsString(
                 $forbidden,
                 $source,
-                "O recuperador nao pode conhecer {$forbidden}: a opiniao da populacao nunca e fonte de resposta individual."
+                "O recuperador não pode conhecer {$forbidden}: a opinião da população nunca e fonte de resposta individual."
             );
         }
     }
@@ -358,10 +358,10 @@ class KnowledgeRetrievalTest extends TestCase
     }
 
     /**
-     * Codigo do arquivo sem comentarios.
+     * Código do arquivo sem comentários.
      *
-     * O comentario que explica a proibicao precisa poder citar o que esta
-     * proibido. E o codigo que este teste inspeciona, nao a prosa.
+     * O comentário que explica a proibição precisa poder citar o que esta
+     * proibido. E o código que este teste inspeciona, não a prosa.
      */
     private function codeWithoutComments(string $path): string
     {

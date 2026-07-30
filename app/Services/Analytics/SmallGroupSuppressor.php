@@ -5,15 +5,15 @@ namespace App\Services\Analytics;
 use App\Services\SystemSettingService;
 
 /**
- * Supressao de celula agregada com poucos registros.
+ * Supressão de célula agregada com poucos registros.
  *
- * Numa cidade com tres respondentes, "3 pessoas reclamaram de saude" e uma
- * frase sobre tres pessoas que qualquer um que conheca a cidade consegue
- * apontar. O numero e verdadeiro e mesmo assim identifica.
+ * Numa cidade com três respondentes, "3 pessoas reclamaram de saúde" e uma
+ * frase sobre três pessoas que qualquer um que conheca a cidade consegue
+ * apontar. O número e verdadeiro e mesmo assim identifica.
  *
- * A supressao acontece aqui, no servico, e nunca na view. Uma protecao que
- * depende de a tela lembrar de aplicar e uma protecao que um dia falha, e a
- * tela que esquecer sera justamente a nova.
+ * A supressão acontece aqui, no serviço, e nunca na view. Uma proteção que
+ * depende de a tela lembrar de aplicar e uma proteção que um dia falha, e a
+ * tela que esquecer será justamente a nova.
  */
 class SmallGroupSuppressor
 {
@@ -27,11 +27,11 @@ class SmallGroupSuppressor
     }
 
     /**
-     * Devolve a contagem ou `null` quando ela esta abaixo do minimo.
+     * Devolve a contagem ou `null` quando ela esta abaixo do mínimo.
      *
-     * Zero passa intacto: "nenhuma resposta" nao identifica ninguem, e
-     * transformar zero em suprimido esconderia ausencia de dado, que e
-     * informacao legitima e frequentemente a mais importante.
+     * Zero passa intacto: "nenhuma resposta" não identifica ninguém, e
+     * transformar zero em suprimido esconderia ausência de dado, que e
+     * informação legítima e frequentemente a mais importante.
      */
     public function count(int $value): ?int
     {
@@ -48,10 +48,10 @@ class SmallGroupSuppressor
     }
 
     /**
-     * Aplica a supressao a uma lista de linhas agregadas.
+     * Aplica a supressão a uma lista de linhas agregadas.
      *
      * Linha suprimida permanece na lista com a contagem nula e a marca
-     * `suppressed`. Remove-la faria a soma das linhas visiveis nao bater com o
+     * `suppressed`. Remove-la faria a soma das linhas visíveis não bater com o
      * total, e quem lesse concluiria que ha registros faltando.
      *
      * @param  iterable<int, array<string, mixed>>  $rows

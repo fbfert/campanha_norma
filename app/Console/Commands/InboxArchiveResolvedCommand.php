@@ -11,7 +11,7 @@ class InboxArchiveResolvedCommand extends Command
 {
     protected $signature = 'inbox:archive-resolved';
 
-    protected $description = 'Arquiva conversas resolvidas conforme configuracao.';
+    protected $description = 'Arquiva conversas resolvidas conforme configuração.';
 
     public function handle(SystemSettingService $settings): int
     {

@@ -10,7 +10,7 @@ class RecalculateMessageBatchCommand extends Command
 {
     protected $signature = 'messages:recalculate-batch {batch}';
 
-    protected $description = 'Recalcula um lote especifico.';
+    protected $description = 'Recalcula um lote específico.';
 
     public function handle(BatchProgressService $progress): int
     {

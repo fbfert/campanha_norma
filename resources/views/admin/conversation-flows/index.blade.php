@@ -9,7 +9,7 @@
     <section class="card" style="margin-top:16px;">
         <div class="table-wrap">
             <table>
-                <thead><tr><th>Nome</th><th>Status</th><th>Perguntas</th><th>Conversas</th><th>Atualizado em</th><th>Acoes</th></tr></thead>
+                <thead><tr><th>Nome</th><th>Status</th><th>Perguntas</th><th>Conversas</th><th>Atualizado em</th><th>Ações</th></tr></thead>
                 <tbody>
                     @forelse($flows as $flow)
                         <tr>

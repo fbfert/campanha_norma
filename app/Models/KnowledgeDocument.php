@@ -104,10 +104,10 @@ class KnowledgeDocument extends Model
     }
 
     /**
-     * Documentos que podem participar de uma recuperacao.
+     * Documentos que podem participar de uma recuperação.
      *
-     * A regra vive aqui, e nao no chamador, porque uma condicao dessa natureza
-     * nao deve depender de alguem lembrar de aplica-la. O retriever a reafirma.
+     * A regra vive aqui, e não no chamador, porque uma condição dessa natureza
+     * não deve depender de alguém lembrar de aplica-la. O retriever a reafirma.
      */
     public function scopeRetrievable(Builder $query): Builder
     {

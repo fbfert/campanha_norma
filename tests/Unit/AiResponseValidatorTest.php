@@ -9,7 +9,7 @@ use PHPUnit\Framework\TestCase;
 /**
  * Testes puros do validador de schema: sem banco, sem framework.
  *
- * O validador e a garantia de que a conformidade da saida nunca e presumida a
+ * O validador e a garantia de que a conformidade da saída nunca e presumida a
  * partir da promessa do provedor.
  */
 class AiResponseValidatorTest extends TestCase
@@ -72,7 +72,7 @@ class AiResponseValidatorTest extends TestCase
     {
         $result = $this->validator()->validate($raw, $this->schema());
 
-        $this->assertFalse($result['valid'], 'Esperava saida invalida para: '.$raw);
+        $this->assertFalse($result['valid'], 'Esperava saída invalida para: '.$raw);
         $this->assertNull($result['data']);
         $this->assertContains($expectedError, $result['errors']);
     }
@@ -82,14 +82,14 @@ class AiResponseValidatorTest extends TestCase
     {
         return [
             'texto puro' => [
-                'Nao consegui classificar esta mensagem.',
+                'Não consegui classificar esta mensagem.',
                 'resposta_nao_e_json_valido',
             ],
             'json truncado' => [
                 '{"classification":"ambiguous","confidence":',
                 'resposta_nao_e_json_valido',
             ],
-            'campo obrigatorio ausente' => [
+            'campo obrigatório ausente' => [
                 '{"classification":"ambiguous","confidence":0.5,"requires_human_review":false}',
                 'review_reason:campo_obrigatorio_ausente',
             ],
@@ -97,15 +97,15 @@ class AiResponseValidatorTest extends TestCase
                 '{"classification":"inventada","confidence":0.5,"requires_human_review":false,"review_reason":null}',
                 'classification:valor_fora_do_conjunto',
             ],
-            'confianca acima de um' => [
+            'confiança acima de um' => [
                 '{"classification":"ambiguous","confidence":1.4,"requires_human_review":false,"review_reason":null}',
                 'confidence:acima_do_maximo',
             ],
-            'confianca negativa' => [
+            'confiança negativa' => [
                 '{"classification":"ambiguous","confidence":-0.2,"requires_human_review":false,"review_reason":null}',
                 'confidence:abaixo_do_minimo',
             ],
-            'confianca como texto' => [
+            'confiança como texto' => [
                 '{"classification":"ambiguous","confidence":"alta","requires_human_review":false,"review_reason":null}',
                 'confidence:tipo_invalido',
             ],

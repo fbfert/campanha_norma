@@ -54,7 +54,7 @@ class UserController extends Controller
     {
         $user = $service->create($request->validated());
 
-        return redirect()->route('admin.users.show', $user)->with('success', 'Usuario criado com sucesso.');
+        return redirect()->route('admin.users.show', $user)->with('success', 'Usuário criado com sucesso.');
     }
 
     public function show(Request $request, User $user): View
@@ -79,7 +79,7 @@ class UserController extends Controller
     {
         $service->update($user, $request->validated());
 
-        return redirect()->route('admin.users.show', $user)->with('success', 'Usuario atualizado com sucesso.');
+        return redirect()->route('admin.users.show', $user)->with('success', 'Usuário atualizado com sucesso.');
     }
 
     public function status(Request $request, User $user, UserService $service): RedirectResponse
@@ -102,7 +102,7 @@ class UserController extends Controller
         $password = $service->resetPassword($user);
 
         return back()
-            ->with('success', 'Senha temporaria gerada. Copie agora, ela nao sera exibida novamente.')
+            ->with('success', 'Senha temporária gerada. Copie agora, ela não será exibida novamente.')
             ->with('temporary_password', $password);
     }
 
@@ -112,6 +112,6 @@ class UserController extends Controller
 
         $service->delete($request->user(), $user);
 
-        return redirect()->route('admin.users.index')->with('success', 'Usuario excluido logicamente.');
+        return redirect()->route('admin.users.index')->with('success', 'Usuário excluído logicamente.');
     }
 }

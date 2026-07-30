@@ -18,11 +18,11 @@ use Illuminate\Support\Carbon;
 use Illuminate\View\View;
 
 /**
- * Telas analiticas da subetapa 9E.
+ * Telas analíticas da subetapa 9E.
  *
- * Todo metodo exige `analytics.view_aggregates` como piso. Conteudo,
- * identificacao, custo e governanca sao permissoes adicionais conferidas
- * individualmente, e a ausencia de qualquer uma delas remove informacao da tela
+ * Todo método exige `analytics.view_aggregates` como piso. Conteúdo,
+ * identificação, custo e governança são permissões adicionais conferidas
+ * individualmente, e a ausência de qualquer uma delas remove informação da tela
  * sem impedir o acesso ao resto.
  */
 class AnalyticsController extends Controller
@@ -79,12 +79,12 @@ class AnalyticsController extends Controller
         $flowId = $this->flowId($request);
         $canSeeContent = $request->user()->can('analytics.view_content');
 
-        // Problema, acao e resultado sao texto livre extraido do que a pessoa
-        // escreveu. Agrupar esse texto e contar quantas vezes ele aparece nao o
-        // transforma em agregado: o rotulo continua sendo a frase de alguem.
-        // Por isso as tres tabelas exigem permissao de conteudo, e nao apenas
-        // os exemplos. Quem tem so agregado ve urgencia e fila de revisao, que
-        // sao categorias fechadas e nao carregam texto de ninguem.
+        // Problema, ação e resultado são texto livre extraido do que a pessoa
+        // escreveu. Agrupar esse texto e contar quantas vezes ele aparece não o
+        // transforma em agregado: o rótulo continua sendo a frase de alguém.
+        // Por isso as três tabelas exigem permissão de conteúdo, e não apenas
+        // os exemplos. Quem tem so agregado ve urgência e fila de revisão, que
+        // são categorias fechadas e não carregam texto de ninguém.
         return view('admin.analytics.demands', [
             'problems' => $canSeeContent ? $demands->problems($from, $to, $flowId) : [],
             'actions' => $canSeeContent ? $demands->actions($from, $to, $flowId) : [],
@@ -140,9 +140,9 @@ class AnalyticsController extends Controller
     }
 
     /**
-     * Contexto comum das telas: filtros aplicados, fluxos disponiveis e o
-     * minimo de supressao, que aparece no rodape para que ninguem interprete
-     * uma celula vazia como ausencia de resposta.
+     * Contexto comum das telas: filtros aplicados, fluxos disponíveis e o
+     * mínimo de supressão, que aparece no rodape para que ninguém interprete
+     * uma célula vazia como ausência de resposta.
      *
      * @return array<string, mixed>
      */

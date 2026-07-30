@@ -62,8 +62,8 @@ class TagController extends Controller
     {
         abort_unless($request->user()->can('contacts.manage_tags'), 403);
         $tag->delete();
-        $audit->log('tag.deleted', 'Etiqueta excluida logicamente.', $tag);
+        $audit->log('tag.deleted', 'Etiqueta excluída logicamente.', $tag);
 
-        return back()->with('success', 'Etiqueta excluida logicamente.');
+        return back()->with('success', 'Etiqueta excluída logicamente.');
     }
 }

@@ -8,11 +8,11 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Metricas de tema extraidas pela interpretacao.
+ * Métricas de tema extraidas pela interpretação.
  *
- * Tudo aqui e contagem e media. Nenhum metodo devolve texto de mensagem,
- * telefone ou identificador de contato: o detalhamento que mostra conteudo vive
- * na tela de insights da 9B, que ja tem permissao propria para isso.
+ * Tudo aqui e contagem e média. Nenhum método devolve texto de mensagem,
+ * telefone ou identificador de contato: o detalhamento que mostra conteúdo vive
+ * na tela de insights da 9B, que já tem permissão própria para isso.
  */
 class TopicMetricsService
 {
@@ -22,7 +22,7 @@ class TopicMetricsService
     ) {}
 
     /**
-     * Temas mais mencionados, com confianca media e quantidade revisada.
+     * Temas mais mencionados, com confiança média e quantidade revisada.
      *
      * @return array<int, array<string, mixed>>
      */
@@ -55,10 +55,10 @@ class TopicMetricsService
     }
 
     /**
-     * Insights sem tema atribuido.
+     * Insights sem tema atribuído.
      *
-     * Contagem separada e deliberada: somar nao classificados dentro de "outros"
-     * esconderia falha de classificacao dentro de um tema legitimo.
+     * Contagem separada e deliberada: somar não classificados dentro de "outros"
+     * esconderia falha de classificação dentro de um tema legítimo.
      */
     public function unclassified(Carbon $from, Carbon $to, ?int $flowId = null): int
     {
@@ -66,10 +66,10 @@ class TopicMetricsService
     }
 
     /**
-     * Temas que aparecem no periodo atual e nao apareciam no anterior.
+     * Temas que aparecem no período atual e não apareciam no anterior.
      *
-     * Exige um minimo de mencoes configuravel: uma unica mencao nova nao e
-     * tendencia, e tratar como tal encheria a tela de ruido a cada periodo.
+     * Exige um mínimo de menções configurável: uma única menção nova não e
+     * tendência, e tratar como tal encheria a tela de ruído a cada período.
      *
      * @return array<int, array<string, mixed>>
      */
@@ -94,7 +94,7 @@ class TopicMetricsService
     }
 
     /**
-     * Tendencia por dia dos temas mais citados.
+     * Tendência por dia dos temas mais citados.
      *
      * @return array<int, array<string, mixed>>
      */
@@ -124,7 +124,7 @@ class TopicMetricsService
     }
 
     /**
-     * Resumo de confianca e revisao humana do periodo.
+     * Resumo de confiança e revisão humana do período.
      *
      * @return array<string, mixed>
      */

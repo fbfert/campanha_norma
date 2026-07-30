@@ -11,9 +11,9 @@ enum AiRunPurpose: string
     public function label(): string
     {
         return match ($this) {
-            self::Classify => 'Classificacao',
-            self::ExtractInsight => 'Extracao de insight',
-            self::GenerateReply => 'Geracao de resposta',
+            self::Classify => 'Classificação',
+            self::ExtractInsight => 'Extração de insight',
+            self::GenerateReply => 'Geração de resposta',
         };
     }
 }

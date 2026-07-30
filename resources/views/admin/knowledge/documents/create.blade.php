@@ -7,29 +7,29 @@
 
     <section class="card">
         <p class="muted">
-            Envie apenas conteudo oficial e ja aprovado para uso publico. Nao envie conversa de cidadao, opiniao coletada na pesquisa,
-            dado pessoal ou material que dependa de autorizacao.
+            Envie apenas conteúdo oficial e já aprovado para uso público. Não envie conversa de cidadão, opinião coletada na pesquisa,
+            dado pessoal ou material que dependa de autorização.
         </p>
         <p class="muted">
-            Tipos aceitos: {{ implode(', ', $acceptedMimeTypes) }}. Tamanho maximo: {{ number_format($maxFileSizeKb / 1024, 1, ',', '.') }} MB.
+            Tipos aceitos: {{ implode(', ', $acceptedMimeTypes) }}. Tamanho máximo: {{ number_format($maxFileSizeKb / 1024, 1, ',', '.') }} MB.
         </p>
 
         <form method="post" action="{{ route('admin.knowledge.documents.store', $base) }}" enctype="multipart/form-data">
             @csrf
 
             <div>
-                <label for="title">Titulo</label>
+                <label for="title">Título</label>
                 <input id="title" name="title" type="text" maxlength="255" required value="{{ old('title') }}">
             </div>
 
             <div>
-                <label for="type">Tipo de conteudo</label>
+                <label for="type">Tipo de conteúdo</label>
                 <select id="type" name="type" required>
                     @foreach($types as $type)
                         <option value="{{ $type->value }}" @selected(old('type') === $type->value)>{{ $type->label() }}</option>
                     @endforeach
                 </select>
-                <p class="muted">Somente estes tipos sao permitidos na base oficial.</p>
+                <p class="muted">Somente estes tipos são permitidos na base oficial.</p>
             </div>
 
             <div class="grid grid-3">
@@ -49,7 +49,7 @@
 
             <div class="grid grid-2">
                 <div>
-                    <label for="version">Versao</label>
+                    <label for="version">Versão</label>
                     <input id="version" name="version" type="number" min="1" max="65535" value="{{ old('version', 1) }}">
                 </div>
                 <div>
@@ -60,7 +60,7 @@
                             <option value="{{ $candidate->id }}" @selected(old('supersedes_document_id') == $candidate->id)>{{ $candidate->title }}</option>
                         @endforeach
                     </select>
-                    <p class="muted">O documento substituido vira obsoleto quando este for aprovado.</p>
+                    <p class="muted">O documento substituído vira obsoleto quando este for aprovado.</p>
                 </div>
             </div>
 

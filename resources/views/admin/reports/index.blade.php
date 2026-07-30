@@ -1,8 +1,8 @@
-<x-layouts.app title="Relatorios" breadcrumbs="Relatorios / Visao geral">
+<x-layouts.app title="Relatórios" breadcrumbs="Relatorios / Visao geral">
     <section class="card">
         <form method="get" class="grid grid-3">
             <div><label>De</label><input type="date" name="from" value="{{ request('from', $from->toDateString()) }}"></div>
-            <div><label>Ate</label><input type="date" name="to" value="{{ request('to', $to->toDateString()) }}"></div>
+            <div><label>Até</label><input type="date" name="to" value="{{ request('to', $to->toDateString()) }}"></div>
             <div class="actions"><button class="btn" type="submit">Atualizar</button></div>
         </form>
     </section>
@@ -23,7 +23,7 @@
             <a class="btn ghost" href="{{ route('admin.reports.batches') }}">Lotes</a>
             <a class="btn ghost" href="{{ route('admin.reports.messages') }}">Mensagens</a>
             <a class="btn ghost" href="{{ route('admin.reports.errors') }}">Erros</a>
-            <a class="btn ghost" href="{{ route('admin.reports.not-sent') }}">Nao enviados</a>
+            <a class="btn ghost" href="{{ route('admin.reports.not-sent') }}">Não enviados</a>
             <a class="btn ghost" href="{{ route('admin.reports.attempts') }}">Tentativas</a>
             <a class="btn ghost" href="{{ route('admin.reports.rate-limits') }}">Limites</a>
             <a class="btn ghost" href="{{ route('admin.reports.contacts') }}">Contatos</a>
@@ -31,8 +31,8 @@
         </div>
     </section>
     <section class="card" style="margin-top:16px;">
-        <h2>Graficos simples</h2>
-        <p class="muted">Valores textuais por dia/status para evitar graficos decorativos e carregamento excessivo.</p>
+        <h2>Gráficos simples</h2>
+        <p class="muted">Valores textuais por dia/status para evitar gráficos decorativos e carregamento excessivo.</p>
         <div class="table-wrap"><table><thead><tr><th>Dia</th><th>Status</th><th>Total</th></tr></thead><tbody>@foreach($metrics['charts']['messages_by_day'] as $row)<tr><td>{{ $row->day }}</td><td>{{ $row->processing_status }}</td><td>{{ $row->total }}</td></tr>@endforeach</tbody></table></div>
     </section>
 </x-layouts.app>

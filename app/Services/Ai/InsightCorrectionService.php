@@ -12,11 +12,11 @@ use App\Services\AuditLogger;
 use BackedEnum;
 
 /**
- * Correcao humana auditada.
+ * Correção humana auditada.
  *
- * Grava sempre o valor original. Nenhuma correcao retroalimenta o modelo, ajusta
- * prompt ou vira exemplo automatico: promover uma correcao exige uma nova versao
- * de prompt no repositorio.
+ * Grava sempre o valor original. Nenhuma correção retroalimenta o modelo, ajusta
+ * prompt ou vira exemplo automático: promover uma correção exige uma nova versão
+ * de prompt no repositório.
  */
 class InsightCorrectionService
 {
@@ -123,7 +123,7 @@ class InsightCorrectionService
             'review_reason' => null,
         ])->save();
 
-        $this->audit->log('ai_insights.classification_corrected', 'Classificacao corrigida manualmente.', $classification, null, [
+        $this->audit->log('ai_insights.classification_corrected', 'Classificação corrigida manualmente.', $classification, null, [
             'classification_id' => $classification->id,
             'conversation_id' => $classification->conversation_id,
             'from' => $original->value,
@@ -146,14 +146,14 @@ class InsightCorrectionService
             'requires_human_review' => false,
         ])->save();
 
-        $this->audit->log('ai_insights.approved', 'Insight aprovado sem alteracao.', $insight, null, [
+        $this->audit->log('ai_insights.approved', 'Insight aprovado sem alteração.', $insight, null, [
             'insight_id' => $insight->id,
             'conversation_id' => $insight->conversation_id,
         ], $user);
     }
 
     /**
-     * Mantem o vinculo relacional do tema principal coerente com a correcao.
+     * Mantem o vínculo relacional do tema principal coerente com a correção.
      */
     private function syncMainTopicLink(ConversationInsight $insight): void
     {

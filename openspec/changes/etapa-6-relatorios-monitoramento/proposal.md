@@ -1,18 +1,18 @@
-# Etapa 6 - Historico Consolidado, Relatorios e Monitoramento
+# Etapa 6 - Histórico Consolidado, Relatórios e Monitoramento
 
 ## Por que
 
-Com os lotes e envios processados na Etapa 5, o sistema precisa consolidar historicos, indicadores, relatorios, exportacoes protegidas e ferramentas operacionais para diagnostico e manutencao.
+Com os lotes e envios processados na Etapa 5, o sistema precisa consolidar históricos, indicadores, relatórios, exportações protegidas e ferramentas operacionais para diagnostico e manutenção.
 
 ## O que muda
 
-- Adiciona historico consolidado de mensagens, detalhes por destinatario e historico por contato.
-- Adiciona relatorios de lotes, mensagens, erros, nao enviados, tentativas, limites, contatos e modelos.
-- Adiciona exportacoes protegidas CSV/XLSX com central de exportacoes e expiracao.
-- Adiciona monitoramento operacional de Laravel, banco, Redis, filas, workers, Scheduler, Node.js e inconsistencias.
-- Adiciona heartbeats de worker e Scheduler, metricas diarias, comandos e ferramentas de manutencao.
-- Atualiza dashboard, menu, permissoes, auditoria, README e documentacao operacional.
+- Adiciona histórico consolidado de mensagens, detalhes por destinatário e histórico por contato.
+- Adiciona relatórios de lotes, mensagens, erros, não enviados, tentativas, limites, contatos e modelos.
+- Adiciona exportações protegidas CSV/XLSX com central de exportações e expiração.
+- Adiciona monitoramento operacional de Laravel, banco, Redis, filas, workers, Scheduler, Node.js e inconsistências.
+- Adiciona heartbeats de worker e Scheduler, métricas diárias, comandos e ferramentas de manutenção.
+- Atualiza dashboard, menu, permissões, auditoria, README e documentação operacional.
 
 ## Fora do escopo
 
-- Caixa de entrada, leitura de respostas, chatbot, respostas automaticas, anexos, grupos, multiplas contas, API publica, API oficial da Meta, CRM externo e metricas de conversao/engajamento baseadas em respostas.
+- Caixa de entrada, leitura de respostas, chatbot, respostas automáticas, anexos, grupos, múltiplas contas, API pública, API oficial da Meta, CRM externo e métricas de conversão/engajamento baseadas em respostas.

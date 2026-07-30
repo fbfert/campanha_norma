@@ -14,14 +14,14 @@ return new class extends Migration
             $table->string('name');
             $table->string('slug')->unique();
             $table->text('description')->nullable();
-            // Sinonimos separados por barra vertical, no mesmo padrao das listas
-            // de expressoes ja usadas na 9A.
+            // Sinônimos separados por barra vertical, no mesmo padrão das listas
+            // de expressões já usadas na 9A.
             $table->text('synonyms')->nullable();
             $table->string('color', 20)->nullable();
             $table->unsignedInteger('display_order')->default(0);
             $table->boolean('is_active')->default(true)->index();
-            // Tema obrigatorio de destino quando a saida do modelo nao casa com
-            // nenhum tema cadastrado. Protegido contra exclusao e desativacao.
+            // Tema obrigatório de destino quando a saída do modelo não casa com
+            // nenhum tema cadastrado. Protegido contra exclusão e desativação.
             $table->boolean('is_fallback')->default(false)->index();
             $table->foreignId('created_by')->nullable()->constrained('users', indexName: 'it_created_by_fk')->nullOnDelete();
             $table->foreignId('updated_by')->nullable()->constrained('users', indexName: 'it_updated_by_fk')->nullOnDelete();
@@ -66,7 +66,7 @@ return new class extends Migration
             $table->string('classification')->index();
             $table->string('source')->index();
             $table->decimal('confidence', 4, 3)->nullable();
-            // Nome explicito: o gerado automaticamente ficaria com 64 caracteres,
+            // Nome explícito: o gerado automaticamente ficaria com 64 caracteres,
             // exatamente no limite do MySQL.
             $table->boolean('requires_human_review')->default(false);
             $table->string('review_reason')->nullable();
@@ -90,7 +90,7 @@ return new class extends Migration
             $table->foreignId('conversation_flow_question_id')->nullable()->constrained(indexName: 'ci_question_fk')->nullOnDelete();
             $table->text('question_snapshot')->nullable();
             $table->text('summary')->nullable();
-            // Tema principal relacional: filtros e relatorios nunca dependem de JSON.
+            // Tema principal relacional: filtros e relatórios nunca dependem de JSON.
             $table->foreignId('insight_topic_id')->nullable()->constrained(indexName: 'ci_topic_fk')->nullOnDelete();
             $table->string('main_topic_raw')->nullable();
             $table->json('secondary_topics_raw')->nullable();
@@ -116,9 +116,9 @@ return new class extends Migration
             $table->foreignId('ai_run_id')->nullable()->constrained(indexName: 'ci_run_fk')->nullOnDelete();
             $table->timestamps();
             $table->unique(['source_message_id', 'extraction_version'], 'ci_message_version_uniq');
-            // Indices de agregacao. A 9E nao esta implementada, mas os recortes
-            // previsiveis (por tema, por fluxo e por periodo) ficam cobertos
-            // agora para nao exigir migration de indice sobre tabela cheia.
+            // Índices de agregação. A 9E não esta implementada, mas os recortes
+            // previsíveis (por tema, por fluxo e por período) ficam cobertos
+            // agora para não exigir migration de índice sobre tabela cheia.
             $table->index(['insight_topic_id', 'created_at'], 'ci_topic_created_idx');
             $table->index(['conversation_flow_id', 'created_at'], 'ci_flow_created_idx');
             $table->index('created_at', 'ci_created_idx');
@@ -133,7 +133,7 @@ return new class extends Migration
             $table->timestamps();
             $table->unique(['conversation_insight_id', 'insight_topic_id', 'role'], 'cit_insight_topic_role_uniq');
             // Recorte inverso: quais insights citam determinado tema, principal
-            // ou secundario.
+            // ou secundário.
             $table->index(['insight_topic_id', 'role'], 'cit_topic_role_idx');
         });
 

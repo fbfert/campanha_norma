@@ -9,12 +9,12 @@ use Symfony\Component\Process\ExecutableFinder;
 use Symfony\Component\Process\Process;
 
 /**
- * Verificacao antivirus do arquivo enviado.
+ * Verificação antivirus do arquivo enviado.
  *
- * O comando vem de configuracao, sem caminho fixo. Quando o scanner nao esta
- * disponivel e a verificacao e exigida, o upload e recusado: um padrao permissivo
- * transformaria a indisponibilidade do antivirus em ausencia silenciosa de
- * verificacao, que e o pior dos dois mundos.
+ * O comando vem de configuração, sem caminho fixo. Quando o scanner não esta
+ * disponível e a verificação e exigida, o upload e recusado: um padrão permissivo
+ * transformaria a indisponibilidade do antivirus em ausência silenciosa de
+ * verificação, que e o pior dos dois mundos.
  */
 class AntivirusScanner
 {
@@ -62,15 +62,15 @@ class AntivirusScanner
             return 'falha_na_verificacao';
         }
 
-        // Convencao do clamscan: 0 limpo, 1 infectado, 2 erro. Tratamos erro como
-        // indisponibilidade, nao como arquivo limpo.
+        // Convenção do clamscan: 0 limpo, 1 infectado, 2 erro. Tratamos erro como
+        // indisponibilidade, não como arquivo limpo.
         return match ($process->getExitCode()) {
             0 => 'limpo',
             1 => throw KnowledgeProviderException::code(KnowledgeProviderException::INFECTED_FILE),
             default => $this->required()
                 ? throw KnowledgeProviderException::code(
                     KnowledgeProviderException::ANTIVIRUS_UNAVAILABLE,
-                    'Codigo de saida '.$process->getExitCode().'.',
+                    'Código de saída '.$process->getExitCode().'.',
                 )
                 : 'falha_na_verificacao',
         };
@@ -97,7 +97,7 @@ class AntivirusScanner
     }
 
     /**
-     * Sem shell: o caminho do arquivo entra como argumento proprio.
+     * Sem shell: o caminho do arquivo entra como argumento próprio.
      *
      * @return array<int, string>
      */

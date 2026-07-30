@@ -22,8 +22,8 @@ enum ContactImportStatus: string
             self::Validating => 'Validando',
             self::Ready => 'Pronto',
             self::Processing => 'Processando',
-            self::Completed => 'Concluido',
-            self::CompletedWithErrors => 'Concluido com erros',
+            self::Completed => 'Concluído',
+            self::CompletedWithErrors => 'Concluído com erros',
             self::Failed => 'Falhou',
             self::Cancelled => 'Cancelado',
         };

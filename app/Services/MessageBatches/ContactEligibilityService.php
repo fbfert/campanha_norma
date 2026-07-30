@@ -15,7 +15,7 @@ class ContactEligibilityService
         $errors = [];
 
         if ($contact->trashed()) {
-            $errors[] = 'Contato excluido.';
+            $errors[] = 'Contato excluído.';
         }
         if ($contact->status === ContactStatus::Inactive) {
             $errors[] = 'Contato inativo.';
@@ -24,7 +24,7 @@ class ContactEligibilityService
             $errors[] = 'Contato bloqueado.';
         }
         if ($contact->do_not_contact) {
-            $errors[] = 'Contato marcado como nao contatar.';
+            $errors[] = 'Contato marcado como não contatar.';
         }
         if (blank($contact->phone_normalized)) {
             $errors[] = 'Telefone valido ausente.';

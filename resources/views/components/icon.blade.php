@@ -3,9 +3,9 @@
 {{--
     Um icone do sprite.
 
-    `aria-hidden` por padrao porque o icone acompanha um rotulo em texto em
+    `aria-hidden` por padrão porque o icone acompanha um rótulo em texto em
     praticamente todo uso: anunciar os dois faria o leitor de tela repetir a
-    mesma informacao. Quando o icone for a unica coisa que o botao tem, passe um
+    mesma informação. Quando o icone for a única coisa que o botão tem, passe um
     `aria-label` no elemento que o envolve.
 --}}
 <svg class="icon" width="{{ $size }}" height="{{ $size }}" viewBox="0 0 24 24"

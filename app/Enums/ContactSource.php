@@ -16,10 +16,10 @@ enum ContactSource: string
     {
         return match ($this) {
             self::Manual => 'Manual',
-            self::Importacao => 'Importacao',
-            self::Formulario => 'Formulario',
+            self::Importacao => 'Importação',
+            self::Formulario => 'Formulário',
             self::Evento => 'Evento',
-            self::Indicacao => 'Indicacao',
+            self::Indicacao => 'Indicação',
             self::ListaExistente => 'Lista existente',
             self::Outro => 'Outro',
         };

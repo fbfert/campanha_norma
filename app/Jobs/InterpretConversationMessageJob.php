@@ -10,9 +10,9 @@ use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Cache;
 
 /**
- * Interpreta uma mensagem recebida em fila propria.
+ * Interpreta uma mensagem recebida em fila própria.
  *
- * Nunca envia nada: apenas classifica, extrai e sinaliza revisao. O timeout e
+ * Nunca envia nada: apenas classifica, extrai e sinaliza revisão. O timeout e
  * maior que o timeout do provedor para que o estouro de tempo do HTTP falhe
  * antes do job.
  */
@@ -40,7 +40,7 @@ class InterpretConversationMessageJob implements ShouldQueue
             return;
         }
 
-        // Trava por conversa para nao permitir dois workers interpretando a
+        // Trava por conversa para não permitir dois workers interpretando a
         // mesma conversa ao mesmo tempo.
         $lock = Cache::lock("ai-interpretation:{$message->conversation_id}", 180);
 

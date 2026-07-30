@@ -15,10 +15,10 @@ use Tests\TestCase;
 /**
  * Iniciar uma conversa a partir de um contato.
  *
- * A tela nao envia nada: ela abre a conversa e leva para onde a mensagem e
- * escrita. O que precisa ser garantido aqui e que ela nao abra caminho para
- * falar com quem pediu para nao ser contatado - a lista de contatos e o lugar
- * mais provavel de esse pedido ser esquecido.
+ * A tela não envia nada: ela abre a conversa e leva para onde a mensagem e
+ * escrita. O que precisa ser garantido aqui e que ela não abra caminho para
+ * falar com quem pediu para não ser contatado - a lista de contatos e o lugar
+ * mais provável de esse pedido ser esquecido.
  */
 class StartConversationTest extends TestCase
 {
@@ -49,7 +49,7 @@ class StartConversationTest extends TestCase
         ], $attributes));
     }
 
-    // --- Acesso as duas acoes da tela de conversas ---------------------------
+    // --- Acesso as duas ações da tela de conversas ---------------------------
 
     public function test_the_conversation_list_offers_refreshing_and_starting(): void
     {
@@ -61,7 +61,7 @@ class StartConversationTest extends TestCase
     }
 
     /**
-     * Quem so consulta nao inicia conversa. O botao nao pode aparecer, senao
+     * Quem so consulta não inicia conversa. O botão não pode aparecer, senão
      * leva a um 403 depois do clique.
      */
     public function test_a_query_profile_does_not_see_the_start_button(): void
@@ -113,8 +113,8 @@ class StartConversationTest extends TestCase
     }
 
     /**
-     * Por padrao a lista mostra so quem pode receber. Pedindo para ver todos, o
-     * impedido aparece com o motivo escrito, e nao simplesmente sumido.
+     * Por padrão a lista mostra so quem pode receber. Pedindo para ver todos, o
+     * impedido aparece com o motivo escrito, e não simplesmente sumido.
      */
     public function test_blocked_contacts_are_hidden_by_default_and_shown_with_the_reason_on_request(): void
     {
@@ -131,7 +131,7 @@ class StartConversationTest extends TestCase
             ->get(route('admin.conversations.create', ['only_eligible' => '0']))
             ->assertOk()
             ->assertSee('Marta Blocked')
-            ->assertSee('Marcado como nao contatar');
+            ->assertSee('Marcado como não contatar');
     }
 
     // --- Abrir a conversa -----------------------------------------------------
@@ -151,7 +151,7 @@ class StartConversationTest extends TestCase
 
     /**
      * Nada e enviado ao abrir a conversa. Se uma mensagem nascesse aqui, ela
-     * sairia sem ninguem ter escrito nem revisado texto nenhum.
+     * sairia sem ninguém ter escrito nem revisado texto nenhum.
      */
     public function test_starting_a_conversation_sends_nothing(): void
     {
@@ -166,8 +166,8 @@ class StartConversationTest extends TestCase
     }
 
     /**
-     * Duas pessoas clicando no mesmo contato nao podem produzir duas conversas
-     * paralelas: a segunda cai na que ja existe.
+     * Duas pessoas clicando no mesmo contato não podem produzir duas conversas
+     * paralelas: a segunda cai na que já existe.
      */
     public function test_starting_twice_reuses_the_open_conversation(): void
     {
@@ -225,8 +225,8 @@ class StartConversationTest extends TestCase
     }
 
     /**
-     * "nova" precisa ser rota propria, e nao ser lida como identificador de
-     * conversa. Se a ordem das rotas mudar, isto quebra antes de alguem
+     * "nova" precisa ser rota própria, e não ser lida como identificador de
+     * conversa. Se a ordem das rotas mudar, isto quebra antes de alguém
      * descobrir na tela.
      */
     public function test_the_start_route_is_not_swallowed_by_the_show_route(): void
@@ -234,6 +234,6 @@ class StartConversationTest extends TestCase
         $this->actingAs($this->userWith('operador'))
             ->get('/admin/conversations/nova')
             ->assertOk()
-            ->assertSee('Com quem voce quer falar?');
+            ->assertSee('Com quem você quer falar?');
     }
 }

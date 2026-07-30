@@ -9,10 +9,10 @@ use App\Models\ConversationReplySuggestion;
 interface ConversationResponseGenerator
 {
     /**
-     * Gera uma sugestao de resposta para a mensagem recebida.
+     * Gera uma sugestão de resposta para a mensagem recebida.
      *
      * Retorna null quando nada foi produzido: modo desligado, provedor
-     * indisponivel ou saida invalida. Nunca envia nada.
+     * indisponível ou saída invalida. Nunca envia nada.
      *
      * @param  array<string, mixed>  $options
      */

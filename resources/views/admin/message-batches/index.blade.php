@@ -11,7 +11,7 @@
     <section class="card" style="margin-top:16px;">
         <div class="table-wrap">
             <table>
-                <thead><tr><th>Nome</th><th>Mensagem</th><th>Tipo</th><th>Selecionados</th><th>Aptos</th><th>Excluidos</th><th>Status</th><th>Criador</th><th>Acoes</th></tr></thead>
+                <thead><tr><th>Nome</th><th>Mensagem</th><th>Tipo</th><th>Selecionados</th><th>Aptos</th><th>Excluídos</th><th>Status</th><th>Criador</th><th>Ações</th></tr></thead>
                 <tbody>
                     @forelse($batches as $batch)
                         <tr><td>{{ $batch->name }}</td><td>{{ $batch->is_campaign ? 'Campanha com '.count($batch->campaign_templates_snapshot ?? []).' modelos' : (($batch->template?->name ?? 'Mensagem avulsa').' v'.($batch->message_template_version ?? '-')) }}</td><td>{{ $batch->is_campaign ? 'Campanha' : $batch->selection_type->label() }}</td><td>{{ $batch->selection_total }}</td><td>{{ $batch->eligible_total }}</td><td>{{ $batch->ineligible_total }}</td><td>{{ $batch->status->label() }}</td><td>{{ $batch->creator?->name ?? '-' }}</td><td class="actions"><a class="btn ghost" href="{{ route('admin.message-batches.show', $batch) }}">Ver</a>@can('message_processing.view')<a class="btn ghost" href="{{ route('admin.message-batches.processing', $batch) }}">Processamento</a>@endcan @can('message_batches.update')@if($batch->status->value === 'draft')<a class="btn ghost" href="{{ route('admin.message-batches.edit', $batch) }}">Editar</a>@endif@endcan</td></tr>

@@ -3,7 +3,7 @@
 namespace App\Data\Ai;
 
 /**
- * Resultado bruto do provedor, antes da validacao de schema local.
+ * Resultado bruto do provedor, antes da validação de schema local.
  */
 readonly class AiCompletionResult
 {
@@ -17,7 +17,7 @@ readonly class AiCompletionResult
     ) {}
 
     /**
-     * Custo estimado opcional. Retorna null quando a configuracao de preco nao
+     * Custo estimado opcional. Retorna null quando a configuração de preço não
      * existe, e nenhuma funcionalidade depende deste valor.
      */
     public function estimatedCost(): ?float

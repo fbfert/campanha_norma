@@ -11,12 +11,12 @@ use App\Services\Conversations\ConversationReplyService;
 use App\Services\SystemSettingService;
 
 /**
- * Porta unica antes de enviar uma sugestao.
+ * Porta única antes de enviar uma sugestão.
  *
  * `canSend` cobre o que vale para qualquer envio, inclusive aprovado por
- * humano. `canAutoSend` acrescenta as condicoes exclusivas do autoenvio.
+ * humano. `canAutoSend` acrescenta as condições exclusivas do autoenvio.
  *
- * Toda recusa devolve um motivo especifico, que e registrado.
+ * Toda recusa devolve um motivo específico, que e registrado.
  */
 class SuggestionSendGuard
 {
@@ -29,7 +29,7 @@ class SuggestionSendGuard
     ) {}
 
     /**
-     * Condicoes comuns a qualquer envio de sugestao.
+     * Condições comuns a qualquer envio de sugestão.
      *
      * @return array{allowed: bool, reason: ?string}
      */
@@ -47,7 +47,7 @@ class SuggestionSendGuard
             return $this->deny('sugestao_expirada');
         }
 
-        // Obsolescencia por fato: chegou mensagem nova depois da que originou.
+        // Obsolescência por fato: chegou mensagem nova depois da que originou.
         if ($suggestion->isStale()) {
             return $this->deny('sugestao_obsoleta');
         }
@@ -74,16 +74,16 @@ class SuggestionSendGuard
             return $this->deny('mensagem_pendente_existente');
         }
 
-        // O texto final, editado ou nao, precisa passar pelo validador.
+        // O texto final, editado ou não, precisa passar pelo validador.
         $validation = $this->validator->validate($suggestion->outgoingText());
         if (! $validation['valid']) {
             return $this->deny('texto_reprovado:'.implode(',', $validation['errors']));
         }
 
-        // Etapa 9D. Sugestao reprovada na fundamentacao ja nasce bloqueada, entao
-        // esta condicao so e alcancada se alguem reabrir a sugestao depois. E
+        // Etapa 9D. Sugestão reprovada na fundamentação já nasce bloqueada, então
+        // esta condição so e alcançada se alguém reabrir a sugestão depois. E
         // exatamente por isso que ela existe: o veredito grava o motivo na linha,
-        // e a porta de envio confere a linha, nao a memoria de quem gerou.
+        // e a porta de envio confere a linha, não a memória de quem gerou.
         if ($suggestion->grounding_status !== null && ! $suggestion->grounding_status->allowsSending()) {
             return $this->deny('fundamentacao_reprovada:'.$suggestion->grounding_status->value);
         }
@@ -92,7 +92,7 @@ class SuggestionSendGuard
     }
 
     /**
-     * Condicoes exclusivas do autoenvio, alem de todas as anteriores.
+     * Condições exclusivas do autoenvio, além de todas as anteriores.
      *
      * @return array{allowed: bool, reason: ?string}
      */
@@ -133,8 +133,8 @@ class SuggestionSendGuard
             }
         }
 
-        // Conversa assumida por uma pessoa nao recebe envio automatico, a menos
-        // que a automacao esteja explicitamente autorizada nesse caso.
+        // Conversa assumida por uma pessoa não recebe envio automático, a menos
+        // que a automação esteja explicitamente autorizada nesse caso.
         $assigned = $suggestion->conversation?->assigned_user_id;
         $allowAssigned = (bool) $this->settings->get('ai.response.auto_send_when_assigned', '0');
         if ($assigned !== null && ! $allowAssigned) {

@@ -38,8 +38,8 @@ class InsightTopicController extends Controller
 
     public function store(InsightTopicRequest $request, AuditLogger $audit): RedirectResponse
     {
-        // array_merge, nao `+`: o operador de uniao preservaria o valor cru do
-        // formulario e ignoraria estes ajustes.
+        // array_merge, não `+`: o operador de união preservaria o valor cru do
+        // formulário e ignoraria estes ajustes.
         $topic = InsightTopic::create(array_merge($request->validated(), [
             'is_active' => $request->boolean('is_active'),
             'is_fallback' => false,
@@ -71,7 +71,7 @@ class InsightTopicController extends Controller
         $data = $request->validated();
 
         // O tema de fallback nunca pode ser desativado: ele e o destino
-        // obrigatorio de qualquer saida nao reconhecida do modelo.
+        // obrigatório de qualquer saída não reconhecida do modelo.
         $isActive = $insightTopic->is_fallback ? true : $request->boolean('is_active');
 
         $insightTopic->update(array_merge($data, [
@@ -91,19 +91,19 @@ class InsightTopicController extends Controller
         abort_unless($request->user()->can('ai_insights.manage_taxonomy'), 403);
 
         if ($insightTopic->is_fallback) {
-            return back()->with('error', 'O tema de fallback nao pode ser excluido.');
+            return back()->with('error', 'O tema de fallback não pode ser excluído.');
         }
 
         if ($insightTopic->isInUse()) {
-            return back()->with('error', 'Este tema ja foi utilizado e nao pode ser excluido. Desative-o.');
+            return back()->with('error', 'Este tema já foi utilizado e não pode ser excluído. Desative-o.');
         }
 
         $slug = $insightTopic->slug;
         $insightTopic->delete();
 
-        $audit->log('ai_insights.topic_deleted', 'Tema de insight excluido.', null, ['slug' => $slug], null, $request->user());
+        $audit->log('ai_insights.topic_deleted', 'Tema de insight excluído.', null, ['slug' => $slug], null, $request->user());
 
-        return redirect()->route('admin.insight-topics.index')->with('success', 'Tema excluido.');
+        return redirect()->route('admin.insight-topics.index')->with('success', 'Tema excluído.');
     }
 
     private function parentOptions(?int $exceptId = null)

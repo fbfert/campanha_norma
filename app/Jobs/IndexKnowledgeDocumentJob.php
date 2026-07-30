@@ -12,11 +12,11 @@ use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Cache;
 
 /**
- * Indexa um documento em fila propria.
+ * Indexa um documento em fila própria.
  *
- * A fila e separada de proposito: um PDF de duzentas paginas nunca deve atrasar
- * o registro de mensagens recebidas, a automacao deterministica, a interpretacao
- * ou a geracao de respostas.
+ * A fila e separada de propósito: um PDF de duzentas páginas nunca deve atrasar
+ * o registro de mensagens recebidas, a automação determinística, a interpretação
+ * ou a geração de respostas.
  */
 class IndexKnowledgeDocumentJob implements ShouldQueue
 {
@@ -43,7 +43,7 @@ class IndexKnowledgeDocumentJob implements ShouldQueue
         }
 
         // Uma trava por documento: reprocessar duas vezes em paralelo produziria
-        // duas reconstrucoes de trecho concorrentes sobre a mesma linha.
+        // duas reconstruções de trecho concorrentes sobre a mesma linha.
         $lock = Cache::lock("knowledge-indexing:{$document->id}", 600);
 
         if (! $lock->get()) {
@@ -55,8 +55,8 @@ class IndexKnowledgeDocumentJob implements ShouldQueue
         try {
             $indexing->index($document);
         } catch (KnowledgeProviderException $exception) {
-            // Falha nao retentavel encerra aqui: o documento ja foi marcado como
-            // `failed` com codigo, e repetir nao muda o resultado.
+            // Falha não retentável encerra aqui: o documento já foi marcado como
+            // `failed` com código, e repetir não muda o resultado.
             if (! $exception->isRetryable()) {
                 return;
             }

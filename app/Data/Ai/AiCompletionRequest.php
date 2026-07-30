@@ -3,10 +3,10 @@
 namespace App\Data\Ai;
 
 /**
- * Requisicao de completude estruturada, independente de fornecedor.
+ * Requisição de completude estruturada, independente de fornecedor.
  *
- * Nao carrega chave, cabecalho ou qualquer credencial: essas vivem apenas na
- * configuracao do provedor.
+ * Não carrega chave, cabeçalho ou qualquer credencial: essas vivem apenas na
+ * configuração do provedor.
  */
 readonly class AiCompletionRequest
 {
@@ -24,8 +24,8 @@ readonly class AiCompletionRequest
     ) {}
 
     /**
-     * Hash estavel da requisicao, usado para deduplicacao e correlacao.
-     * Nao inclui credencial nem identificador de conversa.
+     * Hash estável da requisição, usado para deduplicação e correlação.
+     * Não inclui credencial nem identificador de conversa.
      */
     public function hash(string $purpose, string $promptVersion, int $schemaVersion, string $model): string
     {

@@ -23,7 +23,7 @@ class ConversationInsightFactory extends Factory
             'source_message_id' => ConversationMessage::factory(),
             'insight_topic_id' => InsightTopic::factory(),
             'main_topic_raw' => 'saude',
-            'summary' => 'A pessoa relatou demora no atendimento do posto de saude.',
+            'summary' => 'A pessoa relatou demora no atendimento do posto de saúde.',
             'identified_problem' => 'Demora no atendimento',
             'suggested_action' => 'Ampliar equipe do posto',
             'desired_result' => 'Atendimento mais rapido',

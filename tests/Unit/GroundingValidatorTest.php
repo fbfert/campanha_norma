@@ -15,10 +15,10 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 /**
- * Subetapa 9D: validacao de fundamentacao.
+ * Subetapa 9D: validação de fundamentação.
  *
- * Esta classe existe para o caso em que o modelo afirma estar fundamentado e nao
- * esta. Cada teste aqui e um jeito diferente de mentir sobre evidencia.
+ * Esta classe existe para o caso em que o modelo afirma estar fundamentado e não
+ * esta. Cada teste aqui e um jeito diferente de mentir sobre evidência.
  */
 class GroundingValidatorTest extends TestCase
 {
@@ -74,7 +74,7 @@ class GroundingValidatorTest extends TestCase
         return [['document_id' => $documentId, 'chunk_id' => $reference, 'page' => null, 'section' => null]];
     }
 
-    // --- Aprovacao -----------------------------------------------------------
+    // --- Aprovação -----------------------------------------------------------
 
     public function test_factual_answer_supported_by_the_cited_excerpt_is_grounded(): void
     {
@@ -100,7 +100,7 @@ class GroundingValidatorTest extends TestCase
         $verdict = $this->validator()->validate(
             'Obrigada por explicar. O que mais pesa hoje no seu dia a dia?',
             [],
-            $this->retrieval($document, 'Conteudo qualquer.'),
+            $this->retrieval($document, 'Conteúdo qualquer.'),
             false,
         );
 
@@ -120,10 +120,10 @@ class GroundingValidatorTest extends TestCase
             true,
         );
 
-        $this->assertSame(GroundingStatus::Grounded, $verdict->status, 'Reprovar por formatacao produziria handoff onde havia evidencia.');
+        $this->assertSame(GroundingStatus::Grounded, $verdict->status, 'Reprovar por formatação produziria handoff onde havia evidência.');
     }
 
-    // --- Reprovacao ----------------------------------------------------------
+    // --- Reprovação ----------------------------------------------------------
 
     public function test_factual_answer_without_any_citation_is_refused(): void
     {
@@ -132,7 +132,7 @@ class GroundingValidatorTest extends TestCase
         $verdict = $this->validator()->validate(
             'A professora norma apresentou o projeto de lei em 2024.',
             [],
-            $this->retrieval($document, 'Conteudo sem relacao.'),
+            $this->retrieval($document, 'Conteúdo sem relação.'),
             false,
         );
 
@@ -151,7 +151,7 @@ class GroundingValidatorTest extends TestCase
             true,
         );
 
-        // A referencia nao existe, mas o documento esta no conjunto: o modelo
+        // A referência não existe, mas o documento esta no conjunto: o modelo
         // acertou a fonte e errou o identificador interno, e isso e aceito.
         $this->assertSame(GroundingStatus::Grounded, $verdict->status);
     }
@@ -178,7 +178,7 @@ class GroundingValidatorTest extends TestCase
         $verdict = $this->validator()->validate(
             'O atendimento acontece as segundas.',
             $this->cite($obsolete->id),
-            $this->retrieval($obsolete, 'Texto que ja foi oficial.'),
+            $this->retrieval($obsolete, 'Texto que já foi oficial.'),
             true,
         );
 
@@ -204,7 +204,7 @@ class GroundingValidatorTest extends TestCase
     public function test_number_absent_from_the_cited_excerpt_is_refused(): void
     {
         $document = $this->document();
-        $retrieval = $this->retrieval($document, 'A proposta trata da ampliacao da rede estadual de ensino.');
+        $retrieval = $this->retrieval($document, 'A proposta trata da ampliação da rede estadual de ensino.');
 
         $verdict = $this->validator()->validate(
             'A proposta preve 4200 novas vagas.',
@@ -220,7 +220,7 @@ class GroundingValidatorTest extends TestCase
     public function test_date_absent_from_the_cited_excerpt_is_refused(): void
     {
         $document = $this->document();
-        $retrieval = $this->retrieval($document, 'A proposta trata da ampliacao da rede estadual de ensino.');
+        $retrieval = $this->retrieval($document, 'A proposta trata da ampliação da rede estadual de ensino.');
 
         $verdict = $this->validator()->validate(
             'A proposta foi apresentada em 12/03/2025.',
@@ -235,7 +235,7 @@ class GroundingValidatorTest extends TestCase
     public function test_commitment_without_explicit_support_is_refused(): void
     {
         $document = $this->document();
-        $retrieval = $this->retrieval($document, 'A professora norma atua na comissao de educacao da casa.');
+        $retrieval = $this->retrieval($document, 'A professora norma atua na comissão de educação da casa.');
 
         $verdict = $this->validator()->validate(
             'A professora norma vai construir uma escola no seu bairro.',
@@ -254,15 +254,15 @@ class GroundingValidatorTest extends TestCase
 
         $retrieval = new RetrievalResult(
             [
-                new RetrievedChunk(1, $document->id, $this->base->id, $document->title, 1, 'A rede tem 30 escolas na regiao sul.', 0.9, externalChunkId: 'c1'),
-                new RetrievedChunk(2, $document->id, $this->base->id, $document->title, 1, 'A rede tem 45 escolas na regiao norte.', 0.8, externalChunkId: 'c2'),
+                new RetrievedChunk(1, $document->id, $this->base->id, $document->title, 1, 'A rede tem 30 escolas na região sul.', 0.9, externalChunkId: 'c1'),
+                new RetrievedChunk(2, $document->id, $this->base->id, $document->title, 1, 'A rede tem 45 escolas na região norte.', 0.8, externalChunkId: 'c2'),
             ],
             RetrievalStrategy::Lexical,
             candidateCount: 2,
         );
 
         $verdict = $this->validator()->validate(
-            'A rede tem 75 escolas nas duas regioes.',
+            'A rede tem 75 escolas nas duas regiões.',
             [
                 ['document_id' => $document->id, 'chunk_id' => 'c1', 'page' => null, 'section' => null],
                 ['document_id' => $document->id, 'chunk_id' => 'c2', 'page' => null, 'section' => null],
@@ -271,7 +271,7 @@ class GroundingValidatorTest extends TestCase
             true,
         );
 
-        $this->assertSame(GroundingStatus::UnsupportedNumber, $verdict->status, 'Somar dois trechos nao produz evidencia.');
+        $this->assertSame(GroundingStatus::UnsupportedNumber, $verdict->status, 'Somar dois trechos não produz evidência.');
     }
 
     public function test_page_and_section_come_from_the_retrieved_chunk_not_from_the_model(): void
@@ -286,7 +286,7 @@ class GroundingValidatorTest extends TestCase
 
         $verdict = $this->validator()->validate(
             'O atendimento acontece as segundas.',
-            [['document_id' => $document->id, 'chunk_id' => 'c1', 'page' => 999, 'section' => 'Secao inventada']],
+            [['document_id' => $document->id, 'chunk_id' => 'c1', 'page' => 999, 'section' => 'Seção inventada']],
             $retrieval,
             true,
         );

@@ -48,7 +48,7 @@ class ConversationFlowStateController extends Controller
         abort_unless($request->user()->can('conversation_automation.control'), 403);
         $flows->pause($state, $request->user());
 
-        return back()->with('success', 'Automacao pausada.');
+        return back()->with('success', 'Automação pausada.');
     }
 
     public function resume(Request $request, ConversationFlowState $state, ConversationFlowService $flows): RedirectResponse
@@ -56,7 +56,7 @@ class ConversationFlowStateController extends Controller
         abort_unless($request->user()->can('conversation_automation.control'), 403);
         $flows->resume($state, $request->user());
 
-        return back()->with('success', 'Automacao retomada.');
+        return back()->with('success', 'Automação retomada.');
     }
 
     public function finish(Request $request, ConversationFlowState $state, ConversationFlowService $flows): RedirectResponse
@@ -64,7 +64,7 @@ class ConversationFlowStateController extends Controller
         abort_unless($request->user()->can('conversation_automation.control'), 403);
         $flows->finishManually($state, $request->user());
 
-        return back()->with('success', 'Automacao encerrada.');
+        return back()->with('success', 'Automação encerrada.');
     }
 
     public function takeOver(Request $request, ConversationFlowState $state, ConversationFlowService $flows): RedirectResponse

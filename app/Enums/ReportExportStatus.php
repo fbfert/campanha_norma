@@ -16,7 +16,7 @@ enum ReportExportStatus: string
         return match ($this) {
             self::Pending => 'Pendente',
             self::Processing => 'Processando',
-            self::Completed => 'Concluida',
+            self::Completed => 'Concluída',
             self::Failed => 'Falhou',
             self::Expired => 'Expirada',
             self::Cancelled => 'Cancelada',

@@ -42,8 +42,8 @@ class WhatsAppConnectionService
     public function connect(User $user, Request $request): ConnectionResult
     {
         $result = $this->manager->provider()->connect();
-        $this->syncResult($result, 'connect_requested', 'Inicializacao da conexao WhatsApp solicitada.', $user, $request);
-        $this->audit->log('whatsapp.connect_requested', 'Inicializacao da conexao WhatsApp solicitada.', $this->connection($user), null, ['status' => $result->status->value], $user, $request);
+        $this->syncResult($result, 'connect_requested', 'Inicialização da conexão WhatsApp solicitada.', $user, $request);
+        $this->audit->log('whatsapp.connect_requested', 'Inicialização da conexão WhatsApp solicitada.', $this->connection($user), null, ['status' => $result->status->value], $user, $request);
 
         return $result;
     }
@@ -51,8 +51,8 @@ class WhatsAppConnectionService
     public function reconnect(User $user, Request $request): ConnectionResult
     {
         $result = $this->manager->provider()->reconnect();
-        $this->syncResult($result, 'reconnect_requested', 'Reconexao WhatsApp solicitada.', $user, $request);
-        $this->audit->log('whatsapp.reconnect_requested', 'Reconexao WhatsApp solicitada.', $this->connection($user), null, ['status' => $result->status->value], $user, $request);
+        $this->syncResult($result, 'reconnect_requested', 'Reconexão WhatsApp solicitada.', $user, $request);
+        $this->audit->log('whatsapp.reconnect_requested', 'Reconexão WhatsApp solicitada.', $this->connection($user), null, ['status' => $result->status->value], $user, $request);
 
         return $result;
     }
@@ -60,8 +60,8 @@ class WhatsAppConnectionService
     public function disconnect(User $user, Request $request): ConnectionResult
     {
         $result = $this->manager->provider()->disconnect();
-        $this->syncResult($result, 'disconnect_requested', 'Desconexao WhatsApp solicitada.', $user, $request);
-        $this->audit->log('whatsapp.disconnect_requested', 'Desconexao WhatsApp solicitada.', $this->connection($user), null, ['status' => $result->status->value], $user, $request);
+        $this->syncResult($result, 'disconnect_requested', 'Desconexão WhatsApp solicitada.', $user, $request);
+        $this->audit->log('whatsapp.disconnect_requested', 'Desconexão WhatsApp solicitada.', $this->connection($user), null, ['status' => $result->status->value], $user, $request);
 
         return $result;
     }
@@ -69,8 +69,8 @@ class WhatsAppConnectionService
     public function clearSession(User $user, Request $request): ConnectionResult
     {
         $result = $this->manager->provider()->clearSession();
-        $this->syncResult($result, 'session_clear_requested', 'Exclusao da sessao WhatsApp solicitada.', $user, $request);
-        $this->audit->log('whatsapp.session_clear_requested', 'Exclusao da sessao WhatsApp solicitada.', $this->connection($user), null, ['status' => $result->status->value], $user, $request);
+        $this->syncResult($result, 'session_clear_requested', 'Exclusão da sessão WhatsApp solicitada.', $user, $request);
+        $this->audit->log('whatsapp.session_clear_requested', 'Exclusão da sessão WhatsApp solicitada.', $this->connection($user), null, ['status' => $result->status->value], $user, $request);
 
         return $result;
     }

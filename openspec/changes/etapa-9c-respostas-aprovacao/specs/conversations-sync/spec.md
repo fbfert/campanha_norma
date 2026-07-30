@@ -1,7 +1,7 @@
 ## MODIFIED Requirements
 
 ### Requirement: Manual-Only Continuation
-The module SHALL NOT implement a general purpose chatbot, keyword flows, media download, groups, broadcast lists, channels, multiple accounts or Meta Cloud API behavior.
+The module SHALL NOT implement a general purpose chatbot, keyword flows, média download, groups, broadcast lists, channels, multiple accounts or Meta Cloud API behavior.
 
 Automatic outgoing messages SHALL exist only inside the conversational survey flow and SHALL be limited to: the survey question drawn by the deterministic flow, the configured acknowledgement and closing texts, and replies generated with artificial intelligence assistance that were explicitly approved by a human or sent under the limited automatic sending guards.
 

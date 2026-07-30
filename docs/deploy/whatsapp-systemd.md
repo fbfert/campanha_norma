@@ -1,8 +1,8 @@
 # systemd - WhatsApp Service
 
-O Apache continua servindo apenas o Laravel. O servico Node.js deve escutar somente em `127.0.0.1`.
+O Apache continua servindo apenas o Laravel. O serviço Node.js deve escutar somente em `127.0.0.1`.
 
-Exemplo disponivel em:
+Exemplo disponível em:
 
 ```text
 whatsapp-service/deploy/gerenciador-whatsapp.service

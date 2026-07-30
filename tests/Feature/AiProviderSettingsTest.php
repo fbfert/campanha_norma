@@ -16,10 +16,10 @@ use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
 /**
- * Configuracao do provedor de IA pela tela.
+ * Configuração do provedor de IA pela tela.
  *
- * O que estes testes protegem, acima de tudo: a credencial entra e nao volta.
- * Nao volta para a tela, nao volta para a auditoria e nao fica legivel no banco.
+ * O que estes testes protegem, acima de tudo: a credencial entra e não volta.
+ * Não volta para a tela, não volta para a auditoria e não fica legível no banco.
  */
 class AiProviderSettingsTest extends TestCase
 {
@@ -60,7 +60,7 @@ class AiProviderSettingsTest extends TestCase
         ], $overrides);
     }
 
-    // --- Permissao ------------------------------------------------------------
+    // --- Permissão ------------------------------------------------------------
 
     public function test_operator_cannot_open_the_provider_screen(): void
     {
@@ -86,7 +86,7 @@ class AiProviderSettingsTest extends TestCase
         $this->assertDatabaseMissing('system_settings', ['key' => 'ai.key']);
     }
 
-    // --- Gravacao -------------------------------------------------------------
+    // --- Gravação -------------------------------------------------------------
 
     public function test_saving_stores_the_choice_and_encrypts_the_key(): void
     {
@@ -160,8 +160,8 @@ class AiProviderSettingsTest extends TestCase
     }
 
     /**
-     * Chave que nao decifra e chave inexistente. Fingir que existe produziria
-     * uma falha de autenticacao la na frente, longe da causa real.
+     * Chave que não decifra e chave inexistente. Fingir que existe produziria
+     * uma falha de autenticação la na frente, longe da causa real.
      */
     public function test_a_key_that_does_not_decrypt_is_treated_as_absent(): void
     {
@@ -179,7 +179,7 @@ class AiProviderSettingsTest extends TestCase
         $this->assertNull($settings->hint('ai.key'));
     }
 
-    // --- Efeito na configuracao ----------------------------------------------
+    // --- Efeito na configuração ----------------------------------------------
 
     public function test_the_saved_configuration_overrides_the_environment(): void
     {
@@ -197,7 +197,7 @@ class AiProviderSettingsTest extends TestCase
     }
 
     /**
-     * Quem preferir manter tudo no arquivo de ambiente nao pode ser prejudicado
+     * Quem preferir manter tudo no arquivo de ambiente não pode ser prejudicado
      * por uma tela que nunca foi preenchida.
      */
     public function test_an_empty_screen_leaves_the_environment_untouched(): void
@@ -249,7 +249,7 @@ class AiProviderSettingsTest extends TestCase
         $this->assertSame('sk-embeddings-9999', config('knowledge.embeddings.openai.key'));
     }
 
-    // --- Validacao ------------------------------------------------------------
+    // --- Validação ------------------------------------------------------------
 
     public function test_dimensions_above_the_column_ceiling_are_refused(): void
     {
@@ -277,7 +277,7 @@ class AiProviderSettingsTest extends TestCase
             ->assertSessionHasErrors(['url', 'model']);
     }
 
-    // --- Teste de conexao -----------------------------------------------------
+    // --- Teste de conexão -----------------------------------------------------
 
     public function test_the_connection_test_reports_success_without_leaking_the_key(): void
     {

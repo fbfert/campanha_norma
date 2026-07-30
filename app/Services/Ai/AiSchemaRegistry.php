@@ -11,11 +11,11 @@ use App\Services\SystemSettingService;
 use RuntimeException;
 
 /**
- * Schemas JSON por finalidade e versao.
+ * Schemas JSON por finalidade e versão.
  *
  * O mesmo schema e enviado ao provedor e aplicado localmente pelo validador.
- * Nenhum campo para atributo sensivel existe aqui: a ausencia do campo e a
- * garantia estrutural de que o modelo nao tem onde escrever esse dado.
+ * Nenhum campo para atributo sensível existe aqui: a ausência do campo e a
+ * garantia estrutural de que o modelo não tem onde escrever esse dado.
  */
 class AiSchemaRegistry
 {
@@ -33,8 +33,8 @@ class AiSchemaRegistry
     }
 
     /**
-     * Versao do schema usada quando a resposta e fundamentada em base aprovada.
-     * Chave propria pelo mesmo motivo do prompt fundamentado.
+     * Versão do schema usada quando a resposta e fundamentada em base aprovada.
+     * Chave própria pelo mesmo motivo do prompt fundamentado.
      */
     public function activeGroundedResponseVersion(): int
     {
@@ -62,7 +62,7 @@ class AiSchemaRegistry
     private function classification(int $version): array
     {
         if ($version !== 1) {
-            throw new RuntimeException("Versao de schema de classificacao nao suportada: {$version}.");
+            throw new RuntimeException("Versão de schema de classificação não suportada: {$version}.");
         }
 
         return [
@@ -79,8 +79,8 @@ class AiSchemaRegistry
     }
 
     /**
-     * Schema da resposta gerada. Nao existe campo para dado factual sobre a
-     * pessoa representada: sem base aprovada, o modelo nao tem onde inventar.
+     * Schema da resposta gerada. Não existe campo para dado factual sobre a
+     * pessoa representada: sem base aprovada, o modelo não tem onde inventar.
      *
      * @return array<string, mixed>
      */
@@ -89,7 +89,7 @@ class AiSchemaRegistry
         return match ($version) {
             1 => $this->responseV1(),
             2 => $this->responseV2(),
-            default => throw new RuntimeException("Versao de schema de resposta nao suportada: {$version}."),
+            default => throw new RuntimeException("Versão de schema de resposta não suportada: {$version}."),
         };
     }
 
@@ -115,9 +115,9 @@ class AiSchemaRegistry
     /**
      * Resposta fundamentada em base aprovada.
      *
-     * `grounded` e `citations` sao devolvidos pelo modelo como declaracao, e a
-     * validacao de fundamentacao confere depois se ela se sustenta. Nao existe
-     * campo para o modelo afirmar que dispensa evidencia.
+     * `grounded` e `citations` são devolvidos pelo modelo como declaração, e a
+     * validação de fundamentação confere depois se ela se sustenta. Não existe
+     * campo para o modelo afirmar que dispensa evidência.
      *
      * @return array<string, mixed>
      */
@@ -146,10 +146,10 @@ class AiSchemaRegistry
                         'properties' => [
                             'document_id' => ['type' => 'integer', 'minimum' => 1],
                             'chunk_id' => ['type' => 'string', 'maxLength' => 120],
-                            // Pagina e secao existem no contrato para o modelo
-                            // poder ecoar o que leu. O valor gravado na citacao vem
-                            // do trecho recuperado, nao daqui: metadado de
-                            // procedencia nao e escolha do modelo.
+                            // Página e seção existem no contrato para o modelo
+                            // poder ecoar o que leu. O valor gravado na citação vem
+                            // do trecho recuperado, não daqui: metadado de
+                            // procedência não e escolha do modelo.
                             'page' => ['type' => ['integer', 'null'], 'minimum' => 1],
                             'section' => ['type' => ['string', 'null'], 'maxLength' => 255],
                         ],
@@ -166,7 +166,7 @@ class AiSchemaRegistry
     private function extraction(int $version): array
     {
         if ($version !== 1) {
-            throw new RuntimeException("Versao de schema de extracao nao suportada: {$version}.");
+            throw new RuntimeException("Versão de schema de extração não suportada: {$version}.");
         }
 
         return [

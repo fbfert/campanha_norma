@@ -14,10 +14,10 @@ use Tests\TestCase;
 /**
  * Manual de uso e mapa mental.
  *
- * O risco de uma documentacao dentro do sistema nao e estar feia: e envelhecer
- * sem ninguem perceber. Um manual que afirma "o limite e tres mensagens" vira
- * mentira no dia em que alguem muda a configuracao, e mentira em manual e pior
- * do que ausencia de manual, porque quem le confia.
+ * O risco de uma documentação dentro do sistema não e estar feia: e envelhecer
+ * sem ninguém perceber. Um manual que afirma "o limite e três mensagens" vira
+ * mentira no dia em que alguém muda a configuração, e mentira em manual e pior
+ * do que ausência de manual, porque quem le confia.
  */
 class ManualTest extends TestCase
 {
@@ -56,8 +56,8 @@ class ManualTest extends TestCase
     }
 
     /**
-     * Documentacao atras de permissao esconde o manual justamente de quem esta
-     * comecando. O perfil mais restrito precisa conseguir ler.
+     * Documentação atrás de permissão esconde o manual justamente de quem esta
+     * começando. O perfil mais restrito precisa conseguir ler.
      */
     public function test_the_most_restricted_profile_can_read_the_manual(): void
     {
@@ -85,11 +85,11 @@ class ManualTest extends TestCase
             ->assertSee(route('manual.mind-map'), false);
     }
 
-    // --- O manual nao pode mentir --------------------------------------------
+    // --- O manual não pode mentir --------------------------------------------
 
     /**
      * Este e o teste que importa. O limite mostrado no manual tem de ser o
-     * limite configurado, e nao um numero escrito no texto no dia em que a tela
+     * limite configurado, e não um número escrito no texto no dia em que a tela
      * foi feita.
      */
     public function test_the_manual_shows_the_configured_limits_and_not_a_written_number(): void
@@ -103,7 +103,7 @@ class ManualTest extends TestCase
         Cache::flush();
 
         // Procura o valor no lugar exato onde ele e apresentado. `assertSee('7')`
-        // passaria com qualquer sete perdido na pagina.
+        // passaria com qualquer sete perdido na página.
         $this->actingAs($this->userWith('administrador'))
             ->get(route('manual.index'))
             ->assertOk()
@@ -112,9 +112,9 @@ class ManualTest extends TestCase
     }
 
     /**
-     * Automacao e envio automatico sao dois interruptores separados, e o manual
-     * explica isso. Se o estado mostrado nao acompanhar a configuracao, a
-     * explicacao perde o valor.
+     * Automação e envio automático são dois interruptores separados, e o manual
+     * explica isso. Se o estado mostrado não acompanhar a configuração, a
+     * explicação perde o valor.
      */
     public function test_the_manual_reports_the_current_state_of_the_switches(): void
     {
@@ -129,8 +129,8 @@ class ManualTest extends TestCase
     }
 
     /**
-     * O aviso de mensagem automatica e configuravel. O manual mostra o texto
-     * que esta valendo, e nao uma copia dele.
+     * O aviso de mensagem automática e configurável. O manual mostra o texto
+     * que esta valendo, e não uma copia dele.
      */
     public function test_the_manual_shows_the_configured_transparency_notice(): void
     {
@@ -145,13 +145,13 @@ class ManualTest extends TestCase
             ->assertSee('Aviso escolhido pela equipe.');
     }
 
-    // --- Manual e mapa contam a mesma historia -------------------------------
+    // --- Manual e mapa contam a mesma história -------------------------------
 
     /**
-     * O roteiro vive no controlador e alimenta as duas telas. Se uma secao for
+     * O roteiro vive no controlador e alimenta as duas telas. Se uma seção for
      * acrescentada la sem ganhar texto no manual, o link do mapa cai num
-     * pedaco de pagina que nao existe - e ninguem descobre, porque ancora
-     * quebrada nao da erro.
+     * pedaço de página que não existe - e ninguém descobre, porque ancora
+     * quebrada não da erro.
      */
     public function test_every_branch_of_the_mind_map_lands_somewhere_in_the_manual(): void
     {
@@ -162,20 +162,20 @@ class ManualTest extends TestCase
 
         preg_match_all('/'.preg_quote(route('manual.index'), '/').'#([a-z-]+)/', $map, $matches);
 
-        $this->assertNotEmpty($matches[1], 'O mapa mental precisa apontar para as secoes do manual.');
+        $this->assertNotEmpty($matches[1], 'O mapa mental precisa apontar para as seções do manual.');
 
         foreach (array_unique($matches[1]) as $anchor) {
             $this->assertStringContainsString(
                 'id="'.$anchor.'"',
                 $manual,
-                "O mapa aponta para a secao '{$anchor}', que nao existe no manual."
+                "O mapa aponta para a seção '{$anchor}', que não existe no manual."
             );
         }
     }
 
     /**
-     * O indice do manual e gerado do mesmo roteiro. Mesma verificacao, outro
-     * caminho: nenhum item do indice pode levar a lugar nenhum.
+     * O índice do manual e gerado do mesmo roteiro. Mesma verificação, outro
+     * caminho: nenhum item do índice pode levar a lugar nenhum.
      */
     public function test_every_entry_in_the_table_of_contents_has_a_section(): void
     {
@@ -194,7 +194,7 @@ class ManualTest extends TestCase
     }
 
     /**
-     * O mapa e desenhado com CSS sobre uma lista aninhada. Se alguem trocar por
+     * O mapa e desenhado com CSS sobre uma lista aninhada. Se alguém trocar por
      * imagem ou biblioteca, ele deixa de ser lido por leitor de tela e passa a
      * depender de rede.
      */
@@ -224,7 +224,7 @@ class ManualTest extends TestCase
                 $this->assertStringContainsString(
                     '<g id="i-'.$name.'">',
                     $sprite,
-                    "O manual usa o icone '{$name}', que nao existe no sprite."
+                    "O manual usa o icone '{$name}', que não existe no sprite."
                 );
             }
         }

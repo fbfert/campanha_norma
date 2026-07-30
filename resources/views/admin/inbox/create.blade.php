@@ -2,7 +2,7 @@
     <section class="card">
         <div class="actions" style="justify-content:space-between;align-items:flex-start;">
             <div>
-                <h2 style="margin-top:0;">Com quem voce quer falar?</h2>
+                <h2 style="margin-top:0;">Com quem você quer falar?</h2>
                 <p class="muted">
                     Escolher um contato abre a conversa. Nada e enviado agora &mdash; a primeira
                     mensagem e escrita na tela seguinte.
@@ -82,8 +82,8 @@
                         <th>Telefone</th>
                         <th>Cidade</th>
                         <th>Etiquetas</th>
-                        <th>Situacao</th>
-                        <th>Ultimo contato</th>
+                        <th>Situação</th>
+                        <th>Último contato</th>
                         <th></th>
                     </tr>
                 </thead>
@@ -91,11 +91,11 @@
                 @foreach($contacts as $contact)
                     @php
                         // Um contato so pode receber conversa se estiver ativo,
-                        // nao marcado como nao contatar e com telefone valido.
-                        // O motivo aparece na propria linha: se o botao some sem
-                        // explicacao, quem esta operando acha que e defeito.
+                        // não marcado como não contatar e com telefone valido.
+                        // O motivo aparece na própria linha: se o botão some sem
+                        // explicação, quem esta operando acha que e defeito.
                         $impedimento = match (true) {
-                            $contact->do_not_contact => 'Marcado como nao contatar',
+                            $contact->do_not_contact => 'Marcado como não contatar',
                             $contact->status !== \App\Enums\ContactStatus::Active => 'Contato '.strtolower($contact->status->label()),
                             blank($contact->phone_normalized) => 'Sem telefone valido',
                             default => null,
@@ -123,7 +123,7 @@
                         <td>{{ $contact->last_contacted_at?->format($dateTimeFormat) ?? '-' }}</td>
                         <td class="actions">
                             @if($impedimento)
-                                <button class="btn secondary" type="button" disabled title="{{ $impedimento }}">Nao disponivel</button>
+                                <button class="btn secondary" type="button" disabled title="{{ $impedimento }}">Não disponível</button>
                             @else
                                 <form method="post" action="{{ route('admin.conversations.store') }}">
                                     @csrf

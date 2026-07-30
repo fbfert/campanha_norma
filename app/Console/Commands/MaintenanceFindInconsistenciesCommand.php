@@ -9,7 +9,7 @@ class MaintenanceFindInconsistenciesCommand extends Command
 {
     protected $signature = 'maintenance:find-inconsistencies';
 
-    protected $description = 'Lista inconsistencias operacionais conhecidas.';
+    protected $description = 'Lista inconsistências operacionais conhecidas.';
 
     public function handle(MonitoringService $monitoring): int
     {

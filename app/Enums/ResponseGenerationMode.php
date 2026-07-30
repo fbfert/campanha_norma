@@ -3,7 +3,7 @@
 namespace App\Enums;
 
 /**
- * Modos de operacao da geracao de respostas.
+ * Modos de operação da geração de respostas.
  *
  * Ordenados por permissividade. O modo efetivo e sempre o MENOR entre o global
  * e o do fluxo: um fluxo pode restringir, nunca ampliar.
@@ -20,7 +20,7 @@ enum ResponseGenerationMode: string
         return match ($this) {
             self::Disabled => 'Desligado',
             self::DraftOnly => 'Apenas rascunho',
-            self::ApprovalRequired => 'Aprovacao obrigatoria',
+            self::ApprovalRequired => 'Aprovação obrigatória',
             self::AutoSendLimited => 'Autoenvio limitado',
         };
     }
@@ -37,7 +37,7 @@ enum ResponseGenerationMode: string
     }
 
     /**
-     * Resolucao do modo efetivo. O nulo do fluxo significa herdar o global.
+     * Resolução do modo efetivo. O nulo do fluxo significa herdar o global.
      */
     public static function effective(self $global, ?self $flow): self
     {

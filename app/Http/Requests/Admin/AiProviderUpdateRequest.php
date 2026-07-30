@@ -45,12 +45,12 @@ class AiProviderUpdateRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'url.url' => 'Informe uma URL completa, comecando por http ou https.',
-            'url.required_with' => 'Escolhido um fornecedor, a URL da API e obrigatoria.',
-            'model.required_with' => 'Escolhido um fornecedor, o modelo e obrigatorio.',
+            'url.url' => 'Informe uma URL completa, começando por http ou https.',
+            'url.required_with' => 'Escolhido um fornecedor, a URL da API e obrigatória.',
+            'model.required_with' => 'Escolhido um fornecedor, o modelo e obrigatório.',
             // O teto vem do tamanho da coluna que guarda o vetor, medido na
-            // ADR 0001. Passar disso trunca o embedding em silencio.
-            'embedding_dimensions.max' => 'O limite da coluna de vetores e 16383 dimensoes.',
+            // ADR 0001. Passar disso trunca o embedding em silêncio.
+            'embedding_dimensions.max' => 'O limite da coluna de vetores e 16383 dimensões.',
         ];
     }
 }

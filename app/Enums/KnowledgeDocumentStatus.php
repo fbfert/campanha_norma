@@ -5,9 +5,9 @@ namespace App\Enums;
 /**
  * Ciclo de vida do documento.
  *
- * A separacao entre `ready` e `approved` e deliberada: indexar e uma operacao
- * tecnica que a fila faz sozinha, aprovar e uma afirmacao de que o conteudo pode
- * ser dito a uma pessoa. Somente `approved` e recuperavel.
+ * A separação entre `ready` e `approved` e deliberada: indexar e uma operação
+ * técnica que a fila faz sozinha, aprovar e uma afirmação de que o conteúdo pode
+ * ser dito a uma pessoa. Somente `approved` e recuperável.
  */
 enum KnowledgeDocumentStatus: string
 {
@@ -24,7 +24,7 @@ enum KnowledgeDocumentStatus: string
         return match ($this) {
             self::Draft => 'Rascunho',
             self::Processing => 'Processando',
-            self::Ready => 'Pronto, aguardando aprovacao',
+            self::Ready => 'Pronto, aguardando aprovação',
             self::Approved => 'Aprovado',
             self::Rejected => 'Rejeitado',
             self::Obsolete => 'Obsoleto',

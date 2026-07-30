@@ -10,8 +10,8 @@ use App\Exceptions\Ai\AiProviderException;
 /**
  * Provedor inerte, ativo quando nenhum fornecedor esta configurado.
  *
- * Falha de forma controlada e sem qualquer chamada de rede, para que a ausencia
- * de configuracao nunca produza um efeito silencioso nem uma tentativa externa.
+ * Falha de forma controlada e sem qualquer chamada de rede, para que a ausência
+ * de configuração nunca produza um efeito silencioso nem uma tentativa externa.
  */
 class NullAiProvider implements AiProvider
 {

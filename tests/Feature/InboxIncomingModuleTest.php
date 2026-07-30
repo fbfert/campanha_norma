@@ -249,7 +249,7 @@ class InboxIncomingModuleTest extends TestCase
         $conversation = Conversation::factory()->create();
 
         $this->actingAs($reader)->get(route('admin.inbox.index'))->assertOk();
-        $this->actingAs($reader)->post(route('admin.inbox.reply', $conversation), ['body' => 'Nao pode'])->assertForbidden();
+        $this->actingAs($reader)->post(route('admin.inbox.reply', $conversation), ['body' => 'Não pode'])->assertForbidden();
     }
 
     public function test_solicitacao_de_sincronizacao_exige_permissao_e_enfileira_job(): void
@@ -457,7 +457,7 @@ class InboxIncomingModuleTest extends TestCase
             public function fetchConversationMessages(string $externalChatId, array $options = []): array
             {
                 if ($externalChatId === '5549888888888@c.us') {
-                    throw new \RuntimeException('chat indisponivel');
+                    throw new \RuntimeException('chat indisponível');
                 }
 
                 return ['messages' => [
@@ -514,7 +514,7 @@ class InboxIncomingModuleTest extends TestCase
         $this->actingAs($admin)
             ->get(route('admin.conversations.show', $conversation))
             ->assertOk()
-            ->assertSee('Telefone nao disponivel')
+            ->assertSee('Telefone não disponível')
             ->assertSee('Identificador do WhatsApp');
     }
 

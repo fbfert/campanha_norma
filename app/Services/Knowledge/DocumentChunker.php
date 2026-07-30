@@ -7,13 +7,13 @@ use App\Services\Knowledge\Extractors\ExtractedText;
 use App\Services\SystemSettingService;
 
 /**
- * Divide o texto extraido em trechos recuperaveis.
+ * Divide o texto extraido em trechos recuperáveis.
  *
  * O corte respeita fronteira de paragrafo quando cabe e fronteira de frase quando
  * o paragrafo e grande. Cortar no meio de uma frase produz trecho que cita mal:
  * a metade recuperada afirma algo que a outra metade qualificava.
  *
- * Tamanho e sobreposicao vem de configuracao.
+ * Tamanho e sobreposição vem de configuração.
  */
 class DocumentChunker
 {
@@ -87,8 +87,8 @@ class DocumentChunker
 
             if ($current !== '') {
                 $chunks[] = $current;
-                // A sobreposicao mantem o fim do trecho anterior no inicio do
-                // proximo, para que uma frase partida ainda apareca inteira em
+                // A sobreposição mantem o fim do trecho anterior no início do
+                // próximo, para que uma frase partida ainda apareça inteira em
                 // algum trecho.
                 $current = $overlap > 0 ? $this->tail($current, $overlap)."\n\n".$unit : $unit;
 
@@ -113,7 +113,7 @@ class DocumentChunker
     }
 
     /**
-     * Paragrafos, quebrados em frases quando o paragrafo nao cabe.
+     * Paragrafos, quebrados em frases quando o paragrafo não cabe.
      *
      * @return array<int, string>
      */
@@ -173,8 +173,8 @@ class DocumentChunker
     }
 
     /**
-     * Secao inferida de titulo Markdown ou de linha curta em caixa alta. Nulo
-     * quando nao ha sinal: metadado errado numa citacao e pior que ausente.
+     * Seção inferida de título Markdown ou de linha curta em caixa alta. Nulo
+     * quando não ha sinal: metadado errado numa citação e pior que ausente.
      */
     private function sectionOf(string $chunk): ?string
     {

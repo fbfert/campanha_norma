@@ -20,9 +20,9 @@ use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 /**
- * Subetapa 9E: exportacao, anonimizacao e retencao.
+ * Subetapa 9E: exportação, anonimização e retenção.
  *
- * O criterio de aceitacao aqui e o arquivo. Nao basta a tela esconder: o que
+ * O critério de aceitação aqui e o arquivo. Não basta a tela esconder: o que
  * sai do sistema em planilha e o que efetivamente circula por e-mail depois.
  */
 class AnalyticsExportTest extends TestCase
@@ -74,14 +74,14 @@ class AnalyticsExportTest extends TestCase
     }
 
     /**
-     * Criterio de aceitacao literal: exportacao agregada nao contem
-     * identificacao.
+     * Critério de aceitação literal: exportação agregada não contem
+     * identificação.
      */
     public function test_the_aggregated_file_carries_no_identification(): void
     {
         $insight = ConversationInsight::factory()->count(6)->create(['conversation_flow_id' => $this->flow->id])->first();
         $contact = $insight->contact;
-        $contact->update(['name' => 'Joana Identificavel', 'phone' => '554999998888']);
+        $contact->update(['name' => 'Joana Identificável', 'phone' => '554999998888']);
 
         $this->actingAs($this->userWith('operador'))->post(route('admin.analytics.export'), [
             'type' => 'topics', 'scope' => 'aggregate', 'format' => 'csv',
@@ -89,7 +89,7 @@ class AnalyticsExportTest extends TestCase
 
         $contents = $this->contents(ReportExport::query()->latest('id')->firstOrFail());
 
-        $this->assertStringNotContainsString('Joana Identificavel', $contents);
+        $this->assertStringNotContainsString('Joana Identificável', $contents);
         $this->assertStringNotContainsString('554999998888', $contents);
         $this->assertStringNotContainsString((string) $contact->id, $contents);
     }
@@ -101,7 +101,7 @@ class AnalyticsExportTest extends TestCase
         $this->actingAs($this->userWith('operador'))
             ->post(route('admin.analytics.export'), [
                 'type' => 'demands', 'scope' => 'detailed', 'format' => 'csv',
-                'purpose' => 'Analisar demandas por regiao para a equipe.',
+                'purpose' => 'Analisar demandas por região para a equipe.',
             ])
             ->assertForbidden();
 
@@ -124,14 +124,14 @@ class AnalyticsExportTest extends TestCase
 
         $this->actingAs($admin)->post(route('admin.analytics.export'), [
             'type' => 'demands', 'scope' => 'detailed', 'format' => 'csv',
-            'purpose' => 'Relatorio interno de demandas para a equipe tecnica.',
+            'purpose' => 'Relatório interno de demandas para a equipe técnica.',
         ])->assertRedirect();
 
         $export = ReportExport::query()->latest('id')->firstOrFail();
 
         $this->assertSame('detailed', $export->scope);
         $this->assertSame($admin->id, $export->user_id);
-        $this->assertStringContainsString('equipe tecnica', (string) $export->purpose);
+        $this->assertStringContainsString('equipe técnica', (string) $export->purpose);
         $this->assertNotNull($export->expires_at);
         $this->assertTrue((bool) $export->anonymized);
 
@@ -142,29 +142,29 @@ class AnalyticsExportTest extends TestCase
     {
         $insight = ConversationInsight::factory()->create([
             'conversation_flow_id' => $this->flow->id,
-            'identified_problem' => 'Falta de remedio no posto',
+            'identified_problem' => 'Falta de remédio no posto',
         ]);
-        $insight->contact->update(['name' => 'Carlos Identificavel', 'phone' => '554991112222']);
+        $insight->contact->update(['name' => 'Carlos Identificável', 'phone' => '554991112222']);
 
         $this->actingAs($this->userWith('administrador'))->post(route('admin.analytics.export'), [
             'type' => 'demands', 'scope' => 'detailed', 'format' => 'csv',
-            'purpose' => 'Conferencia interna das demandas coletadas.',
+            'purpose' => 'Conferência interna das demandas coletadas.',
         ]);
 
         $export = ReportExport::query()->latest('id')->firstOrFail();
         $contents = $this->contents($export);
 
-        // O conteudo da demanda precisa estar la: e para isso que a exportacao existe.
-        $this->assertStringContainsString('Falta de remedio no posto', $contents);
-        // A identificacao nao.
-        $this->assertStringNotContainsString('Carlos Identificavel', $contents);
+        // O conteúdo da demanda precisa estar la: e para isso que a exportação existe.
+        $this->assertStringContainsString('Falta de remédio no posto', $contents);
+        // A identificação não.
+        $this->assertStringNotContainsString('Carlos Identificável', $contents);
         $this->assertStringNotContainsString('554991112222', $contents);
         $this->assertStringContainsString('pseudonimo', $contents);
     }
 
     /**
-     * Duas exportacoes do mesmo periodo nao podem ser cruzadas para
-     * reidentificar alguem. E o que o sal por exportacao garante.
+     * Duas exportações do mesmo período não podem ser cruzadas para
+     * reidentificar alguém. E o que o sal por exportação garante.
      */
     public function test_two_detailed_exports_do_not_share_pseudonyms(): void
     {
@@ -173,7 +173,7 @@ class AnalyticsExportTest extends TestCase
 
         $payload = [
             'type' => 'demands', 'scope' => 'detailed', 'format' => 'csv',
-            'purpose' => 'Conferencia interna das demandas coletadas.',
+            'purpose' => 'Conferência interna das demandas coletadas.',
         ];
 
         $this->actingAs($admin)->post(route('admin.analytics.export'), $payload);
@@ -191,8 +191,8 @@ class AnalyticsExportTest extends TestCase
     }
 
     /**
-     * A defesa que so aparece quando alguem abre o arquivo: uma resposta de
-     * cidadao que comeca com `=` viraria formula na planilha.
+     * A defesa que so aparece quando alguém abre o arquivo: uma resposta de
+     * cidadão que começa com `=` viraria fórmula na planilha.
      */
     public function test_a_formula_in_the_answer_is_neutralized_in_the_file(): void
     {
@@ -203,7 +203,7 @@ class AnalyticsExportTest extends TestCase
 
         $this->actingAs($this->userWith('administrador'))->post(route('admin.analytics.export'), [
             'type' => 'demands', 'scope' => 'detailed', 'format' => 'csv',
-            'purpose' => 'Conferencia interna das demandas coletadas.',
+            'purpose' => 'Conferência interna das demandas coletadas.',
         ]);
 
         $contents = $this->contents(ReportExport::query()->latest('id')->firstOrFail());
@@ -211,7 +211,7 @@ class AnalyticsExportTest extends TestCase
         $this->assertStringContainsString("'=cmd", $contents);
     }
 
-    // --- Retencao e direitos --------------------------------------------------
+    // --- Retenção e direitos --------------------------------------------------
 
     public function test_the_anonymization_command_refuses_to_run_without_a_scope(): void
     {
@@ -235,7 +235,7 @@ class AnalyticsExportTest extends TestCase
         ConversationMessage::factory()->create([
             'conversation_id' => $insight->conversation_id,
             'contact_id' => $insight->contact_id,
-            'body' => 'Mensagem original do cidadao',
+            'body' => 'Mensagem original do cidadão',
         ]);
 
         $this->artisan('analytics:anonymize', ['--contact' => $insight->contact_id])->assertSuccessful();
@@ -261,7 +261,7 @@ class AnalyticsExportTest extends TestCase
 
     /**
      * Depois de anonimizar, os agregados daquele dia precisam refletir o novo
-     * estado. Relatorio que continua contando o que foi apagado e uma copia do
+     * estado. Relatório que continua contando o que foi apagado e uma copia do
      * dado que se pediu para remover.
      */
     public function test_aggregates_are_recomputed_after_anonymization(): void

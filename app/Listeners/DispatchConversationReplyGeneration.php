@@ -8,9 +8,9 @@ use App\Services\ResponseGeneration\ResponseModeResolver;
 use App\Services\SystemSettingService;
 
 /**
- * Ponte da Etapa 9C sobre o ponto de extensao da 9A.
+ * Ponte da Etapa 9C sobre o ponto de extensão da 9A.
  *
- * O atraso configuravel agrupa mensagens consecutivas antes de gerar.
+ * O atraso configurável agrupa mensagens consecutivas antes de gerar.
  */
 class DispatchConversationReplyGeneration
 {

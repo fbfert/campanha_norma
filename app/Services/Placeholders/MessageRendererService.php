@@ -23,7 +23,7 @@ class MessageRendererService
             $value = $this->catalog->value($contact, $placeholder);
             if ($value === null || $value === '') {
                 $missing[] = $placeholder;
-                $errors[] = 'O campo '.$this->catalog->label($placeholder).' e obrigatorio para esta mensagem.';
+                $errors[] = 'O campo '.$this->catalog->label($placeholder).' e obrigatório para esta mensagem.';
 
                 continue;
             }

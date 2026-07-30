@@ -82,16 +82,16 @@ class ConversationSyncService
                 'error_message' => $errorMessage,
             ])->save();
 
-            $this->audit->log('conversation.sync_completed', 'Sincronizacao de conversas concluida.', $run, null, $run->only(['chats_processed', 'chats_failed', 'messages_imported', 'messages_skipped', 'messages_failed', 'options']));
+            $this->audit->log('conversation.sync_completed', 'Sincronização de conversas concluída.', $run, null, $run->only(['chats_processed', 'chats_failed', 'messages_imported', 'messages_skipped', 'messages_failed', 'options']));
         } catch (\Throwable $exception) {
             $errorCode = $exception instanceof WhatsAppServiceException ? $exception->errorCode : 'CONVERSATION_SYNC_FAILED';
             $errorMessage = match ($errorCode) {
-                'INTERNAL_ERROR' => 'O servico WhatsApp nao conseguiu listar os chats da sessao atual. Verifique a compatibilidade do WhatsApp Web e os logs do Node.js.',
-                'WHATSAPP_GET_CHATS_FAILED' => 'A consulta padrao dos chats falhou. O sistema tentou o modo de compatibilidade, mas nao conseguiu acessar as conversas disponiveis nesta sessao.',
-                'WHATSAPP_CHAT_COLLECTION_UNAVAILABLE' => 'A consulta padrao dos chats falhou. O sistema tentou o modo de compatibilidade, mas nao conseguiu acessar as conversas disponiveis nesta sessao.',
-                'WHATSAPP_FALLBACK_FAILED' => 'A consulta padrao dos chats falhou. O sistema tentou o modo de compatibilidade, mas nao conseguiu acessar as conversas disponiveis nesta sessao.',
+                'INTERNAL_ERROR' => 'O serviço WhatsApp não conseguiu listar os chats da sessão atual. Verifique a compatibilidade do WhatsApp Web e os logs do Node.js.',
+                'WHATSAPP_GET_CHATS_FAILED' => 'A consulta padrão dos chats falhou. O sistema tentou o modo de compatibilidade, mas não conseguiu acessar as conversas disponíveis nesta sessão.',
+                'WHATSAPP_CHAT_COLLECTION_UNAVAILABLE' => 'A consulta padrão dos chats falhou. O sistema tentou o modo de compatibilidade, mas não conseguiu acessar as conversas disponíveis nesta sessão.',
+                'WHATSAPP_FALLBACK_FAILED' => 'A consulta padrão dos chats falhou. O sistema tentou o modo de compatibilidade, mas não conseguiu acessar as conversas disponíveis nesta sessão.',
                 'WHATSAPP_NOT_CONNECTED' => 'Conecte o WhatsApp antes de sincronizar as conversas.',
-                'SERVICE_UNAVAILABLE' => 'O servico Node.js do WhatsApp esta indisponivel.',
+                'SERVICE_UNAVAILABLE' => 'O serviço Node.js do WhatsApp esta indisponível.',
                 default => 'Falha ao sincronizar conversas.',
             };
 
@@ -103,7 +103,7 @@ class ConversationSyncService
                 'error_message' => $errorMessage,
             ])->save();
 
-            $this->audit->log('conversation.sync_failed', 'Falha na sincronizacao de conversas.', $run, null, ['error_code' => $run->error_code]);
+            $this->audit->log('conversation.sync_failed', 'Falha na sincronização de conversas.', $run, null, ['error_code' => $run->error_code]);
         }
 
         return $run->fresh();
@@ -150,8 +150,8 @@ class ConversationSyncService
 
             if (! $conversation && Conversation::onlyTrashed()->where('provider', 'web')->where('external_chat_id', $externalChatId)->exists()) {
                 // Conversa foi removida intencionalmente (ex.: limpeza de conversas vazias
-                // sem contato/mensagem). Nao recriar automaticamente via sincronizacao -
-                // isso colidiria com a restricao unica de provider+external_chat_id.
+                // sem contato/mensagem). Não recriar automaticamente via sincronização -
+                // isso colidiria com a restrição única de provider+external_chat_id.
                 return null;
             }
 
@@ -289,13 +289,13 @@ class ConversationSyncService
         $errorCode = $exception instanceof WhatsAppServiceException ? $exception->errorCode : 'CONVERSATION_SYNC_CHAT_FAILED';
         $message = $exception instanceof WhatsAppServiceException
             ? $exception->getMessage()
-            : 'Falha ao processar um chat da sincronizacao.';
+            : 'Falha ao processar um chat da sincronização.';
 
         if (! $exception instanceof WhatsAppServiceException) {
             report($exception);
         }
 
-        $this->audit->log('conversation.sync_chat_failed', 'Falha em um chat durante a sincronizacao.', $run, null, [
+        $this->audit->log('conversation.sync_chat_failed', 'Falha em um chat durante a sincronização.', $run, null, [
             'error_code' => $errorCode,
             'chat_hash' => hash('sha256', (string) ($chat['external_chat_id'] ?? '')),
         ]);
