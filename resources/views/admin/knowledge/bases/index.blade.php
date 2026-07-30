@@ -44,7 +44,12 @@
                         <td>{{ $base->documents_count }}</td>
                         <td>{{ $base->approved_documents_count }}</td>
                         <td>{{ $base->flows()->count() }}</td>
-                        <td><a class="btn ghost" href="{{ route('admin.knowledge.bases.show', $base) }}">Abrir</a></td>
+                        <td class="actions">
+                            <a class="btn ghost" href="{{ route('admin.knowledge.bases.show', $base) }}">Abrir</a>
+                            @can('knowledge.manage_bases')
+                                <a class="btn ghost" href="{{ route('admin.knowledge.bases.edit', $base) }}">Editar</a>
+                            @endcan
+                        </td>
                     </tr>
                 @empty
                     <tr><td colspan="6" class="muted">Nenhuma base cadastrada.</td></tr>

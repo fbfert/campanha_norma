@@ -77,6 +77,68 @@ class KnowledgeAdminTest extends TestCase
         $this->actingAs($user)->get(route('admin.knowledge.bases.create'))->assertForbidden();
     }
 
+    public function test_the_listing_offers_editing_only_to_whoever_manages_bases(): void
+    {
+        $base = $this->base();
+
+        $this->actingAs($this->userWith('administrador'))
+            ->get(route('admin.knowledge.bases.index'))
+            ->assertOk()
+            ->assertSee(route('admin.knowledge.bases.edit', $base), false);
+
+        // Operador prepara a base, mas nao redefine o que ela e: sem o link e
+        // sem a rota.
+        $this->actingAs($this->userWith('operador'))
+            ->get(route('admin.knowledge.bases.index'))
+            ->assertOk()
+            ->assertDontSee(route('admin.knowledge.bases.edit', $base), false);
+
+        $this->actingAs($this->userWith('operador'))
+            ->get(route('admin.knowledge.bases.edit', $base))
+            ->assertForbidden();
+    }
+
+    public function test_an_administrador_edits_the_information_of_a_base(): void
+    {
+        $base = $this->base();
+        $flow = ConversationFlow::factory()->create();
+
+        $this->actingAs($this->userWith('administrador'))
+            ->get(route('admin.knowledge.bases.edit', $base))
+            ->assertOk()
+            ->assertSee($base->name, false);
+
+        $this->actingAs($this->userWith('administrador'))
+            ->put(route('admin.knowledge.bases.update', $base), [
+                'name' => 'Base revisada',
+                'description' => 'Descricao revisada.',
+                'purpose' => 'Finalidade revisada.',
+                'usage_policy' => 'Sustenta apenas o que estiver aprovado.',
+                'flow_ids' => [$flow->id],
+            ])
+            ->assertRedirect(route('admin.knowledge.bases.show', $base));
+
+        $base->refresh();
+
+        $this->assertSame('Base revisada', $base->name);
+        $this->assertSame('Descricao revisada.', $base->description);
+        $this->assertSame('Finalidade revisada.', $base->purpose);
+        $this->assertSame('Sustenta apenas o que estiver aprovado.', $base->usage_policy);
+        $this->assertSame([$flow->id], $base->flows()->pluck('conversation_flows.id')->all());
+    }
+
+    public function test_editing_a_base_does_not_change_its_situation(): void
+    {
+        $base = KnowledgeBase::factory()->create(['status' => KnowledgeBaseStatus::Draft]);
+
+        $this->actingAs($this->userWith('administrador'))
+            ->put(route('admin.knowledge.bases.update', $base), ['name' => 'Ainda em rascunho'])
+            ->assertRedirect(route('admin.knowledge.bases.show', $base));
+
+        // Publicar e ato separado: salvar o formulario nunca pode ligar a base.
+        $this->assertSame(KnowledgeBaseStatus::Draft, $base->refresh()->status);
+    }
+
     public function test_operador_can_upload_but_cannot_approve(): void
     {
         Queue::fake();
