@@ -123,19 +123,47 @@ Se uma dessas aparecer errada numa tela, corrija à mão.
 
 ## 7. Texto que está no banco
 
-Rótulo gravado em tabela não muda sozinho quando o código muda. Depois de
-publicar, os seeders idempotentes precisam rodar de novo para as permissões, as
-configurações e os temas ganharem acento:
+Rótulo gravado em tabela não muda sozinho quando o código muda. Em 30/07/2026 o
+texto gravado foi atualizado por UPDATE dirigido, não por seeder, e o que foi
+alterado está registrado em `storage/app/private/ortografia-rollback.sql`, que
+desfaz exatamente essas linhas.
+
+### Não use os seeders para isso
+
+**`db:seed` não é seguro aqui.** Os três seeders reescrevem mais do que texto:
+
+| Seeder | O que ele também faz |
+| --- | --- |
+| `SystemSettingSeeder` | `updateOrCreate(['key' => …], $setting)` com `value` incluído: **devolve toda configuração ao padrão**. Ritmo de disparo, janelas, limiares e `knowledge.enabled` voltam ao valor de fábrica. |
+| `RolePermissionSeeder` | `$role->permissions()->sync(…)`: **reverte as permissões de cada papel** para o conjunto padrão, descartando ajuste feito na tela de usuários. |
+| `InsightTopicSeeder` | força `is_active = true` e sobrescreve `synonyms`, `color` e `display_order`: **reativa tema desligado** e descarta sinônimo editado no admin. |
+
+Na correção de 2026 isso não causou dano porque a base ainda estava idêntica ao
+padrão — 27 valores divergiam, todos por acento, e nenhum papel ou tema tinha
+ajuste. Foi sorte, não garantia. Se precisar repetir a operação, faça o UPDATE
+dirigido: atualize `value` apenas quando as duas formas forem iguais depois de
+remover os acentos, o que prova que é a mesma configuração e não uma alteração
+de quem opera.
+
+Depois de qualquer alteração em `system_settings`:
 
 ```bash
-php84 artisan db:seed --class=RolePermissionSeeder
-php84 artisan db:seed --class=SystemSettingSeeder
-php84 artisan db:seed --class=InsightTopicSeeder
 php84 artisan cache:clear
 ```
 
-Os três usam `updateOrCreate` por `slug`/`key`: atualizam o rótulo e não tocam em
-nada mais. Nenhum slug, chave ou valor mudou nesta correção — só o texto visível.
+`SystemSettingService` cacheia para sempre; sem isso a tela continua mostrando o
+valor antigo.
+
+### Por que acentuar esses valores não muda comportamento
+
+Boa parte do que está gravado é lista de expressões que o sistema compara com o
+que a pessoa escreve — `ai.expressions.risk`, `ai.response.forbidden.*`,
+`knowledge.injection_patterns`, `knowledge.factual_markers` e os sinônimos de
+tema. Em todos os consumidores (`SensitiveContentDetector`, `ReplyTextValidator`,
+`PromptInjectionSanitizer`, `GroundingValidator`, `InsightTopicMapper`) a
+expressão configurada passa pelo mesmo `normalize()` que a mensagem recebida, e
+essa normalização remove acento antes de comparar. `denúncia` e `denuncia` casam
+igual. Conferido em produção nos dois sentidos depois da atualização.
 
 Os sinônimos de tema (`InsightTopic::synonyms`) passam por
 `PermissionResponseClassifier::normalize()` nos dois lados da comparação, que
