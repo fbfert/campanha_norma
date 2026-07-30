@@ -12,6 +12,7 @@ use App\Listeners\DispatchConversationInterpretation;
 use App\Listeners\DispatchConversationReplyGeneration;
 use App\Models\Conversation;
 use App\Models\User;
+use App\Services\Ai\AiProviderSettings;
 use App\Services\Knowledge\GroundingValidator;
 use App\Services\Knowledge\KnowledgeProviderManager;
 use App\Services\Knowledge\LocalKnowledgeRetriever;
@@ -156,6 +157,24 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('knowledge.download_documents', fn (User $user): bool => $user->hasPermission('knowledge.download_documents'));
         Gate::define('knowledge.test_retrieval', fn (User $user): bool => $user->hasPermission('knowledge.test_retrieval'));
         Gate::define('knowledge.manage_settings', fn (User $user): bool => $user->hasPermission('knowledge.manage_settings'));
+        Gate::define('ai.provider.manage', fn (User $user): bool => $user->hasPermission('ai.provider.manage'));
+        Gate::define('analytics.view_aggregates', fn (User $user): bool => $user->hasPermission('analytics.view_aggregates'));
+        Gate::define('analytics.view_content', fn (User $user): bool => $user->hasPermission('analytics.view_content'));
+        Gate::define('analytics.view_identification', fn (User $user): bool => $user->hasPermission('analytics.view_identification'));
+        Gate::define('analytics.export_aggregates', fn (User $user): bool => $user->hasPermission('analytics.export_aggregates'));
+        Gate::define('analytics.export_detailed', fn (User $user): bool => $user->hasPermission('analytics.export_detailed'));
+        Gate::define('analytics.view_costs', fn (User $user): bool => $user->hasPermission('analytics.view_costs'));
+        Gate::define('analytics.view_governance', fn (User $user): bool => $user->hasPermission('analytics.view_governance'));
+
+        // O provedor configurado pela tela sobrescreve o do arquivo de
+        // ambiente. Fica dentro de try porque este boot tambem roda antes de a
+        // tabela existir, na primeira migracao: falhar ali impediria instalar o
+        // sistema por causa de uma configuracao que ainda nao pode existir.
+        try {
+            app(AiProviderSettings::class)->applyToConfig();
+        } catch (\Throwable) {
+            // Sem banco disponivel, vale o que estiver no `.env`.
+        }
 
         // Etapa 9B: a interpretacao observa o ponto de extensao da 9A sem que a
         // 9A precise conhecer a camada de IA.

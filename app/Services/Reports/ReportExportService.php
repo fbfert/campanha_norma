@@ -15,11 +15,19 @@ use OpenSpout\Writer\CSV\Writer as CsvWriter;
 use OpenSpout\Writer\XLSX\Writer as XlsxWriter;
 use Throwable;
 
+/**
+ * Exportacao de historico de mensagens.
+ *
+ * Etapa 9E: as celulas passam pelo sanitizador antes de serem escritas. O
+ * conteudo exportado inclui mensagem recebida de terceiros, e uma mensagem que
+ * comeca com `=` virava formula ao abrir a planilha. E correcao de
+ * vulnerabilidade existente, nao mudanca de escopo.
+ */
 class ReportExportService
 {
     public const MESSAGE_COLUMNS = ['lote', 'posicao', 'nome', 'telefone', 'email', 'cidade', 'estado', 'mensagem', 'status', 'tentativas', 'data_de_envio', 'data_de_falha', 'erro', 'criador_do_lote', 'modelo', 'versao', 'provedor', 'identificacao_externa'];
 
-    public function __construct(private readonly MessageHistoryQuery $history, private readonly SystemSettingService $settings, private readonly AuditLogger $audit) {}
+    public function __construct(private readonly MessageHistoryQuery $history, private readonly SystemSettingService $settings, private readonly AuditLogger $audit, private readonly SpreadsheetValueSanitizer $sanitizer) {}
 
     public function request(User $user, string $type, string $format, array $filters = [], ?array $columns = null): ReportExport
     {
@@ -60,12 +68,12 @@ class ReportExportService
             $fullPath = Storage::disk('local')->path($path);
             $writer = $export->format === 'xlsx' ? new XlsxWriter : new CsvWriter;
             $writer->openToFile($fullPath);
-            $writer->addRow(Row::fromValues($export->columns ?? self::MESSAGE_COLUMNS));
+            $writer->addRow(Row::fromValues($this->sanitizer->row($export->columns ?? self::MESSAGE_COLUMNS)));
 
             $count = 0;
             $this->query($export->report_type, $export->filters ?? [])->chunkById(500, function ($rows) use ($writer, $export, &$count): void {
                 foreach ($rows as $recipient) {
-                    $writer->addRow(Row::fromValues($this->row($recipient, $export->columns ?? self::MESSAGE_COLUMNS)));
+                    $writer->addRow(Row::fromValues($this->sanitizer->row($this->row($recipient, $export->columns ?? self::MESSAGE_COLUMNS))));
                     $count++;
                 }
             });

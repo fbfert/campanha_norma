@@ -14,6 +14,11 @@ class ReportExport extends Model
     protected $fillable = [
         'user_id',
         'report_type',
+        // Etapa 9E: escopo, finalidade e sal do pseudonimo.
+        'scope',
+        'purpose',
+        'anonymized',
+        'pseudonym_salt',
         'format',
         'status',
         'filters',

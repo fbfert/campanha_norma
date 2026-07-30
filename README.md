@@ -645,6 +645,34 @@ Documentacao complementar:
 - `docs/tests/knowledge-base-manual-etapa-9d.md`
 - `docs/adr/0001-armazenamento-vetorial-e-provedor-de-conhecimento.md`
 
+## Escopo implementado — Etapa 9E
+
+Relatorios analiticos, exportacao, governanca e retencao. Somente leitura: nenhuma tela desta subetapa envia mensagem, altera conversa ou liga automacao.
+
+- Painel executivo de participacao com abordados, permissoes, opt-outs, respostas, conclusoes, aguardando humano, taxas, tempo ate a primeira resposta e media de turnos, por periodo e por fluxo.
+- Relatorio de temas com mais mencionados, emergentes, nao classificados contados a parte, confianca media e revisao humana.
+- Relatorio de geografia usando apenas cidade do cadastro e localidade declarada pela propria pessoa. Nada e deduzido de DDD.
+- Relatorio de demandas com problemas, acoes, resultados, urgencia, exemplos anonimizados e fila de baixa confianca.
+- Relatorio de qualidade da IA com aprovacao sem edicao, aprovacao com edicao, recusas com motivo, handoff, falhas por provedor, modelo e versao de prompt, latencia e custo.
+- Relatorio de qualidade das perguntas com taxa de resposta, conclusao, handoff e tamanho medio da resposta por pergunta.
+- Relatorio de governanca com interruptores, fluxos, documentos vigentes, versoes, limiares, eventos sensiveis, pendencias, falhas e **divergencias de configuracao**.
+- Supressao de celula agregada abaixo do minimo configurado, aplicada no servico e nao na tela.
+- Exportacao agregada sem identificacao e exportacao detalhada com permissao elevada, finalidade escrita, nome removido, telefone mascarado e pseudonimo com sal proprio por exportacao.
+- Neutralizacao de injecao de formula em CSV e XLSX, aplicada tambem a exportacao existente da Etapa 6.
+- Materializacao diaria idempotente em `conversation_daily_metrics`, reconstruivel por comando sem duplicacao.
+- Comando de anonimizacao por contato ou periodo, preservando linha, integridade referencial e auditoria, com reprocessamento dos dias afetados.
+- Sete permissoes novas separando agregado, conteudo, identificacao, exportacao agregada, exportacao detalhada, custo e governanca.
+- Documentacao de formulas com numerador, denominador e exclusoes de cada taxa.
+
+## Nao implementado nesta etapa — Etapa 9E
+
+- Biblioteca de graficos. Os graficos pedidos sao barra, serie simples e tabela; uma dependencia de terceiros acrescentaria bundle, superficie de atualizacao e ponto de falha no build sem melhorar a leitura.
+- Mapas geograficos. Sem biblioteca aprovada, os dados aparecem em tabela.
+- Backup dedicado de metadados analiticos. O backup do banco cobre as tabelas.
+- Painel de custo por indexacao e apuracao financeira consolidada.
+- Promocao automatica de versao de prompt a partir das metricas. Mudar o que responde a cidadao continua sendo decisao humana.
+- Filtros por atributo sensivel. Nao estao desligados: nao foram construidos.
+
 ## Nao implementado nesta etapa — Etapa 9D
 
 - Provedor gerenciado de vetores ou banco vetorial dedicado. Ver ADR 0001: a decisao foi documentada com limites medidos e procedimento de troca, e o corpus previsto nao a justifica.

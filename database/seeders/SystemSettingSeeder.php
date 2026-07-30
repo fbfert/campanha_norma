@@ -190,6 +190,20 @@ class SystemSettingSeeder extends Seeder
             ['group' => 'knowledge', 'key' => 'knowledge.factual_markers', 'value' => 'a professora norma|professora norma|ela e|ela foi|ela atua|ela apresentou|ela propos|a deputada|o mandato|o projeto de lei|a proposta|a lei|a emenda|a agenda|o telefone|o e-mail|o endereco|o horario|o gabinete|o atendimento acontece|foi aprovado|foi aprovada|foi eleita|foi eleito', 'type' => 'string', 'description' => 'Expressoes que caracterizam afirmacao factual e exigem evidencia', 'is_public' => false],
             ['group' => 'knowledge', 'key' => 'knowledge.commitment_markers', 'value' => 'vai fazer|vamos fazer|sera feito|pretende|ira|vai apresentar|vai propor|vai garantir|vai construir|vai criar|vai ampliar|se compromete|assumiu o compromisso', 'type' => 'string', 'description' => 'Expressoes de compromisso que so passam com suporte explicito no trecho citado', 'is_public' => false],
             ['group' => 'knowledge', 'key' => 'knowledge.commitment_support_markers', 'value' => 'proposta|projeto de lei|programa|plano|emenda|requerimento|indicacao|compromisso publico|diretriz aprovada', 'type' => 'string', 'description' => 'Expressoes que, no trecho citado, sustentam uma afirmacao de compromisso', 'is_public' => false],
+
+            // Etapa 9E. Relatorios sao somente leitura: nenhuma destas chaves
+            // liga envio, geracao ou chamada externa. O valor que mais protege
+            // e `minimum_cell_size`, que suprime celula agregada pequena
+            // demais para ser publicada sem identificar quem respondeu.
+            ['group' => 'analytics', 'key' => 'analytics.minimum_cell_size', 'value' => '5', 'type' => 'integer', 'description' => 'Minimo de registros para exibir uma celula agregada', 'is_public' => false],
+            ['group' => 'analytics', 'key' => 'analytics.low_confidence_threshold', 'value' => '0.70', 'type' => 'string', 'description' => 'Confianca abaixo da qual o insight vai para a fila de revisao', 'is_public' => false],
+            ['group' => 'analytics', 'key' => 'analytics.default_period_days', 'value' => '30', 'type' => 'integer', 'description' => 'Periodo padrao dos relatorios em dias', 'is_public' => false],
+            ['group' => 'analytics', 'key' => 'analytics.emerging_topic_min_mentions', 'value' => '3', 'type' => 'integer', 'description' => 'Mencoes minimas para um tema novo contar como emergente', 'is_public' => false],
+            ['group' => 'analytics', 'key' => 'analytics.maximum_export_rows', 'value' => '50000', 'type' => 'integer', 'description' => 'Teto de linhas por exportacao analitica', 'is_public' => false],
+            ['group' => 'analytics', 'key' => 'analytics.synchronous_export_max_rows', 'value' => '1000', 'type' => 'integer', 'description' => 'Acima disso a exportacao vai para a fila', 'is_public' => false],
+            ['group' => 'analytics', 'key' => 'analytics.export_expiration_hours', 'value' => '24', 'type' => 'integer', 'description' => 'Horas ate a exportacao analitica expirar', 'is_public' => false],
+            ['group' => 'analytics', 'key' => 'analytics.content_retention_days', 'value' => '0', 'type' => 'integer', 'description' => 'Dias de retencao de conteudo antes da anonimizacao. Zero desliga', 'is_public' => false],
+            ['group' => 'analytics', 'key' => 'analytics.queue', 'value' => 'analytics-exports', 'type' => 'string', 'description' => 'Fila das exportacoes analiticas', 'is_public' => false],
         ];
 
         foreach ($settings as $setting) {

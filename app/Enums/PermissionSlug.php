@@ -110,6 +110,23 @@ enum PermissionSlug: string
     case KnowledgeTestRetrieval = 'knowledge.test_retrieval';
     case KnowledgeManageSettings = 'knowledge.manage_settings';
 
+    // Configuracao do provedor de IA. Separada de `settings.manage` porque
+    // aqui se digita credencial: quem ajusta nome do sistema e formato de data
+    // nao precisa, pelo mesmo ato, poder trocar a chave que paga a conta.
+    case AiProviderManage = 'ai.provider.manage';
+
+    // Etapa 9E. A separacao que mais importa e entre ver agregado, ver
+    // conteudo e ver identificacao: saber que saude foi o tema mais citado,
+    // ler o que alguem escreveu e saber quem escreveu sao tres niveis
+    // distintos de exposicao, e um perfil de consulta so recebe o primeiro.
+    case AnalyticsViewAggregates = 'analytics.view_aggregates';
+    case AnalyticsViewContent = 'analytics.view_content';
+    case AnalyticsViewIdentification = 'analytics.view_identification';
+    case AnalyticsExportAggregates = 'analytics.export_aggregates';
+    case AnalyticsExportDetailed = 'analytics.export_detailed';
+    case AnalyticsViewCosts = 'analytics.view_costs';
+    case AnalyticsViewGovernance = 'analytics.view_governance';
+
     public function label(): string
     {
         return match ($this) {
@@ -218,6 +235,14 @@ enum PermissionSlug: string
             self::KnowledgeDownloadDocuments => 'Baixar arquivo original de documento',
             self::KnowledgeTestRetrieval => 'Testar busca e resposta sem envio',
             self::KnowledgeManageSettings => 'Gerenciar configuracoes da base de conhecimento',
+            self::AiProviderManage => 'Configurar provedor de IA e credenciais',
+            self::AnalyticsViewAggregates => 'Ver relatorios agregados',
+            self::AnalyticsViewContent => 'Ver conteudo de mensagens nos relatorios',
+            self::AnalyticsViewIdentification => 'Ver identificacao do contato nos relatorios',
+            self::AnalyticsExportAggregates => 'Exportar relatorios agregados',
+            self::AnalyticsExportDetailed => 'Exportar dados detalhados com conteudo',
+            self::AnalyticsViewCosts => 'Ver custos de IA nos relatorios',
+            self::AnalyticsViewGovernance => 'Ver relatorio de governanca',
         };
     }
 }

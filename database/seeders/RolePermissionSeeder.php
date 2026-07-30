@@ -85,6 +85,14 @@ class RolePermissionSeeder extends Seeder
                 PermissionSlug::KnowledgeView,
                 PermissionSlug::KnowledgeUploadDocuments,
                 PermissionSlug::KnowledgeTestRetrieval,
+                // Etapa 9E. Operador le agregado e conteudo, porque atende e
+                // precisa entender o que foi dito. Nao recebe identificacao
+                // nem exportacao detalhada: ler no sistema e levar uma
+                // planilha com o que as pessoas escreveram sao coisas
+                // diferentes.
+                PermissionSlug::AnalyticsViewAggregates,
+                PermissionSlug::AnalyticsViewContent,
+                PermissionSlug::AnalyticsExportAggregates,
             ]],
             'consulta' => ['Consulta', 'Acesso somente para consulta.', [
                 PermissionSlug::DashboardView,
@@ -102,6 +110,8 @@ class RolePermissionSeeder extends Seeder
                 PermissionSlug::AiInsightsView,
                 PermissionSlug::ReplySuggestionsView,
                 PermissionSlug::KnowledgeView,
+                // Consulta ve numero, nunca texto e nunca quem escreveu.
+                PermissionSlug::AnalyticsViewAggregates,
             ]],
         ];
 

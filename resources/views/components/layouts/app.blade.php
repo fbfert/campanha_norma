@@ -71,6 +71,20 @@
                 @can('ai_insights.view_monitoring')
                     <a href="{{ route('admin.ai-monitoring.index') }}" @class(['active' => request()->routeIs('admin.ai-monitoring.*')])>Monitoramento de IA</a>
                 @endcan
+                @can('ai.provider.manage')
+                    <a href="{{ route('admin.ai-provider.edit') }}" @class(['active' => request()->routeIs('admin.ai-provider.*')])>Provedor de IA</a>
+                @endcan
+                @can('analytics.view_aggregates')
+                    <a href="{{ route('admin.analytics.dashboard') }}" @class(['active' => request()->routeIs('admin.analytics.dashboard')])>Painel da pesquisa</a>
+                    <a href="{{ route('admin.analytics.topics') }}" @class(['active' => request()->routeIs('admin.analytics.topics')])>Temas</a>
+                    <a href="{{ route('admin.analytics.geography') }}" @class(['active' => request()->routeIs('admin.analytics.geography')])>Geografia</a>
+                    <a href="{{ route('admin.analytics.demands') }}" @class(['active' => request()->routeIs('admin.analytics.demands')])>Demandas</a>
+                    <a href="{{ route('admin.analytics.ai-quality') }}" @class(['active' => request()->routeIs('admin.analytics.ai-quality')])>Qualidade da IA</a>
+                    <a href="{{ route('admin.analytics.questions') }}" @class(['active' => request()->routeIs('admin.analytics.questions')])>Qualidade das perguntas</a>
+                @endcan
+                @can('analytics.view_governance')
+                    <a href="{{ route('admin.analytics.governance') }}" @class(['active' => request()->routeIs('admin.analytics.governance')])>Governanca</a>
+                @endcan
                 @can('histories.view')
                     <a href="{{ route('admin.histories.messages.index') }}" @class(['active' => request()->routeIs('admin.histories.*')])>Historico de mensagens</a>
                 @endcan

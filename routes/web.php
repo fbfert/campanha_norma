@@ -1,8 +1,11 @@
 <?php
 
 use App\Http\Controllers\Admin\Ai\AiMonitoringController;
+use App\Http\Controllers\Admin\Ai\AiProviderController;
 use App\Http\Controllers\Admin\Ai\ConversationInsightController;
 use App\Http\Controllers\Admin\Ai\InsightTopicController;
+use App\Http\Controllers\Admin\Analytics\AnalyticsController;
+use App\Http\Controllers\Admin\Analytics\AnalyticsExportController;
 use App\Http\Controllers\Admin\AuditLogController;
 use App\Http\Controllers\Admin\Contacts\ContactBulkController;
 use App\Http\Controllers\Admin\Contacts\ContactController;
@@ -123,6 +126,23 @@ Route::middleware(['auth', 'password.changed'])->group(function (): void {
         Route::post('/ai-insights/{insight}/approve', [ConversationInsightController::class, 'approve'])->name('ai-insights.approve');
         Route::post('/ai-insights/{insight}/reprocess', [ConversationInsightController::class, 'reprocess'])->name('ai-insights.reprocess');
         Route::get('/ai-monitoring', [AiMonitoringController::class, 'index'])->name('ai-monitoring.index');
+
+        // Etapa 9E-0: provedor de IA configurado pela tela. Fora do grupo de
+        // configuracoes gerais porque aqui se manipula credencial.
+        Route::get('/ai-provider', [AiProviderController::class, 'edit'])->name('ai-provider.edit');
+        Route::put('/ai-provider', [AiProviderController::class, 'update'])->name('ai-provider.update');
+        Route::post('/ai-provider/test', [AiProviderController::class, 'test'])->name('ai-provider.test');
+
+        // Etapa 9E: relatorios analiticos. Somente leitura; nenhuma rota aqui
+        // envia mensagem, altera conversa ou liga qualquer automacao.
+        Route::get('/analytics', [AnalyticsController::class, 'dashboard'])->name('analytics.dashboard');
+        Route::get('/analytics/temas', [AnalyticsController::class, 'topics'])->name('analytics.topics');
+        Route::get('/analytics/geografia', [AnalyticsController::class, 'geography'])->name('analytics.geography');
+        Route::get('/analytics/demandas', [AnalyticsController::class, 'demands'])->name('analytics.demands');
+        Route::get('/analytics/qualidade-ia', [AnalyticsController::class, 'aiQuality'])->name('analytics.ai-quality');
+        Route::get('/analytics/perguntas', [AnalyticsController::class, 'questions'])->name('analytics.questions');
+        Route::get('/analytics/governanca', [AnalyticsController::class, 'governance'])->name('analytics.governance');
+        Route::post('/analytics/exportar', [AnalyticsExportController::class, 'store'])->name('analytics.export');
 
         Route::get('/reply-suggestions', [ReplySuggestionController::class, 'index'])->name('reply-suggestions.index');
         Route::get('/reply-suggestions/{suggestion}', [ReplySuggestionController::class, 'show'])->name('reply-suggestions.show');
