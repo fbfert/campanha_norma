@@ -38,3 +38,8 @@ _ide_helper.php
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# Worktrees criados por agente. São checkouts completos do próprio repositório;
+# adicioná-los por engano traria megabytes de cópia para dentro do histórico.
+# O caminho é específico para que .claude/settings.json continue versionável.
+/.claude/worktrees

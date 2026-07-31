@@ -1,9 +1,15 @@
 <x-layouts.app title="Temas de insights" breadcrumbs="Inicio / Pesquisa conversacional / Temas">
     <section class="card">
         <p class="muted">Taxonomia usada para agrupar as respostas. O modelo nunca cria temas: a saída livre e mapeada para um tema cadastrado ou para o tema de fallback.</p>
-        @can('ai_insights.manage_taxonomy')
-            <div class="actions"><a class="btn" href="{{ route('admin.insight-topics.create') }}">Novo tema</a></div>
-        @endcan
+        <div class="actions">
+            @can('ai_insights.manage_taxonomy')
+                <a class="btn" href="{{ route('admin.insight-topics.create') }}"><x-icon name="plus" size="16" />Novo tema</a>
+            @endcan
+            {{-- A exportação sai completa, sem paginação: uma taxonomia partida
+                 em páginas não serve para conferir nem comparar. --}}
+            <a class="btn secondary" href="{{ route('admin.insight-topics.export') }}"><x-icon name="download" size="16" />Exportar CSV</a>
+            <a class="btn ghost" href="{{ route('admin.insight-topics.export', ['format' => 'xlsx']) }}">Exportar XLSX</a>
+        </div>
     </section>
 
     <section class="card" style="margin-top:16px;">

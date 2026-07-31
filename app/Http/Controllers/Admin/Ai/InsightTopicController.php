@@ -6,9 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Ai\InsightTopicRequest;
 use App\Models\InsightTopic;
 use App\Services\AuditLogger;
+use App\Services\Exports\TableExportService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class InsightTopicController extends Controller
 {
@@ -24,6 +26,50 @@ class InsightTopicController extends Controller
                 ->orderBy('name')
                 ->paginate(30),
         ]);
+    }
+
+    /**
+     * Exporta a taxonomia inteira.
+     *
+     * A permissão e a mesma de ver a tela, e não uma mais restrita: a taxonomia
+     * e vocabulário de configuração, não dado de pessoa. Quem já lê os temas na
+     * tela não descobre nada de novo ao baixa-los — muda o formato, não o
+     * acesso.
+     *
+     * Exporta tudo, sem paginação: uma taxonomia partida em páginas de trinta
+     * não serve para conferir ou comparar, que e o motivo de exportar.
+     */
+    public function export(Request $request, TableExportService $export): BinaryFileResponse
+    {
+        abort_unless($request->user()->can('ai_insights.view'), 403);
+
+        $topics = InsightTopic::query()
+            ->with('parent')
+            ->withCount('insights')
+            ->orderBy('display_order')
+            ->orderBy('name')
+            ->cursor()
+            ->map(fn (InsightTopic $topic): array => [
+                $topic->display_order,
+                $topic->name,
+                $topic->slug,
+                $topic->parent?->name,
+                $topic->description,
+                $topic->synonyms,
+                $topic->color,
+                $topic->insights_count,
+                $topic->is_fallback ? 'sim' : 'não',
+                $topic->is_active ? 'ativo' : 'inativo',
+            ]);
+
+        return $export->download(
+            'temas',
+            ['ordem', 'tema', 'identificador', 'tema_pai', 'descricao', 'sinonimos', 'cor', 'insights', 'fallback', 'situacao'],
+            $topics,
+            (string) $request->query('format', 'csv'),
+            'insight_topics.exported',
+            'Taxonomia de temas exportada.',
+        );
     }
 
     public function create(Request $request): View

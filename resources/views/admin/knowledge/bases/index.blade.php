@@ -10,11 +10,14 @@
                 Com a recuperação desligada nada da base entra no contexto da IA.
             @endunless
         </p>
-        @can('knowledge.manage_bases')
-            <div class="actions">
-                <a class="btn" href="{{ route('admin.knowledge.bases.create') }}">Nova base</a>
-            </div>
-        @endcan
+        <div class="actions">
+            @can('knowledge.manage_bases')
+                <a class="btn" href="{{ route('admin.knowledge.bases.create') }}"><x-icon name="plus" size="16" />Nova base</a>
+            @endcan
+            {{-- Sai a relação das bases, nunca o conteúdo dos documentos. --}}
+            <a class="btn secondary" href="{{ route('admin.knowledge.bases.export') }}"><x-icon name="download" size="16" />Exportar CSV</a>
+            <a class="btn ghost" href="{{ route('admin.knowledge.bases.export', ['format' => 'xlsx']) }}">Exportar XLSX</a>
+        </div>
     </section>
 
     @if(session('status'))

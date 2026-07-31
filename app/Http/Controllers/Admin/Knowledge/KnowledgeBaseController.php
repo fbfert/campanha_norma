@@ -8,12 +8,14 @@ use App\Http\Controllers\Controller;
 use App\Models\ConversationFlow;
 use App\Models\KnowledgeBase;
 use App\Services\AuditLogger;
+use App\Services\Exports\TableExportService;
 use App\Services\Knowledge\KnowledgeGuard;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 /**
  * Administração das bases de conhecimento.
@@ -42,6 +44,58 @@ class KnowledgeBaseController extends Controller
             'knowledgeEnabled' => $guard->enabled(),
             'strategy' => $guard->strategy(),
         ]);
+    }
+
+    /**
+     * Exporta a relação de bases.
+     *
+     * Sai o que a tela já mostra — nome, situação, contagens — mais o que ajuda
+     * a auditar: propósito, política de uso e quem aprovou. **Não sai nenhum
+     * conteúdo de documento.** Uma planilha com o texto das bases seria uma
+     * cópia do material oficial fora do controle de aprovação; para ler o
+     * documento existe a tela dele, com quem aprovou registrado ao lado.
+     */
+    public function export(Request $request, TableExportService $export): BinaryFileResponse
+    {
+        abort_unless($request->user()->can('knowledge.view'), 403);
+
+        $bases = KnowledgeBase::query()
+            ->with('approver')
+            // `flows` entra no `withCount` em vez de ser contado dentro do laço:
+            // aqui se percorre a lista inteira, e uma consulta por base viraria
+            // uma consulta por linha exportada.
+            ->withCount([
+                'documents',
+                'documents as approved_documents_count' => fn ($query) => $query->where('status', KnowledgeDocumentStatus::Approved->value),
+                'flows',
+            ])
+            ->orderBy('name')
+            ->cursor()
+            ->map(fn (KnowledgeBase $base): array => [
+                $base->name,
+                $base->slug,
+                $base->description,
+                $base->purpose,
+                $base->usage_policy,
+                $base->status->label(),
+                $base->provider,
+                $base->version,
+                $base->documents_count,
+                $base->approved_documents_count,
+                $base->flows_count,
+                $base->approver?->name,
+                $base->approved_at?->format('d/m/Y H:i'),
+                $base->created_at?->format('d/m/Y H:i'),
+            ]);
+
+        return $export->download(
+            'bases-de-conhecimento',
+            ['base', 'identificador', 'descricao', 'proposito', 'politica_de_uso', 'situacao', 'provedor', 'versao', 'documentos', 'documentos_aprovados', 'fluxos', 'aprovada_por', 'aprovada_em', 'criada_em'],
+            $bases,
+            (string) $request->query('format', 'csv'),
+            'knowledge_bases.exported',
+            'Relação de bases de conhecimento exportada.',
+        );
     }
 
     public function create(Request $request): View

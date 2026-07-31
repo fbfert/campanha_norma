@@ -164,6 +164,9 @@ Route::middleware(['auth', 'password.changed'])->group(function (): void {
         // Etapa 9D: base oficial e aprovada.
         Route::get('/knowledge/test', [KnowledgeTestController::class, 'index'])->name('knowledge.test');
         Route::get('/knowledge/bases', [KnowledgeBaseController::class, 'index'])->name('knowledge.bases.index');
+        // Antes de `/knowledge/bases/{base}`, senão "export" seria lido como
+        // identificador de base.
+        Route::get('/knowledge/bases/export', [KnowledgeBaseController::class, 'export'])->name('knowledge.bases.export');
         Route::get('/knowledge/bases/create', [KnowledgeBaseController::class, 'create'])->name('knowledge.bases.create');
         Route::post('/knowledge/bases', [KnowledgeBaseController::class, 'store'])->name('knowledge.bases.store');
         Route::get('/knowledge/bases/{base}', [KnowledgeBaseController::class, 'show'])->name('knowledge.bases.show');
@@ -180,6 +183,7 @@ Route::middleware(['auth', 'password.changed'])->group(function (): void {
         Route::post('/knowledge/bases/{base}/documents/{document}/reprocess', [KnowledgeDocumentController::class, 'reprocess'])->name('knowledge.documents.reprocess');
         Route::delete('/knowledge/bases/{base}/documents/{document}', [KnowledgeDocumentController::class, 'destroy'])->name('knowledge.documents.destroy');
 
+        Route::get('/insight-topics/export', [InsightTopicController::class, 'export'])->name('insight-topics.export');
         Route::resource('insight-topics', InsightTopicController::class)
             ->except('show')
             ->parameters(['insight-topics' => 'insightTopic']);
