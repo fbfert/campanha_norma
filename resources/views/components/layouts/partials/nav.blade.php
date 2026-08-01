@@ -50,8 +50,11 @@
         <details class="nav-group" @if($pesquisaAtiva) open @endif>
             <summary><x-icon name="poll" />Pesquisa</summary>
             @can('conversation_automation.view')
-                <a href="{{ route('admin.conversation-automation.index') }}" @class(['active' => request()->routeIs('admin.conversation-automation.*')])><x-icon name="poll" /><span>Pesquisa conversacional</span></a>
+                <a href="{{ route('admin.conversation-automation.index') }}" @class(['active' => request()->routeIs('admin.conversation-automation.*') && ! request()->routeIs('admin.conversation-automation.settings.*')])><x-icon name="poll" /><span>Pesquisa conversacional</span></a>
                 <a href="{{ route('admin.conversation-flows.index') }}" @class(['active' => request()->routeIs('admin.conversation-flows.*')])><x-icon name="flow" /><span>Fluxos conversacionais</span></a>
+            @endcan
+            @can('conversation_automation.manage_settings')
+                <a href="{{ route('admin.conversation-automation.settings.edit') }}" @class(['active' => request()->routeIs('admin.conversation-automation.settings.*')])><x-icon name="settings" /><span>Configuração da automação</span></a>
             @endcan
             @can('analytics.view_aggregates')
                 <a href="{{ route('admin.analytics.dashboard') }}" @class(['active' => request()->routeIs('admin.analytics.dashboard')])><x-icon name="chart" /><span>Painel da pesquisa</span></a>
@@ -165,5 +168,6 @@
         <summary><x-icon name="book" />Manual</summary>
         <a href="{{ route('manual.index') }}" @class(['active' => request()->routeIs('manual.index')])><x-icon name="book" /><span>Manual de uso</span></a>
         <a href="{{ route('manual.mind-map') }}" @class(['active' => request()->routeIs('manual.mind-map')])><x-icon name="mind-map" /><span>Mapa mental</span></a>
+        <a href="{{ route('manual.survey-start') }}" @class(['active' => request()->routeIs('manual.survey-start')])><x-icon name="poll" /><span>Como iniciar uma pesquisa</span></a>
     </details>
 </nav>

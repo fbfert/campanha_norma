@@ -5,14 +5,6 @@
     :title="$isNew ? 'Nova base de conhecimento' : 'Editar base de conhecimento'"
     :breadcrumbs="$isNew ? 'Inicio / Base de conhecimento / Nova base' : 'Inicio / Base de conhecimento / Editar base'">
 
-    @if($errors->any())
-        <div class="alert error">
-            <ul>
-                @foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach
-            </ul>
-        </div>
-    @endif
-
     <section class="card">
         <form method="post" action="{{ $isNew ? route('admin.knowledge.bases.store') : route('admin.knowledge.bases.update', $base) }}">
             @csrf

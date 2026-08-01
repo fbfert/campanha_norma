@@ -1,6 +1,6 @@
 <x-layouts.app title="Revisar sugestão" breadcrumbs="Inicio / Pesquisa conversacional / Sugestoes / Detalhes">
     <section class="card">
-        <span class="badge" style="background:#4f46e5;color:#fff;">Gerado por IA</span>
+        <span class="badge" style="background:var(--ai-mark);color:var(--text-inverse);">Gerado por IA</span>
         <span class="muted" style="margin-left:8px;">
             {{ $suggestion->action->label() }} &middot; modo {{ $suggestion->mode->label() }} &middot;
             prompt {{ $suggestion->prompt_version }} &middot; tentativa {{ $suggestion->generation_attempt }} &middot;

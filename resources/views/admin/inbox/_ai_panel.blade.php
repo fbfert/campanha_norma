@@ -8,7 +8,7 @@
         <section class="card">
             <h2>
                 Interpretação
-                <span class="badge" style="background:#4f46e5;color:#fff;">Gerado por IA</span>
+                <span class="badge" style="background:var(--ai-mark);color:var(--text-inverse);">Gerado por IA</span>
             </h2>
             <p class="muted">Resultado derivado da mensagem original, que permanece inalterada.</p>
 
@@ -25,10 +25,10 @@
                 <p><strong>Resumo:</strong> {{ $latestInsight->summary ?? '-' }}</p>
                 <p><strong>Temas:</strong>
                     @if($latestInsight->topic)
-                        <span class="badge" style="background:{{ $latestInsight->topic->color ?? '#64748b' }};color:#fff;">{{ $latestInsight->topic->name }}</span>
+                        <span class="badge" style="background:{{ $latestInsight->topic->color ?? 'var(--tag-default)' }};color:var(--text-inverse);">{{ $latestInsight->topic->name }}</span>
                     @endif
                     @foreach($latestInsight->topicLinks->where('role', 'secondary') as $link)
-                        <span class="badge" style="background:{{ $link->topic?->color ?? '#64748b' }};color:#fff;">{{ $link->topic?->name }}</span>
+                        <span class="badge" style="background:{{ $link->topic?->color ?? 'var(--tag-default)' }};color:var(--text-inverse);">{{ $link->topic?->name }}</span>
                     @endforeach
                 </p>
                 <p><strong>Urgência:</strong> {{ $latestInsight->urgency?->label() ?? '-' }}</p>

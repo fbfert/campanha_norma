@@ -10,7 +10,7 @@
                 @foreach($tags as $tag)
                     <tr>
                         <td>{{ $tag->name }}</td>
-                        <td><span style="display:inline-block;background:{{ $tag->color }};color:#fff;border-radius:6px;padding:3px 8px;">{{ $tag->color }}</span></td>
+                        <td><span style="display:inline-block;background:{{ $tag->color }};color:var(--text-inverse);border-radius:6px;padding:3px 8px;">{{ $tag->color }}</span></td>
                         <td>{{ $tag->is_active ? 'Ativa' : 'Inativa' }}</td>
                         <td>{{ $tag->contacts_count }}</td>
                         <td class="actions"><a class="btn ghost" href="{{ route('admin.tags.edit', $tag) }}">Editar</a><form method="post" action="{{ route('admin.tags.destroy', $tag) }}" onsubmit="return confirm('Excluir logicamente esta etiqueta?')">@csrf @method('delete')<button class="btn danger" type="submit">Excluir</button></form></td>

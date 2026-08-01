@@ -25,6 +25,24 @@ Contato responde
 
 O navegador nunca chama o Node.js. O envio continua pelo `WhatsAppProvider`.
 
+## Vínculo entre lote e fluxo
+
+O fluxo só entra em ação se o lote estiver vinculado a ele. O campo fica no
+formulário do lote, em "3. Resposta automática", e grava
+`message_batches.conversation_flow_id` mais o snapshot da associação.
+
+Só fluxo com status `active` pode ser vinculado. Um fluxo já vinculado que for
+pausado depois continua aceito na edição do lote — pausar o fluxo interrompe a
+automação (o guard nega `fluxo_inativo`), mas não trava a edição.
+
+A cada envio bem-sucedido, `RecipientProcessingService::activateConversationFlow`
+resolve a conversa do destinatário e chama `ConversationFlowService::activateForConversation`,
+que cria o estado em `waiting_permission`. Sem contato identificado no
+destinatário, nada e criado.
+
+Lote sem fluxo apenas envia: quem responder cai em atendimento humano, porque
+`handleIncomingMessage` sai calado quando não existe estado para a conversa.
+
 ## Tabelas
 
 ```text
@@ -42,6 +60,33 @@ message_batches.conversation_flow_id        associacao opcional com fluxo
 message_batches.conversation_flow_snapshot  snapshot da associacao
 conversation_messages.origin                manual | automation | incoming | sync
 ```
+
+## Perguntas por conversa e ordem
+
+`max_main_questions` define quantas perguntas da pesquisa cada conversa recebe. Com 1, a conversa encerra na primeira resposta; acima disso, cada resposta traz a próxima pergunta, sem repetir, até o teto ou até acabarem as perguntas ativas.
+
+`question_order` decide como a próxima e escolhida:
+
+```text
+sorteio     sorteio ponderado pelo peso (padrao)
+sequencia   ordem cadastrada em display_order; o peso e ignorado
+```
+
+Sorteio cobre mais temas com menos perguntas por pessoa. Sequência faz todo mundo responder as mesmas perguntas na mesma ordem, que e o que um questionário precisa para as respostas se compararem.
+
+Quando o fluxo tem `max_followups` maior que zero, as perguntas cadastradas vem primeiro e so depois a 9C assume o aprofundamento. A pergunta cadastrada e igual para todo mundo e produz resposta comparável; a gerada varia a cada conversa.
+
+## Retomar uma conversa
+
+Ao entrar em espera — encaminhamento automático ou pausa manual — o estado guarda `stage_before_hold`. Retomar devolve a conversa para la, e não para o pedido de permissão.
+
+Sem esse registro, retomar uma conversa que já tinha autorização a fazia voltar a pedir autorização, e a próxima frase da pessoa, que seria a opinião dela, era lida como sim ou não. Conversa antiga, sem o registro, continua voltando para `waiting_permission`, que e o destino seguro.
+
+## Placeholders na pergunta
+
+O texto da pergunta aceita os mesmos placeholders da mensagem de lote, e o formulário recusa chave inexistente. Contato sem o campo preenchido não recebe a pergunta: fica registrado `automation_placeholder_missing` e nada e enviado.
+
+`{nome}`, `{primeiro_nome}` e `{telefone}` existem em todo contato apto. Cidade, estado, país e e-mail podem faltar.
 
 ## Estagios
 
@@ -146,6 +191,41 @@ conversation_automation.no_question_behavior           waiting_human | completed
 conversation_automation.mark_do_not_contact_on_refusal 0
 ```
 
+A tela `/admin/conversation-automation/settings` edita todas essas chaves, menos
+`queue` e `send_queue`. Ela grava preservando grupo, tipo e visibilidade, limpa
+o cache sozinha e registra `conversation_automation.settings_updated` na
+auditoria. Exige `conversation_automation.manage_settings`.
+
+Fila continua fora da tela de propósito: nome de fila que nenhum worker consome
+não produz erro, apenas emudece a automação. Trocar fila exige deploy, junto com
+o worker que passa a consumi-la.
+
+A mesma tela edita os **limiares de confiança da IA**, que também viviam só no
+banco:
+
+```text
+ai.response.min_confidence            abaixo disso a resposta nasce sinalizada e nunca e autoenviada
+ai.response.auto_send_min_confidence  a partir disso pode sair sem revisao humana
+ai.min_classification_confidence      abaixo disso a classificacao pede revisao
+ai.min_extraction_confidence          abaixo disso o insight pede revisao
+analytics.low_confidence_threshold    so marca o dado como fragil nos relatorios
+```
+
+A tela recusa autoenvio abaixo do limiar de revisão obrigatória, que seria
+enviar sozinho um texto que o próprio sistema considera duvidoso. Alterações
+registram `ai.thresholds_updated` na auditoria.
+
+Confiança e o modelo avaliando a si mesmo, e ele erra para cima: na prática
+quase toda geração volta com 0,90 ou mais. O limiar filtra o descarado, não o
+plausível e errado.
+
+Duas combinações a tela recusa, por prometerem o que não podem cumprir: envio
+automático ligado com a automação desligada, e aviso de automação escolhido sem
+texto de aviso.
+
+As listas de expressões são editadas uma por linha e guardadas separadas por
+barra vertical, sem vazio e sem repetida.
+
 Após alterar configurações pelo seeder, limpe o cache:
 
 ```bash
@@ -159,16 +239,23 @@ conversation_automation.view
 conversation_automation.manage_flows
 conversation_automation.manage_questions
 conversation_automation.control
+conversation_automation.manage_settings
 ```
 
 - Administrador: todas.
 - Operador: `view` e `control`.
 - Consulta: apenas `view`.
 
+`control` pausa e retoma **uma** conversa. `manage_settings` liga e desliga o
+motor para toda a base e define o texto que sai sem revisão humana: por isso são
+permissões separadas, e o operador tem a primeira e não a segunda.
+
 ## Rotas
 
 ```text
 /admin/conversation-automation
+/admin/conversation-automation/settings
+PUT /admin/conversation-automation/settings
 /admin/conversation-automation/{state}
 POST /admin/conversation-automation/{state}/pause
 POST /admin/conversation-automation/{state}/resume
@@ -205,7 +292,7 @@ POST /admin/conversation-automation/{state}/take-over
 
 ## Solução de problemas
 
-- Nada acontece ao responder: confirmar `conversation_automation.enabled`, o worker das filas novas e o estado da conversa.
+- Nada acontece ao responder: confirmar o vínculo do lote com o fluxo, `conversation_automation.enabled`, o worker das filas novas e o estado da conversa.
 - Pergunta não enviada: confirmar `conversation_automation.auto_send_enabled`, janela de horário e elegibilidade do contato.
 - Resposta legítima virando ambígua: revisar as listas de expressões e `short_answer_max_words`.
 - Conversa presa em `waiting_human`: usar retomar ou encerrar na tela de estado.

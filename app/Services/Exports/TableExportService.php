@@ -30,6 +30,9 @@ class TableExportService
         private readonly AuditLogger $audit,
     ) {}
 
+    /** Formatos tabulares oferecidos nas telas. */
+    public const FORMATS = ['csv', 'xlsx', 'markdown'];
+
     /**
      * @param  list<string>  $headers
      * @param  iterable<array<int, mixed>>  $rows
@@ -42,8 +45,13 @@ class TableExportService
         string $auditAction,
         string $auditDescription,
     ): BinaryFileResponse {
-        $format = $format === 'xlsx' ? 'xlsx' : 'csv';
-        $path = storage_path('app/private/'.$filename.'-'.now()->format('YmdHis').'.'.$format);
+        $format = in_array($format, self::FORMATS, true) ? $format : 'csv';
+
+        if ($format === 'markdown') {
+            return $this->markdown($filename, $headers, $rows, $auditAction, $auditDescription);
+        }
+
+        $path = $this->path($filename, $format);
 
         $writer = $format === 'xlsx' ? new XlsxWriter : new CsvWriter;
         $writer->openToFile($path);
@@ -61,13 +69,84 @@ class TableExportService
 
         $writer->close();
 
+        return $this->respond($path, $filename, $format, $count, $auditAction, $auditDescription);
+    }
+
+    /**
+     * Tabela em Markdown, para colar em documentação ou em uma issue.
+     *
+     * @param  list<string>  $headers
+     * @param  iterable<array<int, mixed>>  $rows
+     */
+    private function markdown(
+        string $filename,
+        array $headers,
+        iterable $rows,
+        string $auditAction,
+        string $auditDescription,
+    ): BinaryFileResponse {
+        $path = $this->path($filename, 'md');
+        $handle = fopen($path, 'w');
+
+        fwrite($handle, '| '.implode(' | ', array_map($this->cell(...), $headers)).' |'.PHP_EOL);
+        fwrite($handle, '|'.str_repeat(' --- |', count($headers)).PHP_EOL);
+
+        $count = 0;
+
+        foreach ($rows as $row) {
+            fwrite($handle, '| '.implode(' | ', array_map($this->cell(...), $row)).' |'.PHP_EOL);
+            $count++;
+        }
+
+        fclose($handle);
+
+        return $this->respond($path, $filename, 'md', $count, $auditAction, $auditDescription);
+    }
+
+    /**
+     * Uma célula de tabela Markdown.
+     *
+     * Três escapes, cada um por um motivo diferente. A barra vertical fecharia
+     * a coluna no meio do texto e desalinharia a tabela inteira. A quebra de
+     * linha encerraria a linha da tabela. E o sinal de menor vira `&lt;` porque
+     * Markdown aceita HTML embutido: um tema chamado `<img onerror=...>` viraria
+     * marcação viva no dia em que alguém publicasse esta tabela numa página.
+     */
+    private function cell(mixed $value): string
+    {
+        $text = match (true) {
+            $value === null => '',
+            is_bool($value) => $value ? 'sim' : 'não',
+            default => (string) $value,
+        };
+
+        return trim(str_replace(
+            ['\\', '|', "\r\n", "\n", "\r", '<'],
+            ['\\\\', '\\|', ' ', ' ', ' ', '&lt;'],
+            $text
+        ));
+    }
+
+    private function path(string $filename, string $extension): string
+    {
+        return storage_path('app/private/'.$filename.'-'.now()->format('YmdHis').'.'.$extension);
+    }
+
+    private function respond(
+        string $path,
+        string $filename,
+        string $extension,
+        int $count,
+        string $auditAction,
+        string $auditDescription,
+    ): BinaryFileResponse {
         $this->audit->log($auditAction, $auditDescription, null, null, [
-            'format' => $format,
+            'format' => $extension,
             'count' => $count,
         ]);
 
         return response()
-            ->download($path, $filename.'.'.$format)
+            ->download($path, $filename.'.'.$extension)
             ->deleteFileAfterSend(true);
     }
 }

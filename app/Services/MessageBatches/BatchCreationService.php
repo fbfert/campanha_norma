@@ -5,6 +5,7 @@ namespace App\Services\MessageBatches;
 use App\Enums\MessageBatchRecipientEligibility;
 use App\Enums\MessageBatchSelectionType;
 use App\Enums\MessageBatchStatus;
+use App\Models\ConversationFlow;
 use App\Models\MessageBatch;
 use App\Models\MessageBatchEvent;
 use App\Models\MessageTemplate;
@@ -34,15 +35,18 @@ class BatchCreationService
         $body = $isCampaign ? $this->campaignBody($campaignTemplates) : $this->body($data);
         $this->ensureBodiesAreValid($isCampaign ? $campaignTemplates->pluck('body')->all() : [$body]);
         $template = ! $isCampaign && filled($data['message_template_id'] ?? null) ? MessageTemplate::findOrFail((int) $data['message_template_id']) : null;
+        $flow = $this->conversationFlow($data);
         $contacts = $this->selection->select($data);
         $seed = $data['random_seed'] ?? $this->random->seed();
         $positions = $this->random->positions($contacts->pluck('id')->all(), $seed);
 
-        return DB::transaction(function () use ($data, $user, $body, $template, $contacts, $seed, $positions, $isCampaign, $campaignTemplates): MessageBatch {
+        return DB::transaction(function () use ($data, $user, $body, $template, $flow, $contacts, $seed, $positions, $isCampaign, $campaignTemplates): MessageBatch {
             $batch = MessageBatch::create([
                 'name' => trim($data['name']),
                 'description' => $data['description'] ?? null,
                 'is_campaign' => $isCampaign,
+                'conversation_flow_id' => $flow?->id,
+                'conversation_flow_snapshot' => $flow ? $this->flowSnapshot($flow) : null,
                 'message_template_id' => $template?->id,
                 'message_template_version' => $template?->version,
                 'message_body_snapshot' => $body,
@@ -59,6 +63,9 @@ class BatchCreationService
             $this->writeRecipients($batch, $contacts, $body, $positions, $isCampaign ? $campaignTemplates : null, $seed);
             $this->recount($batch);
             $this->event($batch, $user, 'created', 'Lote criado como rascunho.');
+            if ($flow) {
+                $this->event($batch, $user, 'conversation_flow_linked', 'Fluxo conversacional vinculado ao lote.', ['flow_id' => $flow->id, 'flow_name' => $flow->name]);
+            }
             if ($isCampaign) {
                 $this->event($batch, $user, 'campaign_templates_selected', 'Modelos da campanha selecionados.', ['template_ids' => $campaignTemplates->pluck('id')->values()->all()]);
             }
@@ -77,7 +84,9 @@ class BatchCreationService
         $body = $isCampaign ? $this->campaignBody($campaignTemplates) : $this->body($data);
         $this->ensureBodiesAreValid($isCampaign ? $campaignTemplates->pluck('body')->all() : [$body]);
 
-        return DB::transaction(function () use ($batch, $data, $user, $body, $isCampaign, $campaignTemplates): MessageBatch {
+        $flow = $this->conversationFlow($data, $batch);
+
+        return DB::transaction(function () use ($batch, $data, $user, $body, $flow, $isCampaign, $campaignTemplates): MessageBatch {
             $template = ! $isCampaign && filled($data['message_template_id'] ?? null) ? MessageTemplate::findOrFail((int) $data['message_template_id']) : null;
             $contacts = $this->selection->select($data);
             $seed = $data['random_seed'] ?? $batch->random_seed ?? $this->random->seed();
@@ -88,6 +97,8 @@ class BatchCreationService
                 'name' => trim($data['name']),
                 'description' => $data['description'] ?? null,
                 'is_campaign' => $isCampaign,
+                'conversation_flow_id' => $flow?->id,
+                'conversation_flow_snapshot' => $flow ? $this->flowSnapshot($flow) : null,
                 'message_template_id' => $template?->id,
                 'message_template_version' => $template?->version,
                 'message_body_snapshot' => $body,
@@ -147,6 +158,8 @@ class BatchCreationService
             'name' => $batch->name.' - copia',
             'description' => $batch->description,
             'is_campaign' => $batch->is_campaign,
+            'conversation_flow_id' => $batch->conversation_flow_id,
+            'conversation_flow_snapshot' => $batch->conversation_flow_snapshot,
             'message_template_id' => $batch->message_template_id,
             'message_template_version' => $batch->message_template_version,
             'message_body_snapshot' => $batch->message_body_snapshot,
@@ -256,6 +269,44 @@ class BatchCreationService
         }
 
         return $templates;
+    }
+
+    /**
+     * Fluxo conversacional que o lote ativa após cada envio bem-sucedido.
+     * Só fluxo ativo pode ser vinculado; um fluxo já vinculado que foi pausado
+     * depois continua aceito, para que pausar o fluxo não trave a edição do lote.
+     */
+    private function conversationFlow(array $data, ?MessageBatch $batch = null): ?ConversationFlow
+    {
+        $id = (int) ($data['conversation_flow_id'] ?? 0);
+
+        if ($id < 1) {
+            return null;
+        }
+
+        $flow = ConversationFlow::find($id);
+
+        if (! $flow) {
+            throw ValidationException::withMessages(['conversation_flow_id' => 'Fluxo conversacional não encontrado.']);
+        }
+
+        if (! $flow->isRunnable() && $batch?->conversation_flow_id !== $flow->id) {
+            throw ValidationException::withMessages(['conversation_flow_id' => 'O fluxo conversacional precisa estar ativo para ser vinculado a um lote.']);
+        }
+
+        return $flow;
+    }
+
+    private function flowSnapshot(ConversationFlow $flow): array
+    {
+        return [
+            'id' => $flow->id,
+            'name' => $flow->name,
+            'status' => $flow->status->value,
+            'validity_hours' => $flow->validity_hours,
+            'max_main_questions' => $flow->max_main_questions,
+            'transparency_enabled' => (bool) $flow->transparency_enabled,
+        ];
     }
 
     private function campaignBody(Collection $templates): string

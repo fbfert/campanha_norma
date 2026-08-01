@@ -29,6 +29,14 @@ class ConversationFlowStateMachine
             'last_transition_at' => now(),
         ]);
 
+        // Ao entrar em espera, guarda de onde a conversa veio. Sem isso,
+        // retomar so sabe voltar para o começo — e uma conversa que já tinha
+        // autorização volta a pedir autorização, fazendo a próxima frase da
+        // pessoa, que seria a opinião dela, ser lida como sim ou não.
+        if ($this->isHold($to) && ! $this->isHold($from)) {
+            $state->forceFill(['stage_before_hold' => $from?->value]);
+        }
+
         if ($to === ConversationFlowStage::Completed || $to->isTerminal()) {
             $state->forceFill(['completed_at' => $state->completed_at ?? now()]);
         }
@@ -74,5 +82,32 @@ class ConversationFlowStateMachine
         $state->forceFill(['needs_human_review' => true])->save();
 
         return $this->transition($state, ConversationFlowStage::WaitingHuman, $triggerEvent, $message, $decision, $user);
+    }
+
+    /**
+     * Estágio para onde a conversa deve voltar ao ser retomada.
+     *
+     * Sem registro anterior, o pedido de permissão continua sendo o destino
+     * seguro: e o único estágio que não presume nada sobre o que já foi dito.
+     * Estágio terminal também não serve — retomar para encerrado encerraria a
+     * conversa no mesmo instante.
+     */
+    public function stageToResume(ConversationFlowState $state): ConversationFlowStage
+    {
+        $anterior = $state->stage_before_hold
+            ? ConversationFlowStage::tryFrom($state->stage_before_hold)
+            : null;
+
+        if ($anterior === null || $anterior->isTerminal() || $this->isHold($anterior)) {
+            return ConversationFlowStage::WaitingPermission;
+        }
+
+        return $anterior;
+    }
+
+    /** A conversa esta em espera, aguardando gente? */
+    private function isHold(?ConversationFlowStage $stage): bool
+    {
+        return in_array($stage, [ConversationFlowStage::WaitingHuman, ConversationFlowStage::Paused], true);
     }
 }

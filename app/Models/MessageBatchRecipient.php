@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\ContactStatus;
 use App\Enums\MessageBatchRecipientEligibility;
 use App\Enums\MessageRecipientProcessingStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -69,6 +70,25 @@ class MessageBatchRecipient extends Model
     public function batch(): BelongsTo
     {
         return $this->belongsTo(MessageBatch::class, 'message_batch_id');
+    }
+
+    /**
+     * O contato ainda pode receber mensagem.
+     *
+     * Esta regra vive aqui, e não dentro do serviço de envio, porque três
+     * caminhos precisam dela: o envio, ao conferir na última hora; o
+     * descancelamento, para não rearmar quem pediu para sair; e o
+     * reprocessamento. Três cópias divergiriam, e a que divergisse seria
+     * justamente a que deixa passar.
+     */
+    public function contactStillEligible(): bool
+    {
+        $contact = $this->contact;
+
+        return $contact
+            && $contact->status === ContactStatus::Active
+            && ! $contact->do_not_contact
+            && filled($contact->phone_normalized);
     }
 
     public function contact(): BelongsTo

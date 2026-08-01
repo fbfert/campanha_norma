@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests\ConversationAutomation;
 
+use App\Services\Placeholders\PlaceholderParserService;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Validator;
 
 class ConversationFlowQuestionRequest extends FormRequest
 {
@@ -21,5 +23,18 @@ class ConversationFlowQuestionRequest extends FormRequest
             'display_order' => ['required', 'integer', 'min:0', 'max:9999'],
             'is_active' => ['nullable', 'boolean'],
         ];
+    }
+
+    public function withValidator(Validator $validator): void
+    {
+        $validator->after(function (Validator $validator): void {
+            // Placeholder inexistente não falha no envio: ele sai literal para
+            // o contato, e ninguém percebe até alguém receber "{cidde}".
+            [, $errors] = app(PlaceholderParserService::class)->validate((string) $this->input('text'));
+
+            foreach ($errors as $error) {
+                $validator->errors()->add('text', $error);
+            }
+        });
     }
 }

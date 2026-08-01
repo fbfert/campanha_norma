@@ -134,6 +134,18 @@ approved_ai  sugestao aprovada ou autoenviada
 
 As validações próprias do envio manual continuam em `ManualReplyService` e seu comportamento não mudou.
 
+### Placeholders
+
+`createPending` resolve os placeholders do contato antes de criar a mensagem, para as três origens. Antes so a automação renderizava, e um `{cidade}` escrito a mão numa resposta manual — ou copiado pelo modelo do texto da pergunta — chegava literal no WhatsApp da pessoa.
+
+Campo vazio no contato interrompe o envio com erro de validação em vez de mandar a chave crua. A automação nunca chega nesse erro: ela verifica antes, registra `automation_placeholder_missing` e simplesmente não envia.
+
+## Quando a geração não acontece
+
+A 9C não gera quando o motor determinístico acabou de responder a mesma mensagem — estágio `question_selected` ou `waiting_answer` com o motor tendo rodado. É o caso do "sim": quem responde a autorização e a 9A, mandando a pergunta cadastrada, e uma sugestão de IA para a mesma mensagem nasceria genérica, entupindo a caixa de aprovação sem poder ser autoenviada, porque `permission_yes` não esta na allowlist.
+
+Com a 9A desligada ou bloqueada (`flowEngineRan` falso), a 9C continua gerando: a independência entre as etapas e preservada.
+
 ## Metadados na linha do tempo
 
 ```text

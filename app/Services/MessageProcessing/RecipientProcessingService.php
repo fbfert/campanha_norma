@@ -12,6 +12,7 @@ use App\Jobs\DispatchMessageBatchJob;
 use App\Models\MessageBatch;
 use App\Models\MessageBatchRecipient;
 use App\Models\MessageSendAttempt;
+use App\Models\SendingSetting;
 use App\Services\ConversationAutomation\ConversationFlowService;
 use App\Services\Conversations\ConversationResolverService;
 use App\Services\WhatsApp\WhatsAppProviderManager;
@@ -66,7 +67,7 @@ class RecipientProcessingService
             $limit = $this->rateLimiter->check($settings);
             if (! $limit['allowed']) {
                 $status = MessageRecipientProcessingStatus::from($limit['blocked_by'] ?? MessageRecipientProcessingStatus::WaitingMinuteLimit->value);
-                $this->wait($recipient, $status, $limit['next_at'], 'Aguardando limite de envio.');
+                $this->wait($recipient, $status, $limit['next_at'], $this->rateLimitMessage($status, $settings));
 
                 return;
             }
@@ -173,14 +174,27 @@ class RecipientProcessingService
         }
     }
 
+    /**
+     * Mensagem que diz qual configuração esta segurando o envio.
+     *
+     * "Aguardando limite de envio" servia para as quatro travas, e o operador
+     * ficava sem saber qual delas mexer. O intervalo mínimo e o caso que mais
+     * confunde: ele segura mesmo com os limites por minuto, hora e dia folgados.
+     */
+    private function rateLimitMessage(MessageRecipientProcessingStatus $status, SendingSetting $settings): string
+    {
+        return match ($status) {
+            MessageRecipientProcessingStatus::WaitingMinimumInterval => "Aguardando o intervalo mínimo de {$settings->minimum_interval_seconds}s entre mensagens.",
+            MessageRecipientProcessingStatus::WaitingMinuteLimit => "Atingido o limite de {$settings->max_per_minute} mensagens por minuto.",
+            MessageRecipientProcessingStatus::WaitingHourLimit => "Atingido o limite de {$settings->max_per_hour} mensagens por hora.",
+            MessageRecipientProcessingStatus::WaitingDayLimit => "Atingido o limite de {$settings->max_per_day} mensagens por dia.",
+            default => 'Aguardando limite de envio.',
+        };
+    }
+
     private function contactStillAllowed(MessageBatchRecipient $recipient): bool
     {
-        $contact = $recipient->contact;
-
-        return $contact
-            && $contact->status === ContactStatus::Active
-            && ! $contact->do_not_contact
-            && filled($contact->phone_normalized);
+        return $recipient->contactStillEligible();
     }
 
     private function wait(MessageBatchRecipient $recipient, MessageRecipientProcessingStatus $status, mixed $nextAt, string $message): void

@@ -8,6 +8,12 @@ enum MessageRecipientProcessingStatus: string
     case Pending = 'pending';
     case WaitingSchedule = 'waiting_schedule';
     case WaitingMinuteLimit = 'waiting_minute_limit';
+
+    // Separado do limite por minuto porque a causa e outra e o ajuste e em
+    // outro campo. Enquanto os dois dividiam o mesmo nome, quem via "aguardando
+    // limite por minuto" com o limite folgado procurava no lugar errado.
+    case WaitingMinimumInterval = 'waiting_minimum_interval';
+
     case WaitingHourLimit = 'waiting_hour_limit';
     case WaitingDayLimit = 'waiting_day_limit';
     case Queued = 'queued';
@@ -26,6 +32,7 @@ enum MessageRecipientProcessingStatus: string
             self::Pending => 'Pendente',
             self::WaitingSchedule => 'Aguardando horário',
             self::WaitingMinuteLimit => 'Aguardando limite por minuto',
+            self::WaitingMinimumInterval => 'Aguardando intervalo mínimo',
             self::WaitingHourLimit => 'Aguardando limite por hora',
             self::WaitingDayLimit => 'Aguardando limite diário',
             self::Queued => 'Na fila',
@@ -45,6 +52,7 @@ enum MessageRecipientProcessingStatus: string
             self::Pending,
             self::WaitingSchedule,
             self::WaitingMinuteLimit,
+            self::WaitingMinimumInterval,
             self::WaitingHourLimit,
             self::WaitingDayLimit,
             self::Queued,

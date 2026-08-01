@@ -32,7 +32,22 @@
     @endif
 </div>
 <div class="card" style="margin-top:16px;">
-    <h2>3. Contatos</h2>
+    <h2>3. Resposta automática</h2>
+    @php $selectedFlow = (string) old('conversation_flow_id', $batch->conversation_flow_id ?? ''); @endphp
+    <p class="muted">Ao vincular um fluxo conversacional, cada envio bem-sucedido abre o fluxo na conversa do destinatário: quem responder recebe a pergunta automática, sem intervenção do operador. Sem fluxo, o lote apenas envia e as respostas ficam para atendimento humano.</p>
+    <label for="conversation_flow_id">Fluxo conversacional</label>
+    <select id="conversation_flow_id" name="conversation_flow_id">
+        <option value="">Sem resposta automática</option>
+        @foreach($flows as $flow)
+            <option value="{{ $flow->id }}" @selected($selectedFlow === (string) $flow->id)>{{ $flow->name }} — {{ $flow->questions_count }} {{ $flow->questions_count === 1 ? 'pergunta ativa' : 'perguntas ativas' }}@if($flow->status !== \App\Enums\ConversationFlowStatus::Active) ({{ $flow->status->label() }})@endif</option>
+        @endforeach
+    </select>
+    @if($flows->isEmpty())
+        <p class="muted" style="margin-top:8px;">Nenhum fluxo ativo cadastrado. Crie um em <a href="{{ route('admin.conversation-flows.index') }}">Fluxos conversacionais</a>.</p>
+    @endif
+</div>
+<div class="card" style="margin-top:16px;">
+    <h2>4. Contatos</h2>
     <p class="muted">Os filtros abaixo valem tanto para a seleção manual quanto para "todos os filtrados" e "amostra aleatória" (escolhidos em 1. Identificação).</p>
     <div><label for="random_quantity">Quantidade aleatória</label><input id="random_quantity" name="random_quantity" type="number" min="1" max="1000" value="{{ old('random_quantity') }}" style="max-width:200px;"></div>
     @livewire(\App\Http\Livewire\CampaignContactPicker::class, ['initialSelectedIds' => collect(old('contact_ids', []))->map(fn ($id) => (int) $id)->all()])

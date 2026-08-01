@@ -93,6 +93,37 @@
     --warning-border: #ddc79b;
     --info-soft: #eaeff8;
 
+    /* Texto sobre os fundos de estado. Mais escuro que a cor do estado, porque
+       ali ele e texto corrido e precisa de contraste de leitura. */
+    --success-text: #215034;
+    --danger-text: #7d241d;
+    --danger-hover: #85251e;
+    --warning-text: #6b3f10;
+
+    /* Marca de conteúdo produzido por IA. Fica fora da paleta da marca de
+       propósito: ela existe para dizer "isto não foi uma pessoa que escreveu",
+       e confundir-se com o resto da interface derrotaria o aviso. */
+    --ai-mark: #4f46e5;
+
+    /* Cor de tema ou etiqueta sem cor própria cadastrada. */
+    --tag-default: #64748b;
+
+    /* Aviso de não lidas. Laranja e a única cor do sistema que não deriva da
+       marca, e e de propósito: ela precisa se separar de tudo. */
+    --alert-badge: #f97316;
+
+    /* Galhos do mapa mental. Seis matizes de mesma saturação, para que nenhum
+       galho pareça mais importante que outro. */
+    --branch-0: #3e63a8;
+    --branch-1: #2f6a45;
+    --branch-2: #8a5216;
+    --branch-3: #6d4b91;
+    --branch-4: #a03027;
+    --branch-5: #1f6b73;
+
+    /* Impressão: borda que sobrevive ao preto e branco. */
+    --print-border: #999999;
+
     /* Forma */
     --radius-sm: 8px;
     --radius: 12px;
@@ -323,8 +354,8 @@ a {
 }
 
 .nav-badge {
-    background: #f97316;
-    color: #fff;
+    background: var(--alert-badge);
+    color: var(--text-inverse);
     margin-left: auto;
 }
 
@@ -457,7 +488,7 @@ a {
 }
 
 .btn.danger:hover {
-    background: #85251e;
+    background: var(--danger-hover);
 }
 
 .btn[disabled],
@@ -565,20 +596,20 @@ tbody tr:hover td {
 .alert-success {
     background: var(--success-soft);
     border-color: var(--success-border);
-    color: #215034;
+    color: var(--success-text);
 }
 
 .alert.error,
 .alert-error {
     background: var(--danger-soft);
     border-color: var(--danger-border);
-    color: #7d241d;
+    color: var(--danger-text);
 }
 
 .alert.warning {
     background: var(--warning-soft);
     border-color: var(--warning-border);
-    color: #6b3f10;
+    color: var(--warning-text);
 }
 
 .muted {
@@ -766,6 +797,65 @@ tbody tr:hover td {
     display: none;
 }
 
+/* --- Menu de exportação -------------------------------------------------- */
+
+.export-menu {
+    position: relative;
+}
+
+/* O `summary` já tem a classe `btn`; falta só tirar o marcador nativo e a
+   seleção de texto, que num botão atrapalha. */
+.export-menu > summary {
+    list-style: none;
+    user-select: none;
+}
+
+.export-menu > summary::-webkit-details-marker {
+    display: none;
+}
+
+.export-menu-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-lg);
+    display: grid;
+    left: 0;
+    min-width: 260px;
+    padding: var(--space-2);
+    position: absolute;
+    top: calc(100% + 6px);
+    z-index: 20;
+}
+
+.export-menu-panel a {
+    border-radius: var(--radius-sm);
+    color: inherit;
+    display: grid;
+    gap: 1px;
+    padding: 9px var(--space-3);
+    text-decoration: none;
+    transition: background var(--transition);
+}
+
+.export-menu-panel a:hover {
+    background: var(--surface-sunken);
+}
+
+.export-menu-panel .muted {
+    font-size: 13px;
+}
+
+/* Em tela estreita o painel flutuante fica maior que a área util. Vira uma
+   lista comum, empurrando o conteudo para baixo. */
+@media (max-width: 860px) {
+    .export-menu-panel {
+        min-width: 0;
+        position: static;
+        box-shadow: none;
+    }
+}
+
 /* --- Manual ------------------------------------------------------------- */
 
 /*
@@ -899,13 +989,6 @@ tbody tr:hover td {
 }
 
 .mindmap {
-    --branch-0: #3e63a8;
-    --branch-1: #2f6a45;
-    --branch-2: #8a5216;
-    --branch-3: #6d4b91;
-    --branch-4: #a03027;
-    --branch-5: #1f6b73;
-
     min-width: 520px;
 }
 
@@ -1038,7 +1121,7 @@ tbody tr:hover td {
     }
 
     .card {
-        border-color: #999;
+        border-color: var(--print-border);
         box-shadow: none;
         break-inside: avoid;
     }

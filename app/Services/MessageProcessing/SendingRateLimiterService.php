@@ -32,7 +32,7 @@ class SendingRateLimiterService
             $intervalRelease = CarbonImmutable::parse($lastSendAt, $settings->timezone)->addSeconds($settings->minimum_interval_seconds);
             if ($intervalRelease->greaterThan($now) && ($nextAt === null || $intervalRelease->greaterThan($nextAt))) {
                 $nextAt = $intervalRelease;
-                $blockedBy = 'waiting_minute_limit';
+                $blockedBy = 'waiting_minimum_interval';
             }
         }
 

@@ -2,9 +2,19 @@
     @if(session('status'))
         <div class="alert success">{{ session('status') }}</div>
     @endif
-    @if($errors->any())
-        <div class="alert error">
-            <ul>@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>
+
+    @if($repetidos->isNotEmpty())
+        <div class="alert warning">
+            <x-icon name="alert" size="18" />
+            <span>
+                Este mesmo arquivo também está em
+                @foreach($repetidos as $outro)
+                    <a href="{{ route('admin.knowledge.documents.show', [$outro->base, $outro]) }}">{{ $outro->base?->name }}</a>@if(! $loop->last), @endif
+                @endforeach.
+                A cópia não e proibida, mas com o texto repetido a busca devolve o mesmo trecho mais de
+                uma vez e a resposta sai com citação em duplicata. Se a intenção era um documento só,
+                remova esta cópia.
+            </span>
         </div>
     @endif
 

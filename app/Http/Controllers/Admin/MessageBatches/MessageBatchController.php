@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers\Admin\MessageBatches;
 
+use App\Enums\ConversationFlowStatus;
 use App\Enums\MessageBatchSelectionType;
 use App\Enums\MessageBatchStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\MessageBatches\MessageBatchRequest;
+use App\Models\ConversationFlow;
 use App\Models\MessageBatch;
 use App\Models\MessageTemplate;
 use App\Services\MessageBatches\BatchCreationService;
@@ -61,7 +63,7 @@ class MessageBatchController extends Controller
         abort_unless($request->user()->can('message_batches.view'), 403);
 
         return view('admin.message-batches.show', [
-            'batch' => $messageBatch->load(['template', 'creator', 'events.user']),
+            'batch' => $messageBatch->load(['template', 'conversationFlow', 'creator', 'events.user']),
             'recipients' => $messageBatch->recipients()->paginate(20),
         ]);
     }
@@ -71,7 +73,7 @@ class MessageBatchController extends Controller
         abort_unless($request->user()->can('message_batches.update'), 403);
         abort_if($messageBatch->status !== MessageBatchStatus::Draft, 403, 'Lotes preparados ou cancelados não podem ser editados diretamente.');
 
-        return view('admin.message-batches.edit', array_merge($this->formData($catalog), ['batch' => $messageBatch]));
+        return view('admin.message-batches.edit', array_merge($this->formData($catalog, $messageBatch), ['batch' => $messageBatch]));
     }
 
     public function update(MessageBatchRequest $request, MessageBatch $messageBatch, BatchCreationService $service): RedirectResponse
@@ -151,12 +153,31 @@ class MessageBatchController extends Controller
         return $export->export($messageBatch, $request->input('format', 'csv'));
     }
 
-    private function formData(PlaceholderCatalogService $catalog): array
+    private function formData(PlaceholderCatalogService $catalog, ?MessageBatch $batch = null): array
     {
+        $flows = ConversationFlow::query()
+            ->withCount(['questions' => fn ($query) => $query->where('is_active', true)])
+            ->where('status', ConversationFlowStatus::Active)
+            ->orderBy('name')
+            ->get();
+
+        // O fluxo já vinculado continua na lista mesmo se foi pausado depois,
+        // senão editar o lote o desvincularia sem ninguém pedir.
+        if ($batch?->conversation_flow_id && ! $flows->contains('id', $batch->conversation_flow_id)) {
+            $current = ConversationFlow::query()
+                ->withCount(['questions' => fn ($query) => $query->where('is_active', true)])
+                ->find($batch->conversation_flow_id);
+
+            if ($current) {
+                $flows = $flows->push($current)->sortBy('name')->values();
+            }
+        }
+
         return [
             'templates' => MessageTemplate::query()->where('status', 'active')->orderBy('name')->get(),
             'catalog' => $catalog->all(),
             'selectionTypes' => MessageBatchSelectionType::cases(),
+            'flows' => $flows,
         ];
     }
 }

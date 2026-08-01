@@ -8,7 +8,10 @@ use App\Http\Controllers\Controller;
 use App\Models\ConversationFlow;
 use App\Models\KnowledgeBase;
 use App\Services\AuditLogger;
+use App\Services\Exports\SqlExportService;
 use App\Services\Exports\TableExportService;
+use App\Services\Exports\TableImportService;
+use App\Services\Knowledge\KnowledgeBaseImporter;
 use App\Services\Knowledge\KnowledgeGuard;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -55,9 +58,15 @@ class KnowledgeBaseController extends Controller
      * cópia do material oficial fora do controle de aprovação; para ler o
      * documento existe a tela dele, com quem aprovou registrado ao lado.
      */
-    public function export(Request $request, TableExportService $export): BinaryFileResponse
+    public function export(Request $request, TableExportService $export, SqlExportService $sql): BinaryFileResponse
     {
         abort_unless($request->user()->can('knowledge.view'), 403);
+
+        $format = (string) $request->query('format', 'csv');
+
+        if ($format === 'sql') {
+            return $this->exportSql($sql);
+        }
 
         $bases = KnowledgeBase::query()
             ->with('approver')
@@ -92,9 +101,105 @@ class KnowledgeBaseController extends Controller
             'bases-de-conhecimento',
             ['base', 'identificador', 'descricao', 'proposito', 'politica_de_uso', 'situacao', 'provedor', 'versao', 'documentos', 'documentos_aprovados', 'fluxos', 'aprovada_por', 'aprovada_em', 'criada_em'],
             $bases,
-            (string) $request->query('format', 'csv'),
+            $format,
             'knowledge_bases.exported',
             'Relação de bases de conhecimento exportada.',
+        );
+    }
+
+    /**
+     * A ficha das bases em `INSERT`.
+     *
+     * Recria a base vazia: nome, propósito, política de uso. **Nenhum documento
+     * vai junto**, o que não e limitação e sim o ponto — documento oficial e
+     * aprovado por uma pessoa dentro de um sistema, e não copiado por arquivo.
+     *
+     * Pelo mesmo motivo a situação sai forçada como rascunho e a versão como 1,
+     * mesmo que a base de origem esteja ativa e na versão sete. Uma base que
+     * chega por SQL não foi aprovada *aqui*; herdar o carimbo de aprovada seria
+     * lavar a aprovação de um sistema para outro. Quem recebe reativa,
+     * conscientemente.
+     *
+     * O `id` não sai: a base não faz referência a si mesma, então deixar o destino
+     * numerar evita colisão sem perder nada.
+     */
+    private function exportSql(SqlExportService $sql): BinaryFileResponse
+    {
+        $columns = ['name', 'slug', 'description', 'purpose', 'usage_policy', 'status', 'version', 'provider', 'created_at', 'updated_at'];
+
+        $rows = KnowledgeBase::query()
+            ->orderBy('name')
+            ->cursor()
+            ->map(fn (KnowledgeBase $base): array => [
+                $base->name,
+                $base->slug,
+                $base->description,
+                $base->purpose,
+                $base->usage_policy,
+                KnowledgeBaseStatus::Draft->value,
+                1,
+                $base->provider,
+                $base->created_at?->toDateTimeString(),
+                $base->updated_at?->toDateTimeString(),
+            ]);
+
+        return $sql->download(
+            'bases-de-conhecimento',
+            'knowledge_bases',
+            $columns,
+            $rows,
+            'knowledge_bases.exported',
+            'Relação de bases de conhecimento exportada em SQL.',
+            "Nenhum documento vai junto: documento oficial e aprovado por uma\n"
+                ."pessoa dentro do sistema, não copiado por arquivo.\n"
+                ."Por isso a situação sai como rascunho e a versão como 1, mesmo\n"
+                ."que a base de origem esteja ativa. Quem recebe reativa e\n"
+                .'reaprova conscientemente.',
+        );
+    }
+
+    /**
+     * Importação da ficha das bases, em duas fases: conferir, depois gravar.
+     */
+    public function import(Request $request): View
+    {
+        abort_unless($request->user()->can('knowledge.manage_bases'), 403);
+
+        return view('admin.knowledge.bases.import', ['plan' => null, 'stored' => null]);
+    }
+
+    public function importPreview(Request $request, TableImportService $files, KnowledgeBaseImporter $importer): View
+    {
+        abort_unless($request->user()->can('knowledge.manage_bases'), 403);
+
+        $request->validate(['file' => ['required', 'file', 'max:5120']]);
+
+        $stored = $files->stash($request->file('file'));
+        $plan = $importer->plan($files->read($stored));
+
+        $request->session()->put('knowledge_bases.import', $stored);
+
+        return view('admin.knowledge.bases.import', ['plan' => $plan, 'stored' => $stored]);
+    }
+
+    public function importConfirm(Request $request, TableImportService $files, KnowledgeBaseImporter $importer): RedirectResponse
+    {
+        abort_unless($request->user()->can('knowledge.manage_bases'), 403);
+
+        $stored = (string) $request->session()->pull('knowledge_bases.import');
+
+        if ($stored === '' || $stored !== $request->input('stored')) {
+            return redirect()
+                ->route('admin.knowledge.bases.import')
+                ->withErrors(['file' => 'A conferência expirou. Envie o arquivo novamente.']);
+        }
+
+        $summary = $importer->apply($importer->plan($files->read($stored)), $request->user());
+        $files->discard($stored);
+
+        return redirect()->route('admin.knowledge.bases.index')->with(
+            'status',
+            "Importação concluída: {$summary['criadas']} criadas, {$summary['atualizadas']} atualizadas, {$summary['ignoradas']} ignoradas."
         );
     }
 

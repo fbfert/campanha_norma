@@ -2,10 +2,10 @@
     <div class="message-meta">
         <strong>{{ $message->direction->label() }}</strong>
         @if($message->origin === \App\Enums\ConversationMessageOrigin::Automation)
-            <span class="badge" style="background:#5b6776;color:#fff;">Automática</span>
+            <span class="badge" style="background:var(--text-muted);color:var(--text-inverse);">Automática</span>
         @endif
         @if($message->generated_by_ai)
-            <span class="badge" style="background:#4f46e5;color:#fff;" title="Texto sugerido por IA{{ $message->approver ? ', aprovado por '.$message->approver->name : '' }}">
+            <span class="badge" style="background:var(--ai-mark);color:var(--text-inverse);" title="Texto sugerido por IA{{ $message->approver ? ', aprovado por '.$message->approver->name : '' }}">
                 Sugerida por IA{{ $message->approver ? ' - aprovada por '.$message->approver->name : ' - envio automático' }}
             </span>
         @endif

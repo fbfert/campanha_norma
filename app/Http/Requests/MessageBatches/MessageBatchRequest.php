@@ -19,6 +19,7 @@ class MessageBatchRequest extends FormRequest
             'name' => ['required', 'string', 'max:180'],
             'description' => ['nullable', 'string', 'max:1000'],
             'is_campaign' => ['nullable', 'boolean'],
+            'conversation_flow_id' => ['nullable', 'integer', 'exists:conversation_flows,id'],
             'message_template_id' => ['nullable', 'integer', 'exists:message_templates,id'],
             'message_template_ids' => ['nullable', 'array', 'min:1', 'max:10', 'required_if:is_campaign,1'],
             'message_template_ids.*' => ['integer', 'distinct', 'exists:message_templates,id'],

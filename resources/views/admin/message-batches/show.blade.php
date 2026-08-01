@@ -13,6 +13,11 @@
             <p><strong>Modelo:</strong> {{ $batch->template?->name ?? 'Mensagem avulsa' }} v{{ $batch->message_template_version ?? '-' }}</p>
             <pre style="white-space:pre-wrap;">{{ $batch->message_body_snapshot }}</pre>
         @endif
+        @if($batch->conversation_flow_id)
+            <p><strong>Resposta automática:</strong> fluxo "{{ $batch->conversationFlow?->name ?? ($batch->conversation_flow_snapshot['name'] ?? '-') }}" @if($batch->conversationFlow && ! $batch->conversationFlow->isRunnable())<span class="muted">(fluxo {{ strtolower($batch->conversationFlow->status->label()) }}: nenhuma resposta automática será enviada)</span>@endif</p>
+        @else
+            <p><strong>Resposta automática:</strong> nenhuma. As respostas deste lote vão para atendimento humano.</p>
+        @endif
         @if($batch->status->value === 'ready')<div class="alert success">Este lote esta preparado e pode ser iniciado manualmente.</div>@endif
     </section>
     <section class="card" style="margin-top:16px;">

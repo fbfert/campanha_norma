@@ -64,7 +64,7 @@ class ConfigurationExportTest extends TestCase
 
     public function test_the_taxonomy_export_brings_the_topics(): void
     {
-        InsightTopic::factory()->create(['name' => 'Saúde', 'slug' => 'saude']);
+        InsightTopic::factory()->create(['name' => 'Saúde', 'slug' => 'tema-saude']);
         InsightTopic::factory()->create(['name' => 'Estradas', 'slug' => 'estradas']);
 
         $content = $this->download('admin.insight-topics.export');
@@ -182,6 +182,167 @@ class ConfigurationExportTest extends TestCase
 
         $this->assertStringContainsString("'=cmd", $content);
         $this->assertStringNotContainsString("\n=cmd", $content);
+    }
+
+    // --- Markdown ------------------------------------------------------------
+
+    public function test_the_markdown_export_is_a_table(): void
+    {
+        InsightTopic::factory()->create(['name' => 'Saúde']);
+
+        $content = $this->download('admin.insight-topics.export', 'administrador', ['format' => 'markdown']);
+
+        $this->assertStringContainsString('| ordem | tema |', $content);
+        $this->assertStringContainsString('| --- |', $content);
+        $this->assertStringContainsString('Saúde', $content);
+    }
+
+    /**
+     * Barra vertical no meio do texto fecharia a coluna e desalinharia a tabela
+     * inteira a partir dali.
+     */
+    public function test_a_pipe_in_the_content_does_not_break_the_markdown_table(): void
+    {
+        InsightTopic::factory()->create(['name' => 'Saúde | Básica']);
+
+        $content = $this->download('admin.insight-topics.export', 'administrador', ['format' => 'markdown']);
+
+        $this->assertStringContainsString('Saúde \\| Básica', $content);
+
+        // Toda linha da tabela precisa ter o mesmo número de colunas. A barra
+        // escapada continua sendo o caractere `|`, então contar direto acusaria
+        // uma diferença que não existe: o que separa coluna e a barra *sem*
+        // barra invertida antes.
+        $lines = array_filter(explode("\n", trim($content)));
+        $columns = array_map(
+            fn (string $line): int => preg_match_all('/(?<!\\\\)\|/', $line),
+            $lines
+        );
+        $this->assertCount(1, array_unique($columns), 'Alguma linha ficou com número de colunas diferente.');
+    }
+
+    /**
+     * Markdown aceita HTML embutido. Sem escape, um tema com marcação viraria
+     * marcação viva no dia em que alguém publicasse a tabela numa página.
+     */
+    public function test_markdown_does_not_carry_live_html(): void
+    {
+        InsightTopic::factory()->create(['name' => '<img src=x onerror=alert(1)>']);
+
+        $content = $this->download('admin.insight-topics.export', 'administrador', ['format' => 'markdown']);
+
+        $this->assertStringNotContainsString('<img', $content);
+        $this->assertStringContainsString('&lt;img', $content);
+    }
+
+    // --- SQL -----------------------------------------------------------------
+
+    public function test_the_sql_export_produces_inserts(): void
+    {
+        InsightTopic::factory()->create(['name' => 'Saúde', 'slug' => 'tema-de-teste']);
+
+        $content = $this->download('admin.insight-topics.export', 'administrador', ['format' => 'sql']);
+
+        $this->assertStringContainsString('INSERT INTO `insight_topics`', $content);
+        $this->assertStringContainsString("'tema-de-teste'", $content);
+    }
+
+    /**
+     * O arquivo `.sql` e executado sem ninguém ler. Um tema com aspa precisa
+     * sair como texto citado, e nunca como comando.
+     */
+    public function test_a_quote_in_the_content_cannot_escape_the_sql_string(): void
+    {
+        InsightTopic::factory()->create(['name' => "'); DROP TABLE insight_topics; --"]);
+
+        $content = $this->download('admin.insight-topics.export', 'administrador', ['format' => 'sql']);
+
+        $this->assertStringNotContainsString('DROP TABLE `insight_topics`', $content);
+        // Uma linha de INSERT por tema, e nenhuma instrução a mais.
+        $this->assertSame(1, substr_count($content, 'INSERT INTO'));
+        $this->assertSame(1, substr_count($content, ';'.PHP_EOL));
+    }
+
+    /**
+     * Autoria aponta para usuários deste sistema. Recriada em outro, passaria a
+     * apontar para pessoas diferentes.
+     */
+    public function test_the_sql_export_omits_ownership_columns(): void
+    {
+        InsightTopic::factory()->create(['created_by' => User::factory()->create()->id]);
+
+        $content = $this->download('admin.insight-topics.export', 'administrador', ['format' => 'sql']);
+
+        // Com crase: e a coluna na instrução que não pode existir. O cabeçalho
+        // do arquivo cita os dois nomes em prosa, justamente para explicar por
+        // que ficaram de fora.
+        $this->assertStringNotContainsString('`created_by`', $content);
+        $this->assertStringNotContainsString('`updated_by`', $content);
+    }
+
+    /**
+     * A hierarquia precisa sobreviver, então id e parent_id saem — e o pai
+     * precisa vir antes do filho, senão a chave estrangeira recusa a linha.
+     */
+    public function test_the_sql_export_writes_parents_before_children(): void
+    {
+        $parent = InsightTopic::factory()->create(['name' => 'Infraestrutura']);
+        InsightTopic::factory()->create(['name' => 'Estradas', 'parent_id' => $parent->id]);
+
+        $content = $this->download('admin.insight-topics.export', 'administrador', ['format' => 'sql']);
+
+        $this->assertLessThan(
+            strpos($content, 'Estradas'),
+            strpos($content, 'Infraestrutura'),
+            'O tema pai precisa aparecer antes do filho.'
+        );
+    }
+
+    /**
+     * Esta e a decisão de governança da exportação em SQL. Uma base que chega
+     * por arquivo não foi aprovada no sistema que a recebe; herdar o carimbo de
+     * ativa seria lavar a aprovação de uma instalação para outra.
+     */
+    public function test_a_base_arrives_as_draft_even_when_it_was_active(): void
+    {
+        KnowledgeBase::factory()->create([
+            'name' => 'Base oficial',
+            'status' => KnowledgeBaseStatus::Active,
+            'version' => 7,
+        ]);
+
+        $content = $this->download('admin.knowledge.bases.export', 'administrador', ['format' => 'sql']);
+
+        $this->assertStringContainsString("'draft'", $content);
+        $this->assertStringNotContainsString("'active'", $content);
+        $this->assertStringNotContainsString('approved_by', $content);
+    }
+
+    public function test_the_sql_export_of_bases_carries_no_document(): void
+    {
+        $base = KnowledgeBase::factory()->create(['name' => 'Base oficial']);
+        KnowledgeDocument::factory()->create([
+            'knowledge_base_id' => $base->id,
+            'title' => 'Documento reservado',
+            'extracted_text' => 'SENTINELA-9271-RESERVADA',
+        ]);
+
+        $content = $this->download('admin.knowledge.bases.export', 'administrador', ['format' => 'sql']);
+
+        $this->assertStringNotContainsString('SENTINELA-9271-RESERVADA', $content);
+        $this->assertStringNotContainsString('knowledge_documents', $content);
+    }
+
+    // --- Formato inválido -----------------------------------------------------
+
+    public function test_an_unknown_format_falls_back_to_csv_instead_of_failing(): void
+    {
+        InsightTopic::factory()->create(['name' => 'Saúde']);
+
+        $this->actingAs($this->userWith('administrador'))
+            ->get(route('admin.insight-topics.export', ['format' => 'exe']))
+            ->assertOk()
+            ->assertHeader('content-disposition', 'attachment; filename=temas.csv');
     }
 
     // --- Rotas ---------------------------------------------------------------

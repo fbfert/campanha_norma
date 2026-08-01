@@ -1,10 +1,4 @@
 <x-layouts.app title="Enviar documento" breadcrumbs="Inicio / Base de conhecimento / Base / Novo documento">
-    @if($errors->any())
-        <div class="alert error">
-            <ul>@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>
-        </div>
-    @endif
-
     <section class="card">
         <p class="muted">
             Envie apenas conteúdo oficial e já aprovado para uso público. Não envie conversa de cidadão, opinião coletada na pesquisa,

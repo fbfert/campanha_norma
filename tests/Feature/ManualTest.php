@@ -74,6 +74,7 @@ class ManualTest extends TestCase
     {
         $this->get(route('manual.index'))->assertRedirect(route('login'));
         $this->get(route('manual.mind-map'))->assertRedirect(route('login'));
+        $this->get(route('manual.survey-start'))->assertRedirect(route('login'));
     }
 
     public function test_the_menu_offers_both_screens(): void
@@ -82,7 +83,65 @@ class ManualTest extends TestCase
             ->get(route('dashboard'))
             ->assertOk()
             ->assertSee(route('manual.index'), false)
-            ->assertSee(route('manual.mind-map'), false);
+            ->assertSee(route('manual.mind-map'), false)
+            ->assertSee(route('manual.survey-start'), false);
+    }
+
+    // --- Os cinco passos da pesquisa -----------------------------------------
+
+    public function test_o_mapa_dos_cinco_passos_abre_para_o_perfil_mais_restrito(): void
+    {
+        $this->actingAs($this->userWith('consulta'))
+            ->get(route('manual.survey-start'))
+            ->assertOk()
+            ->assertSee('Os cinco passos')
+            ->assertSee('Vincular o fluxo ao lote');
+    }
+
+    /**
+     * Os cinco passos são cinco, e na ordem. Um passo perdido numa edição
+     * futura deixaria o mapa incompleto sem quebrar nada — que e exatamente o
+     * tipo de erro que ninguém relata.
+     */
+    public function test_o_mapa_mostra_os_cinco_passos_numerados_em_ordem(): void
+    {
+        $mapa = (string) $this->actingAs($this->userWith('administrador'))
+            ->get(route('manual.survey-start'))
+            ->assertOk()
+            ->getContent();
+
+        preg_match_all('/<strong>(\d)\. /', $mapa, $matches);
+
+        $this->assertSame(['1', '2', '3', '4', '5'], $matches[1]);
+    }
+
+    /**
+     * O mapa mostra o ritmo de envio configurado, e não um número escrito no
+     * texto: e ele que decide se um lote sai hoje ou em cinco dias.
+     */
+    public function test_o_mapa_mostra_o_ritmo_de_envio_configurado(): void
+    {
+        \App\Models\SendingSetting::factory()->create(['max_per_day' => 137]);
+
+        $this->actingAs($this->userWith('administrador'))
+            ->get(route('manual.survey-start'))
+            ->assertOk()
+            ->assertSee('137/dia');
+    }
+
+    /**
+     * Mesmo desenho do mapa geral: lista aninhada, sem imagem e sem rede.
+     */
+    public function test_o_mapa_dos_passos_tambem_e_lista_aninhada(): void
+    {
+        $mapa = (string) $this->actingAs($this->userWith('administrador'))
+            ->get(route('manual.survey-start'))
+            ->assertOk()
+            ->getContent();
+
+        $this->assertStringContainsString('<ul class="mindmap-branches">', $mapa);
+        $this->assertStringNotContainsString('<img', $mapa);
+        $this->assertStringNotContainsString('cdn.', $mapa);
     }
 
     // --- O manual não pode mentir --------------------------------------------
@@ -215,7 +274,7 @@ class ManualTest extends TestCase
     {
         $sprite = (string) file_get_contents(resource_path('views/components/layouts/partials/icons.blade.php'));
 
-        foreach (['manual/index.blade.php', 'manual/mind-map.blade.php'] as $view) {
+        foreach (['manual/index.blade.php', 'manual/mind-map.blade.php', 'manual/iniciar-pesquisa.blade.php'] as $view) {
             preg_match_all('/<x-icon name="([a-z-]+)"/', (string) file_get_contents(resource_path('views/'.$view)), $matches);
 
             $this->assertNotEmpty($matches[1]);

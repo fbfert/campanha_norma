@@ -17,14 +17,6 @@
             <p class="alert alert-error">{{ session('error') }}</p>
         @endif
 
-        @if($errors->any())
-            <ul class="alert alert-error">
-                @foreach($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-        @endif
-
         <div class="muted">
             <strong>Vindo do arquivo de ambiente:</strong>
             provedor <code>{{ $environment['provider'] }}</code>,

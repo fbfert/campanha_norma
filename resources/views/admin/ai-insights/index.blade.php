@@ -84,9 +84,9 @@
                             <td>{{ $insight->confidence !== null ? number_format($insight->confidence, 2) : '-' }}</td>
                             <td>
                                 @if($insight->requires_human_review && ! $insight->reviewed)
-                                    <span class="badge" style="background:#b45309;color:#fff;">Pendente</span>
+                                    <span class="badge" style="background:var(--warning);color:var(--text-inverse);">Pendente</span>
                                 @elseif($insight->reviewed)
-                                    <span class="badge" style="background:#15803d;color:#fff;">Revisado</span>
+                                    <span class="badge" style="background:var(--success);color:var(--text-inverse);">Revisado</span>
                                 @else
                                     -
                                 @endif

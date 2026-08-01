@@ -43,3 +43,7 @@ Thumbs.db
 # adicioná-los por engano traria megabytes de cópia para dentro do histórico.
 # O caminho é específico para que .claude/settings.json continue versionável.
 /.claude/worktrees
+
+# Banco SQLite avulso, criado por engano na raiz. O repositorio e publico:
+# arquivo de banco nao entra aqui nem vazio.
+/contato

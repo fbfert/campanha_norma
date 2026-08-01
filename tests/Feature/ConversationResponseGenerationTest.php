@@ -821,6 +821,12 @@ class ConversationResponseGenerationTest extends TestCase
         [, $conversation, $state] = $this->scenario();
         $message = $this->incoming($conversation);
 
+        // `answer_received` e o estágio em que a 9A entrega a conversa para o
+        // aprofundamento. Em `waiting_answer` com o motor tendo rodado, quem
+        // acabou de falar foi a própria 9A, mandando a pergunta da pesquisa, e
+        // a geração e deliberadamente pulada.
+        $state->forceFill(['current_stage' => ConversationFlowStage::AnswerReceived])->save();
+
         event(new ConversationMessageEvaluated($message, $state, true));
 
         Queue::assertPushed(GenerateConversationReplyJob::class);

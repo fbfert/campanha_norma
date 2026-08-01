@@ -35,7 +35,7 @@
                         <td>{{ $contact->email }}</td>
                         <td>{{ $contact->city }}</td>
                         <td>{{ $contact->state }}</td>
-                        <td>@foreach($contact->tags as $tag)<span style="display:inline-block;color:#fff;background:{{ $tag->color }};border-radius:6px;padding:2px 6px;margin:1px;">{{ $tag->name }}</span>@endforeach</td>
+                        <td>@foreach($contact->tags as $tag)<span style="display:inline-block;color:var(--text-inverse);background:{{ $tag->color }};border-radius:6px;padding:2px 6px;margin:1px;">{{ $tag->name }}</span>@endforeach</td>
                         <td>{{ $contact->status->label() }}</td>
                         <td>{{ $contact->consent_status->label() }}</td>
                         <td>@if($contact->do_not_contact)<strong style="color:var(--danger);">Não contatar</strong>@else Não @endif</td>

@@ -7,7 +7,9 @@ use App\Jobs\SendAutomatedConversationReplyJob;
 use App\Models\ConversationFlow;
 use App\Models\ConversationFlowState;
 use App\Models\ConversationMessage;
+use App\Services\Conversations\ConversationEventService;
 use App\Services\Conversations\ConversationReplyService;
+use App\Services\Placeholders\MessageRendererService;
 use App\Services\SystemSettingService;
 
 /**
@@ -19,6 +21,8 @@ class ConversationAutomatedReplyService
     public function __construct(
         private readonly SystemSettingService $settings,
         private readonly ConversationReplyService $replies,
+        private readonly MessageRendererService $renderer,
+        private readonly ConversationEventService $events,
     ) {}
 
     /**
@@ -34,7 +38,23 @@ class ConversationAutomatedReplyService
             return null;
         }
 
-        $body = trim($this->applyTransparency($state->flow, $body));
+        // Placeholders são resolvidos aqui, antes do aviso de transparência:
+        // o aviso e texto fixo do sistema e não personaliza ninguém.
+        $render = $this->renderer->render($body, $contact);
+
+        if ($render['missing'] !== []) {
+            // Enviar "{cidade}" literal para um cidadão e pior que não enviar.
+            // Quem escreveu a pergunta escolheu um campo que este contato não
+            // tem, e isso e problema de gente, não de automação.
+            $this->events->record($conversation, 'automation_placeholder_missing', 'Mensagem automática não enviada: campo do contato vazio.', null, null, [
+                'flow_id' => $state->conversation_flow_id,
+                'missing' => $render['missing'],
+            ]);
+
+            return null;
+        }
+
+        $body = trim($this->applyTransparency($state->flow, $render['message']));
 
         if ($body === '') {
             return null;

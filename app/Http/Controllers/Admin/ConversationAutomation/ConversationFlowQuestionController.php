@@ -7,6 +7,7 @@ use App\Http\Requests\ConversationAutomation\ConversationFlowQuestionRequest;
 use App\Models\ConversationFlow;
 use App\Models\ConversationFlowQuestion;
 use App\Services\AuditLogger;
+use App\Services\Placeholders\PlaceholderCatalogService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -20,6 +21,7 @@ class ConversationFlowQuestionController extends Controller
         return view('admin.conversation-flows.questions.create', [
             'flow' => $conversationFlow,
             'question' => new ConversationFlowQuestion,
+            'catalog' => app(PlaceholderCatalogService::class)->all(),
         ]);
     }
 
@@ -41,7 +43,11 @@ class ConversationFlowQuestionController extends Controller
         abort_unless($request->user()->can('conversation_automation.manage_questions'), 403);
         abort_unless($question->conversation_flow_id === $conversationFlow->id, 404);
 
-        return view('admin.conversation-flows.questions.edit', ['flow' => $conversationFlow, 'question' => $question]);
+        return view('admin.conversation-flows.questions.edit', [
+            'flow' => $conversationFlow,
+            'question' => $question,
+            'catalog' => app(PlaceholderCatalogService::class)->all(),
+        ]);
     }
 
     public function update(ConversationFlowQuestionRequest $request, ConversationFlow $conversationFlow, ConversationFlowQuestion $question, AuditLogger $audit): RedirectResponse

@@ -56,7 +56,7 @@ class DashboardController extends Controller
             'latestBatchExcluded' => $latestBatch?->ineligible_total ?? 0,
             'processingBatches' => class_exists(MessageBatch::class) ? MessageBatch::query()->where('status', 'processing')->count() : 0,
             'pausedBatches' => class_exists(MessageBatch::class) ? MessageBatch::query()->where('status', 'paused')->count() : 0,
-            'pendingMessages' => class_exists(MessageBatchRecipient::class) ? MessageBatchRecipient::query()->whereIn('processing_status', ['pending', 'queued', 'retry_wait', 'waiting_schedule', 'waiting_minute_limit', 'waiting_hour_limit', 'waiting_day_limit'])->count() : 0,
+            'pendingMessages' => class_exists(MessageBatchRecipient::class) ? MessageBatchRecipient::query()->whereIn('processing_status', ['pending', 'queued', 'retry_wait', 'waiting_schedule', 'waiting_minute_limit', 'waiting_minimum_interval', 'waiting_hour_limit', 'waiting_day_limit'])->count() : 0,
             'messagesSentToday' => class_exists(MessageBatchRecipient::class) ? MessageBatchRecipient::query()->where('processing_status', 'sent')->whereDate('sent_at', today())->count() : 0,
             'messagesSentMonth' => class_exists(MessageBatchRecipient::class) ? MessageBatchRecipient::query()->where('processing_status', 'sent')->whereMonth('sent_at', now()->month)->whereYear('sent_at', now()->year)->count() : 0,
             'sendFailuresToday' => class_exists(MessageBatchRecipient::class) ? MessageBatchRecipient::query()->whereIn('processing_status', ['failed_temporary', 'failed_permanent'])->whereDate('failed_at', today())->count() : 0,
@@ -69,7 +69,7 @@ class DashboardController extends Controller
             'redisStatus' => $diagnostics['redis']['status'] ?? null,
             'schedulerStatus' => $diagnostics['scheduler']['status'] ?? null,
             'latestProcessingActivity' => class_exists(MessageSendAttempt::class) ? MessageSendAttempt::query()->latest('updated_at')->first() : null,
-            'nextSendAt' => class_exists(MessageBatchRecipient::class) ? MessageBatchRecipient::query()->whereNotNull('retry_at')->whereIn('processing_status', ['retry_wait', 'waiting_schedule', 'waiting_minute_limit', 'waiting_hour_limit', 'waiting_day_limit'])->orderBy('retry_at')->value('retry_at') : null,
+            'nextSendAt' => class_exists(MessageBatchRecipient::class) ? MessageBatchRecipient::query()->whereNotNull('retry_at')->whereIn('processing_status', ['retry_wait', 'waiting_schedule', 'waiting_minute_limit', 'waiting_minimum_interval', 'waiting_hour_limit', 'waiting_day_limit'])->orderBy('retry_at')->value('retry_at') : null,
             'inboxMetrics' => $inbox,
         ]);
     }

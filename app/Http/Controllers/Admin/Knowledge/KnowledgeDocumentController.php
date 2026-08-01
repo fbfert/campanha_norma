@@ -63,6 +63,16 @@ class KnowledgeDocumentController extends Controller
             'supersedes_document_id' => ['nullable', Rule::exists('knowledge_documents', 'id')->where('knowledge_base_id', $base->id)],
             'version' => ['nullable', 'integer', 'min:1', 'max:65535'],
             'file' => ['required', 'file', 'max:'.$this->ingestion->maxFileSizeKb()],
+        ], [
+            // Sem estas duas, o PHP recusando o envio produzia "Falha ao enviar
+            // o arquivo file." — que nomeia o campo pelo nome interno e não diz
+            // o que fazer. Quem lia isso não tinha como saber que era tamanho.
+            'file.uploaded' => 'O arquivo não chegou inteiro ao servidor. Quase sempre e tamanho: o limite atual e de '
+                .$this->limiteEmMb().' MB.',
+            'file.max' => 'O arquivo passa do limite de '.$this->limiteEmMb().' MB.',
+            'file.required' => 'Escolha um arquivo para enviar.',
+        ], [
+            'file' => 'arquivo',
         ]);
 
         try {
@@ -73,9 +83,30 @@ class KnowledgeDocumentController extends Controller
             return back()->withInput()->withErrors(['file' => 'Falha no envio: '.$exception->errorCode.'.']);
         }
 
-        return redirect()
+        $redirect = redirect()
             ->route('admin.knowledge.documents.show', [$base, $document])
             ->with('status', 'Documento enviado. A indexação acontece em segundo plano.');
+
+        // Mesmo arquivo em outra base não impede o envio, mas precisa ser dito:
+        // com o texto repetido, a busca devolve o mesmo trecho duas vezes e a
+        // resposta sai com citação em duplicata. Quem envia olhando a tela de
+        // uma base não tem como perceber isso sozinho.
+        $repetidos = $this->ingestion->duplicatesInOtherBases($document);
+
+        if ($repetidos->isNotEmpty()) {
+            $onde = $repetidos->map(fn ($outro) => '"'.$outro->base?->name.'"')->unique()->join(', ', ' e ');
+
+            $redirect->with('error', 'Atenção: este mesmo arquivo já está na base '.$onde
+                .'. Manter a mesma cópia em bases diferentes faz a busca devolver o conteúdo repetido.');
+        }
+
+        return $redirect;
+    }
+
+    /** O limite efetivo, em megabytes, para escrever nas mensagens. */
+    private function limiteEmMb(): int
+    {
+        return max(1, intdiv($this->ingestion->maxFileSizeKb(), 1024));
     }
 
     public function show(Request $request, KnowledgeBase $base, KnowledgeDocument $document): View
@@ -88,6 +119,9 @@ class KnowledgeDocumentController extends Controller
             'document' => $document->load(['creator', 'approver', 'supersedes']),
             'chunks' => $document->chunks()->orderBy('chunk_index')->paginate(10),
             'extractPreview' => mb_substr((string) $document->extracted_text, 0, 5000),
+            // O aviso precisa continuar visível depois do envio, e não só na
+            // mensagem que some ao recarregar a página.
+            'repetidos' => $this->ingestion->duplicatesInOtherBases($document),
         ]);
     }
 

@@ -13,10 +13,10 @@
         <div class="actions">
             @can('knowledge.manage_bases')
                 <a class="btn" href="{{ route('admin.knowledge.bases.create') }}"><x-icon name="plus" size="16" />Nova base</a>
+                <a class="btn secondary" href="{{ route('admin.knowledge.bases.import') }}"><x-icon name="upload" size="16" />Importar</a>
             @endcan
             {{-- Sai a relação das bases, nunca o conteúdo dos documentos. --}}
-            <a class="btn secondary" href="{{ route('admin.knowledge.bases.export') }}"><x-icon name="download" size="16" />Exportar CSV</a>
-            <a class="btn ghost" href="{{ route('admin.knowledge.bases.export', ['format' => 'xlsx']) }}">Exportar XLSX</a>
+            <x-export-menu route="admin.knowledge.bases.export" />
         </div>
     </section>
 

@@ -230,6 +230,31 @@ Toda a cadeia já suporta emoji (colunas `utf8mb4`, validação multibyte). Dois
 - O cliente HTTP Laravel -> serviço Node codifica o corpo com `JSON_UNESCAPED_UNICODE` em `WhatsAppServiceClient::send()`, evitando que emojis inflem ~3x de tamanho ao serem escapados como `\uXXXX`.
 - O serviço Node aceita corpos de requisição até 256kb (`express.json({ limit: '256kb' })`), suficiente mesmo para mensagens de 4096 caracteres compostas majoritariamente por emoji.
 
+## Responsável padrão
+
+`conversations.default_assignee_id` define quem recebe toda conversa nova. Vazio
+mantem o comportamento histórico: conversa nasce sem responsável.
+
+O observador de `Conversation` aplica a atribuição na criação e grava o registro
+em `conversation_assignments` sem `assigned_by`, porque não houve pessoa
+decidindo. Usuário inativo ou removido não recebe: atribuir conversa a quem não
+entra no sistema esconde a conversa de todo mundo.
+
+Para as conversas que já existem:
+
+```bash
+php artisan conversations:assign-default
+php artisan conversations:assign-default --user=2
+php artisan conversations:assign-default --force
+```
+
+Sem `--force` o comando so mexe em conversa sem responsável.
+
+**Atenção ao ligar isso junto com autoenvio.** `SuggestionSendGuard` recusa envio
+automático em conversa atribuída, salvo com `ai.response.auto_send_when_assigned`
+ligado. Definir responsável padrão sem ligar essa chave desliga o autoenvio de
+respostas geradas em toda a base, sem que nada avise.
+
 ## Resposta manual
 
 A resposta manual:

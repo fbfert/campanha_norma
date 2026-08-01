@@ -4,11 +4,11 @@
         <div class="actions">
             @can('ai_insights.manage_taxonomy')
                 <a class="btn" href="{{ route('admin.insight-topics.create') }}"><x-icon name="plus" size="16" />Novo tema</a>
+                <a class="btn secondary" href="{{ route('admin.insight-topics.import') }}"><x-icon name="upload" size="16" />Importar</a>
             @endcan
             {{-- A exportação sai completa, sem paginação: uma taxonomia partida
                  em páginas não serve para conferir nem comparar. --}}
-            <a class="btn secondary" href="{{ route('admin.insight-topics.export') }}"><x-icon name="download" size="16" />Exportar CSV</a>
-            <a class="btn ghost" href="{{ route('admin.insight-topics.export', ['format' => 'xlsx']) }}">Exportar XLSX</a>
+            <x-export-menu route="admin.insight-topics.export" />
         </div>
     </section>
 
@@ -23,7 +23,7 @@
                         <tr>
                             <td>{{ $topic->display_order }}</td>
                             <td>
-                                <span class="badge" style="background:{{ $topic->color ?? '#64748b' }};color:#fff;">{{ $topic->name }}</span>
+                                <span class="badge" style="background:{{ $topic->color ?? 'var(--tag-default)' }};color:var(--text-inverse);">{{ $topic->name }}</span>
                                 @if($topic->is_fallback)<span class="muted"> fallback</span>@endif
                             </td>
                             <td><code>{{ $topic->slug }}</code></td>

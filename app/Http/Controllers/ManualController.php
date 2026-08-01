@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\SendingSetting;
 use App\Services\SystemSettingService;
 use Illuminate\Contracts\View\View;
 
@@ -34,6 +35,106 @@ class ManualController extends Controller
         return view('manual.mind-map', [
             'sections' => $this->sections(),
         ]);
+    }
+
+    /**
+     * Mapa dos cinco passos de uma pesquisa.
+     *
+     * Separado do mapa geral porque responde outra pergunta. O mapa geral
+     * responde "o que este sistema faz"; este responde "o que eu clico agora
+     * para uma pesquisa sair". Quem esta com a pesquisa para começar não quer
+     * ler o sistema inteiro para achar os cinco passos no meio.
+     */
+    public function surveyStart(): View
+    {
+        return view('manual.iniciar-pesquisa', [
+            'steps' => $this->surveySteps(),
+            'operational' => $this->operational(),
+        ]);
+    }
+
+    /**
+     * Os cinco passos, na ordem de execução.
+     *
+     * O terceiro carrega um aviso porque e o passo que as pessoas pulam: sem o
+     * vínculo com o fluxo, o lote envia e a pesquisa não acontece — e nada
+     * indica o erro, porque o disparo funciona.
+     *
+     * @return list<array{passo: int, icon: string, title: string, where: string, summary: string, topics: list<string>, warning: ?string}>
+     */
+    private function surveySteps(): array
+    {
+        return [
+            [
+                'passo' => 1,
+                'icon' => 'flow',
+                'title' => 'Ter um fluxo ativo',
+                'where' => 'Pesquisa › Fluxos conversacionais',
+                'summary' => 'O fluxo guarda as perguntas e decide como a conversa anda.',
+                'topics' => [
+                    'Situação precisa ser Ativo, senão ele nem aparece para vincular',
+                    'Ao menos uma pergunta ativa cadastrada',
+                    'Perguntas principais: quantas cada conversa recebe',
+                    'Ordem: sorteio ponderado ou sequência definida',
+                ],
+                'warning' => null,
+            ],
+            [
+                'passo' => 2,
+                'icon' => 'layers',
+                'title' => 'Criar o lote',
+                'where' => 'Envios › Lotes e campanhas › Novo',
+                'summary' => 'Quem recebe e qual e a mensagem que abre a conversa.',
+                'topics' => [
+                    'Seleção manual, filtrada ou amostra aleatória',
+                    'Mensagem por modelo ou avulsa',
+                    'Placeholders personalizam pelo cadastro do contato',
+                    'A mensagem precisa terminar pedindo autorização',
+                ],
+                'warning' => 'Se a mensagem já trouxer a pergunta da pesquisa, a pessoa responde com uma opinião, o sistema lê como resposta ambígua e manda para atendimento humano. Termine com uma pergunta de sim ou não.',
+            ],
+            [
+                'passo' => 3,
+                'icon' => 'poll',
+                'title' => 'Vincular o fluxo ao lote',
+                'where' => 'No formulário do lote, card "3. Resposta automática"',
+                'summary' => 'É este campo que transforma um disparo em pesquisa.',
+                'topics' => [
+                    'Só fluxo ativo aparece na lista',
+                    'A lista mostra quantas perguntas ativas cada fluxo tem',
+                    'Sem fluxo, quem responder vai para atendimento humano',
+                ],
+                'warning' => 'É o passo mais esquecido, e o único que falha em silêncio: sem o vínculo o lote envia normalmente, e a pesquisa simplesmente não acontece.',
+            ],
+            [
+                'passo' => 4,
+                'icon' => 'send',
+                'title' => 'Preparar e iniciar',
+                'where' => 'Na tela do lote',
+                'summary' => 'Conferência, confirmação explícita e disparo.',
+                'topics' => [
+                    'Conferir a prévia com a mensagem já renderizada',
+                    'Marcar como preparado exige a frase de confirmação',
+                    'Iniciar lote coloca o envio na fila',
+                    'O ritmo respeita os limites por minuto, hora e dia',
+                ],
+                'warning' => null,
+            ],
+            [
+                'passo' => 5,
+                'icon' => 'chart',
+                'title' => 'Acompanhar',
+                'where' => 'Pesquisa › Pesquisa conversacional e Painel da pesquisa',
+                'summary' => 'Em que estágio cada conversa parou, e o resultado agregado.',
+                'topics' => [
+                    'Processamento mostra o envio do lote',
+                    'Pesquisa conversacional mostra conversa por conversa',
+                    'Painel da pesquisa traz participação e conclusão',
+                    'Conversa parada em atendimento humano pede alguém',
+                ],
+                'warning' => null,
+            ],
+        ];
     }
 
     /**
@@ -135,6 +236,11 @@ class ManualController extends Controller
             'automation_enabled' => (string) $this->settings->get('conversation_automation.enabled', '0'),
             'auto_send_enabled' => (string) $this->settings->get('conversation_automation.auto_send_enabled', '0'),
             'ai_enabled' => (string) $this->settings->get('ai.enabled', '0'),
+            // Ritmo real de saída: e o que decide se um lote sai hoje ou em
+            // cinco dias, e ninguém encontra isso sem abrir outra tela.
+            'max_per_minute' => (string) (SendingSetting::query()->value('max_per_minute') ?? '-'),
+            'max_per_hour' => (string) (SendingSetting::query()->value('max_per_hour') ?? '-'),
+            'max_per_day' => (string) (SendingSetting::query()->value('max_per_day') ?? '-'),
         ];
     }
 }

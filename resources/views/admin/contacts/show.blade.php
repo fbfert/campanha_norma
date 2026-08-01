@@ -16,7 +16,7 @@
             <p><strong>Atualizado em:</strong> {{ $contact->updated_at->format($dateTimeFormat) }}</p>
             <p><strong>Excluído:</strong> {{ $contact->trashed() ? 'Sim' : 'Não' }}</p>
         </div>
-        <p><strong>Etiquetas:</strong> @foreach($contact->tags as $tag)<span style="color:#fff;background:{{ $tag->color }};border-radius:6px;padding:2px 6px;margin:1px;">{{ $tag->name }}</span>@endforeach</p>
+        <p><strong>Etiquetas:</strong> @foreach($contact->tags as $tag)<span style="color:var(--text-inverse);background:{{ $tag->color }};border-radius:6px;padding:2px 6px;margin:1px;">{{ $tag->name }}</span>@endforeach</p>
         <p><strong>Observações:</strong><br>{{ $contact->notes }}</p>
         <div class="actions">
             <a class="btn ghost" href="{{ route('admin.contacts.index') }}">Voltar</a>

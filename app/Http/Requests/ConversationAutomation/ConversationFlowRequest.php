@@ -3,6 +3,7 @@
 namespace App\Http\Requests\ConversationAutomation;
 
 use App\Enums\ConversationFlowStatus;
+use App\Enums\ConversationQuestionOrder;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -24,6 +25,10 @@ class ConversationFlowRequest extends FormRequest
             'thank_you_text' => ['nullable', 'string', 'max:4096'],
             'permission_denied_text' => ['nullable', 'string', 'max:4096'],
             'max_main_questions' => ['required', 'integer', 'min:1', 'max:10'],
+            // Ausente mantem o que o fluxo já tem, ou o padrão `sorteio` num
+            // fluxo novo. Exigir aqui quebraria todo chamador que não conhece
+            // um campo criado depois dele.
+            'question_order' => ['sometimes', 'required', Rule::enum(ConversationQuestionOrder::class)],
             'max_followups' => ['required', 'integer', 'min:0', 'max:10'],
             'validity_hours' => ['required', 'integer', 'min:1', 'max:8760'],
             'transparency_enabled' => ['nullable', 'boolean'],

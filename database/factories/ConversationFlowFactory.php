@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Enums\ConversationFlowStatus;
+use App\Enums\ConversationQuestionOrder;
 use App\Models\ConversationFlow;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -23,6 +24,7 @@ class ConversationFlowFactory extends Factory
             'thank_you_text' => 'Obrigado pela sua participação.',
             'permission_denied_text' => 'Tudo bem, obrigado pela atenção.',
             'max_main_questions' => 1,
+            'question_order' => ConversationQuestionOrder::Sorteio,
             'max_followups' => 0,
             'validity_hours' => 48,
             'transparency_enabled' => true,

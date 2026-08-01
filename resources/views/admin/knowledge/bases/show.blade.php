@@ -2,12 +2,6 @@
     @if(session('status'))
         <div class="alert success">{{ session('status') }}</div>
     @endif
-    @if($errors->any())
-        <div class="alert error">
-            <ul>@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>
-        </div>
-    @endif
-
     <section class="card">
         <p class="muted">{{ $base->description }}</p>
         <dl class="grid grid-3">
@@ -47,7 +41,10 @@
     </section>
 
     <section class="card">
-        <h2>Documentos</h2>
+        {{-- O escopo vai escrito no título. A tabela sempre listou só esta base,
+             mas a coluna "Tipo" ao lado do título fazia "Biografia aprovada"
+             parecer o nome de um segundo documento. --}}
+        <h2>Documentos desta base ({{ $documents->total() }})</h2>
         <table class="table">
             <thead>
                 <tr>
@@ -63,12 +60,12 @@
                 @forelse($documents as $document)
                     <tr>
                         <td>
-                            {{ $document->title }}
+                            <strong>{{ $document->title }}</strong>
                             @if($document->injection_flagged)
                                 <span class="badge warning" title="Instrução detectada e neutralizada na ingestão">instrução detectada</span>
                             @endif
                         </td>
-                        <td>{{ $document->type?->label() }}</td>
+                        <td class="muted">{{ $document->type?->label() }}</td>
                         <td>
                             {{ $document->status->label() }}
                             @if($document->error_message)

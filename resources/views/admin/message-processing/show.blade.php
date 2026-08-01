@@ -1,3 +1,21 @@
+@php
+    // Os estados que aceitam cada ação, num lugar só: a lista dentro do `@if`
+    // de cada botão divergiria da regra da ação na primeira alteração.
+    use App\Enums\MessageRecipientProcessingStatus as Status;
+
+    $cancelaveis = [
+        Status::Pending, Status::Queued, Status::RetryWait,
+        Status::WaitingSchedule, Status::WaitingMinuteLimit, Status::WaitingMinimumInterval,
+        Status::WaitingHourLimit, Status::WaitingDayLimit,
+    ];
+
+    $reprocessaveis = [
+        Status::FailedTemporary, Status::RetryWait,
+        Status::WaitingSchedule, Status::WaitingMinuteLimit, Status::WaitingMinimumInterval,
+        Status::WaitingHourLimit, Status::WaitingDayLimit,
+    ];
+@endphp
+
 <x-layouts.app title="Acompanhamento do lote" breadcrumbs="Mensagens / Processamento">
     <div class="panel">
         <div class="panel-header">
@@ -19,6 +37,19 @@
                 @can('message_processing.resume')
                     @if($batch->status === \App\Enums\MessageBatchStatus::Paused)
                         <form method="post" action="{{ route('admin.message-batches.resume', $batch) }}">@csrf<button class="btn" type="submit">Continuar</button></form>
+                    @endif
+                @endcan
+                {{-- Parar cancela todo destinatário pendente, e era irreversível.
+                     Retomar desfaz aqueles cancelamentos — só aqueles. --}}
+                @can('message_processing.start')
+                    @if($batch->status === \App\Enums\MessageBatchStatus::Stopped && $retomaveis > 0)
+                        <form method="post" action="{{ route('admin.message-batches.resume-stopped', $batch) }}"
+                            onsubmit="return confirm('Retomar o envio para {{ $retomaveis }} destinatário(s) deste lote?')">
+                            @csrf
+                            <button class="btn" type="submit" title="Devolve à fila os destinatários que a parada cancelou. Quem foi cancelado individualmente continua fora.">
+                                <x-icon name="play" size="16" />Retomar envios ({{ $retomaveis }})
+                            </button>
+                        </form>
                     @endif
                 @endcan
             </div>
@@ -83,13 +114,31 @@
                                     <a class="btn ghost" href="{{ route('admin.message-batches.recipients.attempts', [$batch, $recipient]) }}">Tentativas</a>
                                 @endcan
                                 @can('message_processing.cancel_recipient')
-                                    @if(in_array($recipient->processing_status, [\App\Enums\MessageRecipientProcessingStatus::Pending, \App\Enums\MessageRecipientProcessingStatus::Queued, \App\Enums\MessageRecipientProcessingStatus::RetryWait], true))
+                                    @if(in_array($recipient->processing_status, $cancelaveis, true))
                                         <form method="post" action="{{ route('admin.message-batches.recipients.cancel', [$batch, $recipient]) }}">@csrf<button class="btn secondary" type="submit">Cancelar</button></form>
+                                    @endif
+
+                                    {{-- Cancelar era irreversível: quem clicasse por engano teria de
+                                         refazer o lote para alcançar uma pessoa. --}}
+                                    @if($recipient->processing_status === \App\Enums\MessageRecipientProcessingStatus::Cancelled)
+                                        <form method="post" action="{{ route('admin.message-batches.recipients.uncancel', [$batch, $recipient]) }}">
+                                            @csrf
+                                            <button class="btn secondary" type="submit" title="Devolve o destinatário à fila de espera. Ele passa de novo por todas as conferências.">
+                                                <x-icon name="refresh" size="16" />Desfazer cancelamento
+                                            </button>
+                                        </form>
                                     @endif
                                 @endcan
                                 @can('message_processing.retry')
-                                    @if($recipient->processing_status === \App\Enums\MessageRecipientProcessingStatus::FailedTemporary)
-                                        <form method="post" action="{{ route('admin.message-batches.recipients.retry', [$batch, $recipient]) }}">@csrf<button class="btn" type="submit">Tentar novamente</button></form>
+                                    {{-- Reprocessar reavalia; não fura a janela nem os limites. Se a
+                                         regra ainda valer, o destinatário volta para a espera. --}}
+                                    @if(in_array($recipient->processing_status, $reprocessaveis, true))
+                                        <form method="post" action="{{ route('admin.message-batches.recipients.retry', [$batch, $recipient]) }}">
+                                            @csrf
+                                            <button class="btn" type="submit" title="Refaz as conferências agora: elegibilidade, janela de horário e limites de ritmo.">
+                                                <x-icon name="refresh" size="16" />Reprocessar
+                                            </button>
+                                        </form>
                                     @endif
                                 @endcan
                             </td>
@@ -105,7 +154,16 @@
         <div class="panel-header"><h2>Eventos recentes</h2></div>
         <ul class="stack-list">
             @forelse($events as $event)
-                <li>{{ $event->created_at->format($dateTimeFormat) }} - {{ $event->event_type }} - {{ $event->description }}</li>
+                <li>
+                    {{ $event->created_at->format($dateTimeFormat) }} - {{ $event->event_type }} - {{ $event->description }}
+                    @if($event->recipient)
+                        {{-- Snapshot, e não o cadastro atual: o evento conta o que
+                             valia na hora, e o contato pode ter mudado desde então. --}}
+                        <span class="muted">{{ $event->recipient->contact_name_snapshot }} &middot; {{ $event->recipient->contact_phone_snapshot }}</span>
+                    @else
+                        <span class="muted">Lote inteiro</span>
+                    @endif
+                </li>
             @empty
                 <li>Nenhum evento registrado.</li>
             @endforelse

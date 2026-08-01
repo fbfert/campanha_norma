@@ -197,7 +197,7 @@
             @can('inbox.manage_tags')
                 <section class="card">
                     <h2>Etiquetas</h2>
-                    <div class="actions">@foreach($conversation->tags as $tag)<span class="badge" style="background:{{ $tag->color }};color:#fff;">{{ $tag->name }}</span>@endforeach</div>
+                    <div class="actions">@foreach($conversation->tags as $tag)<span class="badge" style="background:{{ $tag->color }};color:var(--text-inverse);">{{ $tag->name }}</span>@endforeach</div>
                     <form method="post" action="{{ route('admin.inbox.tags.store', $conversation) }}">@csrf <label>Nome<input name="name" required></label><label>Cor<input name="color" value="#176b4d"></label><button class="btn secondary">Adicionar</button></form>
                 </section>
             @endcan

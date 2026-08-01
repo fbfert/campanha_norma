@@ -2,6 +2,7 @@
 
 namespace App\Services\ConversationAutomation;
 
+use App\Enums\ConversationQuestionOrder;
 use App\Models\ConversationFlowQuestion;
 use App\Models\ConversationFlowQuestionUsage;
 use App\Models\ConversationFlowState;
@@ -10,7 +11,9 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Sorteio ponderado de pergunta ainda não usada na conversa.
+ * Escolha da próxima pergunta ainda não usada na conversa.
+ *
+ * O fluxo decide entre sorteio ponderado e sequência definida.
  *
  * A exclusividade real e garantida pelo índice único
  * (conversation_id, conversation_flow_question_id); a transação e o lock
@@ -31,14 +34,20 @@ class ConversationQuestionSelector
                 ->pluck('conversation_flow_question_id')
                 ->all();
 
+            $sequencial = $state->flow?->question_order === ConversationQuestionOrder::Sequencia;
+
             $candidates = ConversationFlowQuestion::query()
                 ->where('conversation_flow_id', $state->conversation_flow_id)
                 ->where('is_active', true)
                 ->when($usedIds !== [], fn ($query) => $query->whereNotIn('id', $usedIds))
+                ->when($sequencial, fn ($query) => $query->orderBy('display_order'))
                 ->orderBy('id')
                 ->get();
 
-            $question = $this->draw($candidates);
+            // Em sequência, a próxima pergunta e a primeira ainda não usada:
+            // o peso deixa de valer, porque a ordem foi decidida por quem
+            // escreveu o questionário.
+            $question = $sequencial ? $candidates->first() : $this->draw($candidates);
 
             if (! $question) {
                 return null;

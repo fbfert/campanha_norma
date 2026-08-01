@@ -11,6 +11,7 @@ use App\Models\User;
 use App\Services\AuditLogger;
 use App\Services\SystemSettingService;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -120,9 +121,55 @@ class DocumentIngestionService
             ->all();
     }
 
+    /**
+     * O menor entre o limite configurado e o que o servidor aceita de verdade.
+     *
+     * A configuração dizia 20 MB e o PHP do site aceitava 2 MB. Quem tentava
+     * enviar um PDF de 5 MB via a tela prometer 20 MB, e recebia "falha ao
+     * enviar o arquivo" — mensagem que o PHP produz quando recusa o envio antes
+     * de a aplicação existir, e que não diz nada sobre tamanho.
+     *
+     * Ajustar o servidor resolveu o caso; olhar o limite real resolve a classe
+     * do problema. A tela passa a prometer o que o servidor cumpre, e o aviso
+     * volta a ser sobre tamanho, que e o que a pessoa precisa saber.
+     */
     public function maxFileSizeKb(): int
     {
-        return max(1, (int) $this->settings->get('knowledge.max_file_size_mb', 20)) * 1024;
+        $configurado = max(1, (int) $this->settings->get('knowledge.max_file_size_mb', 20)) * 1024;
+
+        $doServidor = array_filter([
+            $this->iniEmKb('upload_max_filesize'),
+            $this->iniEmKb('post_max_size'),
+        ]);
+
+        return $doServidor === [] ? $configurado : min($configurado, ...$doServidor);
+    }
+
+    /**
+     * Lê uma diretiva de tamanho do PHP em kilobytes.
+     *
+     * O PHP aceita `20M`, `20480K`, `20971520` e `-1` para sem limite. Ler o
+     * número cru e ignorar o sufixo faria `8M` virar oito kilobytes.
+     */
+    private function iniEmKb(string $diretiva): ?int
+    {
+        $valor = trim((string) ini_get($diretiva));
+
+        if ($valor === '' || $valor === '-1' || $valor === '0') {
+            return null;
+        }
+
+        $numero = (int) $valor;
+        $sufixo = strtoupper(substr($valor, -1));
+
+        $bytes = match ($sufixo) {
+            'G' => $numero * 1024 ** 3,
+            'M' => $numero * 1024 ** 2,
+            'K' => $numero * 1024,
+            default => $numero,
+        };
+
+        return max(1, intdiv($bytes, 1024));
     }
 
     private function assertAcceptable(UploadedFile $file): void
@@ -152,6 +199,35 @@ class DocumentIngestionService
                 'file' => 'Este arquivo já existe nesta base como o documento #'.$existing->id.'.',
             ]);
         }
+    }
+
+    /**
+     * O mesmo arquivo em outras bases.
+     *
+     * Repetir dentro da mesma base e erro e continua barrado. Entre bases
+     * diferentes e escolha legítima — uma base institucional e uma de campanha
+     * podem querer, cada uma, a sua cópia da biografia —, então isto avisa e
+     * não impede.
+     *
+     * O aviso existe porque a consequência não e óbvia: com o mesmo texto em
+     * duas bases, a busca devolve o mesmo trecho duas vezes, ocupa o espaço de
+     * contexto com repetição e produz citação em duplicata. Quem envia não tem
+     * como saber disso olhando a tela de uma base só.
+     *
+     * @return \Illuminate\Support\Collection<int, KnowledgeDocument>
+     */
+    public function duplicatesInOtherBases(KnowledgeDocument $document): Collection
+    {
+        if (blank($document->content_hash)) {
+            return collect();
+        }
+
+        return KnowledgeDocument::query()
+            ->with('base')
+            ->where('content_hash', $document->content_hash)
+            ->where('knowledge_base_id', '!=', $document->knowledge_base_id)
+            ->orderBy('id')
+            ->get();
     }
 
     /**

@@ -70,6 +70,10 @@ class SystemSettingSeeder extends Seeder
             ['group' => 'inbox', 'key' => 'inbox.polling_interval_seconds', 'value' => '5', 'type' => 'integer', 'description' => 'Intervalo de atualização da caixa em segundos', 'is_public' => false],
             ['group' => 'inbox', 'key' => 'inbox.maximum_manual_reply_length', 'value' => '4096', 'type' => 'integer', 'description' => 'Tamanho máximo da resposta manual', 'is_public' => false],
             ['group' => 'inbox', 'key' => 'inbox.allow_unassigned_reply', 'value' => '0', 'type' => 'boolean', 'description' => 'Permitir resposta sem atribuição', 'is_public' => false],
+            // Vazio significa conversa nova sem responsável, que e o comportamento
+            // histórico. Preencher aqui interage com o autoenvio: veja
+            // `ai.response.auto_send_when_assigned`.
+            ['group' => 'conversations', 'key' => 'conversations.default_assignee_id', 'value' => '', 'type' => 'string', 'description' => 'Responsável padrão de toda conversa nova', 'is_public' => false],
             ['group' => 'inbox', 'key' => 'inbox.archive_resolved_after_days', 'value' => '30', 'type' => 'integer', 'description' => 'Arquivar resolvidas após dias', 'is_public' => false],
             ['group' => 'inbox', 'key' => 'inbox.mask_phone_by_default', 'value' => '1', 'type' => 'boolean', 'description' => 'Mascarar telefone por padrão', 'is_public' => false],
             ['group' => 'inbox', 'key' => 'inbox.reopen_closed_conversation_on_incoming', 'value' => '1', 'type' => 'boolean', 'description' => 'Reabrir fechadas ao receber mensagem', 'is_public' => false],

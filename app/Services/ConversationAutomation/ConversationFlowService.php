@@ -16,6 +16,7 @@ use App\Services\AuditLogger;
 use App\Services\Contacts\ContactDataService;
 use App\Services\Conversations\ConversationEventService;
 use App\Services\Conversations\ReplyInterruptionService;
+use App\Services\ResponseGeneration\ResponseModeResolver;
 use App\Services\SystemSettingService;
 use Throwable;
 
@@ -184,6 +185,17 @@ class ConversationFlowService
             return;
         }
 
+        $this->sendNextQuestion($state, $message);
+    }
+
+    /**
+     * Sorteia a próxima pergunta ainda não usada e a envia.
+     *
+     * Usado tanto na primeira pergunta, logo após a autorização, quanto nas
+     * seguintes, quando o fluxo pede mais de uma pergunta por conversa.
+     */
+    private function sendNextQuestion(ConversationFlowState $state, ConversationMessage $message): void
+    {
         $usage = $this->selector->select($state);
 
         if (! $usage) {
@@ -308,7 +320,16 @@ class ConversationFlowService
     }
 
     /**
-     * Resposta a pergunta principal. Na 9A não ha aprofundamento: agradece e encerra.
+     * Resposta a pergunta principal.
+     *
+     * Sem aprofundamento configurado, a 9A agradece e encerra — comportamento
+     * original desta etapa.
+     *
+     * Com aprofundamento, ela para em `answer_received` e entrega a conversa
+     * para a 9C. Agradecer aqui encerraria o fluxo no mesmo instante, e
+     * `completed` e terminal: toda pergunta gerada a partir da resposta seria
+     * recusada depois com `fluxo_encerrado`. Quem agradece e encerra passa a
+     * ser a 9C, pela ação `thank_and_complete`, quando os turnos acabarem.
      */
     private function handleAnswer(ConversationFlowState $state, ConversationMessage $message): void
     {
@@ -326,12 +347,79 @@ class ConversationFlowService
             ->where('conversation_flow_question_id', $state->selected_question_id)
             ->update(['result' => 'answered']);
 
+        // Pesquisa com mais de uma pergunta continua pelas próprias perguntas,
+        // sorteadas e sem repetir. Isso vem antes do aprofundamento por IA: a
+        // pergunta cadastrada e igual para todo mundo e produz resposta
+        // comparável, que e o ponto de uma pesquisa.
+        if ($this->hasMoreMainQuestions($state)) {
+            $this->sendNextQuestion($state, $message);
+
+            return;
+        }
+
+        if ($this->deepeningTakesOver($state)) {
+            $this->events->record($state->conversation, 'automation_deepening_handover', 'Resposta recebida; aprofundamento a cargo da geração de respostas.', $message, null, [
+                'max_followups' => (int) $state->flow?->max_followups,
+            ]);
+
+            return;
+        }
+
         $text = $state->flow?->thank_you_text ?: (string) $this->settings->get('conversation_automation.thank_you_text', '');
         if ($text !== '' && $this->guard->canSend($state)['allowed']) {
             $this->replies->queue($state, $text, 'automated_thank_you_queued');
         }
 
         $this->machine->finish($state, ConversationFlowStage::Completed, 'resposta_recebida', 'flow_completed', $message);
+    }
+
+    /**
+     * Ainda ha pergunta da pesquisa a fazer nesta conversa?
+     *
+     * O teto e `max_main_questions` do fluxo. Conta perguntas efetivamente
+     * enviadas, não respondidas: quem não responde a terceira não deve receber
+     * a quarta por causa de uma contagem que ignora o silêncio.
+     */
+    private function hasMoreMainQuestions(ConversationFlowState $state): bool
+    {
+        $limite = (int) ($state->flow?->max_main_questions ?? 1);
+
+        if ($limite < 2) {
+            return false;
+        }
+
+        $enviadas = $state->questionUsages()->whereNotNull('sent_at')->count();
+
+        if ($enviadas >= $limite) {
+            return false;
+        }
+
+        // Sem pergunta nova disponível não ha o que continuar: cair aqui
+        // levaria a conversa para `waiting_human` sem motivo, quando o certo
+        // e agradecer e encerrar como qualquer pesquisa concluída.
+        return $state->flow?->questions()
+            ->where('is_active', true)
+            ->whereNotIn('id', $state->questionUsages()->pluck('conversation_flow_question_id'))
+            ->exists() ?? false;
+    }
+
+    /**
+     * A 9C assume a conversa depois da resposta?
+     *
+     * Exige as duas pontas: aprofundamento configurado no fluxo e geração
+     * efetivamente ligada. Sem a segunda, o fluxo ficaria parado em
+     * `answer_received` esperando uma etapa que não vai rodar — e a pessoa
+     * ficaria sem nem o agradecimento.
+     */
+    private function deepeningTakesOver(ConversationFlowState $state): bool
+    {
+        $flow = $state->flow;
+
+        if (! $flow || (int) $flow->max_followups < 1) {
+            return false;
+        }
+
+        return app(ResponseModeResolver::class)->forFlow($flow)->generates();
     }
 
     private function recordBlocked(ConversationFlowState $state, ?ConversationMessage $message, ?string $reason): void
@@ -359,9 +447,19 @@ class ConversationFlowService
 
     public function resume(ConversationFlowState $state, User $user): void
     {
-        $state->forceFill(['is_paused' => false])->save();
-        $this->machine->transition($state, ConversationFlowStage::WaitingPermission, 'resumed_by_user', null, null, $user);
-        $this->audit->log('conversation_automation.resumed', 'Automação retomada.', $state, null, ['conversation_id' => $state->conversation_id], $user);
+        $destino = $this->machine->stageToResume($state);
+
+        $state->forceFill([
+            'is_paused' => false,
+            'needs_human_review' => false,
+            'stage_before_hold' => null,
+        ])->save();
+
+        $this->machine->transition($state, $destino, 'resumed_by_user', null, null, $user);
+        $this->audit->log('conversation_automation.resumed', 'Automação retomada.', $state, null, [
+            'conversation_id' => $state->conversation_id,
+            'stage' => $destino->value,
+        ], $user);
     }
 
     public function finishManually(ConversationFlowState $state, User $user): void

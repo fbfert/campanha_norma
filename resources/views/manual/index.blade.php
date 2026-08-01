@@ -194,15 +194,47 @@
         <section class="card manual-section" id="pesquisa">
             <h2><x-icon name="poll" />Perguntar e escutar</h2>
             <p>
-                A pesquisa conversacional e a parte que faz perguntas sozinha. Ela e curta de propósito:
-                pede permissão, faz uma pergunta, agradece e para.
+                A pesquisa conversacional e a parte que faz perguntas sozinha: pede permissão, faz as
+                perguntas cadastradas uma a cada resposta, agradece e para.
+            </p>
+
+            <div class="actions">
+                <a class="btn" href="{{ route('manual.survey-start') }}"><x-icon name="poll" size="16" />Ver os cinco passos para iniciar uma pesquisa</a>
+            </div>
+
+            <h3>Como uma pesquisa começa</h3>
+            <p>
+                Uma pesquisa não e iniciada numa tela própria: ela nasce de um <strong>lote vinculado a um
+                fluxo</strong>. O campo fica no formulário do lote, em <strong>"3. Resposta automática"</strong>,
+                e e o passo que transforma um disparo em pesquisa.
+            </p>
+            <p class="alert warning">
+                Lote sem fluxo vinculado envia normalmente e não abre pesquisa nenhuma &mdash; quem responder
+                cai em atendimento humano. Como o disparo funciona, nada indica o erro.
             </p>
 
             <h3>Fluxo e perguntas</h3>
             <p>
-                Em <strong>Pesquisa &rsaquo; Fluxos conversacionais</strong>. Um fluxo tem um pedido de
-                permissão e um conjunto de perguntas. As perguntas são cadastradas uma a uma, com o texto
-                exato que será enviado.
+                Em <strong>Pesquisa &rsaquo; Fluxos conversacionais</strong>. Um fluxo tem os textos de
+                permissão, recusa e agradecimento, mais um conjunto de perguntas cadastradas com o texto
+                exato que será enviado. Só fluxo <strong>ativo</strong> pode ser vinculado a um lote.
+            </p>
+            <p>Dois campos decidem o formato da conversa:</p>
+            <ul>
+                <li>
+                    <strong>Perguntas principais</strong> &mdash; quantas perguntas cada conversa recebe.
+                    Com 1, a conversa acaba na primeira resposta; com 5, a pessoa responde cinco, uma a cada vez.
+                </li>
+                <li>
+                    <strong>Ordem das perguntas</strong> &mdash; <em>sorteio ponderado</em> dá perguntas
+                    diferentes a respondentes diferentes, cobrindo mais temas com menos perguntas por pessoa;
+                    <em>sequência definida</em> faz todo mundo responder as mesmas perguntas na mesma ordem,
+                    que e o que um questionário precisa para as respostas se compararem.
+                </li>
+            </ul>
+            <p>
+                O texto da pergunta aceita os mesmos placeholders da mensagem de lote. Contato sem o campo
+                preenchido não recebe a pergunta: mandar <code>{cidade}</code> literal seria pior que não mandar.
             </p>
 
             <h3>Permissão</h3>
@@ -210,6 +242,20 @@
                 A primeira mensagem pergunta se a pessoa aceita participar. Se a resposta for negativa,
                 o fluxo encerra e não insiste. Se for ambígua, o sistema não adivinha: passa para
                 atendimento humano.
+            </p>
+            <p class="alert warning">
+                Por isso a mensagem do lote precisa terminar numa pergunta de sim ou não. Se ela já trouxer
+                a pergunta da pesquisa, a pessoa responde com uma opinião, o sistema lê como ambígua e a
+                conversa para antes de começar.
+            </p>
+
+            <h3>Aprofundamento por IA</h3>
+            <p>
+                O campo <strong>perguntas de aprofundamento</strong> permite que a IA formule a próxima
+                pergunta a partir do que a pessoa acabou de escrever. Ele entra <strong>depois</strong> das
+                perguntas cadastradas, nunca no lugar delas: a pergunta cadastrada e igual para todo mundo
+                e produz resposta comparável, que e o ponto de uma pesquisa. Zero aqui significa pesquisa
+                puramente determinística, sem nenhuma chamada de IA.
             </p>
 
             <h3>Limites, agora</h3>
@@ -238,7 +284,17 @@
                     <span class="muted">Infraestrutura de IA</span>
                     <strong>{{ $operational['ai_enabled'] === '1' ? 'Ligada' : 'Desligada' }}</strong>
                 </div>
+                <div>
+                    <span class="muted">Ritmo de envio</span>
+                    <strong>{{ $operational['max_per_minute'] }}/min &middot; {{ $operational['max_per_hour'] }}/h &middot; {{ $operational['max_per_day'] }}/dia</strong>
+                </div>
             </div>
+            <p class="muted">
+                O teto diário decide o tamanho útil de um lote: o que passar disso continua no dia
+                seguinte, sem erro e sem aviso. E resposta que chega fora da janela não recebe a pergunta
+                seguinte &mdash; não ha nova tentativa quando a janela abre, então a conversa so anda se a
+                pessoa escrever de novo dentro do horário.
+            </p>
             <p class="muted">
                 São dois interruptores separados, e não um. <strong>Automação</strong> ligada com
                 <strong>envio automático</strong> desligado faz o sistema avaliar e registrar tudo sem

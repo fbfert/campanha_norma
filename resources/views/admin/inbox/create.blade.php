@@ -110,7 +110,7 @@
                         <td>{{ $contact->city }}{{ $contact->state ? ' / '.$contact->state : '' }}</td>
                         <td>
                             @foreach($contact->tags as $tag)
-                                <span style="display:inline-block;color:#fff;background:{{ $tag->color }};border-radius:6px;padding:2px 6px;margin:1px;">{{ $tag->name }}</span>
+                                <span style="display:inline-block;color:var(--text-inverse);background:{{ $tag->color }};border-radius:6px;padding:2px 6px;margin:1px;">{{ $tag->name }}</span>
                             @endforeach
                         </td>
                         <td>

@@ -17,7 +17,32 @@ Fluxo:
 
 Lotes: `draft`, `validating`, `ready`, `queued`, `processing`, `pausing`, `paused`, `stopping`, `stopped`, `completed`, `completed_with_errors`, `failed`, `cancelled`.
 
-Destinatários: `eligible`, `pending`, `waiting_schedule`, `waiting_minute_limit`, `waiting_hour_limit`, `waiting_day_limit`, `queued`, `processing`, `sent`, `retry_wait`, `failed_temporary`, `failed_permanent`, `cancelled`, `skipped`.
+Destinatários: `eligible`, `pending`, `waiting_schedule`, `waiting_minute_limit`, `waiting_minimum_interval`, `waiting_hour_limit`, `waiting_day_limit`, `queued`, `processing`, `sent`, `retry_wait`, `failed_temporary`, `failed_permanent`, `cancelled`, `skipped`.
+
+## Travas de ritmo
+
+São quatro, e sempre vence a mais restritiva:
+
+```text
+max_per_minute            limite de mensagens por minuto
+max_per_hour              limite por hora
+max_per_day               limite por dia
+minimum_interval_seconds  intervalo obrigatorio entre uma mensagem e a proxima
+```
+
+O intervalo mínimo se sobrepõe aos demais: com 60 segundos, o teto real e uma
+mensagem por minuto, e o limite por minuto configurado nunca chega a ser
+exercido.
+
+Cada trava tem status e mensagem próprios, com o valor configurado no texto.
+Enquanto intervalo e limite por minuto dividiam o status `waiting_minute_limit`,
+quem via "aguardando limite por minuto" com o limite folgado procurava no campo
+errado.
+
+**Status de espera novo precisa entrar em todas as listas** — despachante,
+pausar, parar, retomar, cancelar, reprocessar, painel e tela de processamento.
+Fora da consulta do despachante, o destinatário nunca mais e escolhido: fica
+parado para sempre, sem erro visível.
 
 ## Redis e filas
 

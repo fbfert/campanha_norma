@@ -11,6 +11,7 @@ use App\Http\Controllers\Admin\Contacts\ContactBulkController;
 use App\Http\Controllers\Admin\Contacts\ContactController;
 use App\Http\Controllers\Admin\Contacts\ContactImportController;
 use App\Http\Controllers\Admin\Contacts\TagController;
+use App\Http\Controllers\Admin\ConversationAutomation\ConversationAutomationSettingsController;
 use App\Http\Controllers\Admin\ConversationAutomation\ConversationFlowController;
 use App\Http\Controllers\Admin\ConversationAutomation\ConversationFlowQuestionController;
 use App\Http\Controllers\Admin\ConversationAutomation\ConversationFlowStateController;
@@ -70,6 +71,7 @@ Route::middleware(['auth', 'password.changed'])->group(function (): void {
     // sistema funciona.
     Route::get('/manual', [ManualController::class, 'index'])->name('manual.index');
     Route::get('/manual/mapa-mental', [ManualController::class, 'mindMap'])->name('manual.mind-map');
+    Route::get('/manual/iniciar-pesquisa', [ManualController::class, 'surveyStart'])->name('manual.survey-start');
 
     Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
@@ -115,6 +117,11 @@ Route::middleware(['auth', 'password.changed'])->group(function (): void {
         Route::post('/inbox/{conversation}/do-not-contact', [InboxController::class, 'doNotContact'])->name('inbox.do-not-contact');
         Route::post('/inbox/{conversation}/associate-contact', [InboxController::class, 'associateContact'])->name('inbox.associate-contact');
         Route::post('/inbox/{conversation}/associate-contact/new', [InboxController::class, 'createAndAssociateContact'])->name('inbox.associate-contact.create');
+
+        // Antes da rota de detalhe: `settings` seria capturado como {state}.
+        Route::get('/conversation-automation/settings', [ConversationAutomationSettingsController::class, 'edit'])->name('conversation-automation.settings.edit');
+        Route::put('/conversation-automation/settings', [ConversationAutomationSettingsController::class, 'update'])->name('conversation-automation.settings.update');
+        Route::put('/conversation-automation/settings/limiares', [ConversationAutomationSettingsController::class, 'updateThresholds'])->name('conversation-automation.settings.thresholds');
 
         Route::get('/conversation-automation', [ConversationFlowStateController::class, 'index'])->name('conversation-automation.index');
         Route::get('/conversation-automation/{state}', [ConversationFlowStateController::class, 'show'])->name('conversation-automation.show');
@@ -167,6 +174,9 @@ Route::middleware(['auth', 'password.changed'])->group(function (): void {
         // Antes de `/knowledge/bases/{base}`, senão "export" seria lido como
         // identificador de base.
         Route::get('/knowledge/bases/export', [KnowledgeBaseController::class, 'export'])->name('knowledge.bases.export');
+        Route::get('/knowledge/bases/importar', [KnowledgeBaseController::class, 'import'])->name('knowledge.bases.import');
+        Route::post('/knowledge/bases/importar', [KnowledgeBaseController::class, 'importPreview'])->name('knowledge.bases.import.preview');
+        Route::post('/knowledge/bases/importar/confirmar', [KnowledgeBaseController::class, 'importConfirm'])->name('knowledge.bases.import.confirm');
         Route::get('/knowledge/bases/create', [KnowledgeBaseController::class, 'create'])->name('knowledge.bases.create');
         Route::post('/knowledge/bases', [KnowledgeBaseController::class, 'store'])->name('knowledge.bases.store');
         Route::get('/knowledge/bases/{base}', [KnowledgeBaseController::class, 'show'])->name('knowledge.bases.show');
@@ -184,6 +194,9 @@ Route::middleware(['auth', 'password.changed'])->group(function (): void {
         Route::delete('/knowledge/bases/{base}/documents/{document}', [KnowledgeDocumentController::class, 'destroy'])->name('knowledge.documents.destroy');
 
         Route::get('/insight-topics/export', [InsightTopicController::class, 'export'])->name('insight-topics.export');
+        Route::get('/insight-topics/importar', [InsightTopicController::class, 'import'])->name('insight-topics.import');
+        Route::post('/insight-topics/importar', [InsightTopicController::class, 'importPreview'])->name('insight-topics.import.preview');
+        Route::post('/insight-topics/importar/confirmar', [InsightTopicController::class, 'importConfirm'])->name('insight-topics.import.confirm');
         Route::resource('insight-topics', InsightTopicController::class)
             ->except('show')
             ->parameters(['insight-topics' => 'insightTopic']);
@@ -250,7 +263,9 @@ Route::middleware(['auth', 'password.changed'])->group(function (): void {
         Route::post('/message-batches/{message_batch}/pause', [MessageProcessingController::class, 'pause'])->name('message-batches.pause');
         Route::post('/message-batches/{message_batch}/resume', [MessageProcessingController::class, 'resume'])->name('message-batches.resume');
         Route::post('/message-batches/{message_batch}/stop', [MessageProcessingController::class, 'stop'])->name('message-batches.stop');
+        Route::post('/message-batches/{message_batch}/resume-stopped', [MessageProcessingController::class, 'resumeStopped'])->name('message-batches.resume-stopped');
         Route::post('/message-batches/{message_batch}/recipients/{recipient}/cancel', [MessageProcessingController::class, 'cancelRecipient'])->name('message-batches.recipients.cancel');
+        Route::post('/message-batches/{message_batch}/recipients/{recipient}/uncancel', [MessageProcessingController::class, 'uncancelRecipient'])->name('message-batches.recipients.uncancel');
         Route::post('/message-batches/{message_batch}/recipients/{recipient}/retry', [MessageProcessingController::class, 'retryRecipient'])->name('message-batches.recipients.retry');
         Route::get('/message-batches/{message_batch}/recipients/{recipient}/attempts', [MessageProcessingController::class, 'attempts'])->name('message-batches.recipients.attempts');
         Route::get('/message-batches/{message_batch}/recipients', [MessageBatchController::class, 'recipients'])->name('message-batches.recipients');

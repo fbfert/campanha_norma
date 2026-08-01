@@ -58,7 +58,7 @@
                             <td>
                                 {{ $suggestion->status->label() }}
                                 @if($suggestion->status->isLive() && $suggestion->isStale())
-                                    <span class="badge" style="background:#b45309;color:#fff;">Obsoleta</span>
+                                    <span class="badge" style="background:var(--warning);color:var(--text-inverse);">Obsoleta</span>
                                 @endif
                             </td>
                             <td>{{ $suggestion->created_at?->format($dateTimeFormat) ?? '-' }}</td>

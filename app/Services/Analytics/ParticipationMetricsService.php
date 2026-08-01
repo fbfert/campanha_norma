@@ -193,7 +193,14 @@ class ParticipationMetricsService
             ->get()
             ->map(fn ($row): array => [
                 'day' => (string) $row->day,
-                'stage' => (string) $row->current_stage,
+                // `current_stage` chega convertido em enum pelo cast do modelo,
+                // mesmo vindo de um `selectRaw`. Converter enum para string
+                // direto derruba a página inteira, e so acontece quando existe
+                // ao menos um estado de fluxo — por isso passou despercebido
+                // enquanto a tabela estava vazia.
+                'stage' => $row->current_stage instanceof ConversationFlowStage
+                    ? $row->current_stage->value
+                    : (string) $row->current_stage,
                 'total' => (int) $row->total,
             ])
             ->all();

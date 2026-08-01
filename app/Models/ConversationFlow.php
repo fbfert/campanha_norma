@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\ConversationFlowStatus;
+use App\Enums\ConversationQuestionOrder;
 use App\Enums\KnowledgeBaseStatus;
 use App\Enums\ResponseGenerationMode;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -25,6 +26,7 @@ class ConversationFlow extends Model
         'thank_you_text',
         'permission_denied_text',
         'max_main_questions',
+        'question_order',
         'max_followups',
         'response_mode',
         'validity_hours',
@@ -40,6 +42,7 @@ class ConversationFlow extends Model
             'status' => ConversationFlowStatus::class,
             'response_mode' => ResponseGenerationMode::class,
             'max_main_questions' => 'integer',
+            'question_order' => ConversationQuestionOrder::class,
             'max_followups' => 'integer',
             'validity_hours' => 'integer',
             'transparency_enabled' => 'boolean',

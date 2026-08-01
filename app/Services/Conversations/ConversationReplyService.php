@@ -5,11 +5,14 @@ namespace App\Services\Conversations;
 use App\Enums\ConversationMessageDirection;
 use App\Enums\ConversationMessageOrigin;
 use App\Enums\ConversationMessageStatus;
+use App\Models\Contact;
 use App\Models\Conversation;
 use App\Models\ConversationMessage;
 use App\Models\User;
 use App\Services\AuditLogger;
+use App\Services\Placeholders\MessageRendererService;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 /**
  * Serviço de saída unificado.
@@ -28,7 +31,44 @@ class ConversationReplyService
     public function __construct(
         private readonly ConversationEventService $events,
         private readonly AuditLogger $audit,
+        private readonly MessageRendererService $renderer,
     ) {}
+
+    /**
+     * Resolve placeholders antes de a mensagem existir.
+     *
+     * Fica aqui, e não em cada origem, porque este e o único ponto por onde
+     * manual, automático e aprovado por IA passam. A automação renderizava por
+     * conta própria; resposta manual e sugestão aprovada não renderizavam nada,
+     * e um `{cidade}` escrito a mão — ou copiado pelo modelo do texto da
+     * pergunta — chegava literal no WhatsApp da pessoa.
+     *
+     * Campo vazio no contato interrompe o envio em vez de mandar a chave crua.
+     * Para a automação isso nunca chega a acontecer: ela verifica antes e
+     * apenas registra o evento, sem erro na tela de ninguém.
+     */
+    private function render(string $body, ?Contact $contact): string
+    {
+        if (! str_contains($body, '{')) {
+            return $body;
+        }
+
+        if (! $contact) {
+            throw ValidationException::withMessages([
+                'body' => 'A mensagem usa campos do contato, e esta conversa não tem contato identificado.',
+            ]);
+        }
+
+        $render = $this->renderer->render($body, $contact);
+
+        if ($render['missing'] !== []) {
+            throw ValidationException::withMessages([
+                'body' => 'O contato não tem preenchido: '.implode(', ', $render['missing']).'. Ajuste o texto ou complete o cadastro.',
+            ]);
+        }
+
+        return $render['message'];
+    }
 
     /**
      * Elegibilidade mínima comum a qualquer envio pelo sistema.
@@ -77,6 +117,7 @@ class ConversationReplyService
         ?string $auditDescription = null,
     ): ConversationMessage {
         $contact = $conversation->contact;
+        $body = $this->render($body, $contact);
 
         $message = ConversationMessage::create(array_merge([
             'conversation_id' => $conversation->id,

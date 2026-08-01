@@ -89,6 +89,11 @@ enum PermissionSlug: string
     case ConversationAutomationManageFlows = 'conversation_automation.manage_flows';
     case ConversationAutomationManageQuestions = 'conversation_automation.manage_questions';
     case ConversationAutomationControl = 'conversation_automation.control';
+
+    // Separada de `control` porque o alcance e outro: `control` pausa e retoma
+    // uma conversa, esta liga e desliga o motor para toda a base e decide o
+    // texto que sai sem revisão humana.
+    case ConversationAutomationManageSettings = 'conversation_automation.manage_settings';
     case AiInsightsView = 'ai_insights.view';
     case AiInsightsViewContactData = 'ai_insights.view_contact_data';
     case AiInsightsCorrect = 'ai_insights.correct';
@@ -215,6 +220,7 @@ enum PermissionSlug: string
             self::ConversationAutomationManageFlows => 'Gerenciar fluxos conversacionais',
             self::ConversationAutomationManageQuestions => 'Gerenciar perguntas dos fluxos',
             self::ConversationAutomationControl => 'Controlar automação das conversas',
+            self::ConversationAutomationManageSettings => 'Ligar, desligar e configurar a automação conversacional',
             self::AiInsightsView => 'Visualizar interpretação por IA',
             self::AiInsightsViewContactData => 'Visualizar dados de contato nas telas analíticas',
             self::AiInsightsCorrect => 'Corrigir classificação e insights',

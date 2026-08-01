@@ -12,6 +12,7 @@ use App\Listeners\DispatchConversationInterpretation;
 use App\Listeners\DispatchConversationReplyGeneration;
 use App\Models\Conversation;
 use App\Models\User;
+use App\Observers\ConversationObserver;
 use App\Services\Ai\AiProviderSettings;
 use App\Services\Knowledge\GroundingValidator;
 use App\Services\Knowledge\KnowledgeProviderManager;
@@ -48,6 +49,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Conversation::observe(ConversationObserver::class);
+
         Gate::before(function (User $user): ?bool {
             return $user->hasRole('administrador') ? true : null;
         });

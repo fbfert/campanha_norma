@@ -16,6 +16,7 @@ class ConversationFlowState extends Model
         'conversation_id',
         'conversation_flow_id',
         'current_stage',
+        'stage_before_hold',
         'selected_question_id',
         'selected_question_snapshot',
         'automated_messages_count',

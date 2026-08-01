@@ -53,6 +53,24 @@ Quando o teste apontar uma palavra:
 
 Detalhes e limitações conhecidas em `docs/ortografia.md`.
 
+## Interface: cor, ícone e caminho de migalhas
+
+Três regras valem em toda tela, e as três são cobradas por
+`tests/Feature/PadraoDeInterfaceTest.php`:
+
+- **cor sai de um token** declarado em `:root`, em `resources/css/app.css` —
+  nunca escrita a mão numa view nem fora do `:root`;
+- **ícone existe no sprite** antes de ser usado (`<use>` para id inexistente não
+  desenha nada e não avisa);
+- **tela nova precisa de entrada em `app/Support/Breadcrumbs.php`**, senão a
+  trilha aparece sem link nenhum.
+
+Nada de `<style>` dentro de view e nada carregado de CDN: o sistema roda em
+servidor próprio e precisa abrir com a internet ruim.
+
+O documento completo, com o motivo de cada regra, está em
+`docs/padroes-de-interface.md`.
+
 ## Testes
 
 ```bash

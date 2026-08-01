@@ -1,6 +1,6 @@
 <x-layouts.app title="Insight" breadcrumbs="Inicio / Pesquisa conversacional / Interpretacao / Detalhes">
     <section class="card">
-        <span class="badge" style="background:#4f46e5;color:#fff;">Gerado por IA</span>
+        <span class="badge" style="background:var(--ai-mark);color:var(--text-inverse);">Gerado por IA</span>
         <span class="muted" style="margin-left:8px;">
             Modelo {{ $insight->run?->model ?? '-' }} &middot; prompt {{ $insight->prompt_version }} &middot; extração v{{ $insight->extraction_version }}
         </span>
@@ -34,7 +34,7 @@
             <p><strong>Tema principal:</strong> {{ $insight->topic?->name ?? '-' }} <span class="muted">({{ $insight->main_topic_raw ?? 'sem saída do modelo' }})</span></p>
             <p><strong>Temas secundários:</strong>
                 @forelse($insight->topicLinks->where('role', 'secondary') as $link)
-                    <span class="badge" style="background:{{ $link->topic?->color ?? '#64748b' }};color:#fff;">{{ $link->topic?->name }}</span>
+                    <span class="badge" style="background:{{ $link->topic?->color ?? 'var(--tag-default)' }};color:var(--text-inverse);">{{ $link->topic?->name }}</span>
                 @empty
                     -
                 @endforelse

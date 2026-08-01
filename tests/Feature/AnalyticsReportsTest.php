@@ -17,6 +17,7 @@ use App\Services\SystemSettingService;
 use Database\Seeders\RolePermissionSeeder;
 use Database\Seeders\SystemSettingSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
@@ -37,10 +38,24 @@ class AnalyticsReportsTest extends TestCase
     {
         parent::setUp();
 
+        // Relógio fixo no meio do dia. Os cenários criam estados com
+        // `now()->subHours(2)` e reconstroem o dia de `now()`: rodando entre
+        // meia-noite e duas da manha, as duas datas caem em dias diferentes e a
+        // materialização não encontra nada. O defeito e do teste, não do
+        // código, e so aparece para quem trabalha de madrugada.
+        Carbon::setTestNow(Carbon::parse('2026-07-15 12:00:00'));
+
         $this->seed(RolePermissionSeeder::class);
         $this->seed(SystemSettingSeeder::class);
 
         $this->flow = ConversationFlow::factory()->create();
+    }
+
+    protected function tearDown(): void
+    {
+        Carbon::setTestNow();
+
+        parent::tearDown();
     }
 
     private function userWith(string $roleSlug): User
@@ -79,6 +94,35 @@ class AnalyticsReportsTest extends TestCase
         $this->assertSame(3, $totals['permission_denied']);
         $this->assertSame(2, $totals['opted_out']);
         $this->assertSame(1, $totals['waiting_human']);
+    }
+
+    /**
+     * A série diária derrubava a tela de análise inteira com erro 500.
+     *
+     * `current_stage` chega convertido em enum pelo cast do modelo, mesmo vindo
+     * de um `selectRaw`, e a conversão direta para string lança. O `map` so roda
+     * quando ha ao menos uma linha, então o defeito ficou invisível enquanto a
+     * tabela estava vazia e apareceu no dia em que a primeira campanha real
+     * gerou estados de fluxo.
+     */
+    public function test_a_serie_diaria_devolve_o_estagio_como_texto(): void
+    {
+        $this->state(ConversationFlowStage::Completed, 2);
+        $this->state(ConversationFlowStage::WaitingAnswer, 1);
+
+        $serie = app(ParticipationMetricsService::class)
+            ->byDay(now()->subDay(), now(), $this->flow->id);
+
+        $this->assertNotEmpty($serie);
+
+        foreach ($serie as $linha) {
+            $this->assertIsString($linha['stage']);
+        }
+
+        $this->assertEqualsCanonicalizing(
+            ['completed', 'waiting_answer'],
+            array_column($serie, 'stage')
+        );
     }
 
     /**
