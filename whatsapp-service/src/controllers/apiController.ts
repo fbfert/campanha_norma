@@ -21,6 +21,14 @@ const conversationMessagesSchema = z.object({
   days: z.coerce.number().int().min(1).max(365).default(30),
 });
 
+const messageMediaSchema = z.object({
+  chatId: z.string().trim().min(5).max(128).regex(/^[\w.-]+@(c\.us|lid)$/),
+  messageId: z.string().trim().min(5).max(256),
+  // Audio de pesquisa e curto. O teto protege a memoria do processo que
+  // mantem a sessao do WhatsApp de pe.
+  maxBytes: z.coerce.number().int().min(1024).max(26_214_400).default(16_777_216),
+});
+
 export function controller(runtime: WhatsAppRuntime) {
   return {
     health(_req: Request, res: Response) {
@@ -86,6 +94,15 @@ export function controller(runtime: WhatsAppRuntime) {
         limit: parsed.data.limit,
         days: parsed.data.days,
       }));
+    },
+
+    async messageMedia(req: Request, res: Response) {
+      const parsed = messageMediaSchema.safeParse({ ...req.query, chatId: req.params.chatId, messageId: req.params.messageId });
+      if (!parsed.success) {
+        throw new ServiceError('INVALID_REQUEST', 'Parametros invalidos para a midia da mensagem.', 422);
+      }
+
+      return ok(res, await runtime.fetchMessageMedia(parsed.data.chatId, parsed.data.messageId, parsed.data.maxBytes));
     },
   };
 }

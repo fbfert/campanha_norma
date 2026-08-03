@@ -79,9 +79,20 @@ class ConversationInterpretationService
             return true;
         }
 
+        // A pergunta precisa ter saído ANTES desta mensagem para que ela possa
+        // ser a resposta. Sem essa comparação, o "sim" da autorização entrava
+        // aqui: a 9A seleciona a pergunta no mesmo passo em que processa o
+        // "sim", então `selected_question_id` já esta preenchido quando o job
+        // de interpretação roda. O resultado eram analises de "sim", "tudo" e
+        // "pode sim" enchendo o tema de fallback e gastando uma chamada de IA
+        // por autorização.
         return $state !== null
             && $state->selected_question_id !== null
-            && $state->last_processed_message_id === $message->id;
+            && $state->last_processed_message_id === $message->id
+            && $state->questionUsages()
+                ->whereNotNull('sent_at')
+                ->where('sent_at', '<', $message->created_at)
+                ->exists();
     }
 
     private function applyReview(

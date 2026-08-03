@@ -10,6 +10,51 @@
         <section class="card"><strong>PHP</strong><p>{{ $phpVersion }}</p></section>
         <section class="card"><strong>Data do sistema</strong><p>@livewire(\App\Http\Livewire\SystemClock::class)</p></section>
     </div>
+    @if($ai['disponivel'] ?? false)
+        @php
+            $moeda = fn (float $valor): string => 'R$ '.number_format($valor, 2, ',', '.');
+            $milhar = fn (int $valor): string => number_format($valor, 0, ',', '.');
+        @endphp
+        <h2>Inteligência artificial &mdash; mês atual</h2>
+        <div class="grid grid-3">
+            <section class="card">
+                <strong>Gasto no mês</strong>
+                <h2>{{ $moeda($ai['gasto_entrada'] + $ai['gasto_saida']) }}</h2>
+                <p class="muted">Entrada e saída somadas, pelo preço configurado agora.</p>
+            </section>
+            <section class="card">
+                <strong>Gasto com entrada</strong>
+                <h2>{{ $moeda($ai['gasto_entrada']) }}</h2>
+                <p class="muted">{{ $milhar($ai['tokens_entrada']) }} tokens a {{ $moeda($ai['preco_entrada']) }} por mil.</p>
+            </section>
+            <section class="card">
+                <strong>Gasto com saída</strong>
+                <h2>{{ $moeda($ai['gasto_saida']) }}</h2>
+                <p class="muted">{{ $milhar($ai['tokens_saida']) }} tokens a {{ $moeda($ai['preco_saida']) }} por mil.</p>
+            </section>
+            <section class="card">
+                <strong>Chamadas no mês</strong>
+                <h2>{{ $milhar($ai['chamadas_mes']) }}</h2>
+                <p class="muted">{{ $milhar($ai['chamadas_hoje']) }} hoje.</p>
+            </section>
+            <section class="card">
+                <strong>Chamadas com falha</strong>
+                <h2>{{ $milhar($ai['falhas_mes']) }}</h2>
+                <p class="muted">Falha não gera texto, mas pode ter consumido tokens.</p>
+            </section>
+            <section class="card">
+                <strong>Modelo em uso</strong>
+                <p>{{ $ai['modelo'] }}</p>
+                {{-- O gravado usa o preço vigente em cada chamada; o recalculado
+                     responde "quanto custaria hoje". Divergiram quando o preço
+                     mudou, e esconder isso faria o card parecer errado. --}}
+                @if(abs(($ai['gasto_entrada'] + $ai['gasto_saida']) - $ai['gasto_registrado']) > 0.01)
+                    <p class="muted">Registrado na época das chamadas: {{ $moeda($ai['gasto_registrado']) }}.</p>
+                @endif
+            </section>
+        </div>
+    @endif
+
     <h2>Contatos</h2>
     <div class="grid grid-3">
         <section class="card"><strong>Total de contatos</strong><h2>{{ $totalContacts }}</h2></section>

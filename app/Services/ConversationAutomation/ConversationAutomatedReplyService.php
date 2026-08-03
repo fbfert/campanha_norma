@@ -3,10 +3,14 @@
 namespace App\Services\ConversationAutomation;
 
 use App\Enums\ConversationMessageOrigin;
+use App\Enums\TranscriptionStatus;
 use App\Jobs\SendAutomatedConversationReplyJob;
+use App\Models\Conversation;
+use App\Models\ConversationEvent;
 use App\Models\ConversationFlow;
 use App\Models\ConversationFlowState;
 use App\Models\ConversationMessage;
+use App\Models\MessageTranscription;
 use App\Services\Conversations\ConversationEventService;
 use App\Services\Conversations\ConversationReplyService;
 use App\Services\Placeholders\MessageRendererService;
@@ -18,6 +22,9 @@ use App\Services\SystemSettingService;
  */
 class ConversationAutomatedReplyService
 {
+    /** Marca no histórico da conversa: o aviso de transcrição sai uma vez so. */
+    private const TRANSCRIPTION_NOTICE_EVENT = 'transcription_notice_sent';
+
     public function __construct(
         private readonly SystemSettingService $settings,
         private readonly ConversationReplyService $replies,
@@ -54,7 +61,7 @@ class ConversationAutomatedReplyService
             return null;
         }
 
-        $body = trim($this->applyTransparency($state->flow, $render['message']));
+        $body = trim($this->applyTransparency($state->flow, $this->applyTranscriptionNotice($conversation, $render['message'])));
 
         if ($body === '') {
             return null;
@@ -109,6 +116,52 @@ class ConversationAutomatedReplyService
             'prefix' => $text."\n\n".$body,
             default => $body."\n\n".$text,
         };
+    }
+
+    /**
+     * Aviso de que o áudio da pessoa foi convertido em texto.
+     *
+     * Fica separado do aviso geral de automação de propósito. O aviso geral vai
+     * em toda mensagem, para todo mundo; este diz respeito a quem mandou voz, e
+     * dizer "seus áudios são transcritos" para quem so escreveu seria ruído — e
+     * ruído em aviso de privacidade ensina a ignorar aviso de privacidade.
+     *
+     * Sai uma vez por conversa, junto da primeira resposta depois da primeira
+     * transcrição. Repetir a cada áudio viraria assinatura.
+     */
+    public function applyTranscriptionNotice(?Conversation $conversation, string $body): string
+    {
+        if (! $conversation) {
+            return $body;
+        }
+
+        $texto = trim((string) $this->settings->get('conversation_automation.transcription_notice_text', ''));
+
+        if ($texto === '') {
+            return $body;
+        }
+
+        $temTranscricao = MessageTranscription::query()
+            ->where('conversation_id', $conversation->id)
+            ->where('status', TranscriptionStatus::Succeeded)
+            ->exists();
+
+        if (! $temTranscricao) {
+            return $body;
+        }
+
+        $jaAvisado = ConversationEvent::query()
+            ->where('conversation_id', $conversation->id)
+            ->where('event_type', self::TRANSCRIPTION_NOTICE_EVENT)
+            ->exists();
+
+        if ($jaAvisado) {
+            return $body;
+        }
+
+        $this->events->record($conversation, self::TRANSCRIPTION_NOTICE_EVENT, 'Aviso de transcrição de áudio enviado.');
+
+        return $texto."\n\n".$body;
     }
 
     public function sendQueue(): string

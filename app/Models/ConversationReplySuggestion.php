@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\ConversationMessageDirection;
 use App\Enums\GroundingStatus;
 use App\Enums\HandoffReason;
 use App\Enums\ReplySuggestionAction;
@@ -173,16 +174,25 @@ class ConversationReplySuggestion extends Model
     }
 
     /**
-     * Obsoleta quando já existe mensagem recebida mais nova que a de origem.
+     * Obsoleta quando a conversa andou depois da mensagem que originou a sugestão.
+     *
+     * Andar é a pessoa escrever de novo — o texto foi pensado para o que ela
+     * disse antes — e também é o sistema já ter respondido por outro caminho.
+     * Esta segunda metade faltava: o fluxo mandava a pergunta seguinte e a
+     * sugestão pendente continuava válida, saindo minutos depois como uma
+     * segunda mensagem sobre o mesmo assunto.
      */
     public function isStale(): bool
     {
-        $latestIncomingId = ConversationMessage::query()
+        $ultimaMensagemId = ConversationMessage::query()
             ->where('conversation_id', $this->conversation_id)
-            ->where('direction', 'incoming')
+            ->whereIn('direction', [
+                ConversationMessageDirection::Incoming->value,
+                ConversationMessageDirection::Outgoing->value,
+            ])
             ->max('id');
 
-        return $latestIncomingId !== null && (int) $latestIncomingId > (int) $this->source_message_id;
+        return $ultimaMensagemId !== null && (int) $ultimaMensagemId > (int) $this->source_message_id;
     }
 
     public function isExpired(): bool

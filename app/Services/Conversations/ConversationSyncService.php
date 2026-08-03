@@ -217,10 +217,44 @@ class ConversationSyncService
         $run->forceFill(['last_heartbeat_at' => now()])->save();
     }
 
+    /**
+     * Tipos que o WhatsApp gera sozinho e que nenhuma pessoa escreveu.
+     *
+     * O aviso de troca de chave de criptografia entrava como mensagem recebida,
+     * de corpo vazio: a automação lia aquilo como se a pessoa tivesse
+     * respondido, não entendia nada e encaminhava a conversa para atendimento
+     * humano. Uma respondente que apenas ainda não tinha respondido aparecia
+     * como parada, esperando gente.
+     */
+    public const PROTOCOL_TYPES = [
+        'e2e_notification',
+        'notification_template',
+        'call_log',
+        'gp2',
+        'protocol',
+        'revoked',
+        'ciphertext',
+    ];
+
+    /**
+     * Folga para reconhecer o eco da própria mensagem em `adoptOwnMessage()`.
+     *
+     * O eco costuma voltar em segundos, mas a sincronização pode rodar bem
+     * depois. Dez minutos cobrem o atraso sem alcançar um reenvio deliberado
+     * do mesmo texto, que é o único caso em que duas linhas iguais são certas.
+     */
+    private const OWN_MESSAGE_WINDOW_MINUTES = 10;
+
     private function syncMessage(ConversationSyncRun $run, Conversation $conversation, array $message, array $chat, mixed $contact): void
     {
         if (blank($message['external_message_id'] ?? null)) {
             $run->increment('messages_failed');
+
+            return;
+        }
+
+        if (in_array((string) ($message['type'] ?? ''), self::PROTOCOL_TYPES, true)) {
+            $run->increment('messages_skipped');
 
             return;
         }
@@ -238,6 +272,13 @@ class ConversationSyncService
 
         $direction = ($message['direction'] ?? 'incoming') === 'outgoing' ? ConversationMessageDirection::Outgoing : ConversationMessageDirection::Incoming;
         $occurredAt = $this->date($message['sent_at'] ?? null) ?? now();
+
+        if ($direction === ConversationMessageDirection::Outgoing
+            && $this->adoptOwnMessage($conversation, $message, $occurredAt)) {
+            $run->increment('messages_skipped');
+
+            return;
+        }
 
         DB::transaction(function () use ($conversation, $message, $chat, $contact, $direction, $occurredAt, $run): void {
             $record = ConversationMessage::create([
@@ -321,6 +362,51 @@ class ConversationSyncService
         return ConversationSyncStatus::Completed;
     }
 
+    /**
+     * Reconhece o eco de uma mensagem que nós mesmos enviamos.
+     *
+     * O WhatsApp Web às vezes entrega a mensagem e mesmo assim lança erro em
+     * vez de devolver o identificador — o serviço Node já trata esse caso e
+     * responde com `external_message_id` nulo. A linha fica gravada sem id, e
+     * quando o eco chega pela sincronização não há por onde casar os dois: o
+     * resultado é a mesma frase aparecendo duas vezes na conversa, e entrando
+     * duas vezes no contexto que vai para o modelo.
+     *
+     * Casamos então pelo que sobrou — mesma conversa, mesmo texto e horário
+     * próximo — e aproveitamos para preencher o identificador que faltava.
+     */
+    private function adoptOwnMessage(Conversation $conversation, array $message, Carbon $occurredAt): bool
+    {
+        $body = $message['body'] ?? null;
+
+        if (blank($body)) {
+            return false;
+        }
+
+        $orfa = ConversationMessage::query()
+            ->where('conversation_id', $conversation->id)
+            ->where('direction', ConversationMessageDirection::Outgoing)
+            ->whereNull('external_message_id')
+            ->where('body', $body)
+            ->whereBetween('created_at', [
+                $occurredAt->copy()->subMinutes(self::OWN_MESSAGE_WINDOW_MINUTES),
+                $occurredAt->copy()->addMinutes(self::OWN_MESSAGE_WINDOW_MINUTES),
+            ])
+            ->orderBy('id')
+            ->first();
+
+        if (! $orfa) {
+            return false;
+        }
+
+        $orfa->forceFill([
+            'external_message_id' => (string) $message['external_message_id'],
+            'external_chat_id' => $orfa->external_chat_id ?? ($message['external_chat_id'] ?? null),
+        ])->save();
+
+        return true;
+    }
+
     private function date(mixed $value): ?Carbon
     {
         if (blank($value)) {
@@ -328,7 +414,10 @@ class ConversationSyncService
         }
 
         try {
-            return Carbon::parse((string) $value);
+            // Convertido para o fuso da aplicação: o WhatsApp Web entrega
+            // ISO-8601 em UTC, e guardar assim faria a linha do tempo mostrar
+            // o evento três horas adiante do que ele aconteceu.
+            return Carbon::parse((string) $value)->setTimezone(config('app.timezone'));
         } catch (\Throwable) {
             return null;
         }

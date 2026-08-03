@@ -90,6 +90,15 @@ class MessageBatchController extends Controller
         return back()->with('success', "Validação concluída: {$messageBatch->eligible_total} aptos e {$messageBatch->ineligible_total} excluídos.");
     }
 
+    public function revalidate(Request $request, MessageBatch $messageBatch, BatchCreationService $service): RedirectResponse
+    {
+        abort_unless($request->user()->can('message_batches.update'), 403);
+
+        $resultado = $service->revalidate($messageBatch, $request->user());
+
+        return back()->with('success', "Lote atualizado: {$resultado['avaliados']} destinatários reavaliados, {$resultado['agora_aptos']} passaram a apto e {$resultado['agora_inaptos']} deixaram de ser.");
+    }
+
     public function randomize(Request $request, MessageBatch $messageBatch, BatchCreationService $service): RedirectResponse
     {
         abort_unless($request->user()->can('message_batches.update'), 403);

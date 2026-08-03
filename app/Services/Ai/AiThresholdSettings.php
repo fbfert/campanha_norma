@@ -30,6 +30,7 @@ class AiThresholdSettings
         'ai.min_extraction_confidence' => 'ai',
         'ai.response.min_confidence' => 'ai',
         'ai.response.auto_send_min_confidence' => 'ai',
+        'ai.response.safety_net_min_confidence' => 'ai',
         'analytics.low_confidence_threshold' => 'analytics',
     ];
 

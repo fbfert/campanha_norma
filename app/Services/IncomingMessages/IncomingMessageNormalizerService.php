@@ -48,8 +48,13 @@ class IncomingMessageNormalizerService
             'recipient_phone' => isset($data['recipient_phone']) ? preg_replace('/\D+/', '', $data['recipient_phone']) : null,
             'message_type' => in_array($data['message_type'], ['text', 'unknown', 'unsupported'], true) ? $data['message_type'] : $data['message_type'],
             'text' => isset($data['text']) ? trim(preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/u', '', $data['text'])) : null,
-            'sent_at' => isset($data['sent_at']) ? Carbon::parse($data['sent_at']) : null,
-            'received_at' => isset($data['received_at']) ? Carbon::parse($data['received_at']) : now(),
+            // O serviço Node manda ISO-8601 em UTC. `Carbon::parse` preserva o
+            // fuso da string, e o valor ia para o banco com o horário de
+            // Greenwich: mensagem recebida às 19h aparecia como 22h na tela,
+            // enquanto `created_at` — gravado pelo próprio Laravel — mostrava
+            // 19h. Duas horas diferentes para o mesmo evento, na mesma linha.
+            'sent_at' => isset($data['sent_at']) ? Carbon::parse($data['sent_at'])->setTimezone(config('app.timezone')) : null,
+            'received_at' => isset($data['received_at']) ? Carbon::parse($data['received_at'])->setTimezone(config('app.timezone')) : now(),
             'is_from_me' => (bool) $data['is_from_me'],
             'is_group' => (bool) $data['is_group'],
             'has_media' => (bool) $data['has_media'],

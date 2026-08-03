@@ -209,6 +209,21 @@
                 </div>
             </div>
 
+            <h3 style="margin-top:16px;">Rede de segurança</h3>
+            <p class="muted">
+                Quando alguém escreve e a automação não responde, a rede de segurança age
+                depois do tempo configurado. Ela primeiro tenta responder de verdade; só
+                manda o aviso de recebimento quando a resposta não alcança este limiar.
+                Como ela contorna o autoenvio comum, o número não pode ser menor que o dele.
+            </p>
+            <div class="grid grid-2">
+                <div>
+                    <label for="ai_response_safety_net_min_confidence">Resposta sem aprovação a partir de</label>
+                    <input id="ai_response_safety_net_min_confidence" name="ai_response_safety_net_min_confidence" type="number" step="0.01" min="0" max="1" value="{{ old('ai_response_safety_net_min_confidence', $limiares['ai_response_safety_net_min_confidence']) }}" required>
+                    <p class="muted">Abaixo disso a pessoa recebe o aviso de recebimento e o texto fica esperando aprovação.</p>
+                </div>
+            </div>
+
             <h3 style="margin-top:16px;">Interpretação</h3>
             <div class="grid grid-2">
                 <div>

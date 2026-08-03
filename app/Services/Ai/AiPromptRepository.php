@@ -39,9 +39,12 @@ class AiPromptRepository
      */
     public function activeGroundedResponseVersion(): string
     {
-        $version = trim((string) $this->settings->get('ai.response.grounded_prompt_version', 'v2'));
+        // v3 acrescenta as regras de qualidade da pergunta. A v2 continua em
+        // disco: trocar de versão e configuração, não deploy, e voltar atrás
+        // precisa ser possível sem mexer em código.
+        $version = trim((string) $this->settings->get('ai.response.grounded_prompt_version', 'v3'));
 
-        return $version === '' ? 'v2' : $version;
+        return $version === '' ? 'v3' : $version;
     }
 
     public function get(AiRunPurpose $purpose, ?string $version = null): string

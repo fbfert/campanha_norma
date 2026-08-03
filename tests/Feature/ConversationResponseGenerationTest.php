@@ -353,7 +353,19 @@ class ConversationResponseGenerationTest extends TestCase
         $this->assertSame(2, ConversationReplySuggestion::max('generation_attempt'));
     }
 
-    public function test_the_approval_inbox_has_no_bulk_action(): void
+    /**
+     * A caixa de aprovação passou a ter ação em massa.
+     *
+     * Este teste garantia o contrário: a ausência era deliberada, e o motivo
+     * continua valendo — aprovar cinquenta com um clique transforma revisão em
+     * carimbo. O botão foi acrescentado por decisão de quem opera a campanha,
+     * depois de a objeção ter sido apresentada.
+     *
+     * O que continua sendo verificado e o que a decisão não mudou: a ação
+     * anuncia quantas serão enviadas, e nenhuma sugestão sai sem passar pelos
+     * guards. O comportamento em si esta em `DescartarSugestoesObsoletasTest`.
+     */
+    public function test_the_approval_inbox_announces_how_many_bulk_approval_would_send(): void
     {
         $this->fakeGeneration();
         [, $conversation] = $this->scenario();
@@ -363,9 +375,13 @@ class ConversationResponseGenerationTest extends TestCase
             ->get(route('admin.reply-suggestions.index'))
             ->assertOk();
 
-        $html = $response->getContent();
-        $this->assertStringNotContainsString('aprovar-todas', $html);
-        $this->assertStringNotContainsString('bulk', $html);
+        $html = (string) $response->getContent();
+
+        $this->assertStringContainsString('Aprovar todas pendentes (1)', $html, 'Aprovar "todas" sem dizer quantas e o que vira carimbo.');
+        $this->assertStringContainsString('confirm(', $html);
+
+        // Seleção por caixa de marcação continua fora: ela convida a marcar
+        // tudo sem ler, que e um passo além do que foi pedido.
         $this->assertStringNotContainsString('type="checkbox"', $html);
     }
 

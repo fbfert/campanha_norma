@@ -23,6 +23,7 @@ export function apiRoutes(runtime: WhatsAppRuntime) {
   router.post('/test-message', asyncHandler(api.sendTestMessage));
   router.get('/conversations', asyncHandler(api.conversations));
   router.get('/conversations/:chatId/messages', asyncHandler(api.conversationMessages));
+  router.get('/conversations/:chatId/messages/:messageId/media', asyncHandler(api.messageMedia));
 
   return router;
 }

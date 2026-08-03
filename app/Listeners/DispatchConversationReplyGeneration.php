@@ -30,9 +30,34 @@ class DispatchConversationReplyGeneration
             return;
         }
 
-        $delay = max(0, (int) $this->settings->get('ai.response.debounce_seconds', 20));
+        GenerateConversationReplyJob::dispatch($event->message->id)
+            ->delay(now()->addSeconds($this->debounceSeconds($event)));
+    }
 
-        GenerateConversationReplyJob::dispatch($event->message->id)->delay(now()->addSeconds($delay));
+    /**
+     * Quanto esperar antes de gerar, agrupando o que a pessoa ainda vai
+     * escrever.
+     *
+     * A espera cresce depois que a conversa engata. No começo, resposta rápida
+     * sustenta a conversa: quem acabou de autorizar e ficar dois minutos sem
+     * retorno acha que não funcionou. Depois de algumas trocas o problema se
+     * inverte — a pessoa passa a escrever em blocos, manda a ideia numa
+     * mensagem, o exemplo em outra e o motivo numa terceira, e responder a
+     * primeira frase joga fora as duas seguintes.
+     *
+     * A espera maior custa tempo de quem responde e devolve contexto inteiro.
+     * Só o job da mensagem mais nova gera: os anteriores desistem sozinhos ao
+     * ver que chegou coisa nova.
+     */
+    private function debounceSeconds(ConversationMessageEvaluated $event): int
+    {
+        $padrao = max(0, (int) $this->settings->get('ai.response.debounce_seconds', 20));
+        $estendido = max(0, (int) $this->settings->get('ai.response.extended_debounce_seconds', 90));
+        $apartirDe = max(0, (int) $this->settings->get('ai.response.extended_debounce_after_turns', 3));
+
+        return $event->state->followups_count >= $apartirDe
+            ? max($padrao, $estendido)
+            : $padrao;
     }
 
     /**

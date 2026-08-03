@@ -122,6 +122,81 @@ class BatchCreationService
         });
     }
 
+    /**
+     * Reavalia os destinatários contra o cadastro atual do contato.
+     *
+     * Existe para o caminho mais comum de correção: o lote acusa "falta a
+     * cidade", alguém completa o cadastro, e sem isto seria preciso refazer o
+     * lote inteiro para o contato voltar a ser apto.
+     *
+     * Só mexe em quem ainda não teve envio. Destinatário enviado, na fila ou em
+     * processamento fica intocado: reescrever a mensagem de quem já recebeu
+     * apagaria o registro do que foi enviado de fato.
+     *
+     * @return array{avaliados: int, agora_aptos: int, agora_inaptos: int}
+     */
+    public function revalidate(MessageBatch $batch, User $user): array
+    {
+        if (! in_array($batch->status, [MessageBatchStatus::Draft, MessageBatchStatus::Ready], true)) {
+            throw ValidationException::withMessages(['batch' => 'Só rascunho ou lote preparado pode ser atualizado.']);
+        }
+
+        $resultado = ['avaliados' => 0, 'agora_aptos' => 0, 'agora_inaptos' => 0];
+
+        DB::transaction(function () use ($batch, &$resultado): void {
+            foreach ($batch->recipients()->with('contact')->get() as $recipient) {
+                if ($recipient->sent_at !== null || $recipient->external_message_id !== null) {
+                    continue;
+                }
+
+                $contact = $recipient->contact;
+
+                if (! $contact) {
+                    continue;
+                }
+
+                $eraApto = $recipient->eligibility_status === MessageBatchRecipientEligibility::Eligible;
+                $corpo = $recipient->message_template_name_snapshot !== null && $recipient->template
+                    ? $recipient->template->body
+                    : $batch->message_body_snapshot;
+
+                $avaliacao = $this->eligibility->evaluate($contact, (string) $corpo);
+                $resultado['avaliados']++;
+
+                $recipient->forceFill([
+                    'eligibility_status' => $avaliacao['eligible'] ? MessageBatchRecipientEligibility::Eligible : MessageBatchRecipientEligibility::Excluded,
+                    'ineligibility_reason' => $avaliacao['reason'],
+                    'rendered_message' => $avaliacao['eligible'] ? $avaliacao['rendered_message'] : null,
+                    'render_errors' => $avaliacao['render_errors'],
+                    // Os snapshots acompanham: o lote passa a valer com o dado
+                    // que o contato tem agora, que e o motivo de atualizar.
+                    'contact_name_snapshot' => $contact->name,
+                    'contact_first_name_snapshot' => $contact->first_name,
+                    'contact_phone_snapshot' => $contact->phone,
+                    'contact_email_snapshot' => $contact->email,
+                    'contact_city_snapshot' => $contact->city,
+                    'contact_state_snapshot' => $contact->state,
+                    'contact_country_snapshot' => $contact->country,
+                ])->save();
+
+                if ($avaliacao['eligible'] && ! $eraApto) {
+                    $resultado['agora_aptos']++;
+                }
+
+                if (! $avaliacao['eligible'] && $eraApto) {
+                    $resultado['agora_inaptos']++;
+                }
+            }
+
+            $this->recount($batch);
+        });
+
+        $this->event($batch, $user, 'revalidated', 'Destinatários reavaliados com o cadastro atual.', $resultado);
+        $this->audit->log('message_batch.revalidated', 'Lote atualizado com o cadastro atual dos contatos.', $batch, null, $resultado, $user);
+
+        return $resultado;
+    }
+
     public function randomize(MessageBatch $batch, User $user): void
     {
         $this->ensureDraft($batch);

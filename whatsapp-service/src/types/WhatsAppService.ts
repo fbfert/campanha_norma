@@ -105,6 +105,16 @@ export type ConversationListResult = {
   collection_count: number;
 };
 
+export type MessageMediaPayload = {
+  external_message_id: string;
+  mimetype: string | null;
+  filename: string | null;
+  bytes: number;
+  // Conteudo em base64. Nao e persistido em lugar nenhum do servico: quem
+  // chama transcreve e descarta.
+  data: string;
+};
+
 export type ConversationDiagnosticsPayload = {
   ready: boolean;
   state: string | null;
@@ -129,6 +139,7 @@ export interface WhatsAppRuntime {
   sendTestMessage(payload: SendPayload): Promise<SendResultPayload>;
   listConversations(options: ConversationListOptions): Promise<ConversationListResult>;
   fetchConversationMessages(chatId: string, options: ConversationMessagesOptions): Promise<{ messages: NormalizedConversationMessage[] }>;
+  fetchMessageMedia(chatId: string, messageId: string, maxBytes: number): Promise<MessageMediaPayload>;
   diagnosticsChats(): Promise<ConversationDiagnosticsPayload>;
   shutdown(): Promise<void>;
 }

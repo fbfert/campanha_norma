@@ -110,6 +110,24 @@ class SystemSettingSeeder extends Seeder
             ['group' => 'conversation_automation', 'key' => 'conversation_automation.ambiguous_behavior', 'value' => 'waiting_human', 'type' => 'string', 'description' => 'Comportamento para resposta ambígua: waiting_human ou keep_waiting', 'is_public' => false],
             ['group' => 'conversation_automation', 'key' => 'conversation_automation.no_question_behavior', 'value' => 'waiting_human', 'type' => 'string', 'description' => 'Comportamento sem pergunta disponível: waiting_human ou completed', 'is_public' => false],
             ['group' => 'conversation_automation', 'key' => 'conversation_automation.mark_do_not_contact_on_refusal', 'value' => '0', 'type' => 'boolean', 'description' => 'Marcar não contatar quando o contato recusa participar', 'is_public' => false],
+            // Rede de segurança: ninguém fica sem retorno depois deste tempo,
+            // mesmo quando a pesquisa dela já terminou.
+            // Aviso de privacidade específico de quem manda áudio. Separado do
+            // aviso geral: dizer "seus áudios são transcritos" para quem só
+            // escreveu e ruído, e ruído em aviso ensina a ignorar aviso.
+            // Pedido por escrito quando chega áudio que o sistema não consegue
+            // aproveitar. Convida em vez de recusar: quem escolheu falar fez
+            // isso porque escrever custa mais, e um "não consigo ouvir" seco
+            // tende a encerrar a conversa ali.
+            ['group' => 'conversation_automation', 'key' => 'conversation_automation.audio_reply_text', 'value' => 'Recebi seu áudio! Por aqui eu ainda não consigo escutar. Se puder me escrever o principal, eu registro sua opinião.', 'type' => 'string', 'description' => 'Resposta enviada quando chega áudio', 'is_public' => false],
+            ['group' => 'conversation_automation', 'key' => 'conversation_automation.transcription_notice_text', 'value' => 'Recebi seu áudio e converti em texto automaticamente para registrar sua opinião.', 'type' => 'string', 'description' => 'Aviso enviado uma vez a quem manda áudio', 'is_public' => false],
+            ['group' => 'conversation_automation', 'key' => 'conversation_automation.unanswered_after_minutes', 'value' => '15', 'type' => 'integer', 'description' => 'Minutos de silêncio tolerados antes da rede de segurança agir', 'is_public' => false],
+            ['group' => 'conversation_automation', 'key' => 'conversation_automation.unanswered_ack_text', 'value' => 'Recebemos sua mensagem, muito obrigado! Nossa equipe vai ler com atenção.', 'type' => 'string', 'description' => 'Aviso enviado quando a automação não tem mais o que responder', 'is_public' => false],
+            // O aviso é o piso da rede de segurança, e piso repetido vira
+            // protocolo: quem escreve três vezes numa tarde receberia três
+            // vezes a mesma frase. A resposta escrita pela IA não passa por
+            // este intervalo, porque é diferente a cada vez.
+            ['group' => 'conversation_automation', 'key' => 'conversation_automation.unanswered_ack_cooldown_hours', 'value' => '6', 'type' => 'integer', 'description' => 'Horas mínimas entre dois avisos de recebimento na mesma conversa', 'is_public' => false],
             ['group' => 'ai', 'key' => 'ai.enabled', 'value' => '0', 'type' => 'boolean', 'description' => 'Chave mestra da infraestrutura de IA. Sozinha não habilita nenhuma ação', 'is_public' => false],
             ['group' => 'ai', 'key' => 'ai.analysis_enabled', 'value' => '0', 'type' => 'boolean', 'description' => 'Habilitar análise da Etapa 9B: classificação e extração', 'is_public' => false],
             ['group' => 'ai', 'key' => 'ai.response_generation_enabled', 'value' => '0', 'type' => 'boolean', 'description' => 'Reservado para a Etapa 9C. Não implementado: deve permanecer desligado', 'is_public' => false],
@@ -124,6 +142,14 @@ class SystemSettingSeeder extends Seeder
             ['group' => 'ai', 'key' => 'ai.min_classification_confidence', 'value' => '0.70', 'type' => 'string', 'description' => 'Confiança mínima da classificação antes de exigir revisão', 'is_public' => false],
             ['group' => 'ai', 'key' => 'ai.min_extraction_confidence', 'value' => '0.65', 'type' => 'string', 'description' => 'Confiança mínima da extração antes de exigir revisão', 'is_public' => false],
             ['group' => 'ai', 'key' => 'ai.max_input_chars', 'value' => '2000', 'type' => 'integer', 'description' => 'Limite de caracteres da mensagem enviada ao modelo', 'is_public' => false],
+            // Transcrição de áudio recebido. Desligada por padrão: mandar a
+            // voz de alguém para um provedor externo e decisão que precisa ser
+            // tomada, e não herdada.
+            ['group' => 'ai', 'key' => 'ai.transcription.enabled', 'value' => '0', 'type' => 'boolean', 'description' => 'Transcrever áudio recebido', 'is_public' => false],
+            ['group' => 'ai', 'key' => 'ai.transcription.model', 'value' => 'whisper-1', 'type' => 'string', 'description' => 'Modelo usado na transcrição', 'is_public' => false],
+            ['group' => 'ai', 'key' => 'ai.transcription.language', 'value' => 'pt', 'type' => 'string', 'description' => 'Idioma declarado ao transcrever', 'is_public' => false],
+            ['group' => 'ai', 'key' => 'ai.transcription.max_bytes', 'value' => '16777216', 'type' => 'integer', 'description' => 'Tamanho máximo do áudio aceito', 'is_public' => false],
+            ['group' => 'ai', 'key' => 'ai.transcription.timeout', 'value' => '120', 'type' => 'integer', 'description' => 'Tempo limite da transcrição em segundos', 'is_public' => false],
             ['group' => 'ai', 'key' => 'ai.max_context_messages', 'value' => '3', 'type' => 'integer', 'description' => 'Quantidade de mensagens anteriores enviadas como contexto', 'is_public' => false],
             ['group' => 'ai', 'key' => 'ai.max_attempts', 'value' => '3', 'type' => 'integer', 'description' => 'Tentativas por execução de IA', 'is_public' => false],
             ['group' => 'ai', 'key' => 'ai.retry_backoff_ms', 'value' => '500', 'type' => 'integer', 'description' => 'Backoff base entre tentativas em milissegundos', 'is_public' => false],
@@ -152,9 +178,17 @@ class SystemSettingSeeder extends Seeder
             ['group' => 'ai', 'key' => 'ai.response.min_confidence', 'value' => '0.75', 'type' => 'string', 'description' => 'Confiança mínima antes de exigir revisão', 'is_public' => false],
             ['group' => 'ai', 'key' => 'ai.response.auto_send_min_confidence', 'value' => '0.90', 'type' => 'string', 'description' => 'Confiança mínima para autoenvio', 'is_public' => false],
             ['group' => 'ai', 'key' => 'ai.response.auto_send_classifications', 'value' => '', 'type' => 'string', 'description' => 'Categorias permitidas para autoenvio, separadas por barra vertical. Vazio bloqueia tudo', 'is_public' => false],
+            // A rede de segurança contorna o autoenvio comum, que pode estar
+            // desligado de propósito. Contornar exige ser mais exigente, não
+            // menos: por isso o limiar próprio, acima do normal.
+            ['group' => 'ai', 'key' => 'ai.response.safety_net_min_confidence', 'value' => '0.92', 'type' => 'string', 'description' => 'Confiança mínima para a rede de segurança responder sem aprovação', 'is_public' => false],
             ['group' => 'ai', 'key' => 'ai.response.auto_send_when_assigned', 'value' => '0', 'type' => 'boolean', 'description' => 'Permitir autoenvio em conversa atribuída a uma pessoa', 'is_public' => false],
             ['group' => 'ai', 'key' => 'ai.response.max_followups', 'value' => '2', 'type' => 'integer', 'description' => 'Máximo de perguntas de aprofundamento', 'is_public' => false],
             ['group' => 'ai', 'key' => 'ai.response.debounce_seconds', 'value' => '20', 'type' => 'integer', 'description' => 'Espera antes de gerar, para agrupar mensagens consecutivas', 'is_public' => false],
+            // Conversa engatada muda de ritmo: a pessoa passa a escrever em
+            // blocos, e responder a primeira frase joga fora as seguintes.
+            ['group' => 'ai', 'key' => 'ai.response.extended_debounce_seconds', 'value' => '90', 'type' => 'integer', 'description' => 'Espera ampliada depois que a conversa engata', 'is_public' => false],
+            ['group' => 'ai', 'key' => 'ai.response.extended_debounce_after_turns', 'value' => '3', 'type' => 'integer', 'description' => 'A partir de quantos aprofundamentos vale a espera ampliada', 'is_public' => false],
             ['group' => 'ai', 'key' => 'ai.response.validity_minutes', 'value' => '120', 'type' => 'integer', 'description' => 'Teto de validade de uma sugestão em minutos', 'is_public' => false],
             ['group' => 'ai', 'key' => 'ai.response.max_text_length', 'value' => '500', 'type' => 'integer', 'description' => 'Tamanho máximo do texto gerado', 'is_public' => false],
             ['group' => 'ai', 'key' => 'ai.response.max_lines', 'value' => '4', 'type' => 'integer', 'description' => 'Máximo de linhas do texto gerado', 'is_public' => false],
@@ -211,7 +245,31 @@ class SystemSettingSeeder extends Seeder
         ];
 
         foreach ($settings as $setting) {
-            SystemSetting::query()->updateOrCreate(['key' => $setting['key']], $setting);
+            $existente = SystemSetting::query()->where('key', $setting['key'])->first();
+
+            if (! $existente) {
+                SystemSetting::query()->create($setting);
+
+                continue;
+            }
+
+            // O valor de quem já esta em uso NUNCA e sobrescrito.
+            //
+            // Este seeder era `updateOrCreate` com o registro inteiro, e rodar
+            // ele para acrescentar uma chave nova devolvia todas as outras ao
+            // padrão de fabrica. Aconteceu em produção: a automação foi
+            // desligada no meio de uma pesquisa, e duas pessoas responderam
+            // "Sim" sem receber nada de volta. Ninguém percebeu na hora porque
+            // o comando termina dizendo "Seeding database" e mais nada.
+            //
+            // Grupo, tipo e descrição continuam acompanhando o código: são
+            // metadados, e mudam quando o sistema muda. O valor e do operador.
+            $existente->forceFill([
+                'group' => $setting['group'],
+                'type' => $setting['type'],
+                'description' => $setting['description'],
+                'is_public' => $setting['is_public'],
+            ])->save();
         }
     }
 }

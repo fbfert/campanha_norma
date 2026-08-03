@@ -219,7 +219,23 @@ Aprovar e enviar exige permissão própria, separada de visualizar.
 - Assumir manualmente, pausando a automação.
 - Registrar feedback.
 
-**Não existe aprovação em massa.** A ausência e deliberada: uma tela que aprova cinquenta sugestões com um clique transforma revisão humana em carimbo.
+**Aprovação em massa existe, e não nasceu com o sistema.** A ausência era deliberada, pelo motivo que continua valendo: uma tela que aprova cinquenta sugestões com um clique transforma revisão humana em carimbo. O botão foi acrescentado por decisão de quem opera a campanha, depois de a objeção ter sido apresentada.
+
+O que o código garante e que ele não seja uma porta lateral:
+
+```text
+cada sugestao passa por approveAndSend, uma a uma
+todos os guards continuam valendo: obsolescencia, validador de
+texto, elegibilidade do contato, janela de horario, fundamentacao
+obsoletas ficam de fora, porque seriam recusadas de qualquer forma
+a confirmacao mostra quantas serao enviadas
+a tela informa quantas foram recusadas e por que
+`conversation_response.bulk_approved` registra o total na auditoria
+```
+
+Ao lado dele ha **Descartar obsoletas**, que tira da fila o que perdeu a validade porque a pessoa escreveu de novo. Esse não envia nada: marca como substituída, com o motivo gravado.
+
+O que nenhum dos dois faz e dispensar leitura. Numa conversa por WhatsApp, sugestão que espera aprovação humana tende a nascer obsoleta — se a fila cresce, o sinal e que o autoenvio sob guards deveria cobrir mais casos, e não que a revisão deveria ser mais rápida.
 
 ## Feedback operacional
 

@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\ConversationMessageDirection;
 use App\Enums\ConversationMessageOrigin;
 use App\Enums\ConversationMessageStatus;
+use App\Enums\TranscriptionStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -72,6 +73,37 @@ class ConversationMessage extends Model
     public function conversation(): BelongsTo
     {
         return $this->belongsTo(Conversation::class);
+    }
+
+    public function transcriptions(): HasMany
+    {
+        return $this->hasMany(MessageTranscription::class)->latest('id');
+    }
+
+    /**
+     * Transcrição que vale para esta mensagem.
+     */
+    public function transcription(): ?MessageTranscription
+    {
+        return $this->transcriptions()
+            ->where('status', TranscriptionStatus::Succeeded)
+            ->first();
+    }
+
+    /**
+     * O texto que representa esta mensagem para quem precisa lê-la.
+     *
+     * Áudio chega com corpo vazio. Onde ha transcrição aproveitável, ela ocupa
+     * esse lugar — sem sobrescrever o corpo, que continua sendo o registro do
+     * que de fato chegou.
+     */
+    public function readableText(): string
+    {
+        if (filled($this->body)) {
+            return (string) $this->body;
+        }
+
+        return (string) ($this->transcription()?->text ?? '');
     }
 
     public function contact(): BelongsTo

@@ -162,6 +162,10 @@ Route::middleware(['auth', 'password.changed'])->group(function (): void {
         Route::post('/analytics/exportar', [AnalyticsExportController::class, 'store'])->name('analytics.export');
 
         Route::get('/reply-suggestions', [ReplySuggestionController::class, 'index'])->name('reply-suggestions.index');
+        // Antes da rota de detalhe: `descartar-obsoletas` seria capturado como
+        // identificador de sugestão.
+        Route::post('/reply-suggestions/descartar-obsoletas', [ReplySuggestionController::class, 'discardStale'])->name('reply-suggestions.discard-stale');
+        Route::post('/reply-suggestions/aprovar-todas', [ReplySuggestionController::class, 'approveAll'])->name('reply-suggestions.approve-all');
         Route::get('/reply-suggestions/{suggestion}', [ReplySuggestionController::class, 'show'])->name('reply-suggestions.show');
         Route::post('/reply-suggestions/{suggestion}/approve', [ReplySuggestionController::class, 'approve'])->name('reply-suggestions.approve');
         Route::post('/reply-suggestions/{suggestion}/reject', [ReplySuggestionController::class, 'reject'])->name('reply-suggestions.reject');
@@ -253,6 +257,7 @@ Route::middleware(['auth', 'password.changed'])->group(function (): void {
         Route::post('/message-batches/{message_batch}/contacts', [MessageBatchController::class, 'update'])->name('message-batches.contacts');
         Route::post('/message-batches/{message_batch}/validate', [MessageBatchController::class, 'validateBatch'])->name('message-batches.validate');
         Route::post('/message-batches/{message_batch}/randomize', [MessageBatchController::class, 'randomize'])->name('message-batches.randomize');
+        Route::post('/message-batches/{message_batch}/revalidate', [MessageBatchController::class, 'revalidate'])->name('message-batches.revalidate');
         Route::get('/message-batches/{message_batch}/preview', [MessageBatchController::class, 'show'])->name('message-batches.preview');
         Route::post('/message-batches/{message_batch}/prepare', [MessageBatchController::class, 'prepare'])->name('message-batches.prepare');
         Route::post('/message-batches/{message_batch}/duplicate', [MessageBatchController::class, 'duplicate'])->name('message-batches.duplicate');

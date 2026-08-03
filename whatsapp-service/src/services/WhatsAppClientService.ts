@@ -9,7 +9,7 @@ import { ServiceError } from '../errors/ServiceError.js';
 import { logger } from '../utils/logger.js';
 import { IdempotencyStore } from './IdempotencyStore.js';
 import { IncomingWebhookClient } from './IncomingWebhookClient.js';
-import type { ConnectionResultPayload, ConversationDiagnosticsPayload, ConversationListOptions, ConversationListResult, ConversationMessagesOptions, ConversationSyncMode, IncomingMessagePayload, NormalizedConversation, NormalizedConversationMessage, QrPayload, SendPayload, SendResultPayload, StatusPayload, WhatsAppRuntime } from '../types/WhatsAppService.js';
+import type { ConnectionResultPayload, ConversationDiagnosticsPayload, ConversationListOptions, ConversationListResult, ConversationMessagesOptions, ConversationSyncMode, IncomingMessagePayload, MessageMediaPayload, NormalizedConversation, NormalizedConversationMessage, QrPayload, SendPayload, SendResultPayload, StatusPayload, WhatsAppRuntime } from '../types/WhatsAppService.js';
 
 const { Client, LocalAuth } = whatsappWeb as unknown as {
   Client: new (options: Record<string, unknown>) => WhatsAppClient;
@@ -24,6 +24,9 @@ type WhatsAppClient = {
   getNumberId(phone: string): Promise<{ _serialized?: string } | null>;
   getChats(): Promise<WhatsAppChat[]>;
   getChatById(chatId: string): Promise<WhatsAppChat | null | undefined>;
+  // Busca direta pela mensagem, sem depender de o chat resolver: e o caminho
+  // que funciona quando `getChatById` nao devolve o objeto.
+  getMessageById?(messageId: string): Promise<WhatsAppMessage | null | undefined>;
   getState(): Promise<string | null>;
   getWWebVersion(): Promise<string | null>;
   getContactLidAndPhone(userIds: string[]): Promise<Array<{ lid?: string; pn?: string }>>;
@@ -56,6 +59,9 @@ type WhatsAppMessage = {
   fromMe?: boolean;
   hasMedia?: boolean;
   isStatus?: boolean;
+  // Baixa a midia sob demanda. O conteudo vem em base64 e nao e guardado em
+  // lugar nenhum do servico.
+  downloadMedia?(): Promise<{ data?: string; mimetype?: string; filename?: string } | null>;
 };
 
 type ChatSnapshot = {
@@ -351,6 +357,82 @@ export class WhatsAppClientService implements WhatsAppRuntime {
     return {
       messages: listResult.messages.map((message) => this.normalizeMessage(listResult.chat, message)),
       sync_mode: listResult.sync_mode,
+    };
+  }
+
+  /**
+   * Baixa a midia de uma mensagem, em base64.
+   *
+   * O servico nunca guarda arquivo: ele busca sob demanda, entrega, e esquece.
+   * Quem chama decide o que fazer — no caso do audio, transcrever e descartar.
+   *
+   * O teto de tamanho existe porque a midia vem inteira em memoria: audio de
+   * pesquisa e curto, e um arquivo grande aqui derruba o processo que mantem a
+   * sessao do WhatsApp de pe.
+   */
+  async fetchMessageMedia(chatId: string, messageId: string, maxBytes: number): Promise<MessageMediaPayload> {
+    if (this.statusValue !== ConnectionStatus.Connected || !this.client) {
+      throw new ServiceError('WHATSAPP_NOT_CONNECTED', 'A conta do WhatsApp nao esta conectada.', 409);
+    }
+
+    if (!/^[\w.-]+@(c\.us|lid)$/.test(chatId)) {
+      throw new ServiceError('INVALID_REQUEST', 'Identificador de conversa invalido.', 422);
+    }
+
+    // Precisa da mensagem crua, e nao do snapshot: `downloadMedia` e metodo do
+    // objeto do whatsapp-web.js, e o snapshot guarda so os campos normalizados.
+    //
+    // A busca direta pelo id vem primeiro porque `getChatById` nem sempre
+    // devolve o chat nesta sessao — o endpoint de mensagens so funciona graças
+    // a um caminho alternativo que produz snapshots, inuteis para baixar midia.
+    let message: WhatsAppMessage | null | undefined = null;
+
+    if (typeof this.client.getMessageById === 'function') {
+      message = await this.client.getMessageById(messageId).catch(() => null);
+    }
+
+    if (!message) {
+      const chat = await this.resolveChat(chatId);
+
+      if (!chat) {
+        throw new ServiceError('WHATSAPP_CHAT_NOT_FOUND', 'Conversa nao encontrada na sessao atual.', 404);
+      }
+
+      const messages = await chat.fetchMessages({ limit: 100 });
+      message = messages.find((item) => item.id?._serialized === messageId) ?? null;
+    }
+
+    if (!message) {
+      throw new ServiceError('MESSAGE_NOT_FOUND', 'Mensagem nao encontrada na sessao atual.', 404);
+    }
+
+    if (!message.hasMedia) {
+      throw new ServiceError('MESSAGE_WITHOUT_MEDIA', 'A mensagem nao possui midia.', 422);
+    }
+
+    if (typeof message.downloadMedia !== 'function') {
+      throw new ServiceError('MEDIA_UNAVAILABLE', 'Esta sessao nao permite baixar midia.', 501);
+    }
+
+    const media = await message.downloadMedia();
+
+    if (!media?.data) {
+      throw new ServiceError('MEDIA_UNAVAILABLE', 'A midia nao esta mais disponivel nesta sessao.', 410);
+    }
+
+    // base64 cresce cerca de um terco sobre o original.
+    const bytes = Math.floor((media.data.length * 3) / 4);
+
+    if (bytes > maxBytes) {
+      throw new ServiceError('MEDIA_TOO_LARGE', `A midia tem ${bytes} bytes e o limite e ${maxBytes}.`, 413);
+    }
+
+    return {
+      external_message_id: messageId,
+      mimetype: media.mimetype ?? null,
+      filename: media.filename ?? null,
+      bytes,
+      data: media.data,
     };
   }
 

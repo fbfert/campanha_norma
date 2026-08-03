@@ -56,14 +56,30 @@ class InsightTopicMapper
     }
 
     /**
-     * Lista de temas ativos para o prompt, sem expor descrição interna.
+     * Lista de temas ativos para o prompt, cada um com o vocabulário que o
+     * representa.
+     *
+     * Antes ia so o slug. O modelo tinha de adivinhar o que `cultura` abrange, e
+     * os sinônimos — que existiam no cadastro — so eram consultados depois, para
+     * mapear a resposta dele de volta. O resultado foi metade das analises caindo
+     * em "outros": ele não tinha como saber que pista de skate e praça estão em
+     * `cultura`, nem que posto de saúde esta em `saude`.
+     *
+     * A descrição continua fora: ela e nota interna de quem cadastra o tema, e
+     * pode conter orientação que não faz sentido para o modelo.
      *
      * @return array<int, string>
      */
     public function promptTopics(): array
     {
         return $this->activeTopics()
-            ->map(fn (InsightTopic $topic): string => $topic->slug)
+            ->map(function (InsightTopic $topic): string {
+                $vocabulario = $topic->synonymList();
+
+                return $vocabulario === []
+                    ? $topic->slug
+                    : $topic->slug.' ('.collect($vocabulario)->take(12)->implode(', ').')';
+            })
             ->values()
             ->all();
     }

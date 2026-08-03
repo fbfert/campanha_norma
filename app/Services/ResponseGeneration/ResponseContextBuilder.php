@@ -123,12 +123,28 @@ class ResponseContextBuilder
             $parts[] = "PERGUNTAS JÁ FEITAS NESTA CONVERSA (não repita nenhuma delas):\n- ".implode("\n- ", $asked);
         }
 
-        $previous = $this->recentMessages($message);
+        $bloco = $this->answerBlock($message);
+
+        $previous = $this->recentMessages($message, $bloco->first()?->id ?? $message->id);
         if ($previous !== []) {
             $parts[] = "MENSAGENS RECENTES DESTA MESMA CONVERSA:\n".implode("\n", $previous);
         }
 
-        $parts[] = "ÚLTIMA RESPOSTA DA PESSOA:\n".$this->truncate($message->body);
+        // O bloco inteiro e a resposta, e não so a última mensagem dele. Quem
+        // escreve em partes — "fomento das políticas públicas", depois
+        // "expansão para o município", depois "incentivo à formação" — tinha as
+        // duas primeiras ideias rebaixadas a contexto de fundo, e recebia de
+        // volta uma pergunta sobre a terceira, como se as outras não existissem.
+        if ($bloco->count() > 1) {
+            $numeradas = $bloco
+                ->values()
+                ->map(fn (ConversationMessage $item, int $indice): string => ($indice + 1).'. '.$this->truncate($item->body))
+                ->implode("\n");
+
+            $parts[] = "O QUE A PESSOA RESPONDEU ({$bloco->count()} mensagens seguidas, trate como uma resposta só):\n".$numeradas;
+        } else {
+            $parts[] = "ÚLTIMA RESPOSTA DA PESSOA:\n".$this->truncate($message->body);
+        }
 
         $parts[] = 'APROFUNDAMENTOS JÁ ENVIADOS: '.$state->followups_count;
 
@@ -185,7 +201,35 @@ class ResponseContextBuilder
     /**
      * @return array<int, string>
      */
-    private function recentMessages(ConversationMessage $message): array
+    /**
+     * As mensagens que a pessoa escreveu desde a última resposta enviada.
+     *
+     * Quem responde por WhatsApp costuma quebrar o raciocínio em varias
+     * mensagens curtas. Elas são uma resposta so, e a espera antes de gerar
+     * existe justamente para junta-las — de nada adianta esperar e depois
+     * responder apenas a última.
+     *
+     * @return \Illuminate\Support\Collection<int, ConversationMessage>
+     */
+    private function answerBlock(ConversationMessage $message)
+    {
+        $ultimaSaida = ConversationMessage::query()
+            ->where('conversation_id', $message->conversation_id)
+            ->where('direction', 'outgoing')
+            ->where('id', '<', $message->id)
+            ->max('id');
+
+        return ConversationMessage::query()
+            ->where('conversation_id', $message->conversation_id)
+            ->where('direction', 'incoming')
+            ->where('id', '<=', $message->id)
+            ->when($ultimaSaida, fn ($query) => $query->where('id', '>', $ultimaSaida))
+            ->whereNotNull('body')
+            ->orderBy('id')
+            ->get();
+    }
+
+    private function recentMessages(ConversationMessage $message, int $antesDe): array
     {
         $limit = max(0, (int) $this->settings->get('ai.response.max_context_messages', 4));
 
@@ -195,7 +239,7 @@ class ResponseContextBuilder
 
         return ConversationMessage::query()
             ->where('conversation_id', $message->conversation_id)
-            ->where('id', '<', $message->id)
+            ->where('id', '<', $antesDe)
             ->whereNotNull('body')
             ->latest('id')
             ->limit($limit)

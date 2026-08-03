@@ -35,6 +35,19 @@ enum ReplySuggestionStatus: string
         return $this === self::Pending || $this === self::Approved;
     }
 
+    /**
+     * Valores dos estágios vivos, para consultar direto no banco.
+     *
+     * @return array<int, string>
+     */
+    public static function liveValues(): array
+    {
+        return array_values(array_map(
+            fn (self $case): string => $case->value,
+            array_filter(self::cases(), fn (self $case): bool => $case->isLive()),
+        ));
+    }
+
     /** @return array<int, string> */
     public static function values(): array
     {

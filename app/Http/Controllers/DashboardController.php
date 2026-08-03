@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\UserStatus;
+use App\Models\AiRun;
 use App\Models\Contact;
 use App\Models\MessageBatch;
 use App\Models\MessageBatchRecipient;
@@ -15,6 +16,7 @@ use App\Services\Conversations\ConversationMetricsService;
 use App\Services\MessageProcessing\SendingRateLimiterService;
 use App\Services\MessageProcessing\SendingSettingsService;
 use App\Services\Monitoring\MonitoringService;
+use App\Services\SystemSettingService;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -71,6 +73,55 @@ class DashboardController extends Controller
             'latestProcessingActivity' => class_exists(MessageSendAttempt::class) ? MessageSendAttempt::query()->latest('updated_at')->first() : null,
             'nextSendAt' => class_exists(MessageBatchRecipient::class) ? MessageBatchRecipient::query()->whereNotNull('retry_at')->whereIn('processing_status', ['retry_wait', 'waiting_schedule', 'waiting_minute_limit', 'waiting_minimum_interval', 'waiting_hour_limit', 'waiting_day_limit'])->orderBy('retry_at')->value('retry_at') : null,
             'inboxMetrics' => $inbox,
+            'ai' => $this->aiUsage(),
         ]);
+    }
+
+    /**
+     * Consumo e gasto de IA.
+     *
+     * O gasto e recalculado com o preço que esta nas configurações agora, e não
+     * somado do `estimated_cost` gravado em cada chamada. São duas leituras
+     * diferentes e as duas são legitimas: o gravado e o que custou de fato com o
+     * preço da época; o recalculado responde "quanto isso custaria hoje", que e
+     * a pergunta de quem esta decidindo se liga a automação para a base inteira.
+     *
+     * Entrada e saída aparecem separadas porque tem preço diferente — saída
+     * costuma custar varias vezes mais — e porque so a separação mostra onde
+     * mexer: prompt grande encarece a entrada, resposta longa encarece a saída.
+     *
+     * @return array<string, mixed>
+     */
+    private function aiUsage(): array
+    {
+        if (! class_exists(AiRun::class)) {
+            return ['disponivel' => false];
+        }
+
+        $settings = app(SystemSettingService::class);
+        $precoEntrada = (float) $settings->get('ai.cost_input_per_1k', config('ai.cost.input_per_1k') ?? 0);
+        $precoSaida = (float) $settings->get('ai.cost_output_per_1k', config('ai.cost.output_per_1k') ?? 0);
+
+        $mes = AiRun::query()
+            ->whereYear('created_at', now()->year)
+            ->whereMonth('created_at', now()->month);
+
+        $tokensEntrada = (int) (clone $mes)->sum('prompt_tokens');
+        $tokensSaida = (int) (clone $mes)->sum('completion_tokens');
+
+        return [
+            'disponivel' => true,
+            'preco_entrada' => $precoEntrada,
+            'preco_saida' => $precoSaida,
+            'tokens_entrada' => $tokensEntrada,
+            'tokens_saida' => $tokensSaida,
+            'gasto_entrada' => ($tokensEntrada / 1000) * $precoEntrada,
+            'gasto_saida' => ($tokensSaida / 1000) * $precoSaida,
+            'chamadas_mes' => (int) (clone $mes)->count(),
+            'chamadas_hoje' => AiRun::query()->whereDate('created_at', today())->count(),
+            'falhas_mes' => (int) (clone $mes)->where('status', '!=', 'succeeded')->count(),
+            'gasto_registrado' => (float) (clone $mes)->sum('estimated_cost'),
+            'modelo' => (string) $settings->get('ai.model', config('ai.providers.openai.model') ?? '-'),
+        ];
     }
 }

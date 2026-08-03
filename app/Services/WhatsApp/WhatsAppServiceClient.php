@@ -71,6 +71,19 @@ class WhatsAppServiceClient
         return $this->send('get', $path.($options === [] ? '' : '?'.http_build_query($options)));
     }
 
+    /**
+     * Baixa a midia de uma mensagem, em base64.
+     *
+     * O serviço não guarda arquivo: busca sob demanda, entrega e esquece. Quem
+     * chama transcreve e descarta.
+     */
+    public function fetchMessageMedia(string $externalChatId, string $externalMessageId, array $options = []): array
+    {
+        $path = '/api/conversations/'.rawurlencode($externalChatId).'/messages/'.rawurlencode($externalMessageId).'/media';
+
+        return $this->send('get', $path.($options === [] ? '' : '?'.http_build_query($options)));
+    }
+
     private function request(): PendingRequest
     {
         $token = (string) config('whatsapp.service.token');

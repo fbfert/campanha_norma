@@ -31,16 +31,34 @@ class LimiaresDeConfiancaTest extends TestCase
         $this->seed(SystemSettingSeeder::class);
     }
 
-    public function test_a_tela_mostra_os_cinco_limiares(): void
+    public function test_a_tela_mostra_todos_os_limiares(): void
     {
         $this->actingAs($this->userWithRole('administrador'))
             ->get(route('admin.conversation-automation.settings.edit'))
             ->assertOk()
             ->assertSee('Limiares de confiança da IA')
             ->assertSee('Autoenvio permitido a partir de')
+            ->assertSee('Resposta sem aprovação a partir de')
             ->assertSee('Classificação abaixo disso pede revisão')
             ->assertSee('Extração abaixo disso pede revisão')
             ->assertSee('Marcar como baixa confiança abaixo de');
+    }
+
+    /**
+     * A rede de segurança responde contornando o autoenvio, que pode estar
+     * desligado de propósito. Exigir dela menos confiança que o autoenvio comum
+     * seria abrir pela porta dos fundos o que a porta da frente recusa.
+     */
+    public function test_rede_de_seguranca_abaixo_do_autoenvio_e_recusada(): void
+    {
+        $this->actingAs($this->userWithRole('administrador'))
+            ->put(route('admin.conversation-automation.settings.thresholds'), $this->payload([
+                'ai_response_auto_send_min_confidence' => '0.90',
+                'ai_response_safety_net_min_confidence' => '0.80',
+            ]))
+            ->assertSessionHasErrors('ai_response_safety_net_min_confidence');
+
+        $this->assertSame('0.92', app(SystemSettingService::class)->get('ai.response.safety_net_min_confidence'));
     }
 
     public function test_administrador_altera_e_a_mudanca_e_auditada(): void
@@ -115,6 +133,7 @@ class LimiaresDeConfiancaTest extends TestCase
             'ai_min_extraction_confidence' => '0.65',
             'ai_response_min_confidence' => '0.75',
             'ai_response_auto_send_min_confidence' => '0.90',
+            'ai_response_safety_net_min_confidence' => '0.92',
             'analytics_low_confidence_threshold' => '0.70',
         ], $overrides);
     }

@@ -21,6 +21,7 @@ class AiThresholdSettingsRequest extends FormRequest
             'ai_min_extraction_confidence' => $faixa,
             'ai_response_min_confidence' => $faixa,
             'ai_response_auto_send_min_confidence' => $faixa,
+            'ai_response_safety_net_min_confidence' => $faixa,
             'analytics_low_confidence_threshold' => $faixa,
         ];
     }
@@ -40,6 +41,19 @@ class AiThresholdSettingsRequest extends FormRequest
                     'O limiar de autoenvio não pode ser menor que o de revisão obrigatória.'
                 );
             }
+
+            // A rede de segurança responde contornando o autoenvio, que pode
+            // estar desligado de propósito. Exigir dela menos confiança que o
+            // autoenvio comum seria abrir pela porta dos fundos o que a porta
+            // da frente recusa.
+            $rede = (float) $this->input('ai_response_safety_net_min_confidence');
+
+            if ($rede < $autoenvio) {
+                $validator->errors()->add(
+                    'ai_response_safety_net_min_confidence',
+                    'O limiar da rede de segurança não pode ser menor que o de autoenvio.'
+                );
+            }
         });
     }
 
@@ -50,6 +64,7 @@ class AiThresholdSettingsRequest extends FormRequest
             'ai_min_extraction_confidence' => 'confiança mínima da extração',
             'ai_response_min_confidence' => 'confiança mínima da resposta',
             'ai_response_auto_send_min_confidence' => 'confiança mínima para autoenvio',
+            'ai_response_safety_net_min_confidence' => 'confiança mínima da rede de segurança',
             'analytics_low_confidence_threshold' => 'limiar de baixa confiança nos relatórios',
         ];
     }

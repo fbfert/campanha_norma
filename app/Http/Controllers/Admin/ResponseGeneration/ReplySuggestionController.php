@@ -89,6 +89,42 @@ class ReplySuggestionController extends Controller
         return back()->with('success', 'Sugestão rejeitada.');
     }
 
+    public function approveAll(Request $request, SuggestionApprovalService $approvals): RedirectResponse
+    {
+        abort_unless($request->user()->can('reply_suggestions.approve'), 403);
+
+        $resultado = $approvals->approveAllPending($request->user());
+
+        if ($resultado['enviadas'] === 0 && $resultado['recusadas'] === 0) {
+            return back()->with('success', 'Nenhuma sugestão pendente valida para aprovar.');
+        }
+
+        $mensagem = "{$resultado['enviadas']} enviada(s).";
+
+        // Os motivos aparecem na tela porque recusa em massa que não explica o
+        // porquê deixa a pessoa achando que aprovou tudo.
+        if ($resultado['recusadas'] > 0) {
+            $detalhe = collect($resultado['motivos'])
+                ->map(fn (int $total, string $motivo): string => "{$total} por {$motivo}")
+                ->implode(', ');
+
+            $mensagem .= " {$resultado['recusadas']} recusada(s): {$detalhe}.";
+        }
+
+        return back()->with('success', $mensagem);
+    }
+
+    public function discardStale(Request $request, SuggestionApprovalService $approvals): RedirectResponse
+    {
+        abort_unless($request->user()->can('reply_suggestions.reject'), 403);
+
+        $total = $approvals->discardStale($request->user());
+
+        return back()->with('success', $total === 0
+            ? 'Nenhuma sugestão obsoleta na fila.'
+            : "{$total} sugestão(ões) obsoleta(s) retirada(s) da fila. Nada foi enviado.");
+    }
+
     public function regenerate(Request $request, ConversationReplySuggestion $suggestion, SuggestionApprovalService $approvals): RedirectResponse
     {
         abort_unless($request->user()->can('reply_suggestions.regenerate'), 403);

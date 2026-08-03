@@ -29,7 +29,7 @@
     </section>
     <section class="card" style="margin-top:16px;">
         <div class="actions" style="justify-content:space-between;"><h2>Destinatários</h2><div class="actions">@can('message_batches.view_recipients')<a class="btn ghost" href="{{ route('admin.message-batches.recipients', $batch) }}">Ver todos</a>@endcan @can('message_batches.export_preview')<a class="btn ghost" href="{{ route('admin.message-batches.ineligible.export', $batch) }}">Exportar previa</a>@endcan</div></div>
-        <div class="table-wrap"><table><thead><tr><th>Posição</th><th>Nome</th><th>Telefone</th><th>Cidade</th>@if($batch->is_campaign)<th>Modelo sorteado</th>@endif<th>Aptidão</th><th>Motivo</th><th>Mensagem</th></tr></thead><tbody>@foreach($recipients as $recipient)<tr><td>{{ $recipient->random_position }}</td><td>{{ $recipient->contact_name_snapshot }}</td><td>{{ $recipient->contact_phone_snapshot }}</td><td>{{ $recipient->contact_city_snapshot }}</td>@if($batch->is_campaign)<td>{{ $recipient->message_template_name_snapshot ?? '-' }}</td>@endif<td>{{ $recipient->eligibility_status->label() }}</td><td>{{ $recipient->ineligibility_reason }}</td><td><pre style="white-space:pre-wrap;">{{ $recipient->rendered_message }}</pre></td></tr>@endforeach</tbody></table></div>
+        <div class="table-wrap"><table><thead><tr><th>Posição</th><th>Nome</th><th>Telefone</th><th>Cidade</th>@if($batch->is_campaign)<th>Modelo sorteado</th>@endif<th>Aptidão</th><th>Motivo</th><th>Mensagem</th></tr></thead><tbody>@foreach($recipients as $recipient)<tr><td>{{ $recipient->random_position }}</td><td>{{ $recipient->contact_name_snapshot }}@if($recipient->contact_id) <a class="btn ghost" href="{{ route('admin.contacts.edit', $recipient->contact_id) }}" target="_blank" rel="noopener" title="Abrir o cadastro em outra aba">Editar contato</a>@endif</td><td>{{ $recipient->contact_phone_snapshot }}</td><td>{{ $recipient->contact_city_snapshot }}</td>@if($batch->is_campaign)<td>{{ $recipient->message_template_name_snapshot ?? '-' }}</td>@endif<td>{{ $recipient->eligibility_status->label() }}</td><td>{{ $recipient->ineligibility_reason }}</td><td><pre style="white-space:pre-wrap;">{{ $recipient->rendered_message }}</pre></td></tr>@endforeach</tbody></table></div>
         {{ $recipients->links() }}
     </section>
     <section class="card" style="margin-top:16px;">
@@ -40,9 +40,19 @@
             @endcan
         </div>
         @if($batch->status->value === 'ready')
-            @can('message_processing.start')
-                <form method="post" action="{{ route('admin.message-batches.start', $batch) }}">@csrf <button class="btn" type="submit">Iniciar lote</button></form>
-            @endcan
+            <div class="actions">
+                @can('message_processing.start')
+                    <form method="post" action="{{ route('admin.message-batches.start', $batch) }}">@csrf <button class="btn" type="submit">Iniciar lote</button></form>
+                @endcan
+                @can('message_batches.update')
+                    <form method="post" action="{{ route('admin.message-batches.revalidate', $batch) }}">@csrf <button class="btn secondary" type="submit">Atualizar lote</button></form>
+                @endcan
+            </div>
+            <p class="muted">
+                "Atualizar lote" reavalia os destinatários com o cadastro atual dos contatos. Quem estava
+                inapto por dado faltando volta a ser apto assim que o cadastro for completado, sem precisar
+                refazer o lote. Quem já recebeu não e tocado.
+            </p>
         @else
             <p class="muted">Consulte o acompanhamento para status, tentativas e controles.</p>
         @endif

@@ -55,7 +55,13 @@ class AiContextBuilder
         $question = $state?->selected_question_snapshot;
         $parts[] = "PERGUNTA DA PESQUISA:\n".(filled($question) ? $question : 'Não registrada.');
 
-        $parts[] = "TEMAS CADASTRADOS (use exatamente um destes identificadores):\n".implode(', ', $topics);
+        // Um por linha, com o vocabulário entre parênteses. Tudo numa linha so,
+        // separado por vírgula, misturava identificador e sinônimo e devolvia
+        // sinônimo no lugar do identificador.
+        $parts[] = "TEMAS CADASTRADOS (responda com o identificador, antes dos parênteses):\n".implode("\n", array_map(
+            static fn (string $topic): string => '- '.$topic,
+            $topics,
+        ));
         $parts[] = "TEMA DE FALLBACK (use quando nenhum outro servir):\n".$fallbackTopic;
 
         $previous = $this->previousMessages($message);

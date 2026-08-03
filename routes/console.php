@@ -17,4 +17,9 @@ Schedule::command('inbox:recover-stuck')->everyFiveMinutes()->withoutOverlapping
 Schedule::command('inbox:sync-unread-counts')->hourly()->withoutOverlapping();
 Schedule::command('inbox:archive-resolved')->daily()->withoutOverlapping();
 Schedule::command('conversations:sync --queue')->everyFifteenMinutes()->withoutOverlapping();
+
+// Rede de segurança das conversas: age so onde a automação já teve tempo e não
+// respondeu. Cinco minutos e frequente o bastante para o silêncio não virar
+// abandono, e espaçado o bastante para não competir com o debounce da geração.
+Schedule::command('conversations:answer-pending')->everyFiveMinutes()->withoutOverlapping();
 Schedule::command('conversations:recover-sync')->everyFiveMinutes()->withoutOverlapping();

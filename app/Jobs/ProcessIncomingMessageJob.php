@@ -12,6 +12,7 @@ use App\Models\MessageBatchRecipient;
 use App\Services\AuditLogger;
 use App\Services\Conversations\ConversationEventService;
 use App\Services\Conversations\ConversationResolverService;
+use App\Services\Conversations\ConversationSyncService;
 use App\Services\Conversations\ReplyInterruptionService;
 use App\Services\IncomingMessages\ContactMatcherService;
 use App\Services\IncomingMessages\IncomingMessageNormalizerService;
@@ -44,6 +45,13 @@ class ProcessIncomingMessageJob implements ShouldQueue
         }
 
         if ($data['is_group']) {
+            return;
+        }
+
+        // Aviso que o próprio WhatsApp gera — troca de chave, chamada, evento de
+        // grupo — não e mensagem de ninguém. Registrar como recebida faz a
+        // automação tratar aquilo como resposta da pessoa.
+        if (in_array((string) $data['message_type'], ConversationSyncService::PROTOCOL_TYPES, true)) {
             return;
         }
 
@@ -130,6 +138,10 @@ class ProcessIncomingMessageJob implements ShouldQueue
 
             if ($this->shouldEvaluateFlow($direction, $message)) {
                 DB::afterCommit(fn () => EvaluateConversationFlowJob::dispatch($message->id));
+            } elseif ($this->shouldTranscribe($direction, $message)) {
+                // Áudio não tem texto para o motor avaliar. A transcrição corre
+                // primeiro e, dando certo, ela mesma devolve a mensagem ao fluxo.
+                DB::afterCommit(fn () => TranscribeIncomingAudioJob::dispatch($message->id));
             }
         });
     }
@@ -142,6 +154,19 @@ class ProcessIncomingMessageJob implements ShouldQueue
         return $direction === ConversationMessageDirection::Incoming
             && $message->message_type === 'text'
             && filled($message->body);
+    }
+
+    /**
+     * Nota de voz recebida.
+     *
+     * `ptt` e o áudio gravado na hora, `audio` e o arquivo anexado. Os dois
+     * chegam com corpo vazio e, sem transcrição, ficam invisíveis para o motor.
+     */
+    private function shouldTranscribe(ConversationMessageDirection $direction, ConversationMessage $message): bool
+    {
+        return $direction === ConversationMessageDirection::Incoming
+            && in_array($message->message_type, ['ptt', 'audio'], true)
+            && $message->has_media;
     }
 
     private function findInitialRecipient(?int $contactId, ?string $phone): ?MessageBatchRecipient

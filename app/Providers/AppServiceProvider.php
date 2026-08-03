@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Contracts\AnswerGroundingValidator;
+use App\Contracts\AudioTranscriber;
 use App\Contracts\ConversationResponseGenerator;
 use App\Contracts\EmbeddingProvider;
 use App\Contracts\KnowledgeBaseProvider;
@@ -14,6 +15,7 @@ use App\Models\Conversation;
 use App\Models\User;
 use App\Observers\ConversationObserver;
 use App\Services\Ai\AiProviderSettings;
+use App\Services\Ai\Providers\OpenAiCompatibleTranscriber;
 use App\Services\Knowledge\GroundingValidator;
 use App\Services\Knowledge\KnowledgeProviderManager;
 use App\Services\Knowledge\LocalKnowledgeRetriever;
@@ -42,6 +44,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(AnswerGroundingValidator::class, GroundingValidator::class);
         $this->app->bind(KnowledgeBaseProvider::class, fn ($app) => $app->make(KnowledgeProviderManager::class)->provider());
         $this->app->bind(EmbeddingProvider::class, fn ($app) => $app->make(KnowledgeProviderManager::class)->embeddings());
+        $this->app->bind(AudioTranscriber::class, OpenAiCompatibleTranscriber::class);
     }
 
     /**

@@ -456,7 +456,14 @@ class KnowledgeGroundedGenerationTest extends TestCase
 
         $suggestion = $this->generate($this->incoming($conversation));
 
-        $this->assertSame('v2', $suggestion->prompt_version);
+        // A versão vem do repositório, e não escrita aqui: o que este teste
+        // garante e que o contrato fundamentado foi escolhido, não qual revisão
+        // do texto esta ativa. Fixar "v2" fazia toda melhoria de prompt quebrar
+        // um teste que não fala sobre prompt.
+        $this->assertSame(
+            app(\App\Services\Ai\AiPromptRepository::class)->activeGroundedResponseVersion(),
+            $suggestion->prompt_version
+        );
         $this->assertSame(2, $suggestion->schema_version);
     }
 

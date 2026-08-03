@@ -15,9 +15,16 @@ class ConversationResolverService
 
     public function resolve(?Contact $contact, ?string $connectionId, bool $incoming = true, ?string $senderPhone = null): Conversation
     {
+        // Arquivada continua sendo a conversa da pessoa. Ela era excluída da
+        // busca, e o resultado era uma segunda conversa toda vez que alguém
+        // voltava a escrever depois do arquivamento automático — que roda
+        // diariamente. O trecho abaixo já desarquiva o que encontra.
+        //
+        // Encerrada e outra coisa: fechar foi decisão de quem operou, e reabrir
+        // por conta própria desfaria essa decisão. Ali uma conversa nova e o
+        // comportamento certo.
         $query = Conversation::query()
             ->where('connection_id', $connectionId)
-            ->where('is_archived', false)
             ->whereNotIn('status', [ConversationStatus::Closed->value]);
 
         if ($contact) {
@@ -55,6 +62,15 @@ class ConversationResolverService
         if ($incoming) {
             $conversation->forceFill([
                 'status' => ConversationStatus::tryFrom((string) $this->settings->get('inbox.default_status_after_incoming', 'waiting_operator')) ?? ConversationStatus::WaitingOperator,
+                'is_archived' => false,
+                'archived_at' => null,
+                'archived_by' => null,
+            ])->save();
+        } elseif ($conversation->is_archived) {
+            // Saída para conversa arquivada também a traz de volta: mandar
+            // mensagem e retomar o assunto, e deixa-la arquivada esconderia da
+            // caixa justamente a conversa que acabou de receber algo.
+            $conversation->forceFill([
                 'is_archived' => false,
                 'archived_at' => null,
                 'archived_by' => null,

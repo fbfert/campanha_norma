@@ -72,6 +72,11 @@ class Conversation extends Model
         return $this->hasMany(ConversationMessage::class)->latest('created_at');
     }
 
+    public function transcriptions(): HasMany
+    {
+        return $this->hasMany(MessageTranscription::class)->latest('id');
+    }
+
     public function latestMessage(): HasOne
     {
         return $this->hasOne(ConversationMessage::class)->latestOfMany();
