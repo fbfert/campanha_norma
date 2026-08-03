@@ -96,6 +96,72 @@ class VocabularioDaTaxonomiaTest extends TestCase
         $this->assertSame($tema->id, $mapper->map('hospital')?->id, 'O modelo que devolver sinônimo ainda precisa cair no tema certo.');
     }
 
+    /**
+     * Cultura e esporte deixaram de dividir o mesmo tema.
+     *
+     * Quem pede quadra coberta e quem pede biblioteca falam de coisas
+     * diferentes, e juntá-las escondia as duas: nenhum relatório mostrava qual
+     * das duas puxava o número.
+     */
+    public function test_esporte_e_cultura_sao_temas_separados(): void
+    {
+        $this->seed(\Database\Seeders\InsightTopicSeeder::class);
+
+        $cultura = InsightTopic::query()->where('slug', 'cultura')->firstOrFail();
+        $esporte = InsightTopic::query()->where('slug', 'esporte')->firstOrFail();
+
+        $this->assertStringNotContainsString('esporte', (string) $cultura->synonyms);
+        $this->assertStringNotContainsString('quadra', (string) $cultura->synonyms);
+        $this->assertStringContainsString('quadra', (string) $esporte->synonyms);
+    }
+
+    /**
+     * O vocabulário e a parte que decide, porque a recuperação e lexical: um
+     * tema so alcança a resposta se alguma palavra dele aparecer no que a
+     * pessoa escreveu. Palavra da rua, não palavra de documento oficial.
+     */
+    public function test_o_vocabulario_usa_a_palavra_de_quem_responde(): void
+    {
+        $this->seed(\Database\Seeders\InsightTopicSeeder::class);
+
+        $esperado = [
+            'saude' => 'posto',
+            'estradas' => 'estrada de chão',
+            'agricultura' => 'agricultura familiar',
+            'tecnologia' => 'sinal de celular',
+            'esporte' => 'quadra coberta',
+            'cultura' => 'ctg',
+        ];
+
+        foreach ($esperado as $slug => $palavra) {
+            $tema = InsightTopic::query()->where('slug', $slug)->firstOrFail();
+
+            $this->assertStringContainsString(
+                $palavra,
+                (string) $tema->synonyms,
+                "O tema {$slug} precisa alcançar quem escreve \"{$palavra}\".",
+            );
+        }
+    }
+
+    /**
+     * Todo tema ativo precisa de vocabulário. O tema `ead` foi criado pela tela
+     * e ficou sem nenhuma palavra: existia no cadastro e nunca era escolhido.
+     */
+    public function test_nenhum_tema_ativo_fica_sem_vocabulario(): void
+    {
+        $this->seed(\Database\Seeders\InsightTopicSeeder::class);
+
+        $semVocabulario = InsightTopic::query()
+            ->where('is_active', true)
+            ->get()
+            ->filter(fn (InsightTopic $tema): bool => trim((string) $tema->synonyms) === '')
+            ->pluck('slug')
+            ->all();
+
+        $this->assertSame([], $semVocabulario);
+    }
+
     private function mensagem(): ConversationMessage
     {
         $conversa = Conversation::factory()->create(['contact_id' => Contact::factory()->create()->id]);
