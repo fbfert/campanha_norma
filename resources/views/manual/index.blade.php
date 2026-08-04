@@ -52,6 +52,13 @@
                 <em>Reconectar</em>; so use <em>Limpar sessão</em> quando for trocar de número, porque
                 isso obriga a ler o QR Code de novo.
             </p>
+            <p class="muted">
+                Quando o servidor reinicia &mdash; atualização, manutenção, queda de energia &mdash; a
+                sessão volta sozinha, sem ninguém precisar abrir esta tela. Antes não voltava: o sistema
+                respondia normalmente por fora enquanto os envios ficavam parados, e nada avisava. Se
+                mesmo assim o status não ficar conectado em alguns minutos, e porque o WhatsApp derrubou
+                a sessão do outro lado, e ai o QR Code aparece aqui de novo.
+            </p>
 
             <h3>Provedor de IA</h3>
             <p>
@@ -188,6 +195,39 @@
                 Quando um texto sugerido e enviado, a mensagem fica marcada como tal, com o nome de quem
                 aprovou.
             </p>
+            <p>
+                A lista tem <strong>Aprovar</strong> ao lado de cada sugestão e
+                <strong>Aprovar todas as pendentes</strong> para a fila inteira. Sugestão
+                <strong>obsoleta</strong> fica de fora das duas: ela foi escrita para uma mensagem que já
+                não e a última da conversa, ou para uma conversa que já foi respondida por outro caminho.
+                Enviar assim seria falar duas vezes sobre a mesma coisa.
+            </p>
+
+            <h3>Quando a pessoa manda áudio</h3>
+            <p>
+                O áudio e registrado na conversa como qualquer outra mensagem, mas o sistema
+                <strong>ainda não escuta</strong>: ele responde na hora pedindo que a pessoa escreva. O
+                pedido sai uma vez por conversa, para não virar insistência com quem prefere falar.
+            </p>
+
+            <h3>Ninguém fica sem resposta</h3>
+            <p>
+                A automação tem várias saídas legítimas que terminam em silêncio &mdash; pesquisa
+                encerrada, conversa encaminhada para gente, resposta que o sistema não entendeu. Cada uma
+                faz sentido sozinha, e o efeito somado e sempre o mesmo para quem escreveu.
+            </p>
+            <p>
+                Passado o tempo configurado sem retorno, o sistema <strong>primeiro tenta responder de
+                verdade</strong>: a IA le o que a pessoa disse, com a taxonomia e a base de conhecimento,
+                e escreve. So quando isso não da &mdash; confiança baixa, pedido de revisão, texto
+                reprovado &mdash; e que sai o aviso de recebimento.
+            </p>
+            <p class="muted">
+                O aviso e o piso, nunca o primeiro recurso: manda-lo antes de tentar responder
+                transformaria toda conversa em protocolo. E ele sai no máximo uma vez a cada poucas
+                horas por conversa, para que três mensagens numa tarde não virem três vezes a mesma
+                frase.
+            </p>
         </section>
 
         {{-- 5 --}}
@@ -285,6 +325,18 @@
                     <strong>{{ $operational['ai_enabled'] === '1' ? 'Ligada' : 'Desligada' }}</strong>
                 </div>
                 <div>
+                    <span class="muted">Base de conhecimento</span>
+                    <strong>{{ $operational['knowledge_enabled'] === '1' ? 'Consultada' : 'Não consultada' }}</strong>
+                </div>
+                <div>
+                    <span class="muted">Cobre o silêncio depois de</span>
+                    <strong>{{ $operational['unanswered_after_minutes'] }} min</strong>
+                </div>
+                <div>
+                    <span class="muted">Transcrição de áudio</span>
+                    <strong>{{ $operational['transcription_enabled'] === '1' ? 'Ligada' : 'Desligada' }}</strong>
+                </div>
+                <div>
                     <span class="muted">Ritmo de envio</span>
                     <strong>{{ $operational['max_per_minute'] }}/min &middot; {{ $operational['max_per_hour'] }}/h &middot; {{ $operational['max_per_day'] }}/dia</strong>
                 </div>
@@ -338,6 +390,18 @@
                 que a IA pode usar. Manter essa lista curta e clara e o que faz os relatórios de temas
                 servirem para alguma coisa.
             </p>
+            <p>
+                Cada tema tem um <strong>vocabulário</strong>, e e ele que decide de verdade: um tema so
+                alcança a resposta se alguma palavra dele aparecer no que a pessoa escreveu. Por isso o
+                vocabulário traz a palavra da rua &mdash; "posto", "estrada de chão", "sinal de celular"
+                &mdash; e não a do documento oficial. Tema sem vocabulário existe no cadastro e nunca e
+                escolhido.
+            </p>
+            <p class="muted">
+                Se muita coisa estiver caindo em <em>Outros</em> nos relatórios, o vocabulário esta curto
+                para o jeito como as pessoas daquela região escrevem. Acrescentar termo e a correção mais
+                barata que existe aqui.
+            </p>
 
             <h3>Base de conhecimento</h3>
             <p>
@@ -356,6 +420,18 @@
                 <strong>Ativar e desativar continua sendo ação separada</strong>, pelo <em>Alterar
                 situação</em>. Salvar o formulário nunca pública uma base &mdash; escrever a ficha e
                 decidir que ela pode fundamentar resposta são coisas diferentes.
+            </p>
+            <p>
+                Para a base ser consultada de verdade, três coisas precisam valer ao mesmo tempo: a
+                <strong>chave geral de conhecimento ligada</strong>, a <strong>base ativa</strong> e a
+                base <strong>vinculada ao fluxo</strong>. Faltando qualquer uma, a IA responde sem
+                consultar nada &mdash; e não avisa que respondeu no escuro. E por isso que vale usar o
+                <strong>Teste de busca na base</strong> depois de mexer em qualquer uma das três.
+            </p>
+            <p class="muted">
+                Documento curto e sobre um assunto so e encontrado muito melhor que documento longo
+                cobrindo tudo. Uma ficha por tema, com as palavras que a pessoa usaria na pergunta, vale
+                mais que um texto completo e bem escrito.
             </p>
             <div class="alert warning">
                 <x-icon name="shield" size="18" />
@@ -440,6 +516,20 @@
                 <li>Não monta mensagem individual a partir de caracteristica sensível.</li>
                 <li>Não deduz localização. Cidade e estado são os que a própria pessoa informou.</li>
                 <li>Encaminha situação sensível para atendimento humano em vez de responder sozinho.</li>
+                <li>Não deixa mensagem recebida sem retorno: se não consegue responder, avisa que recebeu.</li>
+            </ul>
+
+            <h3>O que ainda não funciona</h3>
+            <p>
+                Isto não e limite de propósito, e coisa por resolver. Fica aqui para ninguém contar com
+                o que não existe.
+            </p>
+            <ul>
+                <li>
+                    <strong>Áudio não vira texto.</strong> A nota de voz e registrada na conversa, e o
+                    sistema pede que a pessoa escreva. A transcrição esta pronta e desligada: o que falta
+                    e conseguir baixar o arquivo do WhatsApp.
+                </li>
             </ul>
         </section>
     </article>

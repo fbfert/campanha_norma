@@ -61,4 +61,33 @@
             <li>So depois disso ligar a automação &mdash; e primeiro sem envio automático.</li>
         </ol>
     </section>
+
+    {{--
+        Três coisas que ninguém descobre navegando: elas não têm tela própria e só
+        aparecem quando já deram errado. Ficam aqui porque o mapa é o lugar onde
+        se procura o que existe, antes de saber o nome do que se procura.
+    --}}
+    <section class="card">
+        <h2>O que acontece sem ninguém clicar</h2>
+        <p class="muted">
+            Três comportamentos rodam sozinhos. Nenhum deles tem tela própria, e e por isso que
+            costumam ser descobertos tarde.
+        </p>
+        <ul class="mindmap-path">
+            <li>
+                <strong>Ninguém fica sem resposta.</strong> Passado o tempo configurado, o sistema tenta
+                responder de verdade com a IA; so quando não da e que manda o aviso de recebimento.
+                <a href="{{ route('manual.index') }}#atendimento">Ver no manual</a>
+            </li>
+            <li>
+                <strong>A sessão do WhatsApp volta sozinha</strong> depois que o servidor reinicia.
+                <a href="{{ route('manual.index') }}#preparar">Ver no manual</a>
+            </li>
+            <li>
+                <strong>A IA consulta a base de conhecimento</strong> antes de redigir &mdash; se a chave
+                geral, a base e o vínculo com o fluxo estiverem valendo ao mesmo tempo.
+                <a href="{{ route('manual.index') }}#inteligencia">Ver no manual</a>
+            </li>
+        </ul>
+    </section>
 </x-layouts.app>

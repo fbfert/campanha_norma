@@ -172,8 +172,8 @@ class ManualController extends Controller
                 'id' => 'atendimento',
                 'icon' => 'inbox',
                 'title' => 'Atender quem responde',
-                'summary' => 'A caixa de conversas, onde o contato deixa de ser linha de planilha.',
-                'topics' => ['Conversas', 'Responder', 'Notas internas', 'Sugestões de resposta'],
+                'summary' => 'A caixa de conversas, e a garantia de que ninguém fica sem retorno.',
+                'topics' => ['Conversas', 'Responder', 'Notas internas', 'Sugestões de resposta', 'Áudio recebido', 'Ninguém fica sem resposta'],
             ],
             [
                 'id' => 'pesquisa',
@@ -187,7 +187,7 @@ class ManualController extends Controller
                 'icon' => 'sparkles',
                 'title' => 'Deixar a IA ajudar',
                 'summary' => 'A IA interpreta e sugere. Quem decide e pública continua sendo pessoa.',
-                'topics' => ['Interpretação', 'Taxonomia de temas', 'Base de conhecimento', 'Qualidade e monitoramento'],
+                'topics' => ['Interpretação', 'Taxonomia e vocabulário', 'Base de conhecimento', 'Teste de busca', 'Qualidade e monitoramento'],
             ],
             [
                 'id' => 'relatorios',
@@ -208,7 +208,7 @@ class ManualController extends Controller
                 'icon' => 'alert',
                 'title' => 'O que o sistema não faz',
                 'summary' => 'Limites que estão no código, e não apenas no combinado.',
-                'topics' => ['Nunca se passa por pessoa', 'Nunca promete nada', 'Opt-out imediato', 'Sem microdirecionamento'],
+                'topics' => ['Nunca se passa por pessoa', 'Nunca promete nada', 'Opt-out imediato', 'Sem microdirecionamento', 'O que ainda não funciona'],
             ],
         ];
     }
@@ -236,6 +236,12 @@ class ManualController extends Controller
             'automation_enabled' => (string) $this->settings->get('conversation_automation.enabled', '0'),
             'auto_send_enabled' => (string) $this->settings->get('conversation_automation.auto_send_enabled', '0'),
             'ai_enabled' => (string) $this->settings->get('ai.enabled', '0'),
+            // Sem estes três, quem lê o manual não tem como saber se a IA está
+            // consultando a base nem em quanto tempo o sistema cobre um
+            // silêncio. São os valores que mudaram o comportamento de verdade.
+            'knowledge_enabled' => (string) $this->settings->get('knowledge.enabled', '0'),
+            'unanswered_after_minutes' => (string) $this->settings->get('conversation_automation.unanswered_after_minutes', '-'),
+            'transcription_enabled' => (string) $this->settings->get('ai.transcription.enabled', '0'),
             // Ritmo real de saída: e o que decide se um lote sai hoje ou em
             // cinco dias, e ninguém encontra isso sem abrir outra tela.
             'max_per_minute' => (string) (SendingSetting::query()->value('max_per_minute') ?? '-'),

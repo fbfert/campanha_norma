@@ -288,4 +288,60 @@ class ManualTest extends TestCase
             }
         }
     }
+
+    /**
+     * O manual precisa cobrir o que roda sozinho.
+     *
+     * Comportamento sem tela própria é o que ninguém descobre navegando: só
+     * aparece quando já deu errado. A rede de segurança, a reconexão e a
+     * consulta à base são os três casos, e por isso estão escritos.
+     */
+    public function test_o_manual_explica_o_que_acontece_sem_ninguem_clicar(): void
+    {
+        $this->actingAs($this->userWith('administrador'))
+            ->get(route('manual.index'))
+            ->assertOk()
+            ->assertSee('Ninguém fica sem resposta')
+            ->assertSee('Quando a pessoa manda áudio')
+            ->assertSee('sessão volta sozinha');
+    }
+
+    /**
+     * O manual não pode prometer o que ainda não existe: a transcrição está
+     * pronta e desligada, e quem le precisa saber disso antes de contar com ela.
+     */
+    public function test_o_manual_declara_o_que_ainda_nao_funciona(): void
+    {
+        $this->actingAs($this->userWith('administrador'))
+            ->get(route('manual.index'))
+            ->assertOk()
+            ->assertSee('O que ainda não funciona')
+            ->assertSee('Áudio não vira texto');
+    }
+
+    /**
+     * As três condições da base de conhecimento são independentes, e faltando
+     * qualquer uma a IA responde sem consultar nada — sem avisar que respondeu
+     * no escuro. O estado de cada uma precisa aparecer lido da configuração.
+     */
+    public function test_o_manual_mostra_se_a_base_esta_sendo_consultada(): void
+    {
+        $user = $this->userWith('administrador');
+
+        $this->actingAs($user)->get(route('manual.index'))->assertOk()->assertSee('Não consultada');
+
+        SystemSetting::query()->where('key', 'knowledge.enabled')->update(['value' => '1']);
+        Cache::flush();
+
+        $this->actingAs($user)->get(route('manual.index'))->assertOk()->assertSee('Consultada');
+    }
+
+    public function test_o_mapa_mental_aponta_para_o_que_roda_sozinho(): void
+    {
+        $this->actingAs($this->userWith('consulta'))
+            ->get(route('manual.mind-map'))
+            ->assertOk()
+            ->assertSee('O que acontece sem ninguém clicar')
+            ->assertSee('Ninguém fica sem resposta');
+    }
 }
