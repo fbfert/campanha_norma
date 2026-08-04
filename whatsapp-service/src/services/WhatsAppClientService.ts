@@ -388,7 +388,13 @@ export class WhatsAppClientService implements WhatsAppRuntime {
     let message: WhatsAppMessage | null | undefined = null;
 
     if (typeof this.client.getMessageById === 'function') {
-      message = await this.client.getMessageById(messageId).catch(() => null);
+      for (const candidate of this.messageIdCandidates(chatId, messageId)) {
+        message = await this.client.getMessageById(candidate).catch(() => null);
+
+        if (message) {
+          break;
+        }
+      }
     }
 
     if (!message) {
@@ -414,7 +420,28 @@ export class WhatsAppClientService implements WhatsAppRuntime {
       throw new ServiceError('MEDIA_UNAVAILABLE', 'Esta sessao nao permite baixar midia.', 501);
     }
 
-    const media = await message.downloadMedia();
+    // `downloadMedia` roda dentro da pagina e pode lancar por motivo que so
+    // existe la — o WhatsApp Web renomeia modulos internos sem aviso, e a
+    // excecao chega minificada, sem nada aproveitavel. Deixar subir derrubava a
+    // requisicao com erro nao tratado e devolvia 500 ao Laravel, que registrava
+    // "erro interno" no lugar de "midia indisponivel". Sao coisas diferentes:
+    // uma pede investigacao, a outra e esperada e tem tratamento pronto.
+    let media: { data?: string; mimetype?: string; filename?: string } | null = null;
+
+    try {
+      media = await message.downloadMedia();
+    } catch (error) {
+      logger.warn(
+        {
+          event: 'media_download_failed',
+          error_name: error instanceof Error ? error.name : typeof error,
+          error_message: error instanceof Error ? error.message : String(error),
+        },
+        'Falha ao baixar midia da mensagem.',
+      );
+
+      throw new ServiceError('MEDIA_UNAVAILABLE', 'A midia nao pode ser baixada nesta sessao.', 410);
+    }
 
     if (!media?.data) {
       throw new ServiceError('MEDIA_UNAVAILABLE', 'A midia nao esta mais disponivel nesta sessao.', 410);
@@ -798,6 +825,28 @@ export class WhatsAppClientService implements WhatsAppRuntime {
         collection_count: 0,
       };
     }
+  }
+
+  /**
+   * Formas do identificador a tentar em `getMessageById`.
+   *
+   * O metodo exige o id serializado — `false_5549...@c.us_HASH` —, mas nem toda
+   * mensagem no banco tem essa forma. A sincronizacao em modo de compatibilidade
+   * le objetos crus dentro da pagina, onde `id._serialized` nao existe como
+   * propriedade, e cai no `id.id`: so o hash. Buscar por ele nunca acha nada, e
+   * a busca caia no chat, que para conversa `@lid` tambem nao resolve. O
+   * resultado era midia inalcancavel para toda mensagem trazida pela
+   * sincronizacao.
+   *
+   * A direcao nao vem no pedido, entao as duas sao tentadas: e uma chamada a
+   * mais, contra nao conseguir baixar nada.
+   */
+  private messageIdCandidates(chatId: string, messageId: string): string[] {
+    if (messageId.includes('_')) {
+      return [messageId];
+    }
+
+    return [messageId, `false_${chatId}_${messageId}`, `true_${chatId}_${messageId}`];
   }
 
   private async resolveChat(chatId: string): Promise<WhatsAppChat | null> {
