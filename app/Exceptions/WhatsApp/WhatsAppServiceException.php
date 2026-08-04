@@ -20,6 +20,10 @@ class WhatsAppServiceException extends RuntimeException
         return match ($this->errorCode) {
             'UNAUTHORIZED_SERVICE_REQUEST' => 'A autenticação interna com o serviço do WhatsApp falhou.',
             'SERVICE_UNAVAILABLE' => 'O serviço de conexão com o WhatsApp esta indisponível. Verifique o processo do Node.js na VPS.',
+            // Serviço de pé e travado pede outra ação: o processo está lá, e
+            // reiniciá-lo é justamente o que resolve. Dizer "indisponível"
+            // manda conferir se ele existe, e a conferência dá tudo certo.
+            'SERVICE_TIMEOUT' => 'O serviço do WhatsApp não respondeu a tempo. Ele pode estar de pé e travado: reinicie o serviço do Node.js na VPS.',
             'QR_EXPIRED' => 'O QR Code expirou. Gere um novo QR Code.',
             'SESSION_EXPIRED' => 'A sessão do WhatsApp expirou. Gere um novo QR Code para autenticar novamente.',
             'WHATSAPP_NOT_CONNECTED' => 'A conta do WhatsApp não esta conectada.',

@@ -263,3 +263,48 @@ describe('reconexao automatica ao subir', () => {
     await expect(service.autoConnect()).resolves.toBeUndefined();
   });
 });
+
+/**
+ * Pagina morta se conserta sozinha.
+ *
+ * Quando o Chromium e morto por falta de memoria, o servico reconecta e a
+ * sessao volta a dizer `connected` — mas a pagina fica morta, e toda chamada
+ * que precisa avaliar codigo nela expira. Nada nesse estado se corrige com o
+ * tempo: foram seis sincronizacoes seguidas falhando, com o status verde, ate
+ * alguem reiniciar a mao.
+ */
+describe('recuperacao de pagina morta', () => {
+  it('pagina que nao responde dispara reinicio do navegador', async () => {
+    const service = buildService({ getChatsThrows: true });
+    let reiniciou = false;
+
+    (service as any).reconnect = async () => {
+      reiniciou = true;
+      return { status: ConnectionStatus.Starting, message: '' };
+    };
+
+    const erro = new Error('Runtime.callFunctionOn timed out.');
+    erro.name = 'ProtocolError';
+    (service as any).logChatAccessError('WHATSAPP_GET_CHATS_FAILED', erro);
+
+    expect(reiniciou).toBe(true);
+  });
+
+  /**
+   * Erro de negocio nao pode derrubar o navegador: chat inexistente e resposta
+   * legitima, e reiniciar por causa dele criaria um ciclo de reinicios.
+   */
+  it('erro comum nao reinicia o navegador', async () => {
+    const service = buildService();
+    let reiniciou = false;
+
+    (service as any).reconnect = async () => {
+      reiniciou = true;
+      return { status: ConnectionStatus.Starting, message: '' };
+    };
+
+    (service as any).logChatAccessError('WHATSAPP_CHAT_LOOKUP_FAILED', new Error('chat lookup failed'));
+
+    expect(reiniciou).toBe(false);
+  });
+});

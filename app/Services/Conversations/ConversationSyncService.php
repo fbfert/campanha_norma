@@ -92,6 +92,7 @@ class ConversationSyncService
                 'WHATSAPP_FALLBACK_FAILED' => 'A consulta padrão dos chats falhou. O sistema tentou o modo de compatibilidade, mas não conseguiu acessar as conversas disponíveis nesta sessão.',
                 'WHATSAPP_NOT_CONNECTED' => 'Conecte o WhatsApp antes de sincronizar as conversas.',
                 'SERVICE_UNAVAILABLE' => 'O serviço Node.js do WhatsApp esta indisponível.',
+                'SERVICE_TIMEOUT' => 'O serviço do WhatsApp não respondeu a tempo. Ele costuma estar de pé e travado: reinicie o serviço do Node.js.',
                 default => 'Falha ao sincronizar conversas.',
             };
 

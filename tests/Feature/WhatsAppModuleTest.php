@@ -73,13 +73,36 @@ class WhatsAppModuleTest extends TestCase
 
     public function test_servico_indisponivel_e_tratado(): void
     {
-        Http::fake(fn () => throw new ConnectionException('timeout'));
+        Http::fake(fn () => throw new ConnectionException('Connection refused'));
 
         $admin = $this->userWithRole('administrador');
 
         $this->actingAs($admin)->get(route('admin.whatsapp.connection'))
             ->assertOk()
             ->assertSee('serviço de conexão com o WhatsApp esta indisponível');
+    }
+
+    /**
+     * Não alcançar o serviço e ele demorar demais são coisas diferentes, e o
+     * Guzzle entrega as duas como a mesma exceção. Chamar tudo de
+     * "indisponível" manda conferir se o processo está de pé — e, quando ele
+     * está de pé e só travado, a conferência dá tudo certo e a pista aponta
+     * para o lugar errado.
+     *
+     * Aconteceu: seis sincronizações seguidas falharam dizendo "indisponível"
+     * enquanto o serviço respondia normalmente. O que estava travado era a
+     * página do navegador.
+     */
+    public function test_servico_travado_nao_e_relatado_como_indisponivel(): void
+    {
+        Http::fake(fn () => throw new ConnectionException('cURL error 28: Operation timed out'));
+
+        $admin = $this->userWithRole('administrador');
+
+        $this->actingAs($admin)->get(route('admin.whatsapp.connection'))
+            ->assertOk()
+            ->assertSee('não respondeu a tempo')
+            ->assertDontSee('serviço de conexão com o WhatsApp esta indisponível');
     }
 
     public function test_erro_de_autenticacao_interna_e_tratado(): void
@@ -98,7 +121,7 @@ class WhatsAppModuleTest extends TestCase
 
     public function test_falha_operacional_nao_e_exibida_como_erro_de_campo(): void
     {
-        Http::fake(fn () => throw new ConnectionException('timeout'));
+        Http::fake(fn () => throw new ConnectionException('Connection refused'));
 
         $admin = $this->userWithRole('administrador');
         $message = 'O serviço de conexão com o WhatsApp esta indisponível. Verifique o processo do Node.js na VPS.';

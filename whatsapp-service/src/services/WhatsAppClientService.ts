@@ -654,6 +654,18 @@ export class WhatsAppClientService implements WhatsAppRuntime {
         headless: config.browserHeadless,
         executablePath: config.browserExecutablePath,
         args,
+        /*
+         | Sem isto vale o padrao do puppeteer, de tres minutos. Quando a pagina
+         | para de responder — o que acontece depois de o navegador ser morto
+         | por falta de memoria e voltar em estado ruim — cada chamada fica
+         | pendurada esses tres minutos antes de falhar.
+         |
+         | O Laravel desiste em quinze segundos e traduz aquilo como "servico
+         | indisponivel", enquanto o processo aqui continua ocupado com uma
+         | requisicao que ninguem mais espera. Falhar em quarenta segundos
+         | libera o processo e deixa o erro chegar antes de virar outra coisa.
+         */
+        protocolTimeout: 40_000,
       },
     });
   }
@@ -1191,6 +1203,41 @@ export class WhatsAppClientService implements WhatsAppRuntime {
       chat_id_hash: chatId ? hashIdentifier(chatId) : undefined,
       state: this.statusValue,
     }, 'Falha ao acessar chats do WhatsApp Web.');
+
+    this.recoverFromDeadPage(details);
+  }
+
+  /**
+   * Pagina que parou de responder derruba o navegador e sobe outro.
+   *
+   * Quando o Chromium e morto por falta de memoria, o servico reconecta
+   * sozinho e a sessao volta a dizer `connected` — mas a pagina fica morta.
+   * Toda chamada que precisa avaliar codigo nela expira, e nada nesse estado
+   * se corrige com o tempo.
+   *
+   * Foi assim por uma hora e vinte: seis sincronizacoes seguidas falharam, o
+   * status dizia conectado, e so um restart a mao resolveu. Um `status` verde
+   * com a pagina morta e pior que um status vermelho, porque ninguem vai olhar.
+   *
+   * `ProtocolError` e o sintoma, e distingue pagina morta de erro de negocio:
+   * chat que nao existe devolve outra coisa.
+   */
+  private recoverFromDeadPage(details: { name?: string; message?: string }): void {
+    const paginaMorta = details.name === 'ProtocolError'
+      || (details.message ?? '').includes('Runtime.callFunctionOn timed out');
+
+    if (!paginaMorta || this.reconnecting) {
+      return;
+    }
+
+    logger.error({ event: 'dead_page_detected' }, 'Pagina do WhatsApp Web parou de responder: reiniciando o navegador.');
+
+    // Sem `await`: quem chamou esta no meio de uma requisicao que ja falhou, e
+    // segurar a resposta ate o navegador voltar so somaria espera a um erro
+    // que ja tem resposta.
+    void this.reconnect().catch((erro: unknown) => {
+      logger.error({ event: 'dead_page_recovery_failed', err: erro }, 'Falha ao reiniciar o navegador apos pagina morta.');
+    });
   }
 
   private async safeGetState(): Promise<string | null> {

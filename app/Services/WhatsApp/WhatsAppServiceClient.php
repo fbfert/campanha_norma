@@ -115,9 +115,30 @@ class WhatsAppServiceClient
             /** @var Response $response */
             $response = $request->{$method}($path);
         } catch (ConnectionException $exception) {
-            throw new WhatsAppServiceException('SERVICE_UNAVAILABLE', 'O serviço de conexão com o WhatsApp esta indisponível.', 0, [
-                'exception' => $exception::class,
-            ]);
+            /*
+             | Não conseguir falar com o serviço e ele demorar demais para
+             | responder são coisas diferentes, e o Guzzle entrega as duas como
+             | a mesma exceção. Chamar tudo de "indisponível" manda quem lê
+             | conferir se o serviço está de pé — e, quando ele está de pé e só
+             | travado, essa é a única pista que a tela dá, apontando para o
+             | lugar errado.
+             |
+             | Aconteceu: seis sincronizações seguidas falharam dizendo
+             | "indisponível" enquanto o serviço respondia normalmente. O que
+             | estava travado era a página do navegador, morta depois de o
+             | Chromium ser derrubado por falta de memória.
+             */
+            $tempoEsgotado = str_contains(mb_strtolower($exception->getMessage()), 'timed out')
+                || str_contains(mb_strtolower($exception->getMessage()), 'timeout');
+
+            throw new WhatsAppServiceException(
+                $tempoEsgotado ? 'SERVICE_TIMEOUT' : 'SERVICE_UNAVAILABLE',
+                $tempoEsgotado
+                    ? 'O serviço do WhatsApp não respondeu a tempo. Ele pode estar de pé e travado: confira a conexão e, se necessário, reinicie o serviço.'
+                    : 'O serviço de conexão com o WhatsApp está indisponível.',
+                0,
+                ['exception' => $exception::class, 'timeout_seconds' => (int) config('whatsapp.service.timeout')],
+            );
         }
 
         return $this->data($response);
