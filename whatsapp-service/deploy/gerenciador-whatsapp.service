@@ -14,6 +14,25 @@ RestartSec=10
 TimeoutStopSec=30
 KillSignal=SIGTERM
 
+# Limite de memoria: torna a falha previsivel, nao libera memoria.
+#
+# Numa maquina apertada, faltando memoria o kernel escolhe a vitima
+# globalmente — e escolheu o Chromium tres vezes num dia. O servico
+# reconectava, a sessao voltava a dizer "connected", e a pagina do navegador
+# ficava morta: seis sincronizacoes falharam ao longo de 1h20 com o status
+# verde, ate um restart a mao.
+#
+# Com o limite, o estouro fica contido neste cgroup, o `Restart=on-failure`
+# acima reinicia a unidade e a reconexao automatica traz a sessao de volta.
+#
+# `MemoryHigh` e pressao, nao morte: acima dele o kernel recupera memoria
+# agressivamente aqui antes de matar qualquer coisa. Fica acima do pico
+# observado em operacao normal, para nao estrangular uma sincronizacao
+# legitima de cem conversas.
+MemoryAccounting=yes
+MemoryHigh=1200M
+MemoryMax=1600M
+
 NoNewPrivileges=true
 PrivateTmp=true
 
