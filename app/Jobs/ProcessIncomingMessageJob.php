@@ -19,6 +19,7 @@ use App\Services\IncomingMessages\IncomingMessageNormalizerService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
 class ProcessIncomingMessageJob implements ShouldQueue
@@ -40,7 +41,22 @@ class ProcessIncomingMessageJob implements ShouldQueue
     ): void {
         try {
             $data = $normalizer->normalize($this->payload);
-        } catch (ValidationException) {
+        } catch (ValidationException $excecao) {
+            /*
+             | Payload recusado saía daqui sem deixar rastro, e foi isso que
+             | escondeu por dias que toda nota de voz era descartada na
+             | validação: nenhum log, nenhum evento, nenhuma contagem. Do lado
+             | de fora era indistinguível de ninguém ter mandado nada.
+             |
+             | O conteúdo da mensagem não entra no registro — só o que permite
+             | reconhecer o padrão e o identificador para achar o original.
+             */
+            Log::warning('incoming_message.rejected', [
+                'external_message_id' => $this->payload['external_message_id'] ?? null,
+                'message_type' => $this->payload['message_type'] ?? null,
+                'errors' => array_keys($excecao->validator->errors()->toArray()),
+            ]);
+
             return;
         }
 
