@@ -13,6 +13,10 @@ if (!config.serviceToken) {
 
 const server = app.listen(config.port, config.host, () => {
   logger.info({ event: 'service_started', host: config.host, port: config.port }, 'Servico WhatsApp iniciado.');
+
+  // Depois de o HTTP estar de pe, nunca antes: a reconexao leva dezenas de
+  // segundos, e ate o QR ser lido a tela precisa conseguir responder.
+  void runtime.autoConnect();
 });
 
 async function shutdown(signal: string) {

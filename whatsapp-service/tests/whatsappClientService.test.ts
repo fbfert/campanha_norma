@@ -206,3 +206,60 @@ describe('WhatsAppClientService', () => {
     expect(result.messages[0].direction).toBe('incoming');
   });
 });
+
+/**
+ * Reconexao automatica ao subir.
+ *
+ * O servico subia o HTTP e parava ai: a sessao do WhatsApp ficava
+ * `not_initialized` ate alguem chamar `connect` a mao. Todo restart derrubava os
+ * envios silenciosamente, porque de fora o servico respondia normalmente.
+ *
+ * A reconexao e condicional de proposito. Sem sessao gravada nao ha o que
+ * retomar, e tentar so produziria um QR que ninguem pediu.
+ */
+describe('reconexao automatica ao subir', () => {
+  it('nao tenta reconectar quando nao ha sessao gravada', async () => {
+    const service = new WhatsAppClientService();
+    let tentou = false;
+
+    (service as any).hasStoredSession = async () => false;
+    (service as any).connect = async () => {
+      tentou = true;
+      return { status: ConnectionStatus.Starting, message: '' };
+    };
+
+    await service.autoConnect();
+
+    expect(tentou).toBe(false);
+  });
+
+  it('reconecta quando ha sessao gravada', async () => {
+    const service = new WhatsAppClientService();
+    let tentou = false;
+
+    (service as any).hasStoredSession = async () => true;
+    (service as any).connect = async () => {
+      tentou = true;
+      return { status: ConnectionStatus.Starting, message: '' };
+    };
+
+    await service.autoConnect();
+
+    expect(tentou).toBe(true);
+  });
+
+  /**
+   * Sessao invalida nao pode derrubar o processo: o operador ainda precisa da
+   * tela de pareamento de pe para ler o QR.
+   */
+  it('falha na reconexao nao derruba o servico', async () => {
+    const service = new WhatsAppClientService();
+
+    (service as any).hasStoredSession = async () => true;
+    (service as any).connect = async () => {
+      throw new Error('sessao invalida');
+    };
+
+    await expect(service.autoConnect()).resolves.toBeUndefined();
+  });
+});

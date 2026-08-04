@@ -588,6 +588,52 @@ export class WhatsAppClientService implements WhatsAppRuntime {
     );
   }
 
+  /**
+   * Existe sessao gravada em disco?
+   *
+   * `LocalAuth` guarda um perfil do Chrome dentro de `sessionPath`. A presenca
+   * dele nao garante que a conta continua autenticada — o WhatsApp pode ter
+   * derrubado a sessao do outro lado —, mas distingue o servidor que ja foi
+   * pareado daquele que nunca foi, e e essa a decisao que interessa ao subir.
+   */
+  async hasStoredSession(): Promise<boolean> {
+    try {
+      const perfil = path.join(config.sessionPath, 'session');
+      const info = await fs.stat(perfil);
+
+      return info.isDirectory();
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Reconecta sozinho ao subir, quando ha sessao gravada.
+   *
+   * O servico subia o HTTP e parava ai: a sessao do WhatsApp ficava
+   * `not_initialized` ate alguem chamar `connect` a mao. Todo restart —
+   * atualizacao, deploy, queda — derrubava os envios silenciosamente, porque de
+   * fora o servico respondia normalmente. Foram quatro reinicios em uma tarde,
+   * todos reconectados a mao, e nenhum deles avisou que precisava disso.
+   *
+   * Falhar aqui nao pode derrubar o processo: sem sessao valida o operador
+   * ainda precisa da tela de pareamento de pe para ler o QR.
+   */
+  async autoConnect(): Promise<void> {
+    if (!(await this.hasStoredSession())) {
+      logger.info({ event: 'autoconnect_skipped' }, 'Sem sessao gravada: aguardando pareamento.');
+
+      return;
+    }
+
+    try {
+      await this.connect();
+      logger.info({ event: 'autoconnect_started' }, 'Reconexao automatica solicitada com a sessao gravada.');
+    } catch (error) {
+      logger.error({ event: 'autoconnect_failed', err: error }, 'Falha na reconexao automatica ao subir.');
+    }
+  }
+
   async shutdown(): Promise<void> {
     if (this.client) {
       await this.client.destroy();
