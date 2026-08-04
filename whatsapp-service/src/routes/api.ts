@@ -24,6 +24,7 @@ export function apiRoutes(runtime: WhatsAppRuntime) {
   router.get('/conversations', asyncHandler(api.conversations));
   router.get('/conversations/:chatId/messages', asyncHandler(api.conversationMessages));
   router.get('/conversations/:chatId/messages/:messageId/media', asyncHandler(api.messageMedia));
+  router.get('/diagnostics/conversations/:chatId/messages/:messageId/media', asyncHandler(api.diagnosticsMedia));
 
   return router;
 }

@@ -485,6 +485,109 @@ export class WhatsAppClientService implements WhatsAppRuntime {
     };
   }
 
+  /**
+   * Por que o download de midia falha nesta sessao.
+   *
+   * `downloadMedia` roda dentro da pagina e depende de modulos internos do
+   * WhatsApp Web, que sao renomeados sem aviso. Quando um deles some, a
+   * excecao chega minificada — `r: r` — e nao diz qual. Ficamos sabendo que
+   * falhou, nunca por que.
+   *
+   * Este diagnostico pergunta a propria pagina o que existe: quais nomes de
+   * modulo resolvem, se a mensagem esta na colecao e em que estagio a midia
+   * dela esta. E introspeccao fixa, nao avaliacao de codigo recebido de fora:
+   * a lista de nomes e a daqui, e nada do que chega pela requisicao vira
+   * codigo.
+   */
+  async diagnosticsMedia(chatId: string, messageId: string): Promise<Record<string, unknown>> {
+    if (this.statusValue !== ConnectionStatus.Connected || !this.client?.pupPage) {
+      throw new ServiceError('WHATSAPP_NOT_CONNECTED', 'A conta do WhatsApp nao esta conectada.', 409);
+    }
+
+    const candidates = this.messageIdCandidates(chatId, messageId);
+
+    return this.client.pupPage.evaluate(
+      async (ids: string[], moduleNames: string[]) => {
+        const relatorio: Record<string, unknown> = {
+          require_disponivel: typeof (window as any).require === 'function',
+          wwebjs_disponivel: typeof (window as any).WWebJS === 'object',
+          modulos: {} as Record<string, unknown>,
+        };
+
+        for (const nome of moduleNames) {
+          try {
+            const mod = (window as any).require(nome);
+            (relatorio.modulos as Record<string, unknown>)[nome] = mod
+              ? Object.keys(mod).slice(0, 12)
+              : 'resolveu vazio';
+          } catch (erro) {
+            (relatorio.modulos as Record<string, unknown>)[nome] = 'nao existe';
+          }
+        }
+
+        /*
+         | O que a biblioteca chama, conferido peca por peca.
+         |
+         | Sem isto nao da para separar duas causas que produzem o mesmo erro
+         | minificado: a biblioteca ter perdido o modulo que usa, ou a midia ter
+         | simplesmente expirado. A primeira exige contornar; a segunda nao tem
+         | conserto e so significa que o audio e velho demais.
+         */
+        try {
+          const colecoes = (window as any).require('WAWebCollections');
+          relatorio.api_da_biblioteca = {
+            Msg_existe: Boolean(colecoes?.Msg),
+            get_e_funcao: typeof colecoes?.Msg?.get === 'function',
+            getMessagesById_e_funcao: typeof colecoes?.Msg?.getMessagesById === 'function',
+            mensagens_em_memoria: colecoes?.Msg?.length ?? colecoes?.Msg?.models?.length ?? null,
+          };
+        } catch (erro) {
+          relatorio.api_da_biblioteca = 'WAWebCollections nao resolve';
+        }
+
+        // Estado da mensagem pedida, pelo caminho que a biblioteca usaria.
+        for (const nome of ['WAWebCollections', 'WAWebMsgCollection']) {
+          try {
+            const colecao = (window as any).require(nome)?.Msg ?? (window as any).require(nome);
+
+            for (const id of ids) {
+              const msg = colecao?.get?.(id);
+
+              if (msg) {
+                relatorio.mensagem = {
+                  encontrada_por: nome,
+                  id_usado: id,
+                  tem_mediaData: Boolean(msg.mediaData),
+                  mediaStage: msg.mediaData?.mediaStage ?? null,
+                  tipo: msg.type ?? null,
+                  metodos: Object.keys(msg).filter((k) => typeof msg[k] === 'function').slice(0, 20),
+                };
+
+                return relatorio;
+              }
+            }
+          } catch {
+            // Modulo ausente ja aparece em `modulos`.
+          }
+        }
+
+        relatorio.mensagem = { encontrada_por: null, ids_tentados: ids };
+
+        return relatorio;
+      },
+      candidates,
+      [
+        'WAWebCollections',
+        'WAWebMsgCollection',
+        'WAWebChatCollection',
+        'WAWebDownloadManager',
+        'WAWebMediaDownloadUtils',
+        'WAWebMediaDataUtils',
+        'WAWebMsgGetMediaMethods',
+      ],
+    );
+  }
+
   async shutdown(): Promise<void> {
     if (this.client) {
       await this.client.destroy();

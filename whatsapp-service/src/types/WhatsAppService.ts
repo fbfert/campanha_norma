@@ -141,5 +141,6 @@ export interface WhatsAppRuntime {
   fetchConversationMessages(chatId: string, options: ConversationMessagesOptions): Promise<{ messages: NormalizedConversationMessage[] }>;
   fetchMessageMedia(chatId: string, messageId: string, maxBytes: number): Promise<MessageMediaPayload>;
   diagnosticsChats(): Promise<ConversationDiagnosticsPayload>;
+  diagnosticsMedia(chatId: string, messageId: string): Promise<Record<string, unknown>>;
   shutdown(): Promise<void>;
 }

@@ -96,6 +96,16 @@ export function controller(runtime: WhatsAppRuntime) {
       }));
     },
 
+    async diagnosticsMedia(req: Request, res: Response) {
+      const parsed = messageMediaSchema.safeParse({ chatId: req.params.chatId, messageId: req.params.messageId });
+
+      if (!parsed.success) {
+        throw new ServiceError('INVALID_REQUEST', 'Parametros invalidos para diagnostico de midia.', 422);
+      }
+
+      return ok(res, await runtime.diagnosticsMedia(parsed.data.chatId, parsed.data.messageId));
+    },
+
     async messageMedia(req: Request, res: Response) {
       const parsed = messageMediaSchema.safeParse({ ...req.query, chatId: req.params.chatId, messageId: req.params.messageId });
       if (!parsed.success) {
