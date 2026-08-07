@@ -126,6 +126,26 @@ class ConversationFlowService
             'attempts_count' => $state->attempts_count + 1,
         ])->save();
 
+        /*
+         | Aluno que confunde a campanha com assunto da escola.
+         |
+         | O polo Rainbow fala com essas pessoas por outro motivo — mensalidade,
+         | matrícula, boleto — e do lado delas é a mesma pessoa escrevendo. Uma
+         | contatada respondeu ao convite com "acho que deve ser sobre as
+         | mensalidades atrasadas né? segunda-feira eu pago", constrangida,
+         | prometendo pagar.
+         |
+         | Encaminhar para gente estava certo e era lento demais: cada minuto de
+         | silêncio confirmava a leitura dela. Desfazer o mal-entendido não exige
+         | julgamento humano nenhum — exige dizer que não é sobre isso, na mesma
+         | mensagem que faz a pergunta, para não prolongar o constrangimento.
+         */
+        if ($this->isSchoolMatter($message)) {
+            $this->clarifyAndAsk($state, $message);
+
+            return null;
+        }
+
         match ($state->current_stage) {
             ConversationFlowStage::WaitingPermission => $this->handlePermissionReply($state, $message),
             ConversationFlowStage::WaitingAnswer, ConversationFlowStage::QuestionSelected => $this->handleAnswer($state, $message),
@@ -232,6 +252,63 @@ class ConversationFlowService
         $this->machine->transition($state, ConversationFlowStage::WaitingAnswer, 'question_sent', $automated, null, null, [
             'question_id' => $usage->conversation_flow_question_id,
         ]);
+    }
+
+    /**
+     * A pessoa entendeu a abordagem como assunto da escola?
+     *
+     * A lista é deliberada e fica em configuração, como as de consentimento: o
+     * vocabulário do polo muda com o tempo, e quem opera precisa poder ajustar
+     * sem mexer em código.
+     */
+    private function isSchoolMatter(ConversationMessage $message): bool
+    {
+        $termos = collect(explode('|', (string) $this->settings->get('conversation_automation.school_matter_expressions', '')))
+            ->map(fn (string $termo): string => trim(mb_strtolower($termo)))
+            ->filter();
+
+        if ($termos->isEmpty()) {
+            return false;
+        }
+
+        $texto = mb_strtolower((string) $message->body);
+
+        return $termos->contains(fn (string $termo): bool => str_contains($texto, $termo));
+    }
+
+    /**
+     * Diz que não é sobre a escola e faz a pergunta, na mesma mensagem.
+     *
+     * Separar as duas prolongaria o constrangimento: a pessoa leria o
+     * esclarecimento e ficaria esperando o que viria depois. Uma pessoa não
+     * faria isso em duas mensagens.
+     */
+    private function clarifyAndAsk(ConversationFlowState $state, ConversationMessage $message): void
+    {
+        $aviso = trim((string) $this->settings->get('conversation_automation.school_matter_reply', ''));
+
+        if ($aviso === '' || ! $this->guard->canSend($state)['allowed']) {
+            $this->recordBlocked($state, $message, 'assunto_da_escola_sem_texto');
+
+            return;
+        }
+
+        $pergunta = trim((string) $state->selected_question_snapshot);
+
+        // Sem pergunta sorteada — a pessoa nem chegou a consentir — o motor
+        // escolhe uma agora: o esclarecimento sozinho deixaria a conversa
+        // parada, e ela já demonstrou que está disposta a responder.
+        if ($pergunta === '') {
+            $this->events->record($state->conversation, 'automation_school_matter_clarified', 'Assunto da escola esclarecido; seguindo com a pergunta.', $message);
+            $this->replies->queue($state, $aviso, 'automation_school_matter_clarified');
+            $this->sendNextQuestion($state, $message);
+
+            return;
+        }
+
+        $this->replies->queue($state, trim($aviso.' '.$pergunta), 'automation_school_matter_clarified');
+
+        $this->events->record($state->conversation, 'automation_school_matter_clarified', 'Assunto da escola esclarecido; pergunta refeita junto.', $message);
     }
 
     /**

@@ -135,6 +135,15 @@ class SystemSettingSeeder extends Seeder
             // manda algo que não responde nada. Refazer a pergunta com esta
             // frase na frente deixa claro que não é mensagem nova: é a mesma
             // pergunta, que cruzou com a dela.
+            /*
+             | O polo Rainbow fala com muita gente por outro motivo — mensalidade,
+             | matrícula, boleto — e do lado delas é a mesma pessoa escrevendo.
+             | Uma contatada respondeu ao convite constrangida, prometendo pagar
+             | as mensalidades atrasadas. Desfazer isso não exige julgamento
+             | humano: exige dizer que não é sobre isso, junto com a pergunta.
+             */
+            ['group' => 'conversation_automation', 'key' => 'conversation_automation.school_matter_expressions', 'value' => 'mensalidade|mensalidades|boleto|atrasada|atrasadas|matrícula|matricula|rematrícula|pagamento|parcela|débito|debito|cobrança|cobranca|financeiro|secretaria', 'type' => 'string', 'description' => 'Termos que indicam que a pessoa entendeu a abordagem como assunto da escola', 'is_public' => false], // ortografia:ignorar - compara com o que a pessoa escreveu, e gente escreve sem acento
+            ['group' => 'conversation_automation', 'key' => 'conversation_automation.school_matter_reply', 'value' => 'Oi! Não é sobre a escola, não — pode ficar tranquila. Aqui é do polo Rainbow, mas hoje falando em nome da prof Norma.', 'type' => 'string', 'description' => 'Esclarecimento enviado junto com a pergunta quando a pessoa confunde com assunto da escola', 'is_public' => false],
             ['group' => 'conversation_automation', 'key' => 'conversation_automation.reask_prefix', 'value' => 'Sobre o que te perguntei:', 'type' => 'string', 'description' => 'Frase que abre a pergunta refeita', 'is_public' => false],
             ['group' => 'conversation_automation', 'key' => 'conversation_automation.unanswered_ack_min_exchanges', 'value' => '5', 'type' => 'integer', 'description' => 'Idas e voltas completas exigidas para usar o aviso institucional', 'is_public' => false],
             ['group' => 'conversation_automation', 'key' => 'conversation_automation.unanswered_ack_short_text', 'value' => 'Obrigado por escrever! Já te respondo.', 'type' => 'string', 'description' => 'Aviso curto para conversa que mal começou', 'is_public' => false],
