@@ -253,6 +253,111 @@ class RedeDeSegurancaTentaResponderAntesDeAgradecerTest extends TestCase
         $this->assertSame(2, $this->avisos($conversa), 'Aviso recusado precisa ser tentado de novo.');
     }
 
+
+    /**
+     * Conversa que mal começou recebe o texto curto.
+     *
+     * "Nossa equipe vai ler com atenção" dito a quem acabou de escrever a
+     * primeira frase soa como dispensa, e encerra uma conversa que nem tinha
+     * começado. O piso continua existindo — o que muda é o que se diz.
+     */
+    public function test_conversa_curta_recebe_o_texto_curto(): void
+    {
+        [$conversa] = $this->conversaSemResposta();
+
+        $this->artisan('conversations:answer-pending')->assertSuccessful();
+
+        $aviso = ConversationMessage::query()
+            ->where('conversation_id', $conversa->id)
+            ->where('direction', 'outgoing')
+            ->latest('id')
+            ->firstOrFail();
+
+        $this->assertSame('Obrigado por escrever! Já te respondo.', $aviso->body);
+    }
+
+    /**
+     * Depois das idas e voltas configuradas, a mesma frase institucional soa
+     * como cuidado, porque há o que ler.
+     */
+    public function test_conversa_longa_recebe_o_aviso_institucional(): void
+    {
+        [$conversa] = $this->conversaSemResposta();
+
+        // Cinco idas e voltas completas: o sistema fala, a pessoa responde.
+        foreach (range(1, 5) as $volta) {
+            ConversationMessage::factory()->create([
+                'conversation_id' => $conversa->id,
+                'direction' => 'outgoing',
+                'body' => "Pergunta {$volta}",
+                'status' => \App\Enums\ConversationMessageStatus::Sent,
+            ]);
+            ConversationMessage::factory()->create([
+                'conversation_id' => $conversa->id,
+                'direction' => 'incoming',
+                'body' => "Resposta {$volta}",
+                'status' => \App\Enums\ConversationMessageStatus::Received,
+            ]);
+        }
+
+        $conversa->forceFill(['last_incoming_message_at' => now()->subMinutes(30)])->save();
+
+        $this->artisan('conversations:answer-pending')->assertSuccessful();
+
+        $aviso = ConversationMessage::query()
+            ->where('conversation_id', $conversa->id)
+            ->where('direction', 'outgoing')
+            ->latest('id')
+            ->firstOrFail();
+
+        $this->assertStringContainsString('Nossa equipe vai ler com atenção', (string) $aviso->body);
+    }
+
+    /**
+     * Duas mensagens nossas seguidas não são duas idas e voltas, e três
+     * respostas seguidas dela também não. O que se conta é quantas vezes a
+     * conversa de fato voltou.
+     */
+    public function test_mensagens_seguidas_do_mesmo_lado_nao_contam_como_idas_e_voltas(): void
+    {
+        [$conversa] = $this->conversaSemResposta();
+
+        foreach (range(1, 8) as $i) {
+            ConversationMessage::factory()->create([
+                'conversation_id' => $conversa->id,
+                'direction' => 'outgoing',
+                'body' => "Insistência {$i}",
+                'status' => \App\Enums\ConversationMessageStatus::Sent,
+            ]);
+        }
+
+        $conversa->forceFill(['last_incoming_message_at' => now()->subMinutes(30)])->save();
+
+        $metodo = new \ReflectionMethod(\App\Services\ConversationAutomation\PendingReplyResolver::class, 'completedExchanges');
+        $metodo->setAccessible(true);
+
+        // Aqui a mensagem recebida veio antes de qualquer saída nossa: não há
+        // nenhuma volta completa, por mais que insistamos depois.
+        $this->assertSame(
+            0,
+            $metodo->invoke(app(\App\Services\ConversationAutomation\PendingReplyResolver::class), $conversa),
+            'Oito mensagens nossas seguidas não viram idas e voltas.',
+        );
+
+        // Uma resposta depois de falarmos fecha a primeira volta — e só uma.
+        ConversationMessage::factory()->create([
+            'conversation_id' => $conversa->id,
+            'direction' => 'incoming',
+            'body' => 'Pode falar',
+            'status' => \App\Enums\ConversationMessageStatus::Received,
+        ]);
+
+        $this->assertSame(
+            1,
+            $metodo->invoke(app(\App\Services\ConversationAutomation\PendingReplyResolver::class), $conversa->fresh()),
+        );
+    }
+
     private function avisos(Conversation $conversa): int
     {
         return \App\Models\ConversationEvent::query()

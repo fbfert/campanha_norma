@@ -241,6 +241,7 @@ class ManualController extends Controller
             // silêncio. São os valores que mudaram o comportamento de verdade.
             'knowledge_enabled' => (string) $this->settings->get('knowledge.enabled', '0'),
             'unanswered_after_minutes' => (string) $this->settings->get('conversation_automation.unanswered_after_minutes', '-'),
+            'ack_min_exchanges' => (string) $this->settings->get('conversation_automation.unanswered_ack_min_exchanges', '-'),
             'transcription_enabled' => (string) $this->settings->get('ai.transcription.enabled', '0'),
             // Ritmo real de saída: e o que decide se um lote sai hoje ou em
             // cinco dias, e ninguém encontra isso sem abrir outra tela.

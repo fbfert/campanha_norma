@@ -127,6 +127,12 @@ class SystemSettingSeeder extends Seeder
             // protocolo: quem escreve três vezes numa tarde receberia três
             // vezes a mesma frase. A resposta escrita pela IA não passa por
             // este intervalo, porque é diferente a cada vez.
+            // "Nossa equipe vai ler com atenção" dito a quem acabou de
+            // escrever a primeira frase soa como dispensa, e encerra uma
+            // conversa que nem tinha começado. Depois de algumas idas e voltas
+            // a mesma frase soa como cuidado, porque há o que ler.
+            ['group' => 'conversation_automation', 'key' => 'conversation_automation.unanswered_ack_min_exchanges', 'value' => '5', 'type' => 'integer', 'description' => 'Idas e voltas completas exigidas para usar o aviso institucional', 'is_public' => false],
+            ['group' => 'conversation_automation', 'key' => 'conversation_automation.unanswered_ack_short_text', 'value' => 'Obrigado por escrever! Já te respondo.', 'type' => 'string', 'description' => 'Aviso curto para conversa que mal começou', 'is_public' => false],
             ['group' => 'conversation_automation', 'key' => 'conversation_automation.unanswered_ack_cooldown_hours', 'value' => '6', 'type' => 'integer', 'description' => 'Horas mínimas entre dois avisos de recebimento na mesma conversa', 'is_public' => false],
             ['group' => 'ai', 'key' => 'ai.enabled', 'value' => '0', 'type' => 'boolean', 'description' => 'Chave mestra da infraestrutura de IA. Sozinha não habilita nenhuma ação', 'is_public' => false],
             ['group' => 'ai', 'key' => 'ai.analysis_enabled', 'value' => '0', 'type' => 'boolean', 'description' => 'Habilitar análise da Etapa 9B: classificação e extração', 'is_public' => false],

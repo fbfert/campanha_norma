@@ -146,7 +146,25 @@ class PendingReplyResolver
      */
     private function acknowledge(Conversation $conversa, ConversationMessage $mensagem, ?string $motivo, bool $simular): array
     {
-        $texto = trim((string) $this->settings->get('conversation_automation.unanswered_ack_text', ''));
+        /*
+         | O aviso institucional pressupõe uma conversa que já aconteceu.
+         |
+         | "Nossa equipe vai ler com atenção" dito a quem acabou de escrever a
+         | primeira frase soa como dispensa, e encerra uma conversa que ainda
+         | nem tinha começado. Depois de algumas idas e voltas a mesma frase
+         | soa como cuidado, porque há o que ler.
+         |
+         | Abaixo do piso vai um texto curto. Trocar o aviso por silêncio
+         | reabriria o buraco que a rede de segurança existe para fechar.
+         */
+        $idasEVoltas = $this->completedExchanges($conversa);
+        $minimo = (int) $this->settings->get('conversation_automation.unanswered_ack_min_exchanges', 5);
+
+        $chave = $idasEVoltas >= $minimo
+            ? 'conversation_automation.unanswered_ack_text'
+            : 'conversation_automation.unanswered_ack_short_text';
+
+        $texto = trim((string) $this->settings->get($chave, ''));
 
         if ($texto === '') {
             return ['outcome' => 'sem_texto_de_aviso', 'reason' => $motivo];
@@ -188,7 +206,41 @@ class PendingReplyResolver
             ['motivo' => $motivo, 'respondendo_mensagem_id' => $mensagem->id],
         );
 
-        return ['outcome' => 'agradecida', 'reason' => $motivo];
+        return ['outcome' => $idasEVoltas >= $minimo ? 'agradecida' : 'agradecida_conversa_curta', 'reason' => $motivo];
+    }
+
+    /**
+     * Idas e voltas completas na conversa.
+     *
+     * Uma ida e volta é o sistema falar e a pessoa responder. Conta-se a
+     * passagem de saída para entrada: duas mensagens nossas seguidas não viram
+     * duas idas e voltas, e três respostas seguidas dela também não — o que se
+     * quer medir é quantas vezes a conversa de fato voltou.
+     */
+    private function completedExchanges(Conversation $conversa): int
+    {
+        $direcoes = ConversationMessage::query()
+            ->where('conversation_id', $conversa->id)
+            ->whereIn('status', [
+                \App\Enums\ConversationMessageStatus::Sent,
+                \App\Enums\ConversationMessageStatus::Received,
+            ])
+            ->orderBy('id')
+            ->pluck('direction');
+
+        $voltas = 0;
+        $anterior = null;
+
+        foreach ($direcoes as $direcao) {
+            if ($anterior === \App\Enums\ConversationMessageDirection::Outgoing
+                && $direcao === \App\Enums\ConversationMessageDirection::Incoming) {
+                $voltas++;
+            }
+
+            $anterior = $direcao;
+        }
+
+        return $voltas;
     }
 
     /**

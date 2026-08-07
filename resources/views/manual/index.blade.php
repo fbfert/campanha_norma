@@ -228,6 +228,18 @@
                 horas por conversa, para que três mensagens numa tarde não virem três vezes a mesma
                 frase.
             </p>
+            <p>
+                São <strong>dois textos</strong>, e a escolha depende do tamanho da conversa. O aviso
+                institucional &mdash; "nossa equipe vai ler com atenção" &mdash; pressupõe que houve o
+                que ler: dito a quem acabou de escrever a primeira frase, soa como dispensa e encerra
+                uma conversa que nem tinha começado. Antes do número de idas e voltas configurado sai
+                um texto curto; a partir dele, o institucional.
+            </p>
+            <p class="muted">
+                Uma ida e volta e o sistema falar e a pessoa responder. Duas mensagens nossas seguidas
+                não viram duas idas e voltas, e três respostas dela também não &mdash; o que se conta e
+                quantas vezes a conversa de fato voltou.
+            </p>
         </section>
 
         {{-- 5 --}}
@@ -331,6 +343,10 @@
                 <div>
                     <span class="muted">Cobre o silêncio depois de</span>
                     <strong>{{ $operational['unanswered_after_minutes'] }} min</strong>
+                </div>
+                <div>
+                    <span class="muted">Aviso institucional a partir de</span>
+                    <strong>{{ $operational['ack_min_exchanges'] }} idas e voltas</strong>
                 </div>
                 <div>
                     <span class="muted">Transcrição de áudio</span>
