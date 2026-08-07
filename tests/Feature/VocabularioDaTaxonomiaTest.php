@@ -131,6 +131,7 @@ class VocabularioDaTaxonomiaTest extends TestCase
             'tecnologia' => 'sinal de celular',
             'esporte' => 'quadra coberta',
             'cultura' => 'ctg',
+            'turismo' => 'turismo rural',
         ];
 
         foreach ($esperado as $slug => $palavra) {

@@ -45,6 +45,12 @@ class InsightTopicSeeder extends Seeder
             ['esporte', 'Esporte e lazer', 'esporte|lazer|quadra|quadra coberta|ginásio|campo de futebol|escolinha de futebol|escolinha|academia|academia ao ar livre|atleta|competição|campeonato|vôlei|futsal|pista de caminhada|praça|parque', '#ea580c', 115],
             ['desigualdade_regional', 'Desigualdade regional', 'interior|municípios menores|cidade pequena|região esquecida|desigualdade regional|serra catarinense|planalto serrano|esquecido|capital|repasse|verba', '#0f766e', 120],
             ['empreendedorismo', 'Empreendedorismo', 'empreendedor|empreendedora|empreendedorismo|pequeno negócio|microempresa|mei|abrir empresa|burocracia|crédito|financiamento|sebrae|comércio local|feira|autônomo|jovem empreendedor', '#0d9488', 130],
+            // A Serra vive de turismo e ninguém tinha onde encaixar isso: quem
+            // sugeriu "investir no turismo em Lages" caiu em Outros. O
+            // vocabulário puxa para o que a região oferece — turismo rural,
+            // cânion, neve, vinícola — porque é assim que as pessoas daqui
+            // descrevem o que veem.
+            ['turismo', 'Turismo', 'turismo|turista|turistas|turístico|pousada|hotel|hospedagem|turismo rural|hotel fazenda|cânion|canion|cachoeira|trilha|mirante|neve|vinícola|vinicola|enoturismo|atrativo|receptivo|gastronomia|restaurante', '#0369a1', 135],
             ['tecnologia', 'Tecnologia e conectividade', 'internet|sinal|sinal de celular|conectividade|banda larga|fibra óptica|inclusão digital|computador|informática|telefonia|antena', '#6366f1', 140],
             ['mulher', 'Mulher', 'mulher|mulheres|feminino|maternidade|violência doméstica|igualdade|liderança feminina|mulher empreendedora', '#be185d', 150],
             // Criado pela tela, não pelo seeder, e por isso ficou sem
