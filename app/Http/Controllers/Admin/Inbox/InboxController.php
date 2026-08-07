@@ -44,6 +44,7 @@ class InboxController extends Controller
         $query = Conversation::with(['contact', 'assignee', 'latestMessage', 'tags'])
             ->when($request->filled('status'), fn ($query) => $query->where('status', $request->string('status')))
             ->when($request->filled('priority'), fn ($query) => $query->where('priority', $request->string('priority')))
+            ->when($request->boolean('awaiting_operator'), fn ($query) => $query->where('status', ConversationStatus::WaitingOperator))
             ->when($request->boolean('unread'), fn ($query) => $query->where('unread_count', '>', 0))
             ->when($request->boolean('no_contact'), fn ($query) => $query->whereNull('contact_id'))
             ->when($request->boolean('archived'), fn ($query) => $query->where('is_archived', true))

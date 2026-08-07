@@ -353,6 +353,18 @@ a {
     padding: 4px 8px;
 }
 
+/*
+ | "Aguardando operador" e "aguardando contato" descreviam situações opostas com
+ | a mesma cor: uma é a fila de quem precisa de nós, a outra é quem já foi
+ | atendido. Na lista, as duas se confundiam à primeira vista, e a que exige
+ | ação era justamente a que passava despercebida.
+ */
+.badge.awaiting-operator {
+    background: var(--danger-soft);
+    border: 1px solid var(--danger-border);
+    color: var(--danger-text);
+}
+
 .nav-badge {
     background: var(--alert-badge);
     color: var(--text-inverse);
