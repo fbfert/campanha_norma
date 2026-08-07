@@ -43,6 +43,27 @@ class RedeDeSegurancaTentaResponderAntesDeAgradecerTest extends TestCase
         $this->seed(SystemSettingSeeder::class);
         $this->seed(SendingSettingSeeder::class);
 
+        /*
+         | O provedor precisa ser falseado aqui.
+         |
+         | Sem isto o comando de envio falava com o serviço do WhatsApp de
+         | verdade, que estava de pé: a suíte mandou 132 mensagens reais ao
+         | longo de dois dias. `Http::preventStrayRequests` no TestCase agora
+         | impede que isso se repita em silêncio, e este `fake` é o que faz o
+         | envio ser exercitado sem sair da máquina.
+         */
+        \Illuminate\Support\Facades\Http::fake([
+            '127.0.0.1:3100/api/status' => \Illuminate\Support\Facades\Http::response(['success' => true, 'data' => ['status' => 'connected']], 200),
+            // Identificador único por chamada: `external_message_id` tem índice
+            // único, e um valor fixo colide assim que o teste envia duas vezes.
+            '127.0.0.1:3100/api/*' => fn () => \Illuminate\Support\Facades\Http::response(['success' => true, 'data' => [
+                'request_id' => (string) \Illuminate\Support\Str::uuid(),
+                'status' => 'sent',
+                'external_message_id' => 'wamid.'.\Illuminate\Support\Str::random(16),
+                'sent_at' => now()->toIso8601String(),
+            ]], 200),
+        ]);
+
         app(SystemSettingService::class)->updateMany([
             'ai.enabled' => '1',
             'ai.response.mode' => ResponseGenerationMode::ApprovalRequired->value,

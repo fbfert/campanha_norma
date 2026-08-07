@@ -96,6 +96,11 @@ class MessageProcessingModuleTest extends TestCase
 
     public function test_lote_rascunho_nao_pode_iniciar_e_inicio_duplicado_e_rejeitado(): void
     {
+        // O teste é sobre recusar o início duplicado, e não sobre enviar. Sem
+        // isto o despacho roda inline e vai falar com o serviço do WhatsApp de
+        // verdade — era o que acontecia antes de `preventStrayRequests`.
+        Queue::fake();
+
         $admin = $this->userWithRole('administrador');
         $draft = MessageBatch::factory()->create(['status' => MessageBatchStatus::Draft, 'eligible_total' => 1]);
 
