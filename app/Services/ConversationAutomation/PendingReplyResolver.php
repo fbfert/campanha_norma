@@ -168,20 +168,24 @@ class PendingReplyResolver
         // comum. Ignorar essas deixaria justamente quem mais ficou no vácuo
         // sem retorno.
         $enviada = $state && ! $state->is_paused && ! $state->current_stage->isTerminal()
-            ? $this->replies->queue($state, $texto, 'pending_reply_ack_queued')
+            ? $this->replies->queue($state, $texto, 'pending_reply_ack_queued', safetyNet: true)
             : $this->sendWithoutFlow($conversa, $texto);
 
         if (! $enviada) {
             return ['outcome' => 'falhou', 'reason' => $motivo];
         }
 
+        // O evento aponta para o aviso, e não para a mensagem que o provocou.
+        // Sem esse vínculo não havia como saber, depois, se o aviso chegou a
+        // sair — e um aviso que falhou no envio segurava a conversa em
+        // intervalo mínimo por horas, como se ela já tivesse sido respondida.
         $this->events->record(
             $conversa,
             self::ACK_EVENT,
-            'Aviso de recebimento enviado por falta de resposta.',
-            $mensagem,
+            'Aviso de recebimento enfileirado por falta de resposta.',
+            $enviada,
             null,
-            ['motivo' => $motivo],
+            ['motivo' => $motivo, 'respondendo_mensagem_id' => $mensagem->id],
         );
 
         return ['outcome' => 'agradecida', 'reason' => $motivo];
@@ -200,6 +204,14 @@ class PendingReplyResolver
             ->where('conversation_id', $conversa->id)
             ->where('direction', \App\Enums\ConversationMessageDirection::Outgoing)
             ->where('id', '>', $mensagem->id)
+            // Saída que falhou não é resposta. Ela contava como tal, e por isso
+            // a rede de segurança desistia de uma conversa depois da primeira
+            // tentativa recusada: a linha ficava lá, marcada como falha, e
+            // bastava existir para a conversa nunca mais ser tentada.
+            ->whereNotIn('status', [
+                \App\Enums\ConversationMessageStatus::Failed,
+                \App\Enums\ConversationMessageStatus::Cancelled,
+            ])
             ->exists();
     }
 
@@ -222,6 +234,15 @@ class PendingReplyResolver
             ->where('conversation_id', $conversa->id)
             ->where('event_type', self::ACK_EVENT)
             ->where('created_at', '>=', now()->subHours($horas))
+            // Aviso que não saiu não segura nada: contá-lo deixava a conversa
+            // em silêncio pelas horas do intervalo por causa de uma mensagem
+            // que ninguém recebeu.
+            ->where(fn ($query) => $query
+                ->whereNull('conversation_message_id')
+                ->orWhereHas('message', fn ($mensagem) => $mensagem->whereNotIn('status', [
+                    \App\Enums\ConversationMessageStatus::Failed,
+                    \App\Enums\ConversationMessageStatus::Cancelled,
+                ])))
             ->exists();
     }
 
@@ -235,7 +256,7 @@ class PendingReplyResolver
             eventDescription: 'Aviso de recebimento enfileirado.',
         );
 
-        SendAutomatedConversationReplyJob::dispatch($mensagem->id)
+        SendAutomatedConversationReplyJob::dispatch($mensagem->id, safetyNet: true)
             ->onQueue($this->settings->get('conversation_automation.send_queue', 'conversation-automation-send'));
 
         return $mensagem;

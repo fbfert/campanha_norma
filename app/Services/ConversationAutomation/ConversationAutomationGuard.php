@@ -102,6 +102,53 @@ class ConversationAutomationGuard
     }
 
     /**
+     * Condições para o aviso da rede de segurança.
+     *
+     * O aviso não é mensagem do fluxo: é o piso de "ninguém fica sem resposta".
+     * Aplicar a ele as condições do fluxo o bloqueava exatamente onde ele mais
+     * precisa funcionar — conversa pausada, encaminhada para gente, ou que já
+     * gastou as mensagens automáticas é, por definição, conversa onde alguém
+     * está esperando.
+     *
+     * Aconteceu assim: a conversa foi encaminhada para atendimento humano, o
+     * que a pausa, e quinze minutos depois o aviso foi recusado com
+     * `conversa_pausada`. A pessoa não recebeu nada, e a garantia falhou no
+     * único caso para o qual ela existe.
+     *
+     * O que continua valendo é o que protege a pessoa, não o fluxo: quem pediu
+     * para sair, quem está inativo e o horário. Nada disso tem a ver com o
+     * estado da pesquisa.
+     *
+     * @return array{allowed: bool, reason: ?string}
+     */
+    public function canSendSafetyNet(?ConversationFlowState $state): array
+    {
+        $contact = $state?->conversation?->contact;
+
+        if (! $contact) {
+            return $this->deny('contato_nao_identificado');
+        }
+
+        if ($contact->do_not_contact) {
+            return $this->deny('contato_nao_contatar');
+        }
+
+        if ($contact->status !== ContactStatus::Active) {
+            return $this->deny('contato_inativo');
+        }
+
+        if (blank($contact->phone_normalized)) {
+            return $this->deny('contato_sem_telefone');
+        }
+
+        if (! $this->withinWindow()) {
+            return $this->deny('fora_da_janela_de_horario');
+        }
+
+        return $this->allow();
+    }
+
+    /**
      * Janela de horário permitida para envio automático.
      */
     public function withinWindow(?Carbon $now = null): bool

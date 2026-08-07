@@ -167,6 +167,92 @@ class RedeDeSegurancaTentaResponderAntesDeAgradecerTest extends TestCase
         $this->assertSame(1, $this->avisos($conversa));
     }
 
+
+    /**
+     * Conversa encaminhada para gente continua recebendo o aviso.
+     *
+     * O encaminhamento pausa a conversa, e a porta da automação recusa envio em
+     * conversa pausada. O aviso era bloqueado com `conversa_pausada` — ou seja,
+     * a garantia falhava exatamente no caso para o qual ela existe: alguém
+     * escreveu, o sistema não soube responder, encaminhou para uma pessoa, e a
+     * pessoa não recebeu nem o aviso.
+     */
+    public function test_conversa_pausada_ainda_recebe_o_aviso(): void
+    {
+        [$conversa] = $this->conversaSemResposta();
+
+        ConversationFlowState::query()->where('conversation_id', $conversa->id)
+            ->update(['is_paused' => true]);
+
+        $this->artisan('conversations:answer-pending')->assertSuccessful();
+
+        $mensagem = ConversationMessage::query()
+            ->where('conversation_id', $conversa->id)
+            ->where('direction', 'outgoing')
+            ->latest('id')
+            ->first();
+
+        $this->assertNotNull($mensagem, 'A conversa pausada precisa receber o aviso.');
+        $this->assertNotSame('AUTOMATION_BLOCKED', $mensagem->error_code);
+    }
+
+    /**
+     * Saída que falhou não é resposta.
+     *
+     * Ela contava como tal, e a rede desistia da conversa depois da primeira
+     * tentativa recusada: a linha ficava marcada como falha, e bastava existir
+     * para a conversa nunca mais ser tentada.
+     */
+    public function test_saida_que_falhou_nao_conta_como_resposta(): void
+    {
+        [$conversa, $recebida] = $this->conversaSemResposta();
+
+        ConversationMessage::factory()->create([
+            'conversation_id' => $conversa->id,
+            'direction' => 'outgoing',
+            'body' => 'Tentativa que não saiu.',
+            'status' => \App\Enums\ConversationMessageStatus::Failed,
+            'created_at' => now(),
+        ]);
+
+        $this->artisan('conversations:answer-pending')->assertSuccessful();
+
+        $this->assertDatabaseHas('conversation_events', [
+            'conversation_id' => $conversa->id,
+            'event_type' => 'pending_reply_acknowledged',
+        ]);
+    }
+
+
+    /**
+     * Aviso que não saiu não segura a próxima tentativa.
+     *
+     * O evento era registrado no enfileiramento, e o envio acontece depois. Um
+     * aviso recusado deixava a conversa em intervalo mínimo pelas horas
+     * seguintes, como se a pessoa já tivesse sido respondida — por uma mensagem
+     * que ninguém recebeu.
+     */
+    public function test_aviso_que_falhou_nao_segura_o_intervalo_minimo(): void
+    {
+        [$conversa] = $this->conversaSemResposta();
+
+        $this->artisan('conversations:answer-pending');
+
+        $aviso = ConversationMessage::query()
+            ->where('conversation_id', $conversa->id)
+            ->where('direction', 'outgoing')
+            ->latest('id')
+            ->firstOrFail();
+
+        $aviso->forceFill(['status' => \App\Enums\ConversationMessageStatus::Failed])->save();
+
+        $this->assertSame(1, $this->avisos($conversa));
+
+        $this->artisan('conversations:answer-pending');
+
+        $this->assertSame(2, $this->avisos($conversa), 'Aviso recusado precisa ser tentado de novo.');
+    }
+
     private function avisos(Conversation $conversa): int
     {
         return \App\Models\ConversationEvent::query()

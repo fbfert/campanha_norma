@@ -28,7 +28,13 @@ class SendAutomatedConversationReplyJob implements ShouldQueue
     /** @var array<int, int> */
     public array $backoff = [30, 120, 300];
 
-    public function __construct(private readonly int $messageId)
+    /**
+     * @param  bool  $safetyNet  Aviso do piso de "ninguém fica sem resposta".
+     *                           Ele não é mensagem do fluxo, e aplicar a ele as
+     *                           condições do fluxo o bloqueava justamente nas
+     *                           conversas onde alguém está esperando.
+     */
+    public function __construct(private readonly int $messageId, private readonly bool $safetyNet = false)
     {
         $this->onQueue(app(SystemSettingService::class)->get('conversation_automation.send_queue', 'conversation-automation-send'));
     }
@@ -48,8 +54,12 @@ class SendAutomatedConversationReplyJob implements ShouldQueue
         $state = $message->conversation?->flowState;
 
         // Revalida no momento do envio: pausa ou opt-out entre a criação e o envio cancela.
-        if ($state) {
-            $check = $guard->canSend($state);
+        //
+        // O aviso da rede de segurança passa por uma porta própria, que mantém
+        // o que protege a pessoa — opt-out, contato inativo, horário — e larga
+        // o que só descreve o estado da pesquisa.
+        if ($state || $this->safetyNet) {
+            $check = $this->safetyNet ? $guard->canSendSafetyNet($state) : $guard->canSend($state);
             if (! $check['allowed']) {
                 $message->update([
                     'status' => ConversationMessageStatus::Failed,

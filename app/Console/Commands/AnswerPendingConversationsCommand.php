@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Enums\ContactStatus;
 use App\Enums\ConversationMessageDirection;
+use App\Enums\ConversationMessageStatus;
 use App\Models\Conversation;
 use App\Models\ConversationMessage;
 use App\Services\ConversationAutomation\PendingReplyResolver;
@@ -90,6 +91,15 @@ class AnswerPendingConversationsCommand extends Command
             ->filter(function (Conversation $conversa): bool {
                 $ultima = ConversationMessage::query()
                     ->where('conversation_id', $conversa->id)
+                    // Saída que falhou não é resposta, e contava como tal aqui
+                    // também: bastava uma tentativa recusada para a conversa
+                    // sair desta lista e nunca mais ser tentada.
+                    ->where(fn ($query) => $query
+                        ->where('direction', ConversationMessageDirection::Incoming)
+                        ->orWhereNotIn('status', [
+                            ConversationMessageStatus::Failed,
+                            ConversationMessageStatus::Cancelled,
+                        ]))
                     ->orderByDesc('id')
                     ->first();
 

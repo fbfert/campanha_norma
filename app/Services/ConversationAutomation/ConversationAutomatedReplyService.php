@@ -36,7 +36,11 @@ class ConversationAutomatedReplyService
      * @param  array<string, mixed>  $metadata  Dados do evento registrado.
      * @param  array<string, mixed>  $aiMetadata  Metadados de autoria de IA na mensagem.
      */
-    public function queue(ConversationFlowState $state, string $body, string $eventType, array $metadata = [], array $aiMetadata = []): ?ConversationMessage
+    /**
+     * @param  bool  $safetyNet  Aviso do piso de "ninguém fica sem resposta",
+     *                           que passa por uma porta própria no envio.
+     */
+    public function queue(ConversationFlowState $state, string $body, string $eventType, array $metadata = [], array $aiMetadata = [], bool $safetyNet = false): ?ConversationMessage
     {
         $conversation = $state->conversation;
         $contact = $conversation?->contact;
@@ -89,7 +93,7 @@ class ConversationAutomatedReplyService
             'last_automated_message_id' => $message->id,
         ])->save();
 
-        SendAutomatedConversationReplyJob::dispatch($message->id)->onQueue($this->sendQueue());
+        SendAutomatedConversationReplyJob::dispatch($message->id, $safetyNet)->onQueue($this->sendQueue());
 
         return $message;
     }

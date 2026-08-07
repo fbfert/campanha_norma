@@ -21,4 +21,9 @@ class ConversationEvent extends Model
     {
         return $this->belongsTo(Conversation::class);
     }
+
+    public function message(): BelongsTo
+    {
+        return $this->belongsTo(ConversationMessage::class, 'conversation_message_id');
+    }
 }
