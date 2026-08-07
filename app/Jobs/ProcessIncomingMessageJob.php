@@ -13,6 +13,7 @@ use App\Services\AuditLogger;
 use App\Services\Conversations\ConversationEventService;
 use App\Services\Conversations\ConversationResolverService;
 use App\Services\Conversations\ConversationSyncService;
+use App\Services\ConversationAutomation\UnreadableMediaResponder;
 use App\Services\Conversations\OutgoingEchoMatcher;
 use App\Services\Conversations\ReplyInterruptionService;
 use App\Services\IncomingMessages\ContactMatcherService;
@@ -188,6 +189,19 @@ class ProcessIncomingMessageJob implements ShouldQueue
                 // Áudio não tem texto para o motor avaliar. A transcrição corre
                 // primeiro e, dando certo, ela mesma devolve a mensagem ao fluxo.
                 DB::afterCommit(fn () => TranscribeIncomingAudioJob::dispatch($message->id));
+            } elseif ($this->isUnreadableMedia($direction, $message)) {
+                /*
+                 | Figurinha, imagem, vídeo e documento não caíam em lugar
+                 | nenhum: o motor só avalia `text` e a transcrição só trata
+                 | áudio. O resultado era silêncio absoluto — uma figurinha
+                 | ficou dois dias sem retorno, e a conversa só voltou porque a
+                 | pessoa escreveu de novo por conta própria.
+                 |
+                 | Isto não lê a mídia. Diz que chegou e que o caminho é
+                 | escrever, que é o mínimo que se deve a quem mandou.
+                 */
+                DB::afterCommit(fn () => app(UnreadableMediaResponder::class)
+                    ->askForText($message, 'conversation_automation.media_reply_text'));
             }
         });
     }
@@ -213,6 +227,19 @@ class ProcessIncomingMessageJob implements ShouldQueue
         return $direction === ConversationMessageDirection::Incoming
             && in_array($message->message_type, ['ptt', 'audio'], true)
             && $message->has_media;
+    }
+
+    /**
+     * Mídia que chega sem texto e que o sistema não lê.
+     *
+     * Áudio fica de fora porque tem caminho próprio, com transcrição. Os
+     * avisos de protocolo já foram descartados antes de chegar aqui.
+     */
+    private function isUnreadableMedia(ConversationMessageDirection $direction, ConversationMessage $message): bool
+    {
+        return $direction === ConversationMessageDirection::Incoming
+            && $message->has_media
+            && ! in_array($message->message_type, ['ptt', 'audio', 'text'], true);
     }
 
     private function findInitialRecipient(?int $contactId, ?string $phone): ?MessageBatchRecipient

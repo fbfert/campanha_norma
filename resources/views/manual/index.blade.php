@@ -227,11 +227,15 @@
                 Enviar assim seria falar duas vezes sobre a mesma coisa.
             </p>
 
-            <h3>Quando a pessoa manda áudio</h3>
+            <h3>Quando a pessoa manda áudio, foto ou figurinha</h3>
             <p>
-                O áudio e registrado na conversa como qualquer outra mensagem, mas o sistema
-                <strong>ainda não escuta</strong>: ele responde na hora pedindo que a pessoa escreva. O
+                Tudo isso e registrado na conversa como qualquer outra mensagem, mas o sistema
+                <strong>ainda não lê</strong>: ele responde na hora pedindo que a pessoa escreva. O
                 pedido sai uma vez por conversa, para não virar insistência com quem prefere falar.
+            </p>
+            <p class="muted">
+                Emoji e caso diferente: ele chega como texto comum e a automação entende normalmente.
+                Uma mensagem que e so um emoji e avaliada como qualquer outra frase.
             </p>
 
             <h3>Ninguém fica sem resposta</h3>

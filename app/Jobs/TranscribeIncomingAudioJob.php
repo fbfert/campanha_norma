@@ -2,12 +2,11 @@
 
 namespace App\Jobs;
 
-use App\Models\ConversationEvent;
 use App\Models\ConversationFlowState;
 use App\Models\ConversationMessage;
 use App\Services\Ai\AudioTranscriptionService;
 use App\Services\ConversationAutomation\ConversationAutomatedReplyService;
-use App\Services\Conversations\ConversationEventService;
+use App\Services\ConversationAutomation\UnreadableMediaResponder;
 use App\Services\SystemSettingService;
 use App\Services\WhatsApp\WhatsAppServiceClient;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -29,8 +28,6 @@ class TranscribeIncomingAudioJob implements ShouldQueue
 {
     use Queueable;
 
-    /** Marca no histórico: o pedido por escrito sai uma vez por conversa. */
-    private const ASKED_FOR_TEXT_EVENT = 'audio_reply_asked';
 
     public function __construct(private readonly int $messageId)
     {
@@ -117,33 +114,11 @@ class TranscribeIncomingAudioJob implements ShouldQueue
      */
     private function askForText(ConversationMessage $mensagem): void
     {
-        $conversa = $mensagem->conversation;
-        $state = $conversa ? ConversationFlowState::query()->where('conversation_id', $conversa->id)->first() : null;
-
-        if (! $conversa || ! $state || $state->is_paused || $state->current_stage->isTerminal()) {
-            return;
-        }
-
-        $texto = trim((string) app(SystemSettingService::class)->get('conversation_automation.audio_reply_text', ''));
-
-        if ($texto === '') {
-            return;
-        }
-
-        $jaPedido = ConversationEvent::query()
-            ->where('conversation_id', $conversa->id)
-            ->where('event_type', self::ASKED_FOR_TEXT_EVENT)
-            ->exists();
-
-        if ($jaPedido) {
-            return;
-        }
-
-        $enviada = app(ConversationAutomatedReplyService::class)->queue($state, $texto, 'audio_reply_queued');
-
-        if ($enviada) {
-            app(ConversationEventService::class)->record($conversa, self::ASKED_FOR_TEXT_EVENT, 'Pedido de resposta por escrito enviado.', $mensagem);
-        }
+        // A regra mora em `UnreadableMediaResponder`: áudio não é a única coisa
+        // que chega sem texto, e figurinha e imagem precisam do mesmo
+        // tratamento. Repeti-la aqui garantiria que só uma das duas fosse
+        // corrigida da próxima vez.
+        app(UnreadableMediaResponder::class)->askForText($mensagem, 'conversation_automation.audio_reply_text');
     }
 
     /**

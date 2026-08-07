@@ -119,6 +119,11 @@ class SystemSettingSeeder extends Seeder
             // aproveitar. Convida em vez de recusar: quem escolheu falar fez
             // isso porque escrever custa mais, e um "não consigo ouvir" seco
             // tende a encerrar a conversa ali.
+            // Figurinha, imagem, vídeo e documento não caíam em lugar nenhum: o
+            // motor só avalia texto e a transcrição só trata áudio. Uma
+            // figurinha ficou dois dias sem retorno. O texto convida em vez de
+            // recusar — a pessoa escolheu mandar aquilo por algum motivo.
+            ['group' => 'conversation_automation', 'key' => 'conversation_automation.media_reply_text', 'value' => 'Recebi o que você mandou! Por aqui eu ainda não consigo abrir imagem, vídeo ou figurinha. Se puder escrever, eu leio com atenção.', 'type' => 'string', 'description' => 'Resposta a mídia que o sistema recebe mas não lê', 'is_public' => false],
             ['group' => 'conversation_automation', 'key' => 'conversation_automation.audio_reply_text', 'value' => 'Recebi seu áudio! Por aqui eu ainda não consigo escutar. Se puder me escrever o principal, eu registro sua opinião.', 'type' => 'string', 'description' => 'Resposta enviada quando chega áudio', 'is_public' => false],
             ['group' => 'conversation_automation', 'key' => 'conversation_automation.transcription_notice_text', 'value' => 'Recebi seu áudio e converti em texto automaticamente para registrar sua opinião.', 'type' => 'string', 'description' => 'Aviso enviado uma vez a quem manda áudio', 'is_public' => false],
             ['group' => 'conversation_automation', 'key' => 'conversation_automation.unanswered_after_minutes', 'value' => '15', 'type' => 'integer', 'description' => 'Minutos de silêncio tolerados antes da rede de segurança agir', 'is_public' => false],
