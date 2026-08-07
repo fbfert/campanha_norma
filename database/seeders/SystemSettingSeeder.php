@@ -134,6 +134,9 @@ class SystemSettingSeeder extends Seeder
             ['group' => 'conversation_automation', 'key' => 'conversation_automation.unanswered_ack_min_exchanges', 'value' => '5', 'type' => 'integer', 'description' => 'Idas e voltas completas exigidas para usar o aviso institucional', 'is_public' => false],
             ['group' => 'conversation_automation', 'key' => 'conversation_automation.unanswered_ack_short_text', 'value' => 'Obrigado por escrever! Já te respondo.', 'type' => 'string', 'description' => 'Aviso curto para conversa que mal começou', 'is_public' => false],
             ['group' => 'conversation_automation', 'key' => 'conversation_automation.unanswered_ack_cooldown_hours', 'value' => '6', 'type' => 'integer', 'description' => 'Horas mínimas entre dois avisos de recebimento na mesma conversa', 'is_public' => false],
+            // Teste que sai para um eleitor não é teste: é uma mensagem de
+            // campanha mandada por engano, e não há como recolher.
+            ['group' => 'whatsapp', 'key' => 'whatsapp.test_recipient_phone', 'value' => '5549991613378', 'type' => 'string', 'description' => 'Único telefone que pode receber mensagem de teste', 'is_public' => false],
             ['group' => 'ai', 'key' => 'ai.enabled', 'value' => '0', 'type' => 'boolean', 'description' => 'Chave mestra da infraestrutura de IA. Sozinha não habilita nenhuma ação', 'is_public' => false],
             ['group' => 'ai', 'key' => 'ai.analysis_enabled', 'value' => '0', 'type' => 'boolean', 'description' => 'Habilitar análise da Etapa 9B: classificação e extração', 'is_public' => false],
             ['group' => 'ai', 'key' => 'ai.response_generation_enabled', 'value' => '0', 'type' => 'boolean', 'description' => 'Reservado para a Etapa 9C. Não implementado: deve permanecer desligado', 'is_public' => false],

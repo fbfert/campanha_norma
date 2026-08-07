@@ -186,14 +186,15 @@ class WhatsAppModuleTest extends TestCase
         ]))]);
 
         $admin = $this->userWithRole('administrador');
-        $contact = Contact::factory()->create();
+        // Todo envio de teste vai para o telefone de teste, e nenhum outro.
+        $contact = Contact::factory()->create(['phone_normalized' => '5549991613378']);
 
         $this->actingAs($admin)->post(route('admin.whatsapp.test-message'), [
             'contact_id' => $contact->id,
             'message' => 'Teste',
         ])->assertSessionHasErrors('connection');
 
-        $blocked = Contact::factory()->create(['status' => ContactStatus::Blocked]);
+        $blocked = Contact::factory()->create(['status' => ContactStatus::Blocked, 'phone_normalized' => '5549991613378']);
         $this->actingAs($admin)->post(route('admin.whatsapp.test-message'), [
             'contact_id' => $blocked->id,
             'message' => 'Teste',
@@ -203,7 +204,7 @@ class WhatsAppModuleTest extends TestCase
     public function test_contato_nao_contatar_e_mensagem_vazia_sao_bloqueados(): void
     {
         $admin = $this->userWithRole('administrador');
-        $contact = Contact::factory()->create(['do_not_contact' => true]);
+        $contact = Contact::factory()->create(['do_not_contact' => true, 'phone_normalized' => '5549991613378']);
 
         $this->actingAs($admin)->post(route('admin.whatsapp.test-message'), [
             'contact_id' => $contact->id,
@@ -233,7 +234,7 @@ class WhatsAppModuleTest extends TestCase
         ]);
 
         $admin = $this->userWithRole('administrador');
-        $contact = Contact::factory()->create();
+        $contact = Contact::factory()->create(['phone_normalized' => '5549991613378']);
         WhatsAppConnection::factory()->create(['status' => WhatsAppConnectionStatus::Connected]);
 
         $this->actingAs($admin)->post(route('admin.whatsapp.test-message'), [
@@ -258,7 +259,7 @@ class WhatsAppModuleTest extends TestCase
         ]);
 
         $admin = $this->userWithRole('administrador');
-        $contact = Contact::factory()->create();
+        $contact = Contact::factory()->create(['phone_normalized' => '5549991613378']);
 
         $this->actingAs($admin)->post(route('admin.whatsapp.test-message'), [
             'contact_id' => $contact->id,

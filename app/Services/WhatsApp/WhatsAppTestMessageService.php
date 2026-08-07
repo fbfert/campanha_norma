@@ -3,6 +3,7 @@
 namespace App\Services\WhatsApp;
 
 use App\Enums\ContactStatus;
+use App\Services\SystemSettingService;
 use App\Enums\WhatsAppConnectionStatus;
 use App\Enums\WhatsAppTestMessageStatus;
 use App\Exceptions\WhatsApp\WhatsAppServiceException;
@@ -101,6 +102,26 @@ class WhatsAppTestMessageService
 
     private function validateContact(Contact $contact): void
     {
+        /*
+         | Mensagem de teste só vai para o telefone de teste.
+         |
+         | Teste que sai para um eleitor não é teste: é uma mensagem de campanha
+         | mandada por engano, e não há como recolher. A suíte já mandou 132
+         | mensagens de verdade sem ninguém perceber, e naquela vez o endereço
+         | era o nosso — foi sorte, não desenho.
+         |
+         | O telefone fica em `whatsapp.test_recipient_phone`. Vazio libera
+         | qualquer destino, para quem quiser desligar a trava sabendo o que
+         | está fazendo.
+         */
+        $permitido = preg_replace('/\D+/', '', (string) app(SystemSettingService::class)->get('whatsapp.test_recipient_phone', ''));
+
+        if ($permitido !== '' && (string) $contact->phone_normalized !== $permitido) {
+            throw ValidationException::withMessages([
+                'contact_id' => 'Mensagem de teste só pode ir para o telefone de teste cadastrado nas configurações.',
+            ]);
+        }
+
         if ($contact->status !== ContactStatus::Active) {
             throw ValidationException::withMessages(['contact_id' => 'Somente contatos ativos podem receber mensagem de teste.']);
         }
