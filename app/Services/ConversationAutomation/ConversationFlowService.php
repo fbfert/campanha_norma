@@ -234,6 +234,55 @@ class ConversationFlowService
         ]);
     }
 
+    /**
+     * A mensagem é consentimento atrasado, e não a resposta à pergunta?
+     *
+     * Quem responde ao convite enquanto a pergunta já está a caminho manda algo
+     * que não responde nada — "pode sim", "tudo bem", "claro". As duas mensagens
+     * se cruzam, e o fluxo contava aquilo como a resposta: a pergunta ficava
+     * sem ser respondida para sempre, e a conversa seguia para o aprofundamento
+     * sem ter o que aprofundar.
+     *
+     * Não é caso raro. Em 43% das mensagens que chegam em até quinze segundos
+     * das nossas é exatamente isso.
+     *
+     * A pergunta é refeita **uma vez só**. Sem teto, alguém que responda "sim"
+     * de novo receberia a pergunta de novo, indefinidamente — e uma pergunta
+     * fechada, se algum fluxo tiver uma, seria respondida com "sim" de verdade.
+     * Refazer uma vez custa uma mensagem; repetir sem parar custa a conversa.
+     */
+    private function isLateConsent(ConversationFlowState $state, PermissionResponseClassification $classification): bool
+    {
+        return $classification === PermissionResponseClassification::PermissionYes
+            && $state->question_reasked_at === null;
+    }
+
+    /**
+     * Refaz a pergunta, dizendo que é a mesma de antes.
+     *
+     * Reenviar o texto idêntico pareceria defeito para quem está do outro lado.
+     * A frase de retomada deixa claro que não é mensagem nova: é a mesma
+     * pergunta, que cruzou com a dela.
+     */
+    private function reaskQuestion(ConversationFlowState $state, ConversationMessage $message): void
+    {
+        $pergunta = trim((string) $state->selected_question_snapshot);
+
+        if ($pergunta === '' || ! $this->guard->canSend($state)['allowed']) {
+            return;
+        }
+
+        $prefixo = trim((string) $this->settings->get('conversation_automation.reask_prefix', 'Sobre o que te perguntei:'));
+
+        $state->forceFill(['question_reasked_at' => now()])->save();
+
+        $this->replies->queue($state, trim($prefixo.' '.$pergunta), 'automation_question_reasked');
+
+        $this->events->record($state->conversation, 'automation_question_reasked', 'Pergunta refeita: a resposta anterior era consentimento atrasado.', $message, null, [
+            'question_id' => $state->selected_question_id,
+        ]);
+    }
+
     private function applyRefusal(ConversationFlowState $state, ConversationMessage $message, array $metadata): void
     {
         $shouldBlock = (bool) $this->settings->get('conversation_automation.mark_do_not_contact_on_refusal', '0');
@@ -337,6 +386,12 @@ class ConversationFlowService
 
         if ($result['classification'] === PermissionResponseClassification::OptOut) {
             $this->applyOptOut($state, $message, ['reason' => $result['reason'], 'matched' => $result['matched']]);
+
+            return;
+        }
+
+        if ($this->isLateConsent($state, $result['classification'])) {
+            $this->reaskQuestion($state, $message);
 
             return;
         }

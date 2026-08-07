@@ -25,6 +25,7 @@ class CancelMessageRecipientAction
             MessageRecipientProcessingStatus::WaitingSchedule,
             MessageRecipientProcessingStatus::WaitingMinuteLimit,
         MessageRecipientProcessingStatus::WaitingMinimumInterval,
+        MessageRecipientProcessingStatus::WaitingReciprocity,
             MessageRecipientProcessingStatus::WaitingHourLimit,
             MessageRecipientProcessingStatus::WaitingDayLimit,
             MessageRecipientProcessingStatus::Queued,

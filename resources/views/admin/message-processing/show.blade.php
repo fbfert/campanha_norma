@@ -6,13 +6,13 @@
     $cancelaveis = [
         Status::Pending, Status::Queued, Status::RetryWait,
         Status::WaitingSchedule, Status::WaitingMinuteLimit, Status::WaitingMinimumInterval,
-        Status::WaitingHourLimit, Status::WaitingDayLimit,
+        Status::WaitingReciprocity, Status::WaitingHourLimit, Status::WaitingDayLimit,
     ];
 
     $reprocessaveis = [
         Status::FailedTemporary, Status::RetryWait,
         Status::WaitingSchedule, Status::WaitingMinuteLimit, Status::WaitingMinimumInterval,
-        Status::WaitingHourLimit, Status::WaitingDayLimit,
+        Status::WaitingReciprocity, Status::WaitingHourLimit, Status::WaitingDayLimit,
     ];
 @endphp
 

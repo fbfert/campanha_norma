@@ -30,6 +30,7 @@ class StopMessageBatchAction
             MessageRecipientProcessingStatus::WaitingSchedule->value,
             MessageRecipientProcessingStatus::WaitingMinuteLimit->value,
             MessageRecipientProcessingStatus::WaitingMinimumInterval->value,
+            MessageRecipientProcessingStatus::WaitingReciprocity->value,
             MessageRecipientProcessingStatus::WaitingHourLimit->value,
             MessageRecipientProcessingStatus::WaitingDayLimit->value,
             MessageRecipientProcessingStatus::Queued->value,

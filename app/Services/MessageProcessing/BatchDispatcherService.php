@@ -31,6 +31,7 @@ class BatchDispatcherService
                     MessageRecipientProcessingStatus::WaitingSchedule->value,
                     MessageRecipientProcessingStatus::WaitingMinuteLimit->value,
                     MessageRecipientProcessingStatus::WaitingMinimumInterval->value,
+                    MessageRecipientProcessingStatus::WaitingReciprocity->value,
                     MessageRecipientProcessingStatus::WaitingHourLimit->value,
                     MessageRecipientProcessingStatus::WaitingDayLimit->value,
                     MessageRecipientProcessingStatus::RetryWait->value,

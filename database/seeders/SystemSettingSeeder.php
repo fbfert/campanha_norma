@@ -131,6 +131,11 @@ class SystemSettingSeeder extends Seeder
             // escrever a primeira frase soa como dispensa, e encerra uma
             // conversa que nem tinha começado. Depois de algumas idas e voltas
             // a mesma frase soa como cuidado, porque há o que ler.
+            // Quem responde ao convite enquanto a pergunta já está a caminho
+            // manda algo que não responde nada. Refazer a pergunta com esta
+            // frase na frente deixa claro que não é mensagem nova: é a mesma
+            // pergunta, que cruzou com a dela.
+            ['group' => 'conversation_automation', 'key' => 'conversation_automation.reask_prefix', 'value' => 'Sobre o que te perguntei:', 'type' => 'string', 'description' => 'Frase que abre a pergunta refeita', 'is_public' => false],
             ['group' => 'conversation_automation', 'key' => 'conversation_automation.unanswered_ack_min_exchanges', 'value' => '5', 'type' => 'integer', 'description' => 'Idas e voltas completas exigidas para usar o aviso institucional', 'is_public' => false],
             ['group' => 'conversation_automation', 'key' => 'conversation_automation.unanswered_ack_short_text', 'value' => 'Obrigado por escrever! Já te respondo.', 'type' => 'string', 'description' => 'Aviso curto para conversa que mal começou', 'is_public' => false],
             ['group' => 'conversation_automation', 'key' => 'conversation_automation.unanswered_ack_cooldown_hours', 'value' => '6', 'type' => 'integer', 'description' => 'Horas mínimas entre dois avisos de recebimento na mesma conversa', 'is_public' => false],
