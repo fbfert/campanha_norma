@@ -170,6 +170,30 @@
                 <strong>Histórico de mensagens</strong> guarda o que foi enviado, para quem, quando, e
                 as tentativas de cada destinatário, inclusive as que falharam e o motivo.
             </p>
+
+            <h3>Quando o envio para sozinho</h3>
+            <p>
+                Além dos limites de ritmo, ha uma <strong>trava de reciprocidade</strong>, em
+                <strong>Configurações de envio</strong>. Os limites de ritmo olham so para o nosso lado:
+                da para abordar mil pessoas em ritmo impecável sem que nenhuma responda, e nada nota.
+                Esta trava mede a conversa.
+            </p>
+            <p>
+                Quando o número de pessoas abordadas que ainda não responderam alcança o teto, o envio
+                de lotes e campanhas para e os destinatários ficam em
+                <strong>"Aguardando alguém responder"</strong>. O lote não e pausado, e ninguém precisa
+                liberar nada: assim que uma resposta chegar, a contagem cai e o envio recomeça sozinho.
+            </p>
+            <p class="muted">
+                A conta e de pessoas, não de mensagens &mdash; quem recebeu três e não respondeu conta
+                uma vez. A tela de configurações mostra o número de agora ao lado do campo, e vale
+                olhar antes de escolher o teto: um valor colado na contagem atual faz o lote andar no
+                ritmo exato das respostas, uma resposta por envio. <strong>Zero desliga a trava.</strong>
+            </p>
+            <p class="muted">
+                Ela não alcança as respostas da automação a quem escreveu. Quem falou com a gente
+                continua recebendo retorno.
+            </p>
         </section>
 
         {{-- 4 --}}

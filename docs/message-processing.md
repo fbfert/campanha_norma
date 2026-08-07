@@ -44,6 +44,39 @@ pausar, parar, retomar, cancelar, reprocessar, painel e tela de processamento.
 Fora da consulta do despachante, o destinatário nunca mais e escolhido: fica
 parado para sempre, sem erro visível.
 
+## Trava de reciprocidade
+
+As quatro travas acima são de ritmo, e todas olham só para o nosso lado: dá para
+abordar mil pessoas em ritmo impecável sem que nenhuma responda, e nada nota. Os
+contadores mostram sucesso, porque entregar a mensagem é sucesso.
+
+```text
+unanswered_lock_threshold  pessoas abordadas sem resposta que param o envio
+```
+
+Quando o número de pessoas abordadas que nunca responderam alcança o teto, o
+envio de lotes e campanhas para. O que destrava não é o relógio: é alguém do
+outro lado responder.
+
+A contagem é de **pessoas, não de mensagens**. Quem recebeu três e não respondeu
+conta uma vez — o que se mede é quanta gente está em silêncio, e mandar mais
+para a mesma pessoa não aumenta o alcance. A mesma pessoa pode aparecer em
+várias campanhas; o banco só impede repetir dentro de um lote.
+
+O destinatário fica em `waiting_reciprocity` e **o lote não é pausado**.
+Reaproveitar "aguardando horário" faria a tela dizer que basta esperar o
+relógio, e pausar o lote exigiria reinício à mão; segurar o destinatário deixa a
+retomada automática assim que a contagem cair.
+
+A trava não alcança as respostas da automação a quem escreveu: quem falou com a
+gente não pode ficar sem retorno por causa dela. **Teto zero desliga**, que é o
+comportamento de antes de ela existir.
+
+Ao escolher o valor, olhe o número atual — a tela de configurações mostra ao
+lado do campo. Um teto abaixo da contagem de hoje tranca o envio no próximo
+clique, e um teto colado nela faz o lote andar no ritmo exato das respostas: uma
+resposta libera um envio.
+
 ## Redis e filas
 
 ```env

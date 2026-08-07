@@ -166,7 +166,7 @@ class ManualController extends Controller
                 'icon' => 'send',
                 'title' => 'Falar com muita gente',
                 'summary' => 'Modelo, lote e processamento: o caminho de um disparo em massa.',
-                'topics' => ['Modelo de mensagem', 'Lote e campanha', 'Validar antes de disparar', 'Processamento', 'Histórico'],
+                'topics' => ['Modelo de mensagem', 'Lote e campanha', 'Validar antes de disparar', 'Processamento', 'Trava de reciprocidade', 'Histórico'],
             ],
             [
                 'id' => 'atendimento',

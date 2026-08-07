@@ -344,4 +344,21 @@ class ManualTest extends TestCase
             ->assertSee('O que acontece sem ninguém clicar')
             ->assertSee('Ninguém fica sem resposta');
     }
+
+    /**
+     * A trava de reciprocidade para o envio sozinha, e quem opera precisa
+     * encontrar isso escrito.
+     *
+     * Sem explicação, "Aguardando alguém responder" numa fila de destinatários
+     * parados parece defeito — e a reação natural é procurar o que consertar,
+     * quando não ha nada quebrado.
+     */
+    public function test_o_manual_explica_por_que_o_envio_para_sozinho(): void
+    {
+        $this->actingAs($this->userWith('operador'))
+            ->get(route('manual.index'))
+            ->assertOk()
+            ->assertSee('Quando o envio para sozinho')
+            ->assertSee('Aguardando alguém responder');
+    }
 }
