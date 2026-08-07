@@ -632,18 +632,26 @@ class AiInterpretationModuleTest extends TestCase
         $this->assertTrue($fallback->refresh()->is_active);
     }
 
+    /**
+     * O tema aqui precisa ser um que a taxonomia real não tenha.
+     *
+     * Este teste usava "turismo", que virou tema de verdade quando a Serra
+     * passou a ter onde encaixar as respostas sobre o assunto: o cadastro
+     * passou a colidir no slug único, e a falha apontava para um erro de tipo
+     * dentro do controlador, longe da causa.
+     */
     public function test_unused_topic_can_be_created_and_deleted(): void
     {
         $admin = $this->userWith('administrador');
 
         $this->actingAs($admin)->post(route('admin.insight-topics.store'), [
-            'name' => 'Turismo',
-            'slug' => 'turismo',
+            'name' => 'Tema de teste',
+            'slug' => 'tema_de_teste',
             'display_order' => 5,
             'is_active' => 1,
         ])->assertRedirect(route('admin.insight-topics.index'));
 
-        $topic = InsightTopic::where('slug', 'turismo')->firstOrFail();
+        $topic = InsightTopic::where('slug', 'tema_de_teste')->firstOrFail();
 
         $this->actingAs($admin)
             ->delete(route('admin.insight-topics.destroy', $topic))
