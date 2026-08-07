@@ -392,7 +392,10 @@ class ConversationSuggestionService
      */
     private function forcedHandoffReason(ConversationMessage $message): ?HandoffReason
     {
-        foreach ($this->groupedClassifications($message) as $classification) {
+        $classificacoes = $this->groupedClassifications($message);
+        $incerteza = null;
+
+        foreach ($classificacoes as $classification) {
             if ($classification->classification === MessageClassification::OptOut) {
                 return HandoffReason::ExplicitRequest;
             }
@@ -400,12 +403,51 @@ class ConversationSuggestionService
             $reason = HandoffReason::fromClassification($classification->classification)
                 ?? HandoffReason::fromReviewReason($classification->review_reason);
 
-            if ($reason !== null) {
-                return $reason;
+            if ($reason === null) {
+                continue;
             }
+
+            /*
+             | Incerteza não é conteúdo, e não pode contaminar o bloco.
+             |
+             | Ameaça, relato sensível e pedido de gente falam do que a pessoa
+             | disse: valem onde quer que apareçam, e por isso saem daqui na
+             | hora. `low_confidence` fala do classificador, não dela — e quem
+             | escreve em blocos abre com "oi", "em um geral", fragmentos que
+             | isolados não significam nada e sempre voltam incertos.
+             |
+             | Como este método devolvia o primeiro motivo encontrado, bastava
+             | um "Oiee" na frente para encaminhar a conversa inteira. Foi o que
+             | aconteceu com uma resposta clara sobre turismo, precedida de duas
+             | saudações: as três mensagens seguintes vinham com 0,95 de
+             | confiança e nenhuma chegou a ser lida.
+             |
+             | A incerteza fica guardada e só vale se nada no bloco tiver sido
+             | entendido. Uma frase compreendida basta para o bloco ser.
+             */
+            if ($reason === HandoffReason::LowConfidence) {
+                $incerteza = $reason;
+
+                continue;
+            }
+
+            return $reason;
         }
 
-        return null;
+        return $this->blockUnderstood($classificacoes) ? null : $incerteza;
+    }
+
+    /**
+     * Alguma mensagem do bloco foi entendida com clareza?
+     *
+     * @param  \Illuminate\Support\Collection<int, \App\Models\ConversationMessageClassification>  $classificacoes
+     */
+    private function blockUnderstood($classificacoes): bool
+    {
+        return $classificacoes->contains(
+            fn ($classification): bool => $classification->review_reason === null
+                && HandoffReason::fromClassification($classification->classification) === null,
+        );
     }
 
     /**
