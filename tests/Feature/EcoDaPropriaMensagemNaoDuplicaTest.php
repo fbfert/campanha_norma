@@ -106,6 +106,84 @@ class EcoDaPropriaMensagemNaoDuplicaTest extends TestCase
         $this->assertSame(2, ConversationMessage::where('conversation_id', $conversa->id)->count());
     }
 
+
+    /**
+     * O eco também entra pelo webhook ao vivo, e não só pela sincronização.
+     *
+     * Esta é a porta que ficou sem tratamento. A adoção foi escrita para a
+     * sincronização periódica, o problema continuou acontecendo exatamente
+     * igual, e demorou a ser percebido porque a correção parecia feita: na
+     * conversa 1397 cada resposta da IA aparecia duas vezes para nós, e uma só
+     * para o contato.
+     */
+    public function test_eco_pelo_webhook_tambem_preenche_o_identificador(): void
+    {
+        Carbon::setTestNow('2026-08-07 15:14:43');
+
+        $conversa = $this->conversa();
+
+        $enviada = ConversationMessage::create([
+            'conversation_id' => $conversa->id,
+            'direction' => ConversationMessageDirection::Outgoing,
+            'message_type' => 'text',
+            'provider' => 'web',
+            'external_message_id' => null,
+            'body' => 'A prof Norma gostaria de saber sua opinião.',
+            'status' => ConversationMessageStatus::Sent,
+            'sent_at' => now(),
+        ]);
+
+        \App\Jobs\ProcessIncomingMessageJob::dispatchSync([
+            'event_id' => (string) \Illuminate\Support\Str::uuid(),
+            'provider' => 'web',
+            'connection_id' => 'principal',
+            'external_message_id' => '3EB0CFDD8370B3C9D73FA4',
+            'sender_phone' => '5549999990001',
+            'recipient_phone' => '5549999990002',
+            'message_type' => 'text',
+            'text' => 'A prof Norma gostaria de saber sua opinião.',
+            'sent_at' => now()->toIso8601String(),
+            'is_from_me' => true,
+            'is_group' => false,
+            'has_media' => false,
+        ]);
+
+        $this->assertSame(
+            1,
+            ConversationMessage::where('conversation_id', $conversa->id)->count(),
+            'O eco pelo webhook não pode virar uma segunda linha.',
+        );
+        $this->assertSame('3EB0CFDD8370B3C9D73FA4', $enviada->fresh()->external_message_id);
+    }
+
+    /**
+     * Mensagem recebida de verdade continua entrando normalmente: a adoção vale
+     * só para o que saiu daqui.
+     */
+    public function test_mensagem_recebida_pelo_webhook_continua_sendo_gravada(): void
+    {
+        $conversa = $this->conversa();
+
+        \App\Jobs\ProcessIncomingMessageJob::dispatchSync([
+            'event_id' => (string) \Illuminate\Support\Str::uuid(),
+            'provider' => 'web',
+            'connection_id' => 'principal',
+            'external_message_id' => 'AC8AEA45DC2915E4A4DF',
+            'sender_phone' => '5549999990001',
+            'recipient_phone' => '5549999990002',
+            'message_type' => 'text',
+            'text' => 'Boa tarde',
+            'is_from_me' => false,
+            'is_group' => false,
+            'has_media' => false,
+        ]);
+
+        $this->assertDatabaseHas('conversation_messages', [
+            'body' => 'Boa tarde',
+            'direction' => 'incoming',
+        ]);
+    }
+
     private function conversa(): Conversation
     {
         $contato = Contact::factory()->create(['phone_normalized' => '5549999990001']);

@@ -13,6 +13,7 @@ use App\Services\AuditLogger;
 use App\Services\Conversations\ConversationEventService;
 use App\Services\Conversations\ConversationResolverService;
 use App\Services\Conversations\ConversationSyncService;
+use App\Services\Conversations\OutgoingEchoMatcher;
 use App\Services\Conversations\ReplyInterruptionService;
 use App\Services\IncomingMessages\ContactMatcherService;
 use App\Services\IncomingMessages\IncomingMessageNormalizerService;
@@ -87,6 +88,35 @@ class ProcessIncomingMessageJob implements ShouldQueue
         $contact = $match['status'] === ContactMatchStatus::Matched ? $match['contact'] : null;
         $direction = $data['is_from_me'] ? ConversationMessageDirection::Outgoing : ConversationMessageDirection::Incoming;
         $status = $data['is_from_me'] ? ConversationMessageStatus::Sent : ConversationMessageStatus::Received;
+
+        /*
+         | Eco da nossa própria mensagem, chegando de volta pelo webhook.
+         |
+         | O WhatsApp Web às vezes entrega e ainda assim lança erro, sem
+         | devolver o identificador: a linha do envio fica sem `external_message_id`,
+         | a checagem de duplicidade acima compara identificadores, não acha
+         | nada, e cria uma segunda linha. A mesma frase aparecia duas vezes na
+         | tela e entrava duas vezes no contexto enviado ao modelo — ainda que o
+         | contato tivesse recebido uma só.
+         |
+         | Esta adoção já existia na sincronização periódica, e faltava aqui. É
+         | a mesma regra, e agora mora num lugar só.
+         */
+        if ($direction === ConversationMessageDirection::Outgoing) {
+            $conversaExistente = $resolver->resolve($contact, $data['connection_id'], false, (string) $data['sender_phone']);
+
+            $adotada = app(OutgoingEchoMatcher::class)->adopt(
+                $conversaExistente,
+                $data['text'],
+                (string) $data['external_message_id'],
+                $data['metadata']['external_chat_id'] ?? null,
+                $data['sent_at'] ?? $data['received_at'] ?? now(),
+            );
+
+            if ($adotada) {
+                return;
+            }
+        }
 
         DB::transaction(function () use ($data, $contact, $direction, $status, $resolver, $events, $interruption, $audit): void {
             // A avaliação do fluxo e despachada apenas após o commit desta transação,

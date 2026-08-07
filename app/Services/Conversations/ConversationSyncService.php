@@ -237,14 +237,6 @@ class ConversationSyncService
         'ciphertext',
     ];
 
-    /**
-     * Folga para reconhecer o eco da própria mensagem em `adoptOwnMessage()`.
-     *
-     * O eco costuma voltar em segundos, mas a sincronização pode rodar bem
-     * depois. Dez minutos cobrem o atraso sem alcançar um reenvio deliberado
-     * do mesmo texto, que é o único caso em que duas linhas iguais são certas.
-     */
-    private const OWN_MESSAGE_WINDOW_MINUTES = 10;
 
     private function syncMessage(ConversationSyncRun $run, Conversation $conversation, array $message, array $chat, mixed $contact): void
     {
@@ -364,48 +356,18 @@ class ConversationSyncService
     }
 
     /**
-     * Reconhece o eco de uma mensagem que nós mesmos enviamos.
-     *
-     * O WhatsApp Web às vezes entrega a mensagem e mesmo assim lança erro em
-     * vez de devolver o identificador — o serviço Node já trata esse caso e
-     * responde com `external_message_id` nulo. A linha fica gravada sem id, e
-     * quando o eco chega pela sincronização não há por onde casar os dois: o
-     * resultado é a mesma frase aparecendo duas vezes na conversa, e entrando
-     * duas vezes no contexto que vai para o modelo.
-     *
-     * Casamos então pelo que sobrou — mesma conversa, mesmo texto e horário
-     * próximo — e aproveitamos para preencher o identificador que faltava.
+     * O eco entra por duas portas — esta e o webhook ao vivo — e a regra mora
+     * em `OutgoingEchoMatcher`, para ser consertada uma vez so.
      */
     private function adoptOwnMessage(Conversation $conversation, array $message, Carbon $occurredAt): bool
     {
-        $body = $message['body'] ?? null;
-
-        if (blank($body)) {
-            return false;
-        }
-
-        $orfa = ConversationMessage::query()
-            ->where('conversation_id', $conversation->id)
-            ->where('direction', ConversationMessageDirection::Outgoing)
-            ->whereNull('external_message_id')
-            ->where('body', $body)
-            ->whereBetween('created_at', [
-                $occurredAt->copy()->subMinutes(self::OWN_MESSAGE_WINDOW_MINUTES),
-                $occurredAt->copy()->addMinutes(self::OWN_MESSAGE_WINDOW_MINUTES),
-            ])
-            ->orderBy('id')
-            ->first();
-
-        if (! $orfa) {
-            return false;
-        }
-
-        $orfa->forceFill([
-            'external_message_id' => (string) $message['external_message_id'],
-            'external_chat_id' => $orfa->external_chat_id ?? ($message['external_chat_id'] ?? null),
-        ])->save();
-
-        return true;
+        return app(OutgoingEchoMatcher::class)->adopt(
+            $conversation,
+            $message['body'] ?? null,
+            isset($message['external_message_id']) ? (string) $message['external_message_id'] : null,
+            $message['external_chat_id'] ?? null,
+            $occurredAt,
+        );
     }
 
     private function date(mixed $value): ?Carbon
