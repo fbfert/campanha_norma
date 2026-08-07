@@ -14,6 +14,16 @@ enum MessageRecipientProcessingStatus: string
     // limite por minuto" com o limite folgado procurava no lugar errado.
     case WaitingMinimumInterval = 'waiting_minimum_interval';
 
+    /*
+     | Trava de reciprocidade: parou porque gente demais foi abordada e não
+     | respondeu, não porque um limite de ritmo foi atingido.
+     |
+     | Situação própria de propósito. Reaproveitar "aguardando horário" faria a
+     | tela dizer que basta esperar o relógio, quando o que destrava é alguém
+     | do outro lado responder.
+     */
+    case WaitingReciprocity = 'waiting_reciprocity';
+
     case WaitingHourLimit = 'waiting_hour_limit';
     case WaitingDayLimit = 'waiting_day_limit';
     case Queued = 'queued';
@@ -33,6 +43,7 @@ enum MessageRecipientProcessingStatus: string
             self::WaitingSchedule => 'Aguardando horário',
             self::WaitingMinuteLimit => 'Aguardando limite por minuto',
             self::WaitingMinimumInterval => 'Aguardando intervalo mínimo',
+            self::WaitingReciprocity => 'Aguardando alguém responder',
             self::WaitingHourLimit => 'Aguardando limite por hora',
             self::WaitingDayLimit => 'Aguardando limite diário',
             self::Queued => 'Na fila',
@@ -53,6 +64,7 @@ enum MessageRecipientProcessingStatus: string
             self::WaitingSchedule,
             self::WaitingMinuteLimit,
             self::WaitingMinimumInterval,
+            self::WaitingReciprocity,
             self::WaitingHourLimit,
             self::WaitingDayLimit,
             self::Queued,

@@ -26,6 +26,30 @@
                 @endforeach
             </fieldset>
             <label class="checkbox full"><input type="checkbox" name="pause_when_disconnected" value="1" @checked(old('pause_when_disconnected', $settings->pause_when_disconnected))> Pausar quando WhatsApp desconectar</label>
+
+            <fieldset class="full">
+                <legend>Trava de reciprocidade</legend>
+                <p class="muted">
+                    Os limites acima são de ritmo e olham só para o nosso lado: dá para abordar mil
+                    pessoas em ritmo impecável sem que nenhuma responda, e nada nota. Esta trava mede a
+                    conversa. Quando o número de pessoas abordadas que ainda não responderam alcança o
+                    teto, o envio de lotes e campanhas para e espera &mdash; e o que destrava não é o
+                    relógio, é alguém responder.
+                </p>
+                <label>
+                    Parar depois de quantas pessoas sem resposta
+                    <input type="number" name="unanswered_lock_threshold" value="{{ old('unanswered_lock_threshold', $settings->unanswered_lock_threshold) }}" min="0" max="10000" required>
+                </label>
+                <p class="muted">
+                    A contagem é de pessoas, não de mensagens: quem recebeu três e não respondeu conta
+                    uma vez. Assim que a pessoa escreve, ela sai da conta e o envio recomeça sozinho,
+                    sem ninguém precisar liberar nada. <strong>Zero desliga a trava.</strong>
+                    @isset($emSilencio)
+                        <br>Agora: <strong>{{ $emSilencio }}</strong> pessoa(s) abordada(s) sem resposta.
+                    @endisset
+                </p>
+            </fieldset>
+
             <div class="full actions"><button class="btn" type="submit">Salvar</button></div>
         </form>
     </div>

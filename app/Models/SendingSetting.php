@@ -16,6 +16,7 @@ class SendingSetting extends Model
         'max_per_minute',
         'max_per_hour',
         'max_per_day',
+        'unanswered_lock_threshold',
         'minimum_interval_seconds',
         'start_time',
         'end_time',
@@ -34,6 +35,7 @@ class SendingSetting extends Model
         return [
             'retry_backoff_type' => RetryBackoffType::class,
             'pause_when_disconnected' => 'boolean',
+            'unanswered_lock_threshold' => 'integer',
         ];
     }
 

@@ -181,6 +181,7 @@ class MessageProcessingModuleTest extends TestCase
             'max_per_minute' => 1,
             'max_per_hour' => 15,
             'max_per_day' => 40,
+            'unanswered_lock_threshold' => 10,
             'minimum_interval_seconds' => 60,
             'start_time' => '09:00',
             'end_time' => '18:00',

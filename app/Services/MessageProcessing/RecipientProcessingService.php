@@ -30,6 +30,7 @@ class RecipientProcessingService
         private readonly BatchProgressService $progress,
         private readonly MessageProcessingEventService $events,
         private readonly WhatsAppProviderManager $providers,
+        private readonly ReciprocityGuard $reciprocity,
     ) {}
 
     public function process(MessageBatchRecipient $recipient, int $processingVersion): void
@@ -60,6 +61,29 @@ class RecipientProcessingService
             $window = $this->window->check($settings);
             if (! $window['allowed']) {
                 $this->wait($recipient, MessageRecipientProcessingStatus::WaitingSchedule, $window['next_at'], $window['reason'] ?? 'Fora do horário permitido.');
+
+                return;
+            }
+
+            /*
+             | A trava de reciprocidade vem depois dos limites de ritmo e antes
+             | do envio, porque ela responde outra pergunta. Os limites acima
+             | perguntam "posso mandar agora?"; esta pergunta "devo continuar
+             | mandando?".
+             |
+             | Ela não pausa o lote. Segurar o destinatário numa situação de
+             | espera deixa a retomada automática: quando alguém responder, a
+             | contagem cai sozinha e a próxima tentativa passa, sem ninguém
+             | precisar reiniciar nada.
+             */
+            $reciprocity = $this->reciprocity->check($settings);
+            if (! $reciprocity['allowed']) {
+                $this->wait(
+                    $recipient,
+                    MessageRecipientProcessingStatus::WaitingReciprocity,
+                    now()->addMinutes(max(1, (int) $settings->retry_interval_minutes)),
+                    (string) $reciprocity['reason'],
+                );
 
                 return;
             }

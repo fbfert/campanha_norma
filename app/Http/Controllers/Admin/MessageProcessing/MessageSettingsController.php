@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin\MessageProcessing;
 
 use App\Http\Controllers\Controller;
+use App\Services\MessageProcessing\ReciprocityGuard;
 use App\Http\Requests\MessageProcessing\SendingSettingRequest;
 use App\Services\AuditLogger;
 use App\Services\MessageProcessing\SendingSettingsService;
@@ -16,7 +17,13 @@ class MessageSettingsController extends Controller
     {
         abort_unless($request->user()->can('message_processing.manage_settings'), 403);
 
-        return view('admin.message-processing.settings', ['settings' => $service->current()]);
+        return view('admin.message-processing.settings', [
+            'settings' => $service->current(),
+            // Número real ao lado do campo: escolher um teto sem saber onde a
+            // contagem está hoje é chutar. Com ele na tela, dá para ver se o
+            // valor digitado tranca o envio no próximo clique.
+            'emSilencio' => app(ReciprocityGuard::class)->silentContacts(),
+        ]);
     }
 
     public function update(SendingSettingRequest $request, SendingSettingsService $service, AuditLogger $audit): RedirectResponse
