@@ -3,6 +3,7 @@
 namespace App\Services\Analytics;
 
 use App\Enums\ReplySuggestionStatus;
+use App\Enums\AiRunPurpose;
 use App\Models\AiRun;
 use App\Models\ConversationInsight;
 use App\Models\ConversationReplySuggestion;
@@ -130,7 +131,11 @@ class AiQualityMetricsService
             ->get()
             ->map(function ($row) use ($includeCost): array {
                 $line = [
-                    'purpose' => (string) $row->purpose,
+                    // `purpose` tem cast de enum no modelo, e converter enum
+                    // para texto direto e erro fatal em PHP. A tela inteira
+                    // caia em 500 assim que existisse uma execução de IA
+                    // registrada — o painel só abria enquanto estava vazio.
+                    'purpose' => $row->purpose instanceof AiRunPurpose ? $row->purpose->value : (string) $row->purpose,
                     'provider' => (string) $row->provider,
                     'model' => (string) $row->model,
                     'prompt_version' => (string) $row->prompt_version,
