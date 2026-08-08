@@ -2,13 +2,15 @@
 
 namespace App\Services\WhatsApp;
 
+use App\Contracts\PairsBySession;
+use App\Contracts\ReadsConversationHistory;
 use App\Contracts\WhatsAppProvider;
 use App\Data\WhatsApp\ConnectionResult;
 use App\Data\WhatsApp\ConnectionStatus;
 use App\Data\WhatsApp\QrCodeResult;
 use App\Data\WhatsApp\SendResult;
 
-class WhatsAppWebProvider implements WhatsAppProvider
+class WhatsAppWebProvider implements WhatsAppProvider, PairsBySession, ReadsConversationHistory
 {
     public function __construct(private readonly WhatsAppServiceClient $client) {}
 

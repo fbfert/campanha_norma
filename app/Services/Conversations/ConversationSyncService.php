@@ -2,6 +2,7 @@
 
 namespace App\Services\Conversations;
 
+use App\Contracts\ReadsConversationHistory;
 use App\Enums\ContactMatchStatus;
 use App\Enums\ConversationMessageDirection;
 use App\Enums\ConversationMessageStatus;
@@ -45,7 +46,7 @@ class ConversationSyncService
         ])->save();
 
         try {
-            $chats = $this->providers->provider()->listConversations([
+            $chats = $this->history()->listConversations([
                 'limit' => $options['limit_chats'],
                 'include_archived' => $options['include_archived'] ? '1' : '0',
             ]);
@@ -93,6 +94,7 @@ class ConversationSyncService
                 'WHATSAPP_NOT_CONNECTED' => 'Conecte o WhatsApp antes de sincronizar as conversas.',
                 'SERVICE_UNAVAILABLE' => 'O serviço Node.js do WhatsApp esta indisponível.',
                 'SERVICE_TIMEOUT' => 'O serviço do WhatsApp não respondeu a tempo. Ele costuma estar de pé e travado: reinicie o serviço do Node.js.',
+                'HISTORY_NOT_SUPPORTED' => 'O provedor em uso não devolve histórico. As mensagens chegam apenas pelo webhook, e não há o que sincronizar.',
                 default => 'Falha ao sincronizar conversas.',
             };
 
@@ -108,6 +110,32 @@ class ConversationSyncService
         }
 
         return $run->fresh();
+    }
+
+    /**
+     * O provedor atual lê histórico?
+     *
+     * O WhatsApp Web lê o histórico do aparelho, e é isso que permite esta
+     * sincronização recuperar mensagem que o webhook perdeu — foi assim que os
+     * áudios da conversa 421 entraram, depois de a validação recusá-los.
+     *
+     * A API oficial da Meta não tem equivalente: chega o que o webhook
+     * entregar. Devolver lista vazia faria a sincronização parecer
+     * bem-sucedida e sempre encontrar zero conversa, que é a pior forma de
+     * perder um recurso — sem ninguém notar.
+     */
+    private function history(): ReadsConversationHistory
+    {
+        $provider = $this->providers->provider();
+
+        if (! $provider instanceof ReadsConversationHistory) {
+            throw new WhatsAppServiceException(
+                'HISTORY_NOT_SUPPORTED',
+                'Este provedor não devolve histórico: as mensagens chegam apenas pelo webhook, e não há o que sincronizar.',
+            );
+        }
+
+        return $provider;
     }
 
     public function sanitizeOptions(array $options): array
@@ -134,7 +162,7 @@ class ConversationSyncService
         $match = $this->matcher->match((string) ($chat['phone'] ?? ''));
         $contact = $match['status'] === ContactMatchStatus::Matched ? $match['contact'] : null;
 
-        $messages = $this->providers->provider()->fetchConversationMessages((string) $chat['external_chat_id'], [
+        $messages = $this->history()->fetchConversationMessages((string) $chat['external_chat_id'], [
             'limit' => $options['messages_per_chat'],
             'days' => $options['days'],
         ]);

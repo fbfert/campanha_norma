@@ -2,6 +2,8 @@
 
 namespace App\Services\WhatsApp;
 
+use App\Contracts\PairsBySession;
+use App\Exceptions\WhatsApp\WhatsAppServiceException;
 use App\Data\WhatsApp\ConnectionResult;
 use App\Data\WhatsApp\ConnectionStatus;
 use App\Data\WhatsApp\QrCodeResult;
@@ -31,6 +33,30 @@ class WhatsAppConnectionService
         );
     }
 
+    /**
+     * O provedor atual pareia por sessão?
+     *
+     * QR Code, reconectar e limpar sessão só existem no WhatsApp Web. A API
+     * oficial autentica por credencial permanente, e chamar esses métodos nela
+     * não é "não implementado ainda": é pedir algo que não existe.
+     *
+     * A recusa vem com o nome do provedor porque o erro certo é o operador
+     * entender que a tela não serve para aquele provedor — não é falha.
+     */
+    private function pairing(): PairsBySession
+    {
+        $provider = $this->manager->provider();
+
+        if (! $provider instanceof PairsBySession) {
+            throw new WhatsAppServiceException(
+                'PAIRING_NOT_SUPPORTED',
+                'Este provedor de WhatsApp não usa pareamento por sessão: não há QR Code para ler nem sessão para limpar.',
+            );
+        }
+
+        return $provider;
+    }
+
     public function refreshStatus(?User $user = null): ConnectionStatus
     {
         $status = $this->manager->provider()->getStatus();
@@ -41,7 +67,7 @@ class WhatsAppConnectionService
 
     public function connect(User $user, Request $request): ConnectionResult
     {
-        $result = $this->manager->provider()->connect();
+        $result = $this->pairing()->connect();
         $this->syncResult($result, 'connect_requested', 'Inicialização da conexão WhatsApp solicitada.', $user, $request);
         $this->audit->log('whatsapp.connect_requested', 'Inicialização da conexão WhatsApp solicitada.', $this->connection($user), null, ['status' => $result->status->value], $user, $request);
 
@@ -50,7 +76,7 @@ class WhatsAppConnectionService
 
     public function reconnect(User $user, Request $request): ConnectionResult
     {
-        $result = $this->manager->provider()->reconnect();
+        $result = $this->pairing()->reconnect();
         $this->syncResult($result, 'reconnect_requested', 'Reconexão WhatsApp solicitada.', $user, $request);
         $this->audit->log('whatsapp.reconnect_requested', 'Reconexão WhatsApp solicitada.', $this->connection($user), null, ['status' => $result->status->value], $user, $request);
 
@@ -59,7 +85,7 @@ class WhatsAppConnectionService
 
     public function disconnect(User $user, Request $request): ConnectionResult
     {
-        $result = $this->manager->provider()->disconnect();
+        $result = $this->pairing()->disconnect();
         $this->syncResult($result, 'disconnect_requested', 'Desconexão WhatsApp solicitada.', $user, $request);
         $this->audit->log('whatsapp.disconnect_requested', 'Desconexão WhatsApp solicitada.', $this->connection($user), null, ['status' => $result->status->value], $user, $request);
 
@@ -68,7 +94,7 @@ class WhatsAppConnectionService
 
     public function clearSession(User $user, Request $request): ConnectionResult
     {
-        $result = $this->manager->provider()->clearSession();
+        $result = $this->pairing()->clearSession();
         $this->syncResult($result, 'session_clear_requested', 'Exclusão da sessão WhatsApp solicitada.', $user, $request);
         $this->audit->log('whatsapp.session_clear_requested', 'Exclusão da sessão WhatsApp solicitada.', $this->connection($user), null, ['status' => $result->status->value], $user, $request);
 
@@ -77,7 +103,7 @@ class WhatsAppConnectionService
 
     public function requestQr(User $user, Request $request): QrCodeResult
     {
-        $result = $this->manager->provider()->requestQrCode();
+        $result = $this->pairing()->requestQrCode();
         $connection = $this->connection($user);
         $connection->forceFill([
             'status' => $result->status,

@@ -2,10 +2,9 @@
 
 namespace Tests\Feature;
 
+use App\Contracts\ReadsConversationHistory;
 use App\Contracts\WhatsAppProvider;
-use App\Data\WhatsApp\ConnectionResult;
 use App\Data\WhatsApp\ConnectionStatus;
-use App\Data\WhatsApp\QrCodeResult;
 use App\Data\WhatsApp\SendResult;
 use App\Enums\ConversationMessageStatus;
 use App\Enums\ConversationStatus;
@@ -178,37 +177,17 @@ class InboxIncomingModuleTest extends TestCase
         $message = ConversationMessage::where('direction', 'outgoing')->firstOrFail();
         $this->assertSame('pending', $message->status->value);
 
-        $provider = new class implements WhatsAppProvider
+        $provider = new class implements WhatsAppProvider, ReadsConversationHistory
         {
             public function getStatus(): ConnectionStatus
             {
                 return new ConnectionStatus(WhatsAppConnectionStatus::Connected);
             }
 
-            public function requestQrCode(): QrCodeResult
-            {
-                throw new \RuntimeException('unused');
-            }
 
-            public function connect(): ConnectionResult
-            {
-                throw new \RuntimeException('unused');
-            }
 
-            public function reconnect(): ConnectionResult
-            {
-                throw new \RuntimeException('unused');
-            }
 
-            public function disconnect(): ConnectionResult
-            {
-                throw new \RuntimeException('unused');
-            }
 
-            public function clearSession(): ConnectionResult
-            {
-                throw new \RuntimeException('unused');
-            }
 
             public function sendTestMessage(string $phone, string $message, string $requestId): SendResult
             {
@@ -257,37 +236,17 @@ class InboxIncomingModuleTest extends TestCase
         Queue::fake();
         $operator = $this->userWithRole('operador');
         $reader = $this->userWithRole('consulta');
-        $provider = new class implements WhatsAppProvider
+        $provider = new class implements WhatsAppProvider, ReadsConversationHistory
         {
             public function getStatus(): ConnectionStatus
             {
                 return new ConnectionStatus(WhatsAppConnectionStatus::Connected);
             }
 
-            public function requestQrCode(): QrCodeResult
-            {
-                throw new \RuntimeException('unused');
-            }
 
-            public function connect(): ConnectionResult
-            {
-                throw new \RuntimeException('unused');
-            }
 
-            public function reconnect(): ConnectionResult
-            {
-                throw new \RuntimeException('unused');
-            }
 
-            public function disconnect(): ConnectionResult
-            {
-                throw new \RuntimeException('unused');
-            }
 
-            public function clearSession(): ConnectionResult
-            {
-                throw new \RuntimeException('unused');
-            }
 
             public function sendTestMessage(string $phone, string $message, string $requestId): SendResult
             {
@@ -326,37 +285,17 @@ class InboxIncomingModuleTest extends TestCase
     {
         $contact = Contact::factory()->create(['phone_normalized' => '5549999999999']);
         $run = ConversationSyncRun::factory()->create(['status' => ConversationSyncStatus::Pending, 'requested_by' => null]);
-        $provider = new class implements WhatsAppProvider
+        $provider = new class implements WhatsAppProvider, ReadsConversationHistory
         {
             public function getStatus(): ConnectionStatus
             {
                 return new ConnectionStatus(WhatsAppConnectionStatus::Connected);
             }
 
-            public function requestQrCode(): QrCodeResult
-            {
-                throw new \RuntimeException('unused');
-            }
 
-            public function connect(): ConnectionResult
-            {
-                throw new \RuntimeException('unused');
-            }
 
-            public function reconnect(): ConnectionResult
-            {
-                throw new \RuntimeException('unused');
-            }
 
-            public function disconnect(): ConnectionResult
-            {
-                throw new \RuntimeException('unused');
-            }
 
-            public function clearSession(): ConnectionResult
-            {
-                throw new \RuntimeException('unused');
-            }
 
             public function sendTestMessage(string $phone, string $message, string $requestId): SendResult
             {
@@ -404,37 +343,17 @@ class InboxIncomingModuleTest extends TestCase
     {
         $contact = Contact::factory()->create(['phone_normalized' => '5549999999999']);
         $run = ConversationSyncRun::factory()->create(['status' => ConversationSyncStatus::Pending, 'requested_by' => null]);
-        $provider = new class implements WhatsAppProvider
+        $provider = new class implements WhatsAppProvider, ReadsConversationHistory
         {
             public function getStatus(): ConnectionStatus
             {
                 return new ConnectionStatus(WhatsAppConnectionStatus::Connected);
             }
 
-            public function requestQrCode(): QrCodeResult
-            {
-                throw new \RuntimeException('unused');
-            }
 
-            public function connect(): ConnectionResult
-            {
-                throw new \RuntimeException('unused');
-            }
 
-            public function reconnect(): ConnectionResult
-            {
-                throw new \RuntimeException('unused');
-            }
 
-            public function disconnect(): ConnectionResult
-            {
-                throw new \RuntimeException('unused');
-            }
 
-            public function clearSession(): ConnectionResult
-            {
-                throw new \RuntimeException('unused');
-            }
 
             public function sendTestMessage(string $phone, string $message, string $requestId): SendResult
             {
