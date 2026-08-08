@@ -38,6 +38,7 @@ use App\Http\Controllers\Auth\ForcedPasswordController;
 use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\Internal\MetaWebhookController;
 use App\Http\Controllers\Internal\WhatsAppIncomingController;
 use App\Http\Controllers\ManualController;
 use App\Http\Controllers\ProfileController;
@@ -48,6 +49,20 @@ Route::redirect('/', '/dashboard');
 Route::post('/internal/whatsapp/incoming', WhatsAppIncomingController::class)
     ->middleware('throttle:60,1')
     ->name('internal.whatsapp.incoming');
+
+/*
+ | Webhook da API oficial da Meta.
+ |
+ | O limite é bem mais folgado que o do serviço Node porque quem chama é a Meta,
+ | e ela reenvia enquanto não receber 200: estrangular aqui não reduz o tráfego,
+ | multiplica. Uma requisição pode trazer várias mensagens de uma vez.
+ */
+Route::get('/internal/whatsapp/meta', [MetaWebhookController::class, 'verify'])
+    ->name('internal.whatsapp.meta.verify');
+
+Route::post('/internal/whatsapp/meta', [MetaWebhookController::class, 'receive'])
+    ->middleware('throttle:600,1')
+    ->name('internal.whatsapp.meta.receive');
 
 Route::middleware('guest')->group(function (): void {
     Route::get('/login', [AuthenticatedSessionController::class, 'create'])->name('login');

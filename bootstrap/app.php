@@ -19,6 +19,9 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
         $middleware->validateCsrfTokens(except: [
             'internal/whatsapp/incoming',
+            // A Meta não tem como enviar token de sessão: quem prova a origem
+            // ali é a assinatura HMAC do corpo, conferida no controlador.
+            'internal/whatsapp/meta',
         ]);
 
         $middleware->alias([
