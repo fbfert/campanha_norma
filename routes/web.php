@@ -277,7 +277,6 @@ Route::middleware(['auth', 'password.changed'])->group(function (): void {
         Route::post('/message-batches/{message_batch}/prepare', [MessageBatchController::class, 'prepare'])->name('message-batches.prepare');
         Route::post('/message-batches/{message_batch}/duplicate', [MessageBatchController::class, 'duplicate'])->name('message-batches.duplicate');
         Route::post('/message-batches/{message_batch}/cancel', [MessageBatchController::class, 'cancel'])->name('message-batches.cancel');
-        Route::get('/campaigns/create', [MessageBatchController::class, 'createCampaign'])->name('campaigns.create');
         Route::get('/message-batches/{message_batch}/processing', [MessageProcessingController::class, 'show'])->name('message-batches.processing');
         Route::post('/message-batches/{message_batch}/start', [MessageProcessingController::class, 'start'])->name('message-batches.start');
         Route::post('/message-batches/{message_batch}/pause', [MessageProcessingController::class, 'pause'])->name('message-batches.pause');

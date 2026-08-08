@@ -149,13 +149,12 @@ class NavigationMenuTest extends TestCase
             ->assertSee(route('admin.contacts.import'), false);
     }
 
-    public function test_creating_a_batch_and_a_campaign_is_reachable_from_the_batch_list(): void
+    public function test_creating_a_batch_is_reachable_from_the_batch_list(): void
     {
         $this->actingAs($this->userWith('administrador'))
             ->get(route('admin.message-batches.index'))
             ->assertOk()
-            ->assertSee(route('admin.message-batches.create'), false)
-            ->assertSee(route('admin.campaigns.create'), false);
+            ->assertSee(route('admin.message-batches.create'), false);
     }
 
     public function test_no_dead_placeholder_link_remains(): void

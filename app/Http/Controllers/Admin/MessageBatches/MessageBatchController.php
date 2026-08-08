@@ -44,13 +44,6 @@ class MessageBatchController extends Controller
         return view('admin.message-batches.create', $this->formData($catalog));
     }
 
-    public function createCampaign(Request $request, PlaceholderCatalogService $catalog): View
-    {
-        abort_unless($request->user()->can('message_batches.create'), 403);
-
-        return view('admin.message-batches.create', array_merge($this->formData($catalog), ['campaignMode' => true]));
-    }
-
     public function store(MessageBatchRequest $request, BatchCreationService $service): RedirectResponse
     {
         $batch = $service->create($request->validated(), $request->user());
