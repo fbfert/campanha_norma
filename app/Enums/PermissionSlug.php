@@ -23,6 +23,7 @@ enum PermissionSlug: string
     case ContactsViewSensitiveData = 'contacts.view_sensitive_data';
     case WhatsAppConnectionView = 'whatsapp.connection.view';
     case WhatsAppConnectionManage = 'whatsapp.connection.manage';
+    case WhatsAppMetaManage = 'whatsapp.meta.manage';
     case WhatsAppConnectionDisconnect = 'whatsapp.connection.disconnect';
     case WhatsAppConnectionClearSession = 'whatsapp.connection.clear_session';
     case WhatsAppTestMessageSend = 'whatsapp.test_message.send';
@@ -154,6 +155,7 @@ enum PermissionSlug: string
             self::ContactsViewSensitiveData => 'Visualizar dados sensíveis de contatos',
             self::WhatsAppConnectionView => 'Visualizar conexão WhatsApp',
             self::WhatsAppConnectionManage => 'Gerenciar conexão WhatsApp',
+            self::WhatsAppMetaManage => 'Configurar a API oficial da Meta e suas credenciais',
             self::WhatsAppConnectionDisconnect => 'Desconectar WhatsApp',
             self::WhatsAppConnectionClearSession => 'Excluir sessão WhatsApp',
             self::WhatsAppTestMessageSend => 'Enviar mensagem de teste WhatsApp',

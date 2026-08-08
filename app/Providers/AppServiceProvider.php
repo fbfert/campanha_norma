@@ -15,6 +15,7 @@ use App\Models\Conversation;
 use App\Models\User;
 use App\Observers\ConversationObserver;
 use App\Services\Ai\AiProviderSettings;
+use App\Services\WhatsApp\MetaSettings;
 use App\Services\Ai\Providers\OpenAiCompatibleTranscriber;
 use App\Services\Knowledge\GroundingValidator;
 use App\Services\Knowledge\KnowledgeProviderManager;
@@ -164,6 +165,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('knowledge.test_retrieval', fn (User $user): bool => $user->hasPermission('knowledge.test_retrieval'));
         Gate::define('knowledge.manage_settings', fn (User $user): bool => $user->hasPermission('knowledge.manage_settings'));
         Gate::define('ai.provider.manage', fn (User $user): bool => $user->hasPermission('ai.provider.manage'));
+        Gate::define('whatsapp.meta.manage', fn (User $user): bool => $user->hasPermission('whatsapp.meta.manage'));
         Gate::define('analytics.view_aggregates', fn (User $user): bool => $user->hasPermission('analytics.view_aggregates'));
         Gate::define('analytics.view_content', fn (User $user): bool => $user->hasPermission('analytics.view_content'));
         Gate::define('analytics.view_identification', fn (User $user): bool => $user->hasPermission('analytics.view_identification'));
@@ -178,6 +180,14 @@ class AppServiceProvider extends ServiceProvider
         // sistema por causa de uma configuração que ainda não pode existir.
         try {
             app(AiProviderSettings::class)->applyToConfig();
+        } catch (\Throwable) {
+            // Sem banco disponível, vale o que estiver no `.env`.
+        }
+
+        // Mesma ideia para a API oficial da Meta: o que a tela grava vence o
+        // arquivo de ambiente, e o provedor continua lendo só `config()`.
+        try {
+            app(MetaSettings::class)->applyToConfig();
         } catch (\Throwable) {
             // Sem banco disponível, vale o que estiver no `.env`.
         }

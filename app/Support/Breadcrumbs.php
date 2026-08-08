@@ -130,6 +130,7 @@ class Breadcrumbs
         'Inicio / Relatorios / Qualidade das perguntas' => ['dashboard', 'admin.analytics.dashboard', null],
         'Inicio / Relatorios / Governanca' => ['dashboard', null, null],
         'Inicio / Configuracoes / Provedor de IA' => ['dashboard', null, null],
+        'Inicio / Sistema / Meta API' => ['dashboard', null, null],
         'Inicio / Base de conhecimento / Importar' => ['dashboard', 'admin.knowledge.bases.index', null],
         'Inicio / Pesquisa conversacional / Temas / Importar' => ['dashboard', null, 'admin.insight-topics.index', null],
         'Inicio / Manual / Manual de uso' => ['dashboard', null, null],

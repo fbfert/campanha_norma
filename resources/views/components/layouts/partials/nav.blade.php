@@ -135,6 +135,9 @@
             @can('whatsapp.connection.view')
                 <a href="{{ route('admin.whatsapp.connection') }}" @class(['active' => request()->routeIs('admin.whatsapp.connection')])><x-icon name="phone" /><span>Conexão WhatsApp</span></a>
             @endcan
+            @can('whatsapp.meta.manage')
+                <a href="{{ route('admin.whatsapp.meta-settings') }}" @class(['active' => request()->routeIs('admin.whatsapp.meta-settings*')])><x-icon name="plug" /><span>Meta API</span></a>
+            @endcan
             @can('whatsapp.events.view')
                 <a href="{{ route('admin.whatsapp.events') }}" @class(['active' => request()->routeIs('admin.whatsapp.events')])><x-icon name="bell" /><span>Eventos WhatsApp</span></a>
             @endcan

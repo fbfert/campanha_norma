@@ -31,6 +31,7 @@ use App\Http\Controllers\Admin\Reports\ReportExportController;
 use App\Http\Controllers\Admin\ResponseGeneration\ReplySuggestionController;
 use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\WhatsApp\MetaSettingsController;
 use App\Http\Controllers\Admin\WhatsApp\WhatsAppConnectionController;
 use App\Http\Controllers\Admin\WhatsApp\WhatsAppEventController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
@@ -252,6 +253,8 @@ Route::middleware(['auth', 'password.changed'])->group(function (): void {
         Route::post('/maintenance/cleanup', [MaintenanceController::class, 'cleanup'])->name('maintenance.cleanup');
         Route::post('/maintenance/apply-retention', [MaintenanceController::class, 'applyRetention'])->name('maintenance.apply-retention');
 
+        Route::get('/whatsapp/meta', [MetaSettingsController::class, 'edit'])->name('whatsapp.meta-settings');
+        Route::put('/whatsapp/meta', [MetaSettingsController::class, 'update'])->name('whatsapp.meta-settings.update');
         Route::get('/whatsapp/connection', [WhatsAppConnectionController::class, 'show'])->name('whatsapp.connection');
         Route::post('/whatsapp/connection/connect', [WhatsAppConnectionController::class, 'connect'])->name('whatsapp.connect');
         Route::post('/whatsapp/connection/qrcode', [WhatsAppConnectionController::class, 'qrCode'])->name('whatsapp.qrcode');

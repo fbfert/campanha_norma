@@ -111,7 +111,35 @@ selecionada pela antiga.
 
 ## Configuração
 
-Em `config/whatsapp.php`, bloco `meta`:
+**Tela: Sistema → Meta API** (`/admin/whatsapp/meta`, permissão
+`whatsapp.meta.manage`, hoje só do administrador).
+
+O que a tela grava vence o arquivo de ambiente e passa a valer no próximo envio,
+sem reiniciar o serviço. Campo em branco **não** apaga o do `.env`, apenas não o
+sobrescreve — quem preferir manter tudo no arquivo não precisa fazer nada.
+
+O caminho é o mesmo do provedor de IA: `MetaSettings::applyToConfig()` roda uma
+vez no boot e sobrescreve `config()`. O provedor, o webhook e o envio por
+template continuam lendo só `config()`, sem saber que existe banco. Manter um
+único caminho de leitura é o que evita o envio enxergar uma credencial e a
+conferência de assinatura enxergar outra.
+
+**Token de acesso e segredo do app entram cifrados** com a `APP_KEY` e não voltam
+para a tela nem para a auditoria; o que aparece depois de salvar são os quatro
+últimos caracteres. Campo em branco preserva o que já está guardado — obrigar a
+redigitar o token a cada ajuste de template levaria alguém a deixá-lo anotado em
+lugar mais fácil de ler que este banco. Para remover, há uma caixa "apagar".
+
+O **token de verificação é exceção deliberada e fica visível**: ele é inventado
+por nós e precisa ser digitado igual no painel da Meta.
+
+A tela lista o que ainda falta para a integração funcionar. Uma tela só de
+campos deixa a pessoa adivinhar se terminou, e a lista usa a mesma condição que
+o envio e o webhook conferem em tempo de execução.
+
+Teste: `ConfiguracaoDaMetaTest`.
+
+Em `config/whatsapp.php`, bloco `meta` — os padrões, quando a tela está vazia:
 
 | Variável | Para que serve |
 | --- | --- |
@@ -132,8 +160,9 @@ URL do webhook: `/internal/whatsapp/meta` — `GET` verifica, `POST` recebe.
 
 - **Credenciais e template aprovado.** Nada sai enquanto o número não estiver na
   conta e o template `Convite - Pergunta Única` não for submetido e aprovado. O
-  nome que a Meta aprovar precisa ir para `META_INVITE_TEMPLATE` ou para
-  `meta_template_name` dos lotes 14 e 15 — hoje está vazio nos dois.
+  nome que a Meta aprovar precisa ir para o campo "Nome do template aprovado" na
+  tela Meta API, ou para `meta_template_name` dos lotes 14 e 15 — hoje está
+  vazio nos dois. A tela mostra o que falta.
 - **Política de conteúdo eleitoral da Meta.** Precisa ser confirmada antes de
   submeter; ela pode recusar a campanha inteira, não só o texto.
 - **Confirmações de entrega não são aplicadas.** Chegam e vão para o log como
