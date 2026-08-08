@@ -23,6 +23,7 @@ class MessageBatch extends Model
         'message_template_id',
         'message_template_version',
         'message_body_snapshot',
+        'meta_template_name',
         'campaign_templates_snapshot',
         'placeholders_snapshot',
         'selection_type',

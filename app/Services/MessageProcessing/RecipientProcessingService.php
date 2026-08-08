@@ -31,6 +31,7 @@ class RecipientProcessingService
         private readonly MessageProcessingEventService $events,
         private readonly WhatsAppProviderManager $providers,
         private readonly ReciprocityGuard $reciprocity,
+        private readonly TemplateDispatch $templates,
     ) {}
 
     public function process(MessageBatchRecipient $recipient, int $processingVersion): void
@@ -134,7 +135,15 @@ class RecipientProcessingService
                 ]);
 
                 $this->rateLimiter->consume($settings);
-                $result = $provider->sendMessage((string) ($recipient->contact?->phone_normalized ?: preg_replace('/\D+/', '', $recipient->contact_phone_snapshot)), $recipient->rendered_message, $recipient->request_id);
+
+                // Quem decide entre texto livre e template é o provedor, não
+                // este método: no WhatsApp Web toda mensagem é livre, e na API
+                // oficial a abordagem de campanha exige template aprovado.
+                $result = $this->templates->send(
+                    $provider,
+                    $recipient,
+                    (string) ($recipient->contact?->phone_normalized ?: preg_replace('/\D+/', '', $recipient->contact_phone_snapshot)),
+                );
 
                 $attempt->forceFill([
                     'status' => $result->status === 'sent' ? MessageSendAttemptStatus::Sent : MessageSendAttemptStatus::Failed,
