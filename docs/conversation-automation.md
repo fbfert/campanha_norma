@@ -274,6 +274,44 @@ POST /admin/conversation-automation/{state}/take-over
 - **Pausável**: global, por fluxo e por conversa.
 - **Auditável**: `conversation_flow_transitions`, `conversation_events` e `audit_logs`.
 
+## Rede de segurança: por que ela tem teto
+
+`PendingReplyResolver` garante que quem escreve recebe resposta. Para isso, dois
+guardas ignoram saída que falhou de propósito: falha não é resposta, e um aviso
+que não saiu não pode segurar a próxima tentativa. Cada um está certo isolado.
+
+Juntos, sem teto, repetem sem fim. Em 07/08/2026 a sessão do WhatsApp caiu às
+19:42 e voltou 64 horas depois. A cada cinco minutos a rede tentou mandar o mesmo
+agradecimento para duas conversas e gravou **767 falhas em cada uma**: as
+conversas 355 e 1414 chegaram a 771 e 781 mensagens, sendo 13 e 14 reais. Metade
+da tabela de mensagens do sistema — 1535 de 3027 linhas — virou repetição de duas
+frases que nunca saíram.
+
+O teto é duplo:
+
+1. **Sem sessão conectada não se tenta.** O envio falharia com certeza e a pessoa
+   está inalcançável de qualquer jeito. Não consome tentativa: voltando a
+   conexão, a execução seguinte tenta de novo. Só barra quando se **sabe** que a
+   sessão caiu — sem registro de conexão não dá para afirmar nada, e presumir
+   queda silenciaria a rede numa instalação nova. Só o provedor que pareia por
+   sessão passa por essa condição; a API oficial não tem esse estado.
+2. **`conversation_automation.unanswered_max_attempts`** (padrão 5) limita as
+   tentativas para a mesma mensagem, para o caso de a falha persistir por outro
+   motivo. Se a pessoa escrever de novo, a mensagem nova é outro gatilho, com
+   contagem própria.
+
+Teste: `RedeDeSegurancaNaoRepeteSemConexaoTest`.
+
+Para recolher repetição já gravada:
+
+```bash
+php artisan conversations:prune-failed-replies              # simula
+php artisan conversations:prune-failed-replies --aplicar
+```
+
+Guarda a primeira e a última tentativa de cada bloco: elas registram que
+tentamos, quando começou e quando parou, o que as cópias do meio não acrescentam.
+
 ## Transparência e LGPD
 
 - Aviso de automação configurável por fluxo (`transparency_enabled` e `transparency_text`).
