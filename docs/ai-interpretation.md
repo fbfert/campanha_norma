@@ -250,6 +250,7 @@ ai_insights.view_monitoring
 
 ```text
 /admin/ai-insights
+/admin/ai-insights?conversation_id={id}
 /admin/ai-insights/{insight}
 PUT  /admin/ai-insights/{insight}
 POST /admin/ai-insights/{insight}/approve
@@ -257,6 +258,22 @@ POST /admin/ai-insights/{insight}/reprocess
 /admin/ai-monitoring
 /admin/insight-topics
 ```
+
+### Lista por conversa
+
+O painel de IA da conversa tem dois botões, e eles fazem coisas diferentes:
+**Abrir insight** leva ao mais recente, **Lista de insights** mostra todos os
+daquela conversa (`?conversation_id=`). A conversa 1395 tem cinco, e os quatro
+anteriores só apareciam garimpando na listagem geral.
+
+Sem o filtro o segundo botão cairia na lista de todo mundo — que já está no menu
+— e quem clicou de dentro de uma conversa veria insight de outras pessoas.
+
+A lista filtrada **diz que está filtrada**, com link para voltar à conversa e
+para ver todos. Sem esse aviso ela é indistinguível da lista inteira, e quem
+chega por ali conclui que o sistema tem só aqueles insights.
+
+Testes em `AiInterpretationModuleTest`.
 
 ## Monitoramento
 

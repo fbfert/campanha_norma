@@ -312,6 +312,44 @@ php artisan conversations:prune-failed-replies --aplicar
 Guarda a primeira e a última tentativa de cada bloco: elas registram que
 tentamos, quando começou e quando parou, o que as cópias do meio não acrescentam.
 
+## Mídia ilegível: a regra vale nos dois caminhos de entrada
+
+Áudio, figurinha, imagem, vídeo e documento chegam sem texto. O motor de fluxo só
+avalia `text` e a transcrição só trata áudio: os demais não caíam em lugar nenhum
+e produziam silêncio absoluto. `UnreadableMediaResponder` responde dizendo que
+chegou e que o caminho é escrever — não lê a mídia, só não a deixa no vácuo. O
+pedido sai **uma vez por conversa**.
+
+Duas correções que essa regra exigiu, e as duas nasceram do mesmo caso real:
+
+**Existem dois caminhos de entrada.** A regra nasceu só no webhook. O João Pedro
+mandou um áudio em 07/08 às 19:55, a sessão do WhatsApp caiu três minutos depois
+e ficou 64 horas fora, a sincronização trouxe o áudio em 10/08 às 12:30 e a rede
+de segurança respondeu "já te respondo" às 12:35 — ele nunca soube que não
+conseguimos ouvi-lo. A decisão passou a morar em
+`UnreadableMediaResponder::handles()`, que o webhook e a sincronização consultam.
+É o mesmo formato do eco de saída duplicado, que também precisou existir nos dois
+caminhos.
+
+No caminho da sincronização vale só para a mídia que ficou **por último** na
+conversa e é recente (`conversation_automation.media_reply_max_age_hours`, padrão
+72). A sincronização varre trinta dias de histórico, e pedir texto sobre uma
+figurinha de três semanas atrás, já respondida desde então, seria falar do
+passado.
+
+**O aviso sai pelo piso, não pelo caminho estrito.** Dizer "recebi, mas não
+consigo ler" não é passo de pesquisa: é o mínimo devido a quem mandou alguma
+coisa. Amarrá-lo às condições do fluxo o fazia morrer justamente quando mais
+importa — o fluxo do João Pedro expirou sozinho em 09/08, **enquanto a sessão
+estava fora do ar**, e quando enfim houve conexão o aviso foi recusado com
+`fluxo_expirado`. A pessoa perdia a resposta por causa de uma queda nossa.
+
+O piso continua respeitando o que protege a pessoa — não contatar, contato
+inativo, janela de horário — e larga só as condições de estágio do fluxo. Mesmo
+desenho já usado pelo agradecimento da rede de segurança (`canSendSafetyNet`).
+
+Teste: `FigurinhaEImagemNaoFicamNoVacuoTest`.
+
 ## Transparência e LGPD
 
 - Aviso de automação configurável por fluxo (`transparency_enabled` e `transparency_text`).

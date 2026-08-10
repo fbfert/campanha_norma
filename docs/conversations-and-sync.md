@@ -88,11 +88,47 @@ Limites absolutos:
 
 `ConversationSyncService::syncChat()` verifica, antes de criar uma conversa, se já existe um registro removido (soft delete) com o mesmo `provider` + `external_chat_id`. Se existir, a sincronização pula aquele chat em vez de recriar a conversa — evita colidir com a restrição única da tabela e evita reviver conversas removidas intencionalmente (por exemplo, conversas vazias sem contato, sem mensagem e sem telefone identificável, originadas por falha de resolução de `@lid`).
 
+## Falha anterior à reconexão
+
+A tela de conversas mostra sempre a **última** execução. Quando a sessão do
+WhatsApp cai, a sincronização falha a cada 15 minutos até alguém reconectar, e a
+execução seguinte volta a funcionar sozinha. No intervalo entre a reconexão e a
+próxima execução, a tela seguia exibindo a última falha em vermelho — "conecte o
+WhatsApp antes de sincronizar" — enquanto a tela de conexão dizia "Conectado".
+
+As duas estavam certas, e era por isso que confundia: quem lia concluía que o
+sistema estava quebrado naquele momento, quando o problema já tinha passado.
+Aconteceu em 10/08/2026 — sete falhas entre 10:45 e 12:15, reconexão às 12:21, e
+a tela ainda mostrando o erro das 12:15.
+
+`SyncFailureNotice` faz a conta: se a conexão subiu **depois** de a execução
+terminar, a falha é anterior à reconexão e não descreve o estado de hoje. A tela
+troca o alarme vermelho por uma explicação, com o horário da reconexão.
+
+Vale só para erro de conexão (`WHATSAPP_NOT_CONNECTED`,
+`WHATSAPP_SESSION_UNAVAILABLE`). Falha de outra natureza não é resolvida por
+reconectar, e apresentá-la como superada esconderia um problema real.
+
+### O horário da conexão vinha em UTC
+
+A comparação acima depende de as duas datas estarem na mesma escala, e não
+estavam. O serviço Node manda o instante com `Z` no fim; `CarbonImmutable::parse`
+respeita esse fuso e devolve um objeto em UTC; o Eloquent grava a hora **no fuso
+que o objeto carrega**, e a leitura de volta interpreta a coluna como hora local.
+A conexão das 12:21 ficava gravada como 15:21 — três horas no futuro.
+
+A conversão fica em `ConnectionStatus::date()`, na fronteira, para valer também
+para quem consumir `connected_at` e `last_activity_at` depois. É o mesmo defeito
+já corrigido nos horários de mensagem.
+
+Teste: `FalhaDeSincronizacaoAnteriorAReconexaoTest`.
+
 ## Limitações
 
 - O histórico recuperado pode ser parcial.
 - Grupos, status, canais, comunidades e listas são ignorados.
-- Midias não são baixadas.
+- Midias não são baixadas, mas mídia ilegível recebida pela sincronização recebe
+  pedido de resposta por escrito — ver `docs/conversation-automation.md`.
 - Não ha chatbot, IA, resposta automática ou API oficial da Meta.
 
 ## Teste manual
