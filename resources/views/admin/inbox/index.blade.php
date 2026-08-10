@@ -5,7 +5,19 @@
                 <h2 style="margin-top:0;">Conversas</h2>
                 @if($latestSync)
                     <p class="muted">Última sincronização: {{ $latestSync->status->label() }} @if($latestSync->finished_at)em {{ $latestSync->finished_at->format($dateTimeFormat) }}@endif | chats {{ $latestSync->chats_processed }} | mensagens importadas {{ $latestSync->messages_imported }} | modo {{ data_get($latestSync->options, 'sync_mode') === 'compatibility' ? 'compatibilidade' : 'padrao' }}</p>
-                    @if($latestSync->error_code)<p class="alert error">{{ $latestSync->error_code }} - {{ $latestSync->error_message }}</p>@endif
+                    @if($latestSync->error_code)
+                        @if($syncFailureNotice && $syncFailureNotice['superada'])
+                            {{-- A falha é anterior à reconexão: informa, sem alarmar. --}}
+                            <p class="alert warning">
+                                Esta falha é anterior à reconexão do WhatsApp, feita em
+                                {{ $syncFailureNotice['reconectado_em']->format($dateTimeFormat) }}, e não descreve o
+                                estado atual. A sincronização automática roda a cada 15 minutos e a próxima execução
+                                deve substituir esta linha. Para não esperar, use "Atualizar conversas".
+                            </p>
+                        @else
+                            <p class="alert error">{{ $latestSync->error_code }} - {{ $latestSync->error_message }}</p>
+                        @endif
+                    @endif
                 @else
                     <p class="muted">Nenhuma sincronização executada.</p>
                 @endif

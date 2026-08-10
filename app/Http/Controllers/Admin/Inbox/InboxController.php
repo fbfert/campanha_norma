@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin\Inbox;
 
+use App\Services\Conversations\SyncFailureNotice;
 use App\Enums\ContactStatus;
 use App\Enums\ConversationPriority;
 use App\Enums\ConversationStatus;
@@ -79,7 +80,11 @@ class InboxController extends Controller
             'statuses' => ConversationStatus::cases(),
             'priorities' => ConversationPriority::cases(),
             'tags' => ConversationTag::where('is_active', true)->orderBy('name')->get(),
-            'latestSync' => ConversationSyncRun::latest()->first(),
+            'latestSync' => $latestSync = ConversationSyncRun::latest()->first(),
+            // Falha de conexão anterior à reconexão não descreve o estado de
+            // hoje, e mostrá-la em vermelho faz quem lê concluir que o sistema
+            // está quebrado agora.
+            'syncFailureNotice' => app(SyncFailureNotice::class)->for($latestSync),
             'syncActive' => ConversationSyncRun::whereIn('status', [ConversationSyncStatus::Pending->value, ConversationSyncStatus::Running->value])->exists(),
         ]);
     }

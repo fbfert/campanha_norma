@@ -36,8 +36,23 @@ readonly class ConnectionStatus
         );
     }
 
+    /**
+     * Converte para o fuso local antes de entregar ao resto do sistema.
+     *
+     * O serviço Node manda o instante em UTC, com `Z` no fim. `parse` respeita
+     * esse fuso e devolve um Carbon em UTC; o Eloquent grava a hora **no fuso
+     * que o objeto carrega**, e a leitura de volta interpreta a coluna como
+     * hora local. Sem esta conversão, uma conexão das 12:21 fica gravada como
+     * 15:21 e a tela mostra um horário três horas no futuro.
+     *
+     * É o mesmo defeito que já corrigimos nos horários de mensagem, e a correção
+     * fica aqui, na fronteira, para valer também para quem consumir estes
+     * campos depois.
+     */
     private static function date(?string $value): ?CarbonImmutable
     {
-        return $value ? CarbonImmutable::parse($value) : null;
+        return $value
+            ? CarbonImmutable::parse($value)->setTimezone(config('app.timezone'))
+            : null;
     }
 }
