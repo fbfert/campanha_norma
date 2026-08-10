@@ -2,8 +2,12 @@
 
 namespace App\Services\ConversationAutomation;
 
+use App\Contracts\PairsBySession;
+use App\Enums\ConversationMessageDirection;
 use App\Enums\ConversationMessageOrigin;
+use App\Enums\ConversationMessageStatus;
 use App\Enums\ReplySuggestionStatus;
+use App\Enums\WhatsAppConnectionStatus;
 use App\Jobs\GenerateConversationReplyJob;
 use App\Jobs\SendAutomatedConversationReplyJob;
 use App\Models\Conversation;
@@ -11,10 +15,12 @@ use App\Models\ConversationEvent;
 use App\Models\ConversationFlowState;
 use App\Models\ConversationMessage;
 use App\Models\ConversationReplySuggestion;
+use App\Models\WhatsAppConnection;
 use App\Services\Conversations\ConversationEventService;
 use App\Services\Conversations\ConversationReplyService;
 use App\Services\ResponseGeneration\ConversationSuggestionService;
 use App\Services\SystemSettingService;
+use App\Services\WhatsApp\WhatsAppProviderManager;
 
 /**
  * Garante retorno a uma mensagem que ficou sem resposta.
@@ -52,6 +58,28 @@ class PendingReplyResolver
     {
         if ($this->alreadyHandled($conversa, $mensagem)) {
             return ['outcome' => 'ja_tratada', 'reason' => null];
+        }
+
+        /*
+         | Sem sessão conectada não se tenta: o envio falharia com certeza, e
+         | cada tentativa deixa uma linha na conversa.
+         |
+         | Duas conversas chegaram a 771 mensagens assim. A sessão caiu numa
+         | sexta à noite e voltou 64 horas depois; a rede de segurança tentou
+         | mandar o mesmo agradecimento a cada cinco minutos e gravou 767
+         | falhas em cada uma. Metade da tabela de mensagens virou repetição
+         | de duas frases que nunca saíram.
+         |
+         | Não é tentativa perdida: enquanto não há sessão, a pessoa está
+         | inalcançável de qualquer jeito. Voltando a conexão, a execução
+         | seguinte tenta de novo.
+         */
+        if (! $this->providerCanSend()) {
+            return ['outcome' => 'sem_conexao', 'reason' => null];
+        }
+
+        if ($this->attemptsExhausted($conversa, $mensagem)) {
+            return ['outcome' => 'tentativas_esgotadas', 'reason' => null];
         }
 
         $sugestao = $this->usableSuggestion($conversa, $mensagem, $simular);
@@ -250,6 +278,59 @@ class PendingReplyResolver
      * por uma pessoa ou aviso desta mesma rede. O que importa é a pessoa ter
      * recebido algo depois de falar, não quem escreveu.
      */
+    /**
+     * O provedor tem como enviar agora.
+     *
+     * Só o WhatsApp Web perde a sessão desse jeito. Provedor que não pareia —
+     * a API oficial — não tem esse estado, e ali a checagem só atrasaria o
+     * envio, por isso o contrato decide em vez de uma condição fixa.
+     */
+    private function providerCanSend(): bool
+    {
+        if (! app(WhatsAppProviderManager::class)->provider() instanceof PairsBySession) {
+            return true;
+        }
+
+        $conexao = WhatsAppConnection::query()->latest('id')->first();
+
+        /*
+         | Só barra quando se sabe que a sessão caiu.
+         |
+         | Sem registro nenhum não dá para afirmar nada, e presumir queda
+         | silenciaria a rede de segurança numa instalação nova ou antes da
+         | primeira leitura de estado — exatamente o buraco que ela existe para
+         | fechar. Na dúvida, tenta; o teto de tentativas cobre o resto.
+         */
+        return $conexao === null || $conexao->status === WhatsAppConnectionStatus::Connected;
+    }
+
+    /**
+     * Teto de tentativas para a mesma mensagem.
+     *
+     * A conexão cobre a causa conhecida, e esta é a rede embaixo dela: falha
+     * que persiste por outro motivo — número que o WhatsApp recusa, por exemplo
+     * — pararia de tentar só quando alguém percebesse.
+     *
+     * Contamos as saídas que falharam depois da mensagem que disparou a
+     * resposta. Zerar isso não é preciso: se a pessoa escrever de novo, a
+     * mensagem nova é outro gatilho, com contagem própria.
+     */
+    private function attemptsExhausted(Conversation $conversa, ConversationMessage $mensagem): bool
+    {
+        $teto = (int) $this->settings->get('conversation_automation.unanswered_max_attempts', 5);
+
+        if ($teto <= 0) {
+            return false;
+        }
+
+        return ConversationMessage::query()
+            ->where('conversation_id', $conversa->id)
+            ->where('direction', ConversationMessageDirection::Outgoing)
+            ->where('id', '>', $mensagem->id)
+            ->where('status', ConversationMessageStatus::Failed)
+            ->count() >= $teto;
+    }
+
     private function alreadyHandled(Conversation $conversa, ConversationMessage $mensagem): bool
     {
         return ConversationMessage::query()
