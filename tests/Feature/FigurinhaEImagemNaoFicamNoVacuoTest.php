@@ -108,6 +108,28 @@ class FigurinhaEImagemNaoFicamNoVacuoTest extends TestCase
         $this->assertFalse(app(UnreadableMediaResponder::class)->handles($mensagem->fresh()));
     }
 
+    /**
+     * Fluxo expirado ainda recebe o aviso.
+     *
+     * O aviso é piso, não passo de pesquisa. Amarrá-lo às condições do fluxo o
+     * faz morrer justamente quando mais importa: o áudio do João Pedro chegou
+     * no dia 07, a sessão do WhatsApp caiu três minutos depois e ficou 64 horas
+     * fora, e o fluxo dele expirou sozinho no dia 09. Quando enfim houve
+     * conexão, o aviso foi recusado com `fluxo_expirado` — a pessoa perdeu a
+     * resposta por causa de uma queda nossa.
+     */
+    public function test_fluxo_expirado_ainda_recebe_o_aviso(): void
+    {
+        [$conversa, $mensagem] = $this->cenario('sticker');
+
+        ConversationFlowState::query()
+            ->where('conversation_id', $conversa->id)
+            ->update(['expires_at' => now()->subDay()]);
+
+        $this->assertTrue(app(UnreadableMediaResponder::class)
+            ->askForText($mensagem, 'conversation_automation.media_reply_text'));
+    }
+
     /** @return array<int, array<int, string>> */
     public static function midias(): array
     {

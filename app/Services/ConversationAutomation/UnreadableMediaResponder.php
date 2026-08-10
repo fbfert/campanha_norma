@@ -77,7 +77,23 @@ class UnreadableMediaResponder
             return false;
         }
 
-        $enviada = $this->replies->queue($state, $texto, 'unreadable_media_reply_queued');
+        /*
+         | Vai pelo piso, e não pelo caminho estrito da automação.
+         |
+         | Dizer "recebi, mas não consigo ler" não é passo de pesquisa: é o
+         | mínimo devido a quem mandou alguma coisa. Amarrá-lo às condições do
+         | fluxo faz o aviso morrer justamente quando ele mais importa — o áudio
+         | do João Pedro chegou no dia 07, a sessão do WhatsApp caiu três
+         | minutos depois e ficou 64 horas fora, e o fluxo dele expirou sozinho
+         | no dia 09. Quando enfim houve conexão, o aviso foi recusado com
+         | `fluxo_expirado`: a pessoa perdeu a resposta por causa de uma queda
+         | nossa.
+         |
+         | O piso continua respeitando o que protege a pessoa — não contatar,
+         | contato inativo, janela de horário —, e larga só as condições de
+         | estágio do fluxo.
+         */
+        $enviada = $this->replies->queue($state, $texto, 'unreadable_media_reply_queued', safetyNet: true);
 
         if (! $enviada) {
             return false;
