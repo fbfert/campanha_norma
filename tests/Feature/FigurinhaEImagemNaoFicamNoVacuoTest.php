@@ -73,6 +73,41 @@ class FigurinhaEImagemNaoFicamNoVacuoTest extends TestCase
         ]);
     }
 
+    /**
+     * A regra vale nos dois caminhos de entrada.
+     *
+     * Ela nasceu só no webhook, e por isso um áudio que entrou pela
+     * sincronização passou direto: o João Pedro mandou um áudio no dia 07, a
+     * sessão do WhatsApp estava fora do ar, a sincronização o trouxe no dia 10
+     * e ele recebeu "já te respondo" — sem nunca saber que não conseguimos
+     * ouvi-lo. Mesmo formato do eco de saída duplicado, que também precisou
+     * existir nos dois caminhos.
+     */
+    #[\PHPUnit\Framework\Attributes\DataProvider('midias')]
+    public function test_a_regra_reconhece_a_midia_venha_de_onde_vier(string $tipo): void
+    {
+        [, $mensagem] = $this->cenario($tipo);
+
+        $this->assertTrue(app(UnreadableMediaResponder::class)->handles($mensagem));
+    }
+
+    /** Áudio tem caminho próprio, com transcrição, e não passa por aqui. */
+    public function test_audio_fica_de_fora_porque_tem_caminho_proprio(): void
+    {
+        [, $mensagem] = $this->cenario('ptt');
+
+        $this->assertFalse(app(UnreadableMediaResponder::class)->handles($mensagem));
+    }
+
+    /** Saída nossa nunca dispara pedido de texto. */
+    public function test_saida_nao_dispara_pedido(): void
+    {
+        [, $mensagem] = $this->cenario('sticker');
+        $mensagem->forceFill(['direction' => 'outgoing'])->save();
+
+        $this->assertFalse(app(UnreadableMediaResponder::class)->handles($mensagem->fresh()));
+    }
+
     /** @return array<int, array<int, string>> */
     public static function midias(): array
     {

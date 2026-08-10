@@ -2,6 +2,7 @@
 
 namespace App\Services\ConversationAutomation;
 
+use App\Enums\ConversationMessageDirection;
 use App\Models\ConversationEvent;
 use App\Models\ConversationFlowState;
 use App\Models\ConversationMessage;
@@ -34,6 +35,27 @@ class UnreadableMediaResponder
         private readonly ConversationAutomatedReplyService $replies,
         private readonly ConversationEventService $events,
     ) {}
+
+    /**
+     * Mídia que chegou e que o sistema não tem como ler.
+     *
+     * A regra mora aqui, e não em quem recebe, porque há **dois** caminhos de
+     * entrada: o webhook e a sincronização do histórico. Ela nasceu só no
+     * webhook, e por isso um áudio que entrou pela sincronização passou direto —
+     * o João Pedro mandou um áudio no dia 07 e recebeu "já te respondo" no dia
+     * 10, sem nunca saber que não conseguimos ouvi-lo. É o mesmo formato de
+     * defeito do eco de saída duplicado, que também precisou existir nos dois
+     * caminhos.
+     *
+     * Áudio fica de fora: tem caminho próprio, com transcrição, e só cai aqui se
+     * ela falhar.
+     */
+    public function handles(ConversationMessage $mensagem): bool
+    {
+        return $mensagem->direction === ConversationMessageDirection::Incoming
+            && $mensagem->has_media
+            && ! in_array($mensagem->message_type, ['ptt', 'audio', 'text'], true);
+    }
 
     /**
      * @param  string  $settingKey  Configuração com o texto desta mídia. Áudio e

@@ -14,10 +14,12 @@ use App\Models\Conversation;
 use App\Models\ConversationMessage;
 use App\Models\ConversationSyncRun;
 use App\Services\AuditLogger;
+use App\Services\ConversationAutomation\UnreadableMediaResponder;
 use App\Services\IncomingMessages\ContactMatcherService;
 use App\Services\SystemSettingService;
 use App\Services\WhatsApp\WhatsAppProviderManager;
 use Carbon\Carbon;
+use Carbon\CarbonInterface;
 use Illuminate\Support\Facades\DB;
 
 class ConversationSyncService
@@ -136,6 +138,31 @@ class ConversationSyncService
         }
 
         return $provider;
+    }
+
+    /**
+     * Esta mídia é a última palavra da conversa e ainda espera retorno.
+     *
+     * Duas condições, e as duas importam: nada saiu depois dela — senão já foi
+     * tratada — e ela é recente. Um histórico antigo importado pela primeira vez
+     * não deve disparar conversa nenhuma.
+     */
+    private function replyToUnreadableMedia(ConversationMessage $mensagem, CarbonInterface $ocorridaEm): bool
+    {
+        if (! app(UnreadableMediaResponder::class)->handles($mensagem)) {
+            return false;
+        }
+
+        $horas = (int) $this->settings->get('conversation_automation.media_reply_max_age_hours', 72);
+
+        if ($horas > 0 && $ocorridaEm->lessThan(now()->subHours($horas))) {
+            return false;
+        }
+
+        return ! ConversationMessage::query()
+            ->where('conversation_id', $mensagem->conversation_id)
+            ->where('id', '>', $mensagem->id)
+            ->exists();
     }
 
     public function sanitizeOptions(array $options): array
@@ -342,6 +369,25 @@ class ConversationSyncService
 
             $this->events->record($conversation, $direction === ConversationMessageDirection::Incoming ? 'incoming_message_synced' : 'outgoing_message_synced', 'Mensagem sincronizada pelo WhatsApp Web.', $record);
             $run->increment('messages_imported');
+
+            /*
+             | Mídia ilegível também precisa de retorno quando entra por aqui.
+             |
+             | A regra nascera só no webhook, e um áudio que chegou pela
+             | sincronização passou direto: o João Pedro mandou um áudio no dia
+             | 07, a sessão estava fora do ar, a sincronização o trouxe no dia
+             | 10 e ele recebeu "já te respondo" — sem nunca saber que não
+             | conseguimos ouvi-lo.
+             |
+             | Só para a mídia que ficou por último na conversa. A
+             | sincronização varre trinta dias de histórico, e pedir texto sobre
+             | uma figurinha de três semanas atrás, já respondida desde então,
+             | seria falar do passado.
+             */
+            if ($this->replyToUnreadableMedia($record, $occurredAt)) {
+                DB::afterCommit(fn () => app(UnreadableMediaResponder::class)
+                    ->askForText($record, 'conversation_automation.media_reply_text'));
+            }
         });
     }
 

@@ -189,7 +189,7 @@ class ProcessIncomingMessageJob implements ShouldQueue
                 // Áudio não tem texto para o motor avaliar. A transcrição corre
                 // primeiro e, dando certo, ela mesma devolve a mensagem ao fluxo.
                 DB::afterCommit(fn () => TranscribeIncomingAudioJob::dispatch($message->id));
-            } elseif ($this->isUnreadableMedia($direction, $message)) {
+            } elseif (app(UnreadableMediaResponder::class)->handles($message)) {
                 /*
                  | Figurinha, imagem, vídeo e documento não caíam em lugar
                  | nenhum: o motor só avalia `text` e a transcrição só trata
@@ -227,19 +227,6 @@ class ProcessIncomingMessageJob implements ShouldQueue
         return $direction === ConversationMessageDirection::Incoming
             && in_array($message->message_type, ['ptt', 'audio'], true)
             && $message->has_media;
-    }
-
-    /**
-     * Mídia que chega sem texto e que o sistema não lê.
-     *
-     * Áudio fica de fora porque tem caminho próprio, com transcrição. Os
-     * avisos de protocolo já foram descartados antes de chegar aqui.
-     */
-    private function isUnreadableMedia(ConversationMessageDirection $direction, ConversationMessage $message): bool
-    {
-        return $direction === ConversationMessageDirection::Incoming
-            && $message->has_media
-            && ! in_array($message->message_type, ['ptt', 'audio', 'text'], true);
     }
 
     private function findInitialRecipient(?int $contactId, ?string $phone): ?MessageBatchRecipient
