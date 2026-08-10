@@ -9,6 +9,7 @@ use App\Enums\MessageClassification;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Ai\ConversationInsightCorrectionRequest;
 use App\Jobs\InterpretConversationMessageJob;
+use App\Models\Conversation;
 use App\Models\ConversationInsight;
 use App\Models\ConversationMessageClassification;
 use App\Models\InsightTopic;
@@ -31,6 +32,14 @@ class ConversationInsightController extends Controller
             ->when($request->filled('urgency'), fn ($query) => $query->where('urgency', $request->string('urgency')))
             ->when($request->filled('sentiment'), fn ($query) => $query->where('sentiment', $request->string('sentiment')))
             ->when($request->filled('reason'), fn ($query) => $query->where('review_reason', $request->string('reason')))
+            /*
+             | Filtro por conversa, para o botão que sai da própria conversa.
+             |
+             | Sem ele o botão cairia na lista inteira, e quem clica dentro de
+             | uma conversa quer os insights **dela** — a lista geral já está no
+             | menu.
+             */
+            ->when($request->filled('conversation_id'), fn ($query) => $query->where('conversation_id', $request->integer('conversation_id')))
             ->latest('id')
             ->paginate(20)
             ->withQueryString();
@@ -42,6 +51,11 @@ class ConversationInsightController extends Controller
             'sentiments' => InsightSentiment::cases(),
             'reasons' => InsightReviewReason::cases(),
             'canSeeContactData' => $request->user()->can('ai_insights.view_contact_data'),
+            // Para a tela dizer que está filtrada, em vez de parecer que o
+            // sistema tem só estes insights.
+            'conversation' => $request->filled('conversation_id')
+                ? Conversation::with('contact')->find($request->integer('conversation_id'))
+                : null,
         ]);
     }
 

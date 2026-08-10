@@ -719,6 +719,45 @@ class AiInterpretationModuleTest extends TestCase
         ]);
     }
 
+    // --- Lista por conversa ---------------------------------------------------
+
+    /**
+     * A conversa tem dois botões, e eles fazem coisas diferentes.
+     *
+     * "Abrir insight" leva ao mais recente; "Lista de insights" mostra todos os
+     * daquela conversa. Sem o filtro, o segundo cairia na lista geral — que já
+     * está no menu — e quem clicou de dentro de uma conversa veria insight de
+     * outras pessoas.
+     */
+    public function test_a_lista_filtra_pelos_insights_de_uma_conversa(): void
+    {
+        $desta = ConversationInsight::factory()->create();
+        $daOutra = ConversationInsight::factory()->create();
+
+        $this->actingAs($this->userWith('administrador'))
+            ->get(route('admin.ai-insights.index', ['conversation_id' => $desta->conversation_id]))
+            ->assertOk()
+            ->assertSee(route('admin.ai-insights.show', $desta), false)
+            ->assertDontSee(route('admin.ai-insights.show', $daOutra), false)
+            // A tela precisa dizer que está filtrada, senão parece que o
+            // sistema tem só estes insights.
+            ->assertSee('Mostrando apenas os insights da conversa');
+    }
+
+    /** Sem o filtro, a lista continua sendo a de todo mundo. */
+    public function test_sem_filtro_a_lista_mostra_todas_as_conversas(): void
+    {
+        $um = ConversationInsight::factory()->create();
+        $outro = ConversationInsight::factory()->create();
+
+        $this->actingAs($this->userWith('administrador'))
+            ->get(route('admin.ai-insights.index'))
+            ->assertOk()
+            ->assertSee(route('admin.ai-insights.show', $um), false)
+            ->assertSee(route('admin.ai-insights.show', $outro), false)
+            ->assertDontSee('Mostrando apenas os insights da conversa');
+    }
+
     // --- Permissões ----------------------------------------------------------
 
     public function test_user_without_permission_cannot_open_the_review_queue(): void

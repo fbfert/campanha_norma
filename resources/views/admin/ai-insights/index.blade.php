@@ -43,6 +43,17 @@
                 <a class="btn ghost" href="{{ route('admin.ai-insights.index') }}">Limpar</a>
             </div>
         </form>
+        @isset($conversation)
+            @if($conversation)
+                {{-- Sem isto a lista filtrada parece a lista inteira, e quem chega por ela conclui que o sistema tem só estes insights. --}}
+                <p class="alert warning">
+                    Mostrando apenas os insights da conversa
+                    <strong>{{ $conversation->contact?->name ?? 'sem contato' }}</strong>.
+                    <a href="{{ route('admin.conversations.show', $conversation) }}">Voltar à conversa</a>
+                    ou <a href="{{ route('admin.ai-insights.index') }}">ver todos</a>.
+                </p>
+            @endif
+        @endisset
         <div class="actions" style="margin-top:12px;">
             <a class="btn ghost" href="{{ route('admin.ai-insights.index', ['needs_review' => 1]) }}">Fila de revisão</a>
             <a class="btn ghost" href="{{ route('admin.insight-topics.index') }}">Temas</a>

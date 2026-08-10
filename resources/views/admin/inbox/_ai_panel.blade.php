@@ -37,7 +37,11 @@
                         {{ \App\Enums\InsightReviewReason::tryFrom((string) $latestInsight->review_reason)?->label() ?? $latestInsight->review_reason }}
                     </p>
                 @endif
-                <a class="btn ghost" href="{{ route('admin.ai-insights.show', $latestInsight) }}">Abrir insight</a>
+                <div class="actions">
+                    <a class="btn ghost" href="{{ route('admin.ai-insights.show', $latestInsight) }}">Abrir insight</a>
+                    {{-- O botão ao lado abre só o insight mais recente; este mostra todos os desta conversa. --}}
+                    <a class="btn ghost" href="{{ route('admin.ai-insights.index', ['conversation_id' => $conversation->id]) }}">Lista de insights</a>
+                </div>
             @elseif($latestClassification?->requires_human_review)
                 <p><strong>Revisão humana:</strong>
                     {{ \App\Enums\InsightReviewReason::tryFrom((string) $latestClassification->review_reason)?->label() ?? $latestClassification->review_reason }}
