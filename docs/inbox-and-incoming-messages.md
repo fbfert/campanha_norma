@@ -110,6 +110,38 @@ high
 urgent
 ```
 
+## Avisos de protocolo não são mensagem
+
+`e2e_notification`, `notification_template`, `revoked`, `call_log`, `gp2`,
+`protocol` e `ciphertext` são gerados pelo próprio WhatsApp — o "suas mensagens
+são protegidas com criptografia de ponta a ponta", emitido quando a chave do
+contato muda. Ninguém escreveu nada.
+
+Entravam como mensagem recebida de corpo vazio, com efeito duplo: a automação
+lia aquilo como resposta, não entendia e encaminhava a conversa para atendimento
+humano; e conversas nasciam só disso, sem contato identificado, indo parar na
+fila de "Aguardando operador". Quem abria encontrava uma tela vazia esperando
+resposta para um texto que não existia.
+
+A lista é `ConversationSyncService::PROTOCOL_TYPES`, conferida nos **dois**
+caminhos de entrada — webhook e sincronização. Fechada em 03/08/2026.
+
+Dezesseis avisos entraram antes disso, em catorze conversas, e quatro conversas
+existiam só por causa deles (412, 1350, 1354, 1357 — todas `@lid`, todas sem
+contato). Para limpar resíduo:
+
+```bash
+php artisan conversations:prune-protocol-notices              # simula
+php artisan conversations:prune-protocol-notices --aplicar
+```
+
+Conversa que fica sem nenhuma mensagem é removida por soft delete; conversa real
+perde só a linha vazia. O comando recalcula `last_message_at` e as datas de
+última entrada e saída: três conversas apontavam justamente para o aviso
+apagado, e sem isso ficariam ordenadas por um registro inexistente.
+
+Teste: `AvisoDeProtocoloNaoEMensagemTest`.
+
 ## Associação de contato
 
 O telefone recebido e normalizado pelo mesmo serviço usado no cadastro de contatos.
