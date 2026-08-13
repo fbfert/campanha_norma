@@ -263,6 +263,32 @@ A seleção múltipla marca só o que está na página: marcar o que não se vê
 iniciar conversa às cegas. Conversa recusada no clique volta com o motivo na
 mesma tela — quem clicou em vinte e viu duas recusadas precisa saber quais foram.
 
+### Ignorar
+
+Nem toda pendência vira atendimento. Chega mensagem que não pede resposta,
+conversa que alguém já resolveu por fora, engano de número — e sem uma saída
+para isso a fila acumula o que ninguém vai tratar, até o número no topo da tela
+virar paisagem.
+
+O botão **Ignorar**, ao lado de Abrir, tira a conversa da fila. Ele não envia
+nada, não abre fluxo e não encerra a conversa: só marca que aquela pendência foi
+vista. Pede confirmação, porque some com a linha da tela e sumiço sem pergunta é
+como se perde uma pendência por um clique torto.
+
+**Se a pessoa escrever de novo, a conversa volta.** A marca é comparada com a
+última mensagem recebida, não é absoluta: ela vale para a pendência que existia.
+
+O que foi ignorado aparece em "Ignoradas hoje", na mesma tela, com o nome de
+quem clicou — pelo mesmo motivo que a exclusão por expressão aparece ali: um
+clique na linha errada engoliria alguém que esperava.
+
+Exige `inbound_attendance.start`. Quem só tem `view` não muda a fila.
+
+Na marcação, os formulários de ignorar ficam **fora** do formulário de iniciar,
+ligados ao botão pelo atributo `form`. HTML não aninha formulário: o navegador
+desmonta o de dentro sem avisar, e o botão passaria a submeter o de fora — que
+inicia conversa.
+
 ## Sincronização
 
 A sincronização do WhatsApp Web também abre atendimento, com as mesmas duas

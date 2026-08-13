@@ -63,20 +63,27 @@ class InboundAttendanceQueue
                     });
             })
             /*
-             | Mensagem de robô sai da fila.
+             | O que foi descartado sai da fila.
              |
-             | Uma fila que mistura gente esperando com aviso de operadora
-             | ensina a ignorar a fila, que é o oposto do que ela existe para
-             | fazer. Elas não somem: ficam listadas à parte na mesma tela,
-             | porque expressão de exclusão larga demais engoliria uma pessoa
-             | de verdade, e isso precisa ser visível.
+             | Duas origens, mesmo efeito: a expressão que reconhece robô e
+             | operadora, e o botão de ignorar. Uma fila que mistura gente
+             | esperando com aviso de saldo ensina a ignorar a fila, que é o
+             | oposto do que ela existe para fazer.
+             |
+             | Elas não somem: ficam listadas à parte na mesma tela, porque
+             | expressão larga demais — ou um clique errado — engoliria uma
+             | pessoa de verdade, e isso precisa ser visível.
+             |
+             | A comparação é com a última mensagem recebida, e não absoluta:
+             | **se a pessoa escrever de novo, a conversa volta para a fila.**
+             | O descarte vale para a pendência que existia, não para sempre.
              */
             ->whereNotExists(function ($sub): void {
                 $sub->selectRaw('1')
                     ->from('inbound_attendance_attempts')
                     ->whereColumn('inbound_attendance_attempts.conversation_id', 'conversations.id')
                     ->where('inbound_attendance_attempts.outcome', InboundAttendanceOutcome::Skipped->value)
-                    ->where('inbound_attendance_attempts.reason', 'mensagem_ignorada')
+                    ->whereIn('inbound_attendance_attempts.reason', ['mensagem_ignorada', 'ignorada_manualmente'])
                     ->whereColumn('inbound_attendance_attempts.created_at', '>=', 'conversations.last_incoming_message_at');
             })
             ->when($user, fn (Builder $query, User $user) => $this->scopeToUser($query, $user));
@@ -96,20 +103,21 @@ class InboundAttendanceQueue
     }
 
     /**
-     * O que a exclusão descartou hoje.
+     * O que foi descartado hoje, pela regra ou por gente.
      *
-     * Existe para a expressão larga demais não engolir gente em silêncio. Uma
-     * pessoa que escreveu "quero recarregar meu crédito" cairia numa regra
-     * pensada para robô de operadora, e sem esta lista ninguém saberia.
+     * Existe para nada sumir em silêncio. Uma pessoa que escreveu "quero
+     * recarregar meu crédito" cairia numa regra pensada para robô de operadora;
+     * e um clique em ignorar na linha errada tira da fila alguém que esperava.
+     * Sem esta lista, os dois casos desapareceriam sem deixar rastro na tela.
      *
      * @return \Illuminate\Database\Eloquent\Builder<InboundAttendanceAttempt>
      */
     public function skippedToday(): \Illuminate\Database\Eloquent\Builder
     {
         return InboundAttendanceAttempt::query()
-            ->with(['conversation.contact', 'message'])
+            ->with(['conversation.contact', 'message', 'starter'])
             ->where('outcome', InboundAttendanceOutcome::Skipped)
-            ->where('reason', 'mensagem_ignorada')
+            ->whereIn('reason', ['mensagem_ignorada', 'ignorada_manualmente'])
             ->where('created_at', '>=', now()->startOfDay())
             ->latest('id');
     }

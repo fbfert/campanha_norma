@@ -82,6 +82,7 @@ class InboundAttendanceAttempt extends Model
             'telefone_invalido' => 'Telefone da conversa inválido',
             'conversa_ja_tem_fluxo' => 'Conversa já está em um fluxo',
             'mensagem_ignorada' => 'Mensagem de robô ou operadora',
+            'ignorada_manualmente' => 'Ignorada por decisão de quem atende',
             'numero_interno' => 'Número da própria equipe',
             'mensagem_antiga' => 'Mensagem antiga demais para abrir conversa',
             'resposta_ia_indisponivel' => 'IA não produziu resposta confiável',

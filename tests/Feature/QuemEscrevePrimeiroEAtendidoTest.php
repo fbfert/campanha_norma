@@ -470,6 +470,86 @@ class QuemEscrevePrimeiroEAtendidoTest extends TestCase
         $this->assertSame(0, InboundAttendanceProfile::count());
     }
 
+    public function test_ignorar_tira_da_fila_sem_enviar_nada(): void
+    {
+        $this->perfil(['homologation_threshold' => 0]);
+        $administrador = $this->administrador();
+
+        $mensagem = $this->mensagemRecebida('não era para você, desculpa');
+        $mensagem->conversation->forceFill(['last_incoming_message_at' => now()->subHour()])->save();
+        $conversa = $mensagem->conversation;
+
+        $fila = app(InboundAttendanceQueue::class);
+        $this->assertTrue($fila->pending()->whereKey($conversa->id)->exists());
+
+        $this->actingAs($administrador)
+            ->post(route('admin.inbound-attendance.ignore', $conversa))
+            ->assertRedirect(route('admin.inbound-attendance.index'));
+
+        $this->assertFalse($fila->pending()->whereKey($conversa->id)->exists());
+
+        // Ignorar não responde: nem mensagem enviada, nem fluxo aberto.
+        $this->assertSame(0, ConversationMessage::where('direction', ConversationMessageDirection::Outgoing)->count());
+        $this->assertNull(ConversationFlowState::first());
+
+        // E não some sem rastro: aparece em "Ignoradas hoje", com quem clicou.
+        $registro = $fila->skippedToday()->first();
+        $this->assertSame('ignorada_manualmente', $registro->reason);
+        $this->assertSame($administrador->id, $registro->started_by);
+    }
+
+    public function test_conversa_ignorada_volta_para_a_fila_se_a_pessoa_escrever_de_novo(): void
+    {
+        $this->perfil(['homologation_threshold' => 0]);
+
+        $mensagem = $this->mensagemRecebida('primeira');
+        $conversa = $mensagem->conversation;
+        $conversa->forceFill(['last_incoming_message_at' => now()->subHours(3)])->save();
+
+        $this->actingAs($this->administrador())->post(route('admin.inbound-attendance.ignore', $conversa));
+
+        $fila = app(InboundAttendanceQueue::class);
+        $this->assertFalse($fila->pending()->whereKey($conversa->id)->exists());
+
+        // O clique aconteceu há duas horas; a mensagem nova vem depois dele.
+        InboundAttendanceAttempt::where('conversation_id', $conversa->id)
+            ->update(['created_at' => now()->subHours(2)]);
+
+        // A marca vale para a pendência que existia, não para sempre: quem
+        // volta a escrever volta a esperar resposta. Dez minutos atrás, e não
+        // agora, porque a carência de cinco minutos também vale aqui.
+        ConversationMessage::create([
+            'conversation_id' => $conversa->id,
+            'direction' => ConversationMessageDirection::Incoming,
+            'origin' => ConversationMessageOrigin::Incoming,
+            'message_type' => 'text',
+            'body' => 'oi, na verdade era sim',
+            'status' => \App\Enums\ConversationMessageStatus::Received,
+            'received_at' => now()->subMinutes(10),
+        ]);
+        $conversa->forceFill(['last_incoming_message_at' => now()->subMinutes(10)])->save();
+
+        $this->assertTrue($fila->pending()->whereKey($conversa->id)->exists());
+    }
+
+    public function test_ignorar_exige_permissao_e_escopo(): void
+    {
+        $this->perfil(['homologation_threshold' => 0]);
+        $mensagem = $this->mensagemRecebida('oi');
+        $mensagem->conversation->forceFill(['last_incoming_message_at' => now()->subHour()])->save();
+
+        $this->actingAs(User::factory()->create())
+            ->post(route('admin.inbound-attendance.ignore', $mensagem->conversation))
+            ->assertForbidden();
+
+        // Conversa fora da fila não se esconde por id digitado na mão.
+        $fora = Conversation::factory()->create(['last_incoming_message_at' => null]);
+
+        $this->actingAs($this->administrador())
+            ->post(route('admin.inbound-attendance.ignore', $fora))
+            ->assertNotFound();
+    }
+
     public function test_iniciar_pela_fila_exige_permissao(): void
     {
         $this->perfil(['homologation_threshold' => 0]);

@@ -170,6 +170,7 @@ Route::middleware(['auth', 'password.changed'])->group(function (): void {
 
         Route::get('/inbound-attendance', [InboundAttendanceQueueController::class, 'index'])->name('inbound-attendance.index');
         Route::post('/inbound-attendance/start', [InboundAttendanceQueueController::class, 'start'])->name('inbound-attendance.start');
+        Route::post('/inbound-attendance/{conversation}/ignore', [InboundAttendanceQueueController::class, 'ignore'])->name('inbound-attendance.ignore');
 
         Route::get('/ai-insights', [ConversationInsightController::class, 'index'])->name('ai-insights.index');
         Route::get('/ai-insights/{insight}', [ConversationInsightController::class, 'show'])->name('ai-insights.show');

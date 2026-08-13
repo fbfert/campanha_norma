@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Admin\InboundAttendance;
 use App\Enums\ConversationMessageDirection;
 use App\Enums\InboundAttendanceOutcome;
 use App\Http\Controllers\Controller;
+use App\Models\Conversation;
+use App\Services\AuditLogger;
 use App\Models\ConversationMessage;
 use App\Models\InboundAttendanceAttempt;
 use App\Models\InboundAttendanceProfile;
@@ -43,16 +45,13 @@ class InboundAttendanceQueueController extends Controller
                 ->orderByDesc('last_message_at')
                 ->limit(25)
                 ->get(),
-            // Descartadas por expressão de exclusão. Não pedem ação; existem
-            // para uma regra larga demais não engolir gente em silêncio.
-            'skippedToday' => $queue->skippedToday()->limit(25)->get(),
             'profiles' => InboundAttendanceProfile::query()
                 ->where('status', 'active')
                 ->orderBy('name')
                 ->get(),
 
-            // Nada some em silêncio. Uma expressão de exclusão larga demais
-            // engoliria uma pessoa de verdade, e é aqui que isso aparece.
+            // Nada some em silêncio: nem o que a expressão de exclusão
+            // descartou, nem o que alguém ignorou à mão.
             'skippedToday' => $queue->skippedToday()->limit(25)->get(),
         ]);
     }
@@ -127,6 +126,54 @@ class InboundAttendanceQueueController extends Controller
             : redirect()->route('admin.inbound-attendance.index')
                 ->with('success', $message)
                 ->with('warning', 'Não iniciadas — '.implode('; ', $blocked));
+    }
+
+    /**
+     * Tira a conversa da fila sem responder nada.
+     *
+     * Nem toda pendência vira atendimento. Chega mensagem que não pede
+     * resposta, conversa que alguém já resolveu por fora, engano de número — e
+     * sem uma saída para isso a fila acumula o que ninguém vai tratar, até o
+     * número no topo da tela virar paisagem.
+     *
+     * Ignorar não apaga nem encerra nada: só marca que esta pendência foi
+     * vista. **Se a pessoa escrever de novo, a conversa volta para a fila**,
+     * porque a marca vale para a mensagem que estava parada, não para sempre.
+     */
+    public function ignore(
+        Request $request,
+        Conversation $conversation,
+        InboundAttendanceQueue $queue,
+        AuditLogger $audit,
+    ): RedirectResponse {
+        abort_unless($request->user()->can('inbound_attendance.start'), 403);
+
+        // Só o que a pessoa poderia ver: sem isto, um id digitado na mão
+        // esconderia conversa fora do escopo de quem clicou.
+        abort_unless($queue->pending($request->user())->whereKey($conversation->id)->exists(), 404);
+
+        $message = ConversationMessage::query()
+            ->where('conversation_id', $conversation->id)
+            ->where('direction', ConversationMessageDirection::Incoming)
+            ->latest('id')
+            ->first();
+
+        InboundAttendanceAttempt::create([
+            'conversation_id' => $conversation->id,
+            'conversation_message_id' => $message?->id,
+            'outcome' => InboundAttendanceOutcome::Skipped,
+            'reason' => 'ignorada_manualmente',
+            'started_by' => $request->user()->id,
+        ]);
+
+        $audit->log('inbound_attendance.ignored', 'Conversa retirada da fila de pendentes.', $conversation, null, [
+            'conversation_id' => $conversation->id,
+        ], $request->user());
+
+        $queue->forgetCount();
+
+        return redirect()->route('admin.inbound-attendance.index')
+            ->with('success', 'Conversa retirada da fila. Se a pessoa escrever de novo, ela volta.');
     }
 
     /**

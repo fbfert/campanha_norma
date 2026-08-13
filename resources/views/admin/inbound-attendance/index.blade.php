@@ -64,6 +64,11 @@
                                     </td>
                                     <td class="actions">
                                         <a class="btn ghost" href="{{ route('admin.conversations.show', $conversa) }}">Abrir</a>
+                                        @can('inbound_attendance.start')
+                                            {{-- Fora do formulário de iniciar: dois formulários aninhados não
+                                                 existem em HTML, e o navegador desmonta o de dentro sem avisar. --}}
+                                            <button class="btn ghost" type="submit" form="ignorar-{{ $conversa->id }}">Ignorar</button>
+                                        @endcan
                                     </td>
                                 </tr>
                             @endforeach
@@ -102,28 +107,57 @@
                 </section>
             @endcan
         </form>
+
+        {{--
+            Um formulário de ignorar por conversa, fora do formulário de iniciar.
+
+            HTML não aninha formulário: o navegador desmonta o de dentro sem
+            avisar, e o botão passaria a submeter o de fora — que inicia
+            conversa. O atributo `form` no botão liga os dois à distância, que é
+            exatamente para isto que ele existe.
+
+            A confirmação é a mesma que o resto do sistema usa: retirar da fila
+            não manda nada, mas some com a linha da tela, e sumiço sem pergunta
+            é como se perde uma pendência por um clique torto.
+        --}}
+        @can('inbound_attendance.start')
+            @foreach($pending as $conversa)
+                <form id="ignorar-{{ $conversa->id }}" method="post"
+                      action="{{ route('admin.inbound-attendance.ignore', $conversa) }}"
+                      onsubmit="return confirm('Tirar esta conversa da fila de pendentes? Nenhuma mensagem será enviada. Se a pessoa escrever de novo, ela volta para a fila.')">
+                    @csrf
+                </form>
+            @endforeach
+        @endcan
     @endif
 
     @if($skippedToday->isNotEmpty())
         <section class="card" style="margin-top:16px;">
             <h2>Ignoradas hoje</h2>
             <p class="muted">
-                Mensagens que casaram com uma expressão de exclusão — operadora, banco, robô — e por isso não abriram
-                atendimento nem entraram na fila. Estão aqui porque uma regra larga demais engoliria uma pessoa de
-                verdade, e isso precisa ser visível.
+                O que saiu da fila sem receber resposta: mensagem que casou com uma expressão de exclusão — operadora,
+                banco, robô — e conversa que alguém ignorou à mão. Estão aqui porque uma regra larga demais, ou um
+                clique na linha errada, engoliria uma pessoa de verdade, e isso precisa ser visível.
                 @can('inbound_attendance.manage_profiles')
                     As expressões ficam em <a href="{{ route('admin.inbound-attendance.profiles.index') }}">Perfis de atendimento</a>.
                 @endcan
             </p>
             <div class="table-wrap">
                 <table>
-                    <thead><tr><th>Contato</th><th>Mensagem</th><th>Expressão que casou</th><th>Ações</th></tr></thead>
+                    <thead><tr><th>Contato</th><th>Mensagem</th><th>Por quê</th><th>Ações</th></tr></thead>
                     <tbody>
                         @foreach($skippedToday as $ignorada)
                             <tr>
                                 <td>{{ $ignorada->conversation?->contact?->name ?? 'Sem contato identificado' }}</td>
                                 <td>{{ Str::limit($ignorada->message?->body, 90) ?: '—' }}</td>
-                                <td><code>{{ $ignorada->metadata['expressao'] ?? '—' }}</code></td>
+                                <td>
+                                    {{ $ignorada->reasonLabel() }}
+                                    @if($ignorada->starter)
+                                        <br><span class="muted">{{ $ignorada->starter->name }}</span>
+                                    @elseif($ignorada->metadata['expressao'] ?? null)
+                                        <br><span class="muted"><code>{{ $ignorada->metadata['expressao'] }}</code></span>
+                                    @endif
+                                </td>
                                 <td class="actions">
                                     @if($ignorada->conversation)
                                         <a class="btn ghost" href="{{ route('admin.conversations.show', $ignorada->conversation) }}">Abrir</a>
