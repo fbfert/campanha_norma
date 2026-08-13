@@ -6,6 +6,10 @@
     <div class="alert success">{{ session('status') }}</div>
 @endif
 
+@if (session('warning'))
+    <div class="alert warning">{{ session('warning') }}</div>
+@endif
+
 @if (session('error'))
     <div class="alert error">{{ session('error') }}</div>
 @endif

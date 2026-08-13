@@ -776,6 +776,32 @@ tbody tr:hover td {
     word-break: break-word;
 }
 
+/*
+    Mídia dentro da bolha.
+
+    O teto de altura existe porque foto de celular chega em pé e com dois mil
+    pixels: sem ele, uma única imagem empurra o resto da conversa para fora da
+    tela e quem atende perde o fio. Clicar abre em tamanho real.
+
+    O áudio ocupa a largura da bolha porque o controle nativo encolhe até virar
+    um botão sem barra de progresso quando o espaço aperta.
+*/
+.message-bubble img.message-media,
+.message-bubble video.message-media {
+    border-radius: var(--radius);
+    display: block;
+    margin-bottom: var(--space-2);
+    max-height: 320px;
+    max-width: 100%;
+    width: auto;
+}
+
+.message-bubble audio.message-media {
+    display: block;
+    margin-bottom: var(--space-2);
+    width: 100%;
+}
+
 .message-bubble.incoming {
     align-self: flex-start;
     background: var(--surface);

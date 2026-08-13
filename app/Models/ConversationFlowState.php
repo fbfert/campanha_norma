@@ -15,6 +15,7 @@ class ConversationFlowState extends Model
     protected $fillable = [
         'conversation_id',
         'conversation_flow_id',
+        'inbound_attendance_profile_id',
         'current_stage',
         'stage_before_hold',
         'selected_question_id',
@@ -63,6 +64,15 @@ class ConversationFlowState extends Model
     public function flow(): BelongsTo
     {
         return $this->belongsTo(ConversationFlow::class, 'conversation_flow_id');
+    }
+
+    /**
+     * Perfil que abriu esta conversa, quando ela nasceu de mensagem recebida.
+     * Nulo é o caso histórico: fluxo aberto pelo envio de um lote.
+     */
+    public function inboundProfile(): BelongsTo
+    {
+        return $this->belongsTo(InboundAttendanceProfile::class, 'inbound_attendance_profile_id');
     }
 
     public function selectedQuestion(): BelongsTo

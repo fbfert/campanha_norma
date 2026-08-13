@@ -16,7 +16,7 @@
     quando o menu esta recolhido.
 --}}
 @php
-    $atendimentoAtivo = request()->routeIs('admin.inbox.*', 'admin.conversations.*', 'admin.reply-suggestions.*');
+    $atendimentoAtivo = request()->routeIs('admin.inbox.*', 'admin.conversations.*', 'admin.reply-suggestions.*', 'admin.inbound-attendance.*');
     $pesquisaAtiva = request()->routeIs('admin.conversation-automation.*', 'admin.conversation-flows.*')
         || request()->routeIs('admin.analytics.dashboard', 'admin.analytics.topics', 'admin.analytics.geography', 'admin.analytics.demands', 'admin.analytics.questions');
     $contatosAtivo = request()->routeIs('admin.contacts.*', 'admin.tags.*');
@@ -40,6 +40,12 @@
             <a href="{{ route('admin.conversations.index') }}" @class(['active' => request()->routeIs('admin.inbox.*', 'admin.conversations.*')])>
                 <x-icon name="chat" /><span>Conversas</span>
             </a>
+            @can('inbound_attendance.view')
+                <a href="{{ route('admin.inbound-attendance.index') }}" @class(['active' => request()->routeIs('admin.inbound-attendance.*')])>
+                    <x-icon name="bell" /><span>Aguardando resposta</span>
+                    @if(($inboundPendingCount ?? 0) > 0)<span class="nav-badge">{{ $inboundPendingCount }}</span>@endif
+                </a>
+            @endcan
             @can('reply_suggestions.view')
                 <a href="{{ route('admin.reply-suggestions.index') }}" @class(['active' => request()->routeIs('admin.reply-suggestions.*')])><x-icon name="reply" /><span>Sugestões de resposta</span></a>
             @endcan

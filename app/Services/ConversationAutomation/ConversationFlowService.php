@@ -170,7 +170,7 @@ class ConversationFlowService
 
     private function handlePermissionReply(ConversationFlowState $state, ConversationMessage $message): void
     {
-        $result = $this->classifier->classify($message->body);
+        $result = $this->classifier->classify($message->readableText());
         $classification = $result['classification'];
 
         $metadata = [
@@ -271,7 +271,7 @@ class ConversationFlowService
             return false;
         }
 
-        $texto = mb_strtolower((string) $message->body);
+        $texto = mb_strtolower($message->readableText());
 
         return $termos->contains(fn (string $termo): bool => str_contains($texto, $termo));
     }
@@ -459,7 +459,7 @@ class ConversationFlowService
      */
     private function handleAnswer(ConversationFlowState $state, ConversationMessage $message): void
     {
-        $result = $this->classifier->classify($message->body);
+        $result = $this->classifier->classify($message->readableText());
 
         if ($result['classification'] === PermissionResponseClassification::OptOut) {
             $this->applyOptOut($state, $message, ['reason' => $result['reason'], 'matched' => $result['matched']]);

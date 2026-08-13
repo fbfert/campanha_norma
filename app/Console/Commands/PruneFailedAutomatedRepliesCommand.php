@@ -18,6 +18,13 @@ use Illuminate\Support\Facades\DB;
  * O laço já não acontece — `PendingReplyResolver` não tenta sem sessão e tem
  * teto de tentativas. Este comando limpa o que ficou.
  *
+ * **Dois códigos, e não um.** O comando nasceu olhando só
+ * `AUTOMATED_REPLY_FAILED`, que é a tentativa que saiu e falhou. A recusa antes
+ * do disparo grava `AUTOMATION_BLOCKED`, e por isso 815 repetições numa única
+ * conversa ficaram invisíveis para a limpeza — o comando dizia "nada a
+ * recolher" com metade da tabela cheia delas. As duas são a mesma coisa para
+ * quem lê a conversa: uma frase que nunca chegou.
+ *
  * **Guarda a primeira e a última tentativa de cada bloco.** Apagar tudo
  * apagaria o registro de que tentamos, que é informação real; guardar as 767
  * cópias no meio não acrescenta nada a isso. As duas pontas dizem quando
@@ -38,7 +45,7 @@ class PruneFailedAutomatedRepliesCommand extends Command
 
         $base = ConversationMessage::query()
             ->where('status', ConversationMessageStatus::Failed)
-            ->where('error_code', 'AUTOMATED_REPLY_FAILED')
+            ->whereIn('error_code', ['AUTOMATED_REPLY_FAILED', 'AUTOMATION_BLOCKED'])
             ->when($conversas, fn ($query) => $query->whereIn('conversation_id', $conversas));
 
         $porConversa = (clone $base)

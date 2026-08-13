@@ -11,10 +11,12 @@ use App\Enums\ConversationStatus;
 use App\Enums\ConversationSyncStatus;
 use App\Exceptions\WhatsApp\WhatsAppServiceException;
 use App\Models\Conversation;
+use App\Models\ConversationFlowState;
 use App\Models\ConversationMessage;
 use App\Models\ConversationSyncRun;
 use App\Services\AuditLogger;
 use App\Services\ConversationAutomation\UnreadableMediaResponder;
+use App\Services\InboundAttendance\InboundAttendanceService;
 use App\Services\IncomingMessages\ContactMatcherService;
 use App\Services\SystemSettingService;
 use App\Services\WhatsApp\WhatsAppProviderManager;
@@ -385,10 +387,62 @@ class ConversationSyncService
              | seria falar do passado.
              */
             if ($this->replyToUnreadableMedia($record, $occurredAt)) {
-                DB::afterCommit(fn () => app(UnreadableMediaResponder::class)
-                    ->askForText($record, 'conversation_automation.media_reply_text'));
+                // Com a visão ligada, imagem e figurinha são lidas em vez de
+                // devolvidas com um pedido para escrever. O recorte de idade e
+                // de última mensagem é o mesmo: descrever trinta dias de fotos
+                // importadas custaria por imagem e não serviria a ninguém.
+                $vision = app(\App\Services\Ai\ImageDescriptionService::class);
+
+                DB::afterCommit($vision->enabled() && $vision->handles($record)
+                    ? fn () => \App\Jobs\DescribeIncomingImageJob::dispatch($record->id)
+                    : fn () => app(UnreadableMediaResponder::class)
+                        ->askForText($record, 'conversation_automation.media_reply_text'));
+            }
+
+            /*
+             | Quem escreveu durante uma queda de sessão também é atendido.
+             |
+             | Mesmas duas condições da mídia, e pelo mesmo motivo: a mensagem
+             | precisa ser a última da conversa e precisa ser recente. Uma
+             | sincronização de trinta dias sem esse recorte mandaria abertura
+             | de atendimento para dezenas de conversas antigas de uma vez, e
+             | apresentar hoje uma pesquisa a quem escreveu há três semanas é
+             | falar do passado.
+             */
+            if ($this->startInboundAttendance($record, $occurredAt)) {
+                DB::afterCommit(fn () => app(InboundAttendanceService::class)->handle($record));
             }
         });
+    }
+
+    /**
+     * Esta mensagem de texto é a última palavra da conversa e ainda espera
+     * retorno, e a conversa nunca entrou em fluxo nenhum.
+     */
+    private function startInboundAttendance(ConversationMessage $mensagem, CarbonInterface $ocorridaEm): bool
+    {
+        if ($mensagem->direction !== ConversationMessageDirection::Incoming || $mensagem->message_type !== 'text') {
+            return false;
+        }
+
+        if (blank($mensagem->body)) {
+            return false;
+        }
+
+        $horas = (int) $this->settings->get('inbound_attendance.sync_max_age_hours', 72);
+
+        if ($horas > 0 && $ocorridaEm->lessThan(now()->subHours($horas))) {
+            return false;
+        }
+
+        if (ConversationFlowState::query()->where('conversation_id', $mensagem->conversation_id)->exists()) {
+            return false;
+        }
+
+        return ! ConversationMessage::query()
+            ->where('conversation_id', $mensagem->conversation_id)
+            ->where('id', '>', $mensagem->id)
+            ->exists();
     }
 
     private function recordChatFailure(ConversationSyncRun $run, array $chat, \Throwable $exception): void

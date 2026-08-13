@@ -2,8 +2,10 @@
 
 namespace App\Jobs;
 
+use App\Models\ConversationFlowState;
 use App\Models\ConversationMessage;
 use App\Services\ConversationAutomation\ConversationFlowService;
+use App\Services\InboundAttendance\InboundAttendanceService;
 use App\Services\SystemSettingService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
@@ -47,6 +49,26 @@ class EvaluateConversationFlowJob implements ShouldQueue
         }
 
         try {
+            /*
+             | Conversa sem fluxo é quem escreveu primeiro.
+             |
+             | O motor da 9A sai calado nesse caso, e sair calado estava certo
+             | enquanto todo fluxo nascia de um lote: não havia o que continuar.
+             | Agora há — o atendimento de entrada abre a conversa, e é aqui que
+             | ele entra porque este job já segura a trava por conversa, que é o
+             | que impede duas mensagens seguidas abrirem dois atendimentos.
+             |
+             | Ele decide sozinho se é caso de agir. Não agindo, tudo segue como
+             | antes: `handleIncomingMessage` continua sendo chamado e continua
+             | saindo calado.
+             */
+            if (! ConversationFlowState::query()->where('conversation_id', $message->conversation_id)->exists()) {
+                app(InboundAttendanceService::class)->handle($message);
+            }
+
+            // Abrindo ou não, a idempotência do estado cobre o resto: o
+            // atendimento já marcou esta mensagem como processada, e o motor
+            // não a avalia duas vezes.
             $flows->handleIncomingMessage($message);
         } finally {
             $lock->release();

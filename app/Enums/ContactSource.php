@@ -10,6 +10,16 @@ enum ContactSource: string
     case Evento = 'evento';
     case Indicacao = 'indicacao';
     case ListaExistente = 'lista_existente';
+
+    /**
+     * A pessoa escreveu para nós antes de existir no cadastro.
+     *
+     * Separada de `manual` e de `importacao` porque a diferença importa em
+     * relatório e em consentimento: este contato não foi comprado nem
+     * digitado, ele procurou a gente.
+     */
+    case Recebido = 'recebido';
+
     case Outro = 'outro';
 
     public function label(): string
@@ -21,6 +31,7 @@ enum ContactSource: string
             self::Evento => 'Evento',
             self::Indicacao => 'Indicação',
             self::ListaExistente => 'Lista existente',
+            self::Recebido => 'Mensagem recebida',
             self::Outro => 'Outro',
         };
     }

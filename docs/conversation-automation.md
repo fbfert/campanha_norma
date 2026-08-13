@@ -43,6 +43,12 @@ destinatário, nada e criado.
 Lote sem fluxo apenas envia: quem responder cai em atendimento humano, porque
 `handleIncomingMessage` sai calado quando não existe estado para a conversa.
 
+Quem escreve **primeiro**, sem nunca ter recebido lote, cai no mesmo silêncio —
+e para esse caso existe o atendimento de entrada, em `docs/inbound-attendance.md`.
+Ele abre o fluxo a partir da mensagem recebida, com perfil próprio, e entrega ao
+motor desta etapa uma conversa em `waiting_permission`, igual à que um lote
+produziria.
+
 ## Tabelas
 
 ```text
@@ -301,6 +307,60 @@ O teto é duplo:
    contagem própria.
 
 Teste: `RedeDeSegurancaNaoRepeteSemConexaoTest`.
+
+## O aviso morria em conversa sem fluxo
+
+`PendingReplyResolver::sendWithoutFlow` existe para a conversa que nunca entrou
+em pesquisa — sem estado, o aviso sai pelo serviço de saída comum, porque
+"ignorar essas deixaria justamente quem mais ficou no vácuo sem retorno".
+
+A porta do envio desfazia isso. `canSendSafetyNet` tirava o contato do **estado
+do fluxo**, e sem estado concluía que não havia contato. O aviso era criado,
+enfileirado e recusado no último passo com `contato_nao_identificado` — em
+conversa com contato identificado.
+
+Em 12/08/2026 a conversa 423, contato 1020, repetiu isso a cada cinco minutos:
+"Recebemos sua mensagem" gravado como falha, e a pessoa sem receber nenhum. Ao
+todo eram **826 linhas** assim espalhadas por onze conversas, 815 delas numa só.
+
+Agora o contato vem da conversa, e o job passa `$message->conversation` junto do
+estado. O que protege a pessoa continua igual: não contatar, contato inativo,
+sem telefone e janela de horário.
+
+Teste: `AvisoChegaSemFluxoNaConversaTest`.
+
+### A equipe não é atendida pelo próprio sistema
+
+```text
+conversations.internal_phones
+```
+
+O sistema não distingue quem atende de quem é atendido. A conversa de trabalho
+com a candidata — almoço com o candidato a vice, estratégia de campanha — caiu
+no mesmo funil de quem responde a uma pesquisa, e em 07/08/2026 ela recebeu
+"Recebemos sua mensagem, muito obrigado! Nossa equipe vai ler com atenção." duas
+vezes no mesmo segundo.
+
+Nenhuma regra de conteúdo pega isso: naquele dia ela tinha escrito **"Oiii"**,
+que é o que qualquer eleitor escreve. O que distingue é quem está do outro lado.
+
+A lista vale para as duas portas automáticas — a rede de segurança e o
+atendimento de entrada, inclusive no clique. Não impede resposta manual, que é o
+que se quer numa conversa de trabalho. Só os dígitos comparam: o telefone chega
+normalizado num lugar e digitado à mão no outro.
+
+Editável em Perfis de atendimento. Mantenha a lista estreita — ela cala o
+sistema para quem está nela.
+
+Teste: `EquipeNaoEAtendidaPeloProprioSistemaTest`.
+
+### A limpeza olhava só metade
+
+`conversations:prune-failed-replies` filtrava `AUTOMATED_REPLY_FAILED`, que é a
+tentativa que saiu e falhou. A recusa antes do disparo grava
+`AUTOMATION_BLOCKED`, e por isso as 815 repetições de uma conversa ficaram
+invisíveis: o comando respondia "nada a recolher" com metade da tabela cheia
+delas. Hoje ele reconhece os dois códigos.
 
 Para recolher repetição já gravada:
 

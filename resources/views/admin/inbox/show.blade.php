@@ -99,7 +99,7 @@
 
             <div class="conversation-timeline" id="conversation-timeline">
                 @forelse($conversation->messages()->latest('created_at')->get() as $message)
-                    @include('admin.inbox._message', ['message' => $message])
+                    @include('admin.inbox._message', ['message' => $message, 'conversation' => $conversation])
                 @empty
                     <div class="empty-state">Nenhuma mensagem nesta conversa.</div>
                 @endforelse

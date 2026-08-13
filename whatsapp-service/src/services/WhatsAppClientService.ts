@@ -99,6 +99,14 @@ type ChatListResult = {
 
 let packageVersionPromise: Promise<string> | null = null;
 
+/**
+ * Prazo do download dentro da pagina.
+ *
+ * Menor que o `protocolTimeout` do puppeteer de proposito: quem desiste
+ * primeiro tem de ser o download, e nao a conexao com o navegador.
+ */
+const DOWNLOAD_TIMEOUT_MS = 20_000;
+
 export class WhatsAppClientService implements WhatsAppRuntime {
   private client: WhatsAppClient | null = null;
   private statusValue = ConnectionStatus.NotInitialized;
@@ -428,6 +436,40 @@ export class WhatsAppClientService implements WhatsAppRuntime {
     // uma pede investigacao, a outra e esperada e tem tratamento pronto.
     let media: { data?: string; mimetype?: string; filename?: string } | null = null;
 
+    /*
+     | Baixamos por conta propria antes de tentar a biblioteca.
+     |
+     | `Message.downloadMedia` faz duas coisas: resolve a midia, se ela ainda
+     | nao estiver resolvida, e so entao baixa. O primeiro passo chama
+     | `msg.downloadMedia(...)` no modelo interno do WhatsApp Web — e nessa
+     | build o modelo nao tem metodo nenhum, entao a chamada estoura com um
+     | TypeError que chega minificado como nome "r" e mensagem "r".
+     |
+     | O segundo passo, que e o download de verdade, funciona: uma sonda na
+     | sessao viva baixou 57791 bytes de uma imagem com `mediaStage` em `INIT`,
+     | exatamente o estado que faz a biblioteca desviar para o passo quebrado.
+     |
+     | Entao pulamos o passo que nao existe mais e chamamos o download direto,
+     | com os mesmos argumentos que a biblioteca usaria. A chamada dela fica
+     | como reserva: se um dia o modelo voltar a ter os metodos, ela volta a
+     | funcionar, e se o nosso caminho quebrar ela cobre.
+     */
+    media = await this.downloadMediaDirectly(chatId, messageId).catch((error) => {
+      logger.warn(
+        {
+          event: 'media_direct_download_failed',
+          error_message: error instanceof Error ? error.message : String(error),
+        },
+        'Download direto falhou; tentando pela biblioteca.',
+      );
+
+      return null;
+    });
+
+    if (media?.data) {
+      return this.mediaPayload(messageId, media, maxBytes);
+    }
+
     try {
       media = await message.downloadMedia();
     } catch (error) {
@@ -447,8 +489,22 @@ export class WhatsAppClientService implements WhatsAppRuntime {
       throw new ServiceError('MEDIA_UNAVAILABLE', 'A midia nao esta mais disponivel nesta sessao.', 410);
     }
 
+    return this.mediaPayload(messageId, media, maxBytes);
+  }
+
+  /**
+   * Monta a resposta e cobra o teto de tamanho.
+   *
+   * Fica separado porque ha dois caminhos que chegam aqui — o download direto e
+   * o da biblioteca — e o teto precisa valer para os dois.
+   */
+  private mediaPayload(
+    messageId: string,
+    media: { data?: string; mimetype?: string; filename?: string },
+    maxBytes: number,
+  ): MessageMediaPayload {
     // base64 cresce cerca de um terco sobre o original.
-    const bytes = Math.floor((media.data.length * 3) / 4);
+    const bytes = Math.floor(((media.data ?? '').length * 3) / 4);
 
     if (bytes > maxBytes) {
       throw new ServiceError('MEDIA_TOO_LARGE', `A midia tem ${bytes} bytes e o limite e ${maxBytes}.`, 413);
@@ -459,8 +515,109 @@ export class WhatsAppClientService implements WhatsAppRuntime {
       mimetype: media.mimetype ?? null,
       filename: media.filename ?? null,
       bytes,
-      data: media.data,
+      data: media.data as string,
     };
+  }
+
+  /**
+   * Baixa a midia sem passar pelo passo de resolucao da biblioteca.
+   *
+   * Os argumentos sao os mesmos que `Message.downloadMedia` monta; o que se
+   * pula e a chamada previa a `msg.downloadMedia(...)`, que nesta build do
+   * WhatsApp Web nao existe no modelo interno e derruba tudo com um TypeError
+   * minificado.
+   *
+   * `REUPLOADING` continua sendo desistencia: significa que a midia expirou e o
+   * proprio WhatsApp esta tentando trazer de volta. Insistir dali produziria
+   * uma espera sem fim.
+   */
+  private async downloadMediaDirectly(
+    chatId: string,
+    messageId: string,
+  ): Promise<{ data?: string; mimetype?: string; filename?: string } | null> {
+    if (!this.client?.pupPage) {
+      return null;
+    }
+
+    return this.client.pupPage.evaluate(async (ids: string[], limiteMs: number) => {
+      const colecoes = (window as any).require('WAWebCollections');
+      let msg: any = null;
+
+      for (const id of ids) {
+        msg = colecoes?.Msg?.get?.(id);
+
+        if (msg) {
+          break;
+        }
+      }
+
+      if (!msg || !msg.mediaData || msg.mediaData.mediaStage === 'REUPLOADING') {
+        return null;
+      }
+
+      const gerente = (window as any).require('WAWebDownloadManager')?.downloadManager;
+
+      if (typeof gerente?.downloadAndMaybeDecrypt !== 'function') {
+        return null;
+      }
+
+      // A biblioteca passa este objeto e nunca le o que ele registra; ele
+      // existe porque o metodo espera receber algo com esta forma.
+      const mockQpl = {
+        addAnnotations() {
+          return this;
+        },
+        addPoint() {
+          return this;
+        },
+      };
+
+      /*
+       | O download precisa desistir sozinho.
+       |
+       | Ha midia para a qual `downloadAndMaybeDecrypt` nunca resolve nem
+       | rejeita — uma imagem recebida em 12/08 as 22:41 ficou assim. Sem
+       | limite, a avaliacao na pagina fica pendurada ate o `protocolTimeout`
+       | do puppeteer, e enquanto isso segura a conexao com o navegador: no
+       | mesmo minuto, sete consultas de chat falharam por causa disso.
+       |
+       | O `AbortController` existia aqui e nunca era acionado, o que o
+       | tornava decoracao. Agora ele e abortado no estouro do prazo, e a
+       | corrida garante que a funcao retorna de qualquer jeito.
+       */
+      const controlador = new AbortController();
+
+      const prazo = new Promise<null>((resolve) => {
+        setTimeout(() => {
+          controlador.abort();
+          resolve(null);
+        }, limiteMs);
+      });
+
+      const bruto = await Promise.race([
+        gerente.downloadAndMaybeDecrypt({
+          directPath: msg.directPath,
+          encFilehash: msg.encFilehash,
+          filehash: msg.filehash,
+          mediaKey: msg.mediaKey,
+          mediaKeyTimestamp: msg.mediaKeyTimestamp,
+          type: msg.type,
+          signal: controlador.signal,
+          downloadQpl: mockQpl,
+        }).catch(() => null),
+        prazo,
+      ]);
+
+      if (!bruto) {
+        return null;
+      }
+
+      return {
+        data: await (window as any).WWebJS.arrayBufferToBase64Async(bruto),
+        mimetype: msg.mimetype,
+        filename: msg.filename,
+      };
+    }, this.messageIdCandidates(chatId, messageId), DOWNLOAD_TIMEOUT_MS);
   }
 
   async diagnosticsChats(): Promise<ConversationDiagnosticsPayload> {
@@ -507,7 +664,7 @@ export class WhatsAppClientService implements WhatsAppRuntime {
     const candidates = this.messageIdCandidates(chatId, messageId);
 
     return this.client.pupPage.evaluate(
-      async (ids: string[], moduleNames: string[]) => {
+      async (ids: string[], moduleNames: string[], limiteMs: number) => {
         const relatorio: Record<string, unknown> = {
           require_disponivel: typeof (window as any).require === 'function',
           wwebjs_disponivel: typeof (window as any).WWebJS === 'object',
@@ -563,6 +720,102 @@ export class WhatsAppClientService implements WhatsAppRuntime {
                   metodos: Object.keys(msg).filter((k) => typeof msg[k] === 'function').slice(0, 20),
                 };
 
+                /*
+                 | O que a biblioteca passa para baixar, conferido um a um.
+                 |
+                 | `downloadMedia` falha com uma excecao minificada — nome "r",
+                 | mensagem "r" — e por ela nao da para saber se falta um
+                 | argumento, se o metodo mudou de assinatura ou se o download
+                 | em si foi recusado. Sao conserto diferentes, e sem separar
+                 | isso o contorno vira tentativa e erro.
+                 */
+                const argumentos = ['directPath', 'encFilehash', 'filehash', 'mediaKey', 'mediaKeyTimestamp', 'type'];
+                const ondeEstao: Record<string, unknown> = {};
+
+                for (const campo of argumentos) {
+                  ondeEstao[campo] = {
+                    na_mensagem: typeof msg[campo],
+                    em_mediaData: msg.mediaData ? typeof msg.mediaData[campo] : 'sem mediaData',
+                  };
+                }
+
+                relatorio.argumentos = ondeEstao;
+
+                const gerente = (window as any).require('WAWebDownloadManager')?.downloadManager;
+
+                relatorio.gerente_de_download = {
+                  existe: Boolean(gerente),
+                  downloadAndMaybeDecrypt: typeof gerente?.downloadAndMaybeDecrypt,
+                  metodos: gerente
+                    ? Object.keys(gerente).filter((k) => typeof gerente[k] === 'function').slice(0, 20)
+                    : [],
+                };
+
+                relatorio.wwebjs_base64 = typeof (window as any).WWebJS?.arrayBufferToBase64Async;
+
+                // A chamada de verdade, com o erro capturado por inteiro.
+                try {
+                  const mockQpl = {
+                    addAnnotations() {
+                      return this;
+                    },
+                    addPoint() {
+                      return this;
+                    },
+                  };
+
+                  // Mesmo prazo do caminho de producao: ha midia para a qual
+                  // esta chamada nunca resolve nem rejeita, e uma sonda
+                  // pendurada segura a conexao com o navegador igual.
+                  const controlador = new AbortController();
+                  const prazo = new Promise<'prazo_estourado'>((resolve) => {
+                    setTimeout(() => {
+                      controlador.abort();
+                      resolve('prazo_estourado');
+                    }, limiteMs);
+                  });
+
+                  const bruto = await Promise.race([
+                    gerente.downloadAndMaybeDecrypt({
+                      directPath: msg.directPath,
+                      encFilehash: msg.encFilehash,
+                      filehash: msg.filehash,
+                      mediaKey: msg.mediaKey,
+                      mediaKeyTimestamp: msg.mediaKeyTimestamp,
+                      type: msg.type,
+                      signal: controlador.signal,
+                      downloadQpl: mockQpl,
+                    }),
+                    prazo,
+                  ]);
+
+                  relatorio.tentativa = bruto === 'prazo_estourado'
+                    ? { ok: false, motivo: 'o download nao respondeu dentro do prazo' }
+                    : { ok: true, bytes: (bruto as any)?.byteLength ?? null };
+                } catch (erro: any) {
+                  const chaves = erro ? Object.getOwnPropertyNames(erro).slice(0, 20) : [];
+                  const valores: Record<string, string> = {};
+
+                  for (const chave of chaves) {
+                    try {
+                      const valor = erro[chave];
+                      valores[chave] = typeof valor === 'object' && valor !== null
+                        ? '[objeto]'
+                        : String(valor).slice(0, 200);
+                    } catch {
+                      valores[chave] = '[ilegivel]';
+                    }
+                  }
+
+                  relatorio.tentativa = {
+                    ok: false,
+                    nome: erro?.name ?? typeof erro,
+                    mensagem: erro?.message ?? String(erro),
+                    status: erro?.status ?? null,
+                    propriedades: valores,
+                  };
+                }
+
                 return relatorio;
               }
             }
@@ -585,6 +838,7 @@ export class WhatsAppClientService implements WhatsAppRuntime {
         'WAWebMediaDataUtils',
         'WAWebMsgGetMediaMethods',
       ],
+      DOWNLOAD_TIMEOUT_MS,
     );
   }
 

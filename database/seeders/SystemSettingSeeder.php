@@ -153,6 +153,92 @@ class SystemSettingSeeder extends Seeder
             ['group' => 'conversation_automation', 'key' => 'conversation_automation.unanswered_ack_min_exchanges', 'value' => '5', 'type' => 'integer', 'description' => 'Idas e voltas completas exigidas para usar o aviso institucional', 'is_public' => false],
             ['group' => 'conversation_automation', 'key' => 'conversation_automation.unanswered_ack_short_text', 'value' => 'Obrigado por escrever! Já te respondo.', 'type' => 'string', 'description' => 'Aviso curto para conversa que mal começou', 'is_public' => false],
             ['group' => 'conversation_automation', 'key' => 'conversation_automation.unanswered_ack_cooldown_hours', 'value' => '6', 'type' => 'integer', 'description' => 'Horas mínimas entre dois avisos de recebimento na mesma conversa', 'is_public' => false],
+            /*
+             | Atendimento de entrada: quem escreve primeiro.
+             |
+             | A chave nasce desligada e é separada de `conversation_automation.enabled`
+             | de propósito. Desligar o atendimento a quem procurou a gente não
+             | pode exigir desligar junto a pesquisa que já está rodando nos
+             | lotes, e o contrário também não.
+             */
+            ['group' => 'inbound_attendance', 'key' => 'inbound_attendance.enabled', 'value' => '0', 'type' => 'boolean', 'description' => 'Atender automaticamente quem escreve pela primeira vez', 'is_public' => false],
+            // Teto do dia somando todos os perfis. Contém enxurrada e contém
+            // laço de repetição, que foi como duas conversas chegaram a 771
+            // mensagens numa queda de sessão de 64 horas.
+            ['group' => 'inbound_attendance', 'key' => 'inbound_attendance.daily_start_limit', 'value' => '200', 'type' => 'integer', 'description' => 'Máximo de conversas abertas automaticamente por dia, somando os perfis', 'is_public' => false],
+            // Carência antes de uma conversa aparecer como pendente. Sem ela o
+            // contador subiria a cada mensagem recebida e desceria segundos
+            // depois, quando a automação respondesse — número que oscila
+            // sozinho ensina a ignorar o número.
+            ['group' => 'inbound_attendance', 'key' => 'inbound_attendance.pending_grace_minutes', 'value' => '5', 'type' => 'integer', 'description' => 'Minutos antes de considerar que a automação não resolveu a conversa', 'is_public' => false],
+            // A sincronização varre trinta dias. Sem recorte, uma execução
+            // mandaria abertura de atendimento para dezenas de conversas
+            // antigas de uma vez.
+            /*
+             | Idade máxima da mensagem que ainda merece uma abertura.
+             |
+             | A fila guarda conversa parada, e parada há muito tempo é o caso
+             | comum nela. A conversa 321 foi iniciada em 12/08 respondendo a um
+             | "Certo, obrigada" de 15/07: do lado da pessoa, uma conversa
+             | encerrada em julho voltou sozinha em agosto.
+             |
+             | Vale também no clique — "marcar todas" não olha data nenhuma.
+             */
+            ['group' => 'inbound_attendance', 'key' => 'inbound_attendance.max_message_age_hours', 'value' => '72', 'type' => 'integer', 'description' => 'Idade máxima da mensagem para abrir atendimento, inclusive no clique', 'is_public' => false],
+            ['group' => 'inbound_attendance', 'key' => 'inbound_attendance.sync_max_age_hours', 'value' => '72', 'type' => 'integer', 'description' => 'Idade máxima da mensagem trazida pela sincronização para abrir atendimento', 'is_public' => false],
+            /*
+             | Mensagem que não é de gente esperando resposta.
+             |
+             | Operadora avisa saldo, banco manda código, robô de recarga
+             | oferece serviço. O atendimento responderia a todos, apresentando
+             | uma pesquisa eleitoral a um sistema que não lê. Na primeira
+             | execução real havia uma dessas na fila: "Por aqui você pode
+             | recarregar um número Vivo".
+             |
+             | Frases inteiras, e não palavras soltas: `recarga` sozinha pegaria
+             | quem escreve sobre o preço da recarga, e é justamente essa pessoa
+             | que se quer atender.
+             |
+             | Só a forma acentuada. A comparação normaliza acento antes de
+             | casar, então "código" pega "codigo" também — guardar as duas era
+             | duplicata que dobrava a lista e não pegava nada a mais.
+             */
+            ['group' => 'inbound_attendance', 'key' => 'inbound_attendance.exclusion_expressions', 'value' => 'código de verificação|não compartilhe este código|seu código é|recarregar um número|você pode recarregar|saldo do seu plano|sua fatura está disponível|esta é uma mensagem automática da|para cancelar o recebimento responda|não responda esta mensagem', 'type' => 'string', 'description' => 'Frases que indicam robô ou operadora: não abrem atendimento nem ocupam a fila', 'is_public' => false],
+            /*
+             | Mídia recebida: guardar o arquivo, e por quanto tempo.
+             |
+             | Até aqui mídia era só metadado, e a conversa mostrava
+             | `[midia não baixada]`. O cache é preguiçoso: nada é baixado por
+             | chegar, só quando alguém precisa — o operador que abre a conversa
+             | ou a visão que vai descrever a imagem.
+             |
+             | A retenção existe porque é foto de gente no nosso disco. Passado
+             | o prazo o arquivo sai e o registro fica, para a conversa poder
+             | dizer que havia uma foto ali.
+             */
+            /*
+             | Números da própria equipe.
+             |
+             | O sistema não distingue quem atende de quem é atendido. A conversa
+             | de trabalho com a candidata — almoço com o candidato a vice,
+             | estratégia de campanha — caiu no mesmo funil de quem responde a
+             | uma pesquisa, e em 07/08/2026 ela recebeu "Recebemos sua mensagem,
+             | nossa equipe vai ler com atenção" duas vezes no mesmo segundo.
+             |
+             | Nenhuma regra de conteúdo pega isso: naquele dia ela tinha escrito
+             | "Oiii", que é o que qualquer eleitor escreve. O que distingue é
+             | quem está do outro lado.
+             |
+             | Não impede resposta manual, que é o que se quer numa conversa de
+             | trabalho.
+             */
+            ['group' => 'conversations', 'key' => 'conversations.internal_phones', 'value' => '5549991326174', 'type' => 'string', 'description' => 'Telefones da equipe: nunca recebem resposta automática', 'is_public' => false],
+            ['group' => 'conversations', 'key' => 'conversations.media_storage_enabled', 'value' => '0', 'type' => 'boolean', 'description' => 'Guardar em disco a mídia recebida quando alguém precisar dela', 'is_public' => false],
+            ['group' => 'conversations', 'key' => 'conversations.media_retention_days', 'value' => '90', 'type' => 'integer', 'description' => 'Dias que o arquivo de mídia fica em disco antes de ser apagado', 'is_public' => false],
+            ['group' => 'conversations', 'key' => 'conversations.media_max_bytes', 'value' => '16777216', 'type' => 'integer', 'description' => 'Tamanho máximo de mídia guardada, em bytes', 'is_public' => false],
+            // Mídia que a sessão não devolve continua não devolvendo, e cada
+            // tentativa é uma ida ao Puppeteer que segura a sessão de pé.
+            ['group' => 'conversations', 'key' => 'conversations.media_max_attempts', 'value' => '3', 'type' => 'integer', 'description' => 'Tentativas de buscar a mesma mídia antes de desistir', 'is_public' => false],
             // Teste que sai para um eleitor não é teste: é uma mensagem de
             // campanha mandada por engano, e não há como recolher.
             ['group' => 'whatsapp', 'key' => 'whatsapp.test_recipient_phone', 'value' => '5549991613378', 'type' => 'string', 'description' => 'Único telefone que pode receber mensagem de teste', 'is_public' => false],
@@ -160,6 +246,20 @@ class SystemSettingSeeder extends Seeder
             ['group' => 'ai', 'key' => 'ai.analysis_enabled', 'value' => '0', 'type' => 'boolean', 'description' => 'Habilitar análise da Etapa 9B: classificação e extração', 'is_public' => false],
             ['group' => 'ai', 'key' => 'ai.response_generation_enabled', 'value' => '0', 'type' => 'boolean', 'description' => 'Reservado para a Etapa 9C. Não implementado: deve permanecer desligado', 'is_public' => false],
             ['group' => 'ai', 'key' => 'ai.auto_send_enabled', 'value' => '0', 'type' => 'boolean', 'description' => 'Reservado para a Etapa 9C. Não implementado: deve permanecer desligado', 'is_public' => false],
+            /*
+             | Visão: a IA lê a imagem que a pessoa mandou.
+             |
+             | Foto e figurinha eram silêncio — o motor só avalia texto e a
+             | transcrição só trata áudio —, e o que sobrava era pedir que a
+             | pessoa escrevesse o que já tinha fotografado. Quem fotografa uma
+             | rua esburacada está dizendo alguma coisa.
+             |
+             | Custa por imagem, então nasce desligada. O prompt proíbe
+             | descrever aparência de gente: o que interessa é o assunto e o
+             | texto legível, não quem aparece na foto.
+             */
+            ['group' => 'ai', 'key' => 'ai.vision.enabled', 'value' => '0', 'type' => 'boolean', 'description' => 'Descrever por IA as imagens e figurinhas recebidas', 'is_public' => false],
+            ['group' => 'ai', 'key' => 'ai.vision.queue', 'value' => 'ai-interpretation', 'type' => 'string', 'description' => 'Fila da descrição de imagens', 'is_public' => false],
             ['group' => 'ai', 'key' => 'ai.classification_enabled', 'value' => '1', 'type' => 'boolean', 'description' => 'Sub-chave da análise: classificação por IA quando a regra determinística não conclui', 'is_public' => false],
             ['group' => 'ai', 'key' => 'ai.extraction_enabled', 'value' => '1', 'type' => 'boolean', 'description' => 'Sub-chave da análise: extração estruturada de insights', 'is_public' => false],
             ['group' => 'ai', 'key' => 'ai.queue', 'value' => 'ai-interpretation', 'type' => 'string', 'description' => 'Fila de interpretação por IA', 'is_public' => false],

@@ -13,6 +13,7 @@ use App\Services\AuditLogger;
 use App\Services\Conversations\ConversationEventService;
 use App\Services\Conversations\ConversationResolverService;
 use App\Services\Conversations\ConversationSyncService;
+use App\Services\Ai\ImageDescriptionService;
 use App\Services\ConversationAutomation\UnreadableMediaResponder;
 use App\Services\Conversations\OutgoingEchoMatcher;
 use App\Services\Conversations\ReplyInterruptionService;
@@ -189,13 +190,26 @@ class ProcessIncomingMessageJob implements ShouldQueue
                 // Áudio não tem texto para o motor avaliar. A transcrição corre
                 // primeiro e, dando certo, ela mesma devolve a mensagem ao fluxo.
                 DB::afterCommit(fn () => TranscribeIncomingAudioJob::dispatch($message->id));
+            } elseif (app(ImageDescriptionService::class)->enabled() && app(ImageDescriptionService::class)->handles($message)) {
+                /*
+                 | Imagem e figurinha passam pela visão antes do piso.
+                 |
+                 | Quem fotografa uma rua esburacada está dizendo alguma coisa,
+                 | e pedir que ela redija aquilo é devolver o trabalho para quem
+                 | já se deu ao trabalho. Não dando certo, o próprio job cai no
+                 | pedido por escrito — o silêncio é a única saída que não pode
+                 | acontecer.
+                 */
+                DB::afterCommit(fn () => DescribeIncomingImageJob::dispatch($message->id));
             } elseif (app(UnreadableMediaResponder::class)->handles($message)) {
                 /*
-                 | Figurinha, imagem, vídeo e documento não caíam em lugar
-                 | nenhum: o motor só avalia `text` e a transcrição só trata
-                 | áudio. O resultado era silêncio absoluto — uma figurinha
-                 | ficou dois dias sem retorno, e a conversa só voltou porque a
-                 | pessoa escreveu de novo por conta própria.
+                 | Vídeo e documento continuam sem leitura: o provedor recebe
+                 | imagem, e PDF exige extração de texto, que é outro caminho.
+                 |
+                 | Antes disto nada dali caía em lugar nenhum, e o resultado era
+                 | silêncio absoluto — uma figurinha ficou dois dias sem
+                 | retorno, e a conversa só voltou porque a pessoa escreveu de
+                 | novo por conta própria.
                  |
                  | Isto não lê a mídia. Diz que chegou e que o caminho é
                  | escrever, que é o mínimo que se deve a quem mandou.

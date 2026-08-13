@@ -95,6 +95,13 @@ enum PermissionSlug: string
     // uma conversa, esta liga e desliga o motor para toda a base e decide o
     // texto que sai sem revisão humana.
     case ConversationAutomationManageSettings = 'conversation_automation.manage_settings';
+    // Atendimento de entrada. `start` é separada de `manage_profiles` pela
+    // mesma razão que `control` é separada de `manage_settings`: iniciar uma
+    // conversa é decisão sobre uma pessoa, e editar o perfil é decidir o texto
+    // que sai para todas elas sem ninguém ler.
+    case InboundAttendanceView = 'inbound_attendance.view';
+    case InboundAttendanceStart = 'inbound_attendance.start';
+    case InboundAttendanceManageProfiles = 'inbound_attendance.manage_profiles';
     case AiInsightsView = 'ai_insights.view';
     case AiInsightsViewContactData = 'ai_insights.view_contact_data';
     case AiInsightsCorrect = 'ai_insights.correct';
@@ -251,6 +258,9 @@ enum PermissionSlug: string
             self::AnalyticsExportDetailed => 'Exportar dados detalhados com conteúdo',
             self::AnalyticsViewCosts => 'Ver custos de IA nos relatórios',
             self::AnalyticsViewGovernance => 'Ver relatório de governança',
+            self::InboundAttendanceView => 'Ver a fila de mensagens aguardando resposta',
+            self::InboundAttendanceStart => 'Iniciar conversa automática a partir da fila',
+            self::InboundAttendanceManageProfiles => 'Criar e editar perfis de atendimento de entrada',
         };
     }
 }

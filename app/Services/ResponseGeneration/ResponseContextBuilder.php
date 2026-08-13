@@ -138,12 +138,12 @@ class ResponseContextBuilder
         if ($bloco->count() > 1) {
             $numeradas = $bloco
                 ->values()
-                ->map(fn (ConversationMessage $item, int $indice): string => ($indice + 1).'. '.$this->truncate($item->body))
+                ->map(fn (ConversationMessage $item, int $indice): string => ($indice + 1).'. '.$this->truncate($item->readableText()))
                 ->implode("\n");
 
             $parts[] = "O QUE A PESSOA RESPONDEU ({$bloco->count()} mensagens seguidas, trate como uma resposta só):\n".$numeradas;
         } else {
-            $parts[] = "ÚLTIMA RESPOSTA DA PESSOA:\n".$this->truncate($message->body);
+            $parts[] = "ÚLTIMA RESPOSTA DA PESSOA:\n".$this->truncate($message->readableText());
         }
 
         $parts[] = 'APROFUNDAMENTOS JÁ ENVIADOS: '.$state->followups_count;
@@ -224,7 +224,8 @@ class ResponseContextBuilder
             ->where('direction', 'incoming')
             ->where('id', '<=', $message->id)
             ->when($ultimaSaida, fn ($query) => $query->where('id', '>', $ultimaSaida))
-            ->whereNotNull('body')
+            ->withReadableText()
+            ->with('transcriptions')
             ->orderBy('id')
             ->get();
     }
@@ -240,7 +241,8 @@ class ResponseContextBuilder
         return ConversationMessage::query()
             ->where('conversation_id', $message->conversation_id)
             ->where('id', '<', $antesDe)
-            ->whereNotNull('body')
+            ->withReadableText()
+            ->with('transcriptions')
             ->latest('id')
             ->limit($limit)
             ->get()
@@ -248,7 +250,7 @@ class ResponseContextBuilder
             ->map(function (ConversationMessage $item): string {
                 $who = $item->direction->value === 'incoming' ? 'Pessoa' : 'Pesquisa';
 
-                return $who.': '.$this->truncate($item->body);
+                return $who.': '.$this->truncate($item->readableText());
             })
             ->values()
             ->all();

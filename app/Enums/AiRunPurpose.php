@@ -13,6 +13,10 @@ enum AiRunPurpose: string
     // não quanto cada endpoint gastou.
     case TranscribeAudio = 'transcribe_audio';
 
+    // Descrição de imagem recebida. Mesma razão da transcrição: é a máquina
+    // lendo uma mídia que a pessoa mandou, e o custo aparece junto do resto.
+    case DescribeImage = 'describe_image';
+
     public function label(): string
     {
         return match ($this) {
@@ -20,6 +24,7 @@ enum AiRunPurpose: string
             self::ExtractInsight => 'Extração de insight',
             self::GenerateReply => 'Geração de resposta',
             self::TranscribeAudio => 'Transcrição de áudio',
+            self::DescribeImage => 'Descrição de imagem',
         };
     }
 }

@@ -16,6 +16,9 @@ Schedule::command('reports:rebuild-metrics')->dailyAt('02:00')->withoutOverlappi
 Schedule::command('inbox:recover-stuck')->everyFiveMinutes()->withoutOverlapping();
 Schedule::command('inbox:sync-unread-counts')->hourly()->withoutOverlapping();
 Schedule::command('inbox:archive-resolved')->daily()->withoutOverlapping();
+// Arquivo de mídia vencido sai do disco; o registro fica. É foto de gente, e
+// guardar para sempre não é decisão que se toma por omissão.
+Schedule::command('conversations:prune-attachments')->daily()->withoutOverlapping();
 Schedule::command('conversations:sync --queue')->everyFifteenMinutes()->withoutOverlapping();
 
 // Rede de segurança das conversas: age so onde a automação já teve tempo e não

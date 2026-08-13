@@ -17,6 +17,7 @@ use App\Observers\ConversationObserver;
 use App\Services\Ai\AiProviderSettings;
 use App\Services\WhatsApp\MetaSettings;
 use App\Services\Ai\Providers\OpenAiCompatibleTranscriber;
+use App\Services\InboundAttendance\InboundAttendanceQueue;
 use App\Services\Knowledge\GroundingValidator;
 use App\Services\Knowledge\KnowledgeProviderManager;
 use App\Services\Knowledge\LocalKnowledgeRetriever;
@@ -221,6 +222,18 @@ class AppServiceProvider extends ServiceProvider
             $view->with('dateFormat', $settings->get('system.date_format', 'd/m/Y'));
             $view->with('dateTimeFormat', $settings->get('system.datetime_format', 'd/m/Y H:i'));
             $view->with('unreadConversationsCount', $unreadConversationsCount);
+
+            /*
+             | Contador de mensagens aguardando resposta.
+             |
+             | Vai em toda tela de propósito. O que ele conta é conversa em que
+             | a pessoa falou por último e a automação não resolveu — e uma
+             | pendência dessas não espera alguém passar pelo painel: cada hora
+             | parada é uma hora de silêncio para quem escreveu.
+             */
+            $view->with('inboundPendingCount', $user && $user->can('inbound_attendance.view')
+                ? app(InboundAttendanceQueue::class)->pendingCount($user)
+                : 0);
         });
     }
 }

@@ -17,6 +17,7 @@ use App\Models\ConversationMessage;
 use App\Models\ConversationReplySuggestion;
 use App\Models\WhatsAppConnection;
 use App\Services\Conversations\ConversationEventService;
+use App\Services\Conversations\InternalNumbers;
 use App\Services\Conversations\ConversationReplyService;
 use App\Services\ResponseGeneration\ConversationSuggestionService;
 use App\Services\SystemSettingService;
@@ -58,6 +59,19 @@ class PendingReplyResolver
     {
         if ($this->alreadyHandled($conversa, $mensagem)) {
             return ['outcome' => 'ja_tratada', 'reason' => null];
+        }
+
+        /*
+         | A equipe não é atendida pela própria rede.
+         |
+         | O sistema não distingue quem atende de quem é atendido: a conversa de
+         | trabalho com a candidata caiu no mesmo funil de quem responde a uma
+         | pesquisa, e ela recebeu "Recebemos sua mensagem, nossa equipe vai ler
+         | com atenção" duas vezes no mesmo segundo. Nenhuma regra de conteúdo
+         | pega isso — naquele dia ela tinha escrito "Oiii".
+         */
+        if (app(InternalNumbers::class)->coversConversation($conversa)) {
+            return ['outcome' => 'numero_interno', 'reason' => null];
         }
 
         /*

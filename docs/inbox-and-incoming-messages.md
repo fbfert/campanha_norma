@@ -63,7 +63,9 @@ has_media
 metadata
 ```
 
-Mensagens de grupo são ignoradas. Midias são registradas apenas por metadados nesta etapa.
+Mensagens de grupo são ignoradas.
+
+Mídia entra pelo webhook apenas como metadado. O arquivo é buscado depois, quando alguém precisa dele — o operador que abre a conversa ou a visão que vai descrever a imagem. Ver `docs/midia-recebida.md`.
 
 ## Idempotência
 
@@ -154,6 +156,8 @@ Resultados possíveis:
 - `invalid_phone`
 
 Contato não encontrado cria conversa sem `contact_id`. O usuário deve associar manualmente ou criar contato em fluxo controlado.
+
+O atendimento de entrada (`docs/inbound-attendance.md`) cria o contato sozinho no momento em que abre a conversa automática — e só nesse momento, para a base não crescer com todo número que mandou um "oi" e nunca mais voltou.
 
 ## Interrupção dos lotes
 

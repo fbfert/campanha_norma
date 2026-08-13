@@ -203,7 +203,10 @@ class InboxController extends Controller
         $audit->log('conversation.read', 'Conversa marcada como lida.', $conversation, null, null, $request->user());
 
         return view('admin.inbox.show', [
-            'conversation' => $conversation->load(['contact', 'assignee', 'messages.creator', 'events', 'notes.user', 'tags']),
+            // `medium` e `transcriptions` vêm junto: sem eles, a linha do tempo
+            // faz duas consultas por mensagem só para decidir se mostra a
+            // imagem ou o motivo de não ter conseguido.
+            'conversation' => $conversation->load(['contact', 'assignee', 'messages.creator', 'messages.medium', 'messages.transcriptions', 'events', 'notes.user', 'tags']),
             'users' => User::where('status', 'active')->orderBy('name')->get(),
             'tags' => ConversationTag::where('is_active', true)->orderBy('name')->get(),
             'contacts' => Contact::orderBy('name')->limit(100)->get(),
@@ -220,7 +223,7 @@ class InboxController extends Controller
         $afterId = $request->integer('after_id');
 
         $messages = $conversation->messages()
-            ->with('creator')
+            ->with(['creator', 'medium', 'transcriptions'])
             ->where('id', '>', $afterId)
             ->latest('id')
             ->get();
@@ -234,6 +237,7 @@ class InboxController extends Controller
 
         $html = $messages->map(fn ($message) => view('admin.inbox._message', [
             'message' => $message,
+            'conversation' => $conversation,
             'dateTimeFormat' => $dateTimeFormat,
         ])->render())->implode('');
 

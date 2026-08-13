@@ -49,7 +49,7 @@ class OpenAiCompatibleProvider implements AiProvider
                 'max_tokens' => $request->maxOutputTokens ?? (int) config('ai.max_output_tokens'),
                 'messages' => [
                     ['role' => 'system', 'content' => $request->systemPrompt],
-                    ['role' => 'user', 'content' => $request->userPrompt],
+                    ['role' => 'user', 'content' => $this->userContent($request)],
                 ],
                 // Saída estruturada exigida no próprio protocolo. A validação
                 // local roda de qualquer forma, sem confiar no provedor.
@@ -76,6 +76,39 @@ class OpenAiCompatibleProvider implements AiProvider
         $this->assertSuccessful($response);
 
         return $this->result($response, $model, $latencyMs);
+    }
+
+    /**
+     * Conteúdo da mensagem do usuário: texto, ou texto mais imagem.
+     *
+     * Sem imagem continua sendo uma string simples, e não uma lista de uma
+     * parte só. O formato antigo é aceito por servidores compatíveis que nunca
+     * implementaram partes — trocá-lo por gosto quebraria instalação que
+     * funciona hoje.
+     *
+     * @return string|array<int, array<string, mixed>>
+     */
+    private function userContent(AiCompletionRequest $request): string|array
+    {
+        if ($request->imageDataUri === null) {
+            return $request->userPrompt;
+        }
+
+        return [
+            ['type' => 'text', 'text' => $request->userPrompt],
+            [
+                'type' => 'image_url',
+                'image_url' => [
+                    'url' => $request->imageDataUri,
+
+                    // Resolução baixa de propósito. O que se quer saber é do
+                    // que a foto trata e o que está escrito nela, não o
+                    // detalhe do fundo — e alta resolução multiplica o custo
+                    // por imagem sem mudar essa resposta.
+                    'detail' => 'low',
+                ],
+            ],
+        ];
     }
 
     private function request(string $key)

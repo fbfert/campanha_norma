@@ -16,7 +16,83 @@
         @endif
     </div>
     @can('inbox.view_message_content')
-        <p>{{ $message->body ?: ($message->has_media ? '[midia não baixada]' : '') }}</p>
+        @if($message->has_media)
+            {{--
+                A mídia é servida por rota autenticada, e não daqui.
+
+                O arquivo só é buscado do WhatsApp quando o navegador pede a
+                URL: renderizar a página não pode disparar uma ida ao Puppeteer
+                por imagem visível, porque é o mesmo processo que segura a
+                sessão de pé. O `loading="lazy"` e o `preload="none"` fecham a
+                conta — o que está fora da tela nem chega a ser pedido.
+            --}}
+            @php $medium = $message->medium; @endphp
+
+            @if($medium?->needsExplanation())
+                <p class="muted">
+                    <x-icon name="alert" size="16" />
+                    {{ $medium->status === \App\Enums\MediaStorageStatus::Purged
+                        ? 'Havia um arquivo aqui. Ele passou do prazo de retenção e foi apagado.'
+                        : ($medium->status === \App\Enums\MediaStorageStatus::TooLarge
+                            ? 'Arquivo grande demais para ser guardado.'
+                            : 'Não foi possível baixar este arquivo da sessão do WhatsApp.') }}
+                </p>
+                <p class="muted">
+                    {{ $medium->error_message }}
+                </p>
+            @else
+                @php $url = route('admin.inbox.messages.media', [$conversation ?? $message->conversation_id, $message]); @endphp
+
+                @switch($message->message_type)
+                    @case('image')
+                    @case('sticker')
+                        <a href="{{ $url }}" target="_blank" rel="noopener">
+                            <img class="message-media" src="{{ $url }}" alt="Imagem recebida na conversa" loading="lazy">
+                        </a>
+                        @break
+
+                    @case('ptt')
+                    @case('audio')
+                        <audio class="message-media" controls preload="none" src="{{ $url }}">
+                            Seu navegador não toca áudio. <a href="{{ $url }}">Baixar o arquivo</a>.
+                        </audio>
+                        @break
+
+                    @case('video')
+                        <video class="message-media" controls preload="none" src="{{ $url }}">
+                            Seu navegador não toca vídeo. <a href="{{ $url }}">Baixar o arquivo</a>.
+                        </video>
+                        @break
+
+                    @default
+                        <p><a class="btn ghost" href="{{ $url }}" target="_blank" rel="noopener"><x-icon name="download" size="16" />Abrir arquivo recebido</a></p>
+                @endswitch
+            @endif
+        @endif
+
+        @if(filled($message->body))
+            <p>{{ $message->body }}</p>
+        @endif
+
+        {{--
+            O que a máquina ouviu ou viu não é o que a pessoa escreveu.
+
+            A transcrição fica marcada, e não vira o corpo da mensagem: numa
+            pesquisa, a diferença entre o que foi escrito e o que foi ouvido por
+            uma máquina muda o peso do dado.
+        --}}
+        @php $lida = $message->transcription(); @endphp
+        @if($lida?->text)
+            <p class="muted">
+                <x-icon name="sparkles" size="16" />
+                <em>{{ $lida->media_type === 'image' || $lida->media_type === 'sticker' ? 'Descrição automática' : 'Transcrição automática' }}:</em>
+                {{ $lida->text }}
+            </p>
+        @endif
+
+        @if(! $message->has_media && blank($message->body))
+            <p class="muted">Mensagem sem conteúdo.</p>
+        @endif
     @else
         <p class="muted">Conteúdo protegido.</p>
     @endcan

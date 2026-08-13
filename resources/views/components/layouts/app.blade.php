@@ -34,6 +34,15 @@
                     </div>
                 </div>
                 <div class="actions">
+                    {{-- O aviso fica no topo, e não só no painel: pendência de
+                         resposta não espera alguém passar pelo painel. Cada hora
+                         parada é uma hora de silêncio para quem escreveu. --}}
+                    @if(($inboundPendingCount ?? 0) > 0)
+                        <a class="btn secondary" href="{{ route('admin.inbound-attendance.index') }}">
+                            <x-icon name="bell" size="16" />
+                            {{ $inboundPendingCount }} {{ $inboundPendingCount === 1 ? 'mensagem aguarda resposta' : 'mensagens aguardam resposta' }}
+                        </a>
+                    @endif
                     <span>{{ auth()->user()->name }}</span>
                     <span class="muted">{{ auth()->user()->roles->pluck('name')->join(', ') }}</span>
                     <a class="btn ghost" href="{{ route('profile.show') }}"><x-icon name="user" size="16" />Perfil</a>

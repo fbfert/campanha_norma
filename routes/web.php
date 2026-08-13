@@ -15,7 +15,10 @@ use App\Http\Controllers\Admin\ConversationAutomation\ConversationAutomationSett
 use App\Http\Controllers\Admin\ConversationAutomation\ConversationFlowController;
 use App\Http\Controllers\Admin\ConversationAutomation\ConversationFlowQuestionController;
 use App\Http\Controllers\Admin\ConversationAutomation\ConversationFlowStateController;
+use App\Http\Controllers\Admin\InboundAttendance\InboundAttendanceProfileController;
+use App\Http\Controllers\Admin\InboundAttendance\InboundAttendanceQueueController;
 use App\Http\Controllers\Admin\Histories\MessageHistoryController;
+use App\Http\Controllers\Admin\Inbox\ConversationMediaController;
 use App\Http\Controllers\Admin\Inbox\InboxController;
 use App\Http\Controllers\Admin\Knowledge\KnowledgeBaseController;
 use App\Http\Controllers\Admin\Knowledge\KnowledgeDocumentController;
@@ -119,6 +122,7 @@ Route::middleware(['auth', 'password.changed'])->group(function (): void {
         Route::post('/conversations/sync', [InboxController::class, 'sync'])->name('conversations.sync');
         Route::post('/inbox/{conversation}/read', [InboxController::class, 'show'])->name('inbox.read');
         Route::get('/inbox/{conversation}/messages', [InboxController::class, 'messages'])->name('inbox.messages');
+        Route::get('/inbox/{conversation}/messages/{message}/media', [ConversationMediaController::class, 'show'])->name('inbox.messages.media');
         Route::post('/inbox/{conversation}/reply', [InboxController::class, 'reply'])->name('inbox.reply');
         Route::post('/inbox/{conversation}/assign', [InboxController::class, 'assign'])->name('inbox.assign');
         Route::post('/inbox/{conversation}/unassign', [InboxController::class, 'unassign'])->name('inbox.unassign');
@@ -152,6 +156,20 @@ Route::middleware(['auth', 'password.changed'])->group(function (): void {
         Route::put('/conversation-flows/{conversationFlow}/questions/{question}', [ConversationFlowQuestionController::class, 'update'])->name('conversation-flows.questions.update');
         Route::delete('/conversation-flows/{conversationFlow}/questions/{question}', [ConversationFlowQuestionController::class, 'destroy'])->name('conversation-flows.questions.destroy');
         Route::resource('conversation-flows', ConversationFlowController::class)->parameters(['conversation-flows' => 'conversationFlow']);
+
+        // Perfis antes da fila: sem isto, `profiles` seria capturado como
+        // parâmetro pela rota de detalhe da fila, se ela ganhar uma um dia.
+        Route::post('/inbound-attendance/toggle', [InboundAttendanceProfileController::class, 'toggle'])->name('inbound-attendance.toggle');
+        Route::put('/inbound-attendance/exclusions', [InboundAttendanceProfileController::class, 'updateExclusions'])->name('inbound-attendance.exclusions');
+        Route::get('/inbound-attendance/profiles', [InboundAttendanceProfileController::class, 'index'])->name('inbound-attendance.profiles.index');
+        Route::get('/inbound-attendance/profiles/create', [InboundAttendanceProfileController::class, 'create'])->name('inbound-attendance.profiles.create');
+        Route::post('/inbound-attendance/profiles', [InboundAttendanceProfileController::class, 'store'])->name('inbound-attendance.profiles.store');
+        Route::get('/inbound-attendance/profiles/{profile}/edit', [InboundAttendanceProfileController::class, 'edit'])->name('inbound-attendance.profiles.edit');
+        Route::put('/inbound-attendance/profiles/{profile}', [InboundAttendanceProfileController::class, 'update'])->name('inbound-attendance.profiles.update');
+        Route::delete('/inbound-attendance/profiles/{profile}', [InboundAttendanceProfileController::class, 'destroy'])->name('inbound-attendance.profiles.destroy');
+
+        Route::get('/inbound-attendance', [InboundAttendanceQueueController::class, 'index'])->name('inbound-attendance.index');
+        Route::post('/inbound-attendance/start', [InboundAttendanceQueueController::class, 'start'])->name('inbound-attendance.start');
 
         Route::get('/ai-insights', [ConversationInsightController::class, 'index'])->name('ai-insights.index');
         Route::get('/ai-insights/{insight}', [ConversationInsightController::class, 'show'])->name('ai-insights.show');

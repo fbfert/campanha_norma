@@ -75,6 +75,11 @@ class RolePermissionSeeder extends Seeder
                 PermissionSlug::InboxSync,
                 PermissionSlug::ConversationAutomationView,
                 PermissionSlug::ConversationAutomationControl,
+                // Operador vê a fila e inicia conversa, que é operação. Editar
+                // o perfil decide o texto que sai para todo mundo sem ninguém
+                // ler antes, e isso fica com quem responde por ele.
+                PermissionSlug::InboundAttendanceView,
+                PermissionSlug::InboundAttendanceStart,
                 PermissionSlug::AiInsightsView,
                 PermissionSlug::AiInsightsCorrect,
                 PermissionSlug::ReplySuggestionsView,
@@ -107,6 +112,7 @@ class RolePermissionSeeder extends Seeder
                 PermissionSlug::ReportsView,
                 PermissionSlug::InboxView,
                 PermissionSlug::ConversationAutomationView,
+                PermissionSlug::InboundAttendanceView,
                 PermissionSlug::AiInsightsView,
                 PermissionSlug::ReplySuggestionsView,
                 PermissionSlug::KnowledgeView,

@@ -81,10 +81,29 @@ class ConversationMessage extends Model
     }
 
     /**
+     * Arquivo desta mídia, se alguém já precisou dele.
+     *
+     * Carregar junto com as mensagens é o que permite a tela saber, sem ir ao
+     * provedor, que uma mídia não pôde ser recuperada — e dizer isso, em vez de
+     * apontar um `<img>` para um arquivo que não existe.
+     */
+    public function medium(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(ConversationMessageMedium::class, 'conversation_message_id');
+    }
+
+    /**
      * Transcrição que vale para esta mensagem.
      */
     public function transcription(): ?MessageTranscription
     {
+        // Com a relação já carregada, procurar na coleção em vez de consultar:
+        // a linha do tempo chama isto uma vez por mensagem, e sem esta guarda
+        // são cinquenta consultas para desenhar uma conversa.
+        if ($this->relationLoaded('transcriptions')) {
+            return $this->transcriptions->firstWhere('status', TranscriptionStatus::Succeeded);
+        }
+
         return $this->transcriptions()
             ->where('status', TranscriptionStatus::Succeeded)
             ->first();
@@ -93,9 +112,16 @@ class ConversationMessage extends Model
     /**
      * O texto que representa esta mensagem para quem precisa lê-la.
      *
-     * Áudio chega com corpo vazio. Onde ha transcrição aproveitável, ela ocupa
-     * esse lugar — sem sobrescrever o corpo, que continua sendo o registro do
-     * que de fato chegou.
+     * Áudio e imagem chegam com corpo vazio. Onde ha transcrição ou descrição
+     * aproveitável, ela ocupa esse lugar — sem sobrescrever o corpo, que
+     * continua sendo o registro do que de fato chegou.
+     *
+     * Este método existia e não era chamado por ninguém: o classificador, os
+     * construtores de contexto e o gerador de resposta liam `body` direto. O
+     * efeito era um áudio transcrito com sucesso chegar ao motor como texto
+     * vazio, virar `ambiguous` e ir para atendimento humano — a transcrição era
+     * paga, gravada e ignorada. Como a transcrição estava desligada em
+     * produção, ninguém percebeu.
      */
     public function readableText(): string
     {
@@ -104,6 +130,21 @@ class ConversationMessage extends Model
         }
 
         return (string) ($this->transcription()?->text ?? '');
+    }
+
+    /**
+     * Mensagens que têm texto para ler, incluindo o que a máquina extraiu.
+     *
+     * As consultas de histórico filtravam `body` não nulo, o que descartava
+     * silenciosamente todo áudio e toda imagem do contexto mandado ao modelo.
+     */
+    public function scopeWithReadableText(\Illuminate\Database\Eloquent\Builder $query): \Illuminate\Database\Eloquent\Builder
+    {
+        return $query->where(function (\Illuminate\Database\Eloquent\Builder $query): void {
+            $query
+                ->whereNotNull('body')
+                ->orWhereHas('transcriptions', fn ($sub) => $sub->where('status', TranscriptionStatus::Succeeded));
+        });
     }
 
     public function contact(): BelongsTo

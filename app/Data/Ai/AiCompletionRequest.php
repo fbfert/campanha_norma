@@ -13,6 +13,12 @@ readonly class AiCompletionRequest
     /**
      * @param  array<string, mixed>  $jsonSchema
      */
+    /**
+     * @param  ?string  $imageDataUri  Imagem a ser lida junto do texto, como
+     *                                 `data:image/jpeg;base64,...`. Só o
+     *                                 provedor sabe como acomodá-la no
+     *                                 protocolo dele; aqui ela é só um dado.
+     */
     public function __construct(
         public string $systemPrompt,
         public string $userPrompt,
@@ -21,6 +27,7 @@ readonly class AiCompletionRequest
         public ?string $model = null,
         public ?int $maxOutputTokens = null,
         public ?float $temperature = null,
+        public ?string $imageDataUri = null,
     ) {}
 
     /**
@@ -37,6 +44,10 @@ readonly class AiCompletionRequest
             $this->schemaName,
             $this->systemPrompt,
             $this->userPrompt,
+            // A imagem entra pelo resumo, e não inteira: o hash existe para
+            // correlacionar chamadas, e concatenar seis megabytes de base64
+            // para depois reduzi-los a 64 caracteres é trabalho jogado fora.
+            $this->imageDataUri === null ? '' : hash('sha256', $this->imageDataUri),
         ]));
     }
 }

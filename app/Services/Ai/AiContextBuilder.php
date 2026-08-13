@@ -34,7 +34,7 @@ class AiContextBuilder
             $parts[] = "MENSAGENS ANTERIORES DESTA MESMA CONVERSA:\n".implode("\n", $previous);
         }
 
-        $parts[] = "MENSAGEM A CLASSIFICAR:\n".$this->truncate($message->body);
+        $parts[] = "MENSAGEM A CLASSIFICAR:\n".$this->truncate($message->readableText());
 
         if ($message->has_media) {
             $parts[] = 'OBSERVAÇÃO: a mensagem possui midia anexada que não foi enviada para análise.';
@@ -69,7 +69,7 @@ class AiContextBuilder
             $parts[] = "MENSAGENS ANTERIORES DESTA MESMA CONVERSA:\n".implode("\n", $previous);
         }
 
-        $parts[] = "RESPOSTA A ANALISAR:\n".$this->truncate($message->body);
+        $parts[] = "RESPOSTA A ANALISAR:\n".$this->truncate($message->readableText());
 
         return implode("\n\n", $parts);
     }
@@ -90,7 +90,8 @@ class AiContextBuilder
         return ConversationMessage::query()
             ->where('conversation_id', $message->conversation_id)
             ->where('id', '<', $message->id)
-            ->whereNotNull('body')
+            ->withReadableText()
+            ->with('transcriptions')
             ->latest('id')
             ->limit($limit)
             ->get()
@@ -98,7 +99,7 @@ class AiContextBuilder
             ->map(function (ConversationMessage $item): string {
                 $who = $item->direction->value === 'incoming' ? 'Contato' : 'Sistema';
 
-                return $who.': '.$this->truncate($item->body);
+                return $who.': '.$this->truncate($item->readableText());
             })
             ->values()
             ->all();

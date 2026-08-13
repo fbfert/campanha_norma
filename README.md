@@ -664,6 +664,30 @@ Relatórios analíticos, exportação, governança e retenção. Somente leitura
 - Sete permissões novas separando agregado, conteúdo, identificação, exportação agregada, exportação detalhada, custo e governança.
 - Documentação de fórmulas com numerador, denominador e exclusões de cada taxa.
 
+## Escopo implementado — Atendimento de entrada e leitura de mídia
+
+Quem escreve primeiro passa a ser atendido, e a mídia recebida passa a ser vista, ouvida e lida. Até aqui todo fluxo nascia de um lote: quem escrevia por conta própria caía num motor sem estado, que saía calado.
+
+- Perfis de atendimento de entrada — o equivalente do lote para quem escreve primeiro: fluxo, texto de abertura, janela, teto diário e homologação. A seleção não é nossa, é de quem escreve.
+- Roteamento por conteúdo da mensagem, com **perfil de fallback obrigatório**: ninguém escreve pensando na nossa lista de expressões, e quem escreve fora dela é quem mais precisa de resposta.
+- Fila de mensagens aguardando resposta, com contador no topo de toda tela e no painel, seleção individual ou por página, e o motivo de cada conversa parada à vista.
+- Contato criado no momento em que a conversa automática começa, com origem `recebido` e consentimento **não presumido**: escrever para nós autoriza responder, não autoriza entrar em campanha.
+- Travas: chave geral própria, teto diário por perfil e global, janela de horário, homologação por clique nas primeiras conversas, sessão conectada, idade máxima da mensagem, expressões de exclusão para robô e operadora, e lista de números da própria equipe.
+- Mídia recebida guardada em disco privado, sob demanda e com retenção de 90 dias; imagem, figurinha, áudio e vídeo aparecem na conversa por rota autenticada.
+- Descrição de imagem por visão e transcrição de áudio, ambas gravadas como texto extraído por máquina e distinguíveis do que a pessoa escreveu.
+- Download de mídia por caminho próprio no serviço Node, contornando o passo de resolução que o whatsapp-web.js perdeu contra a build atual do WhatsApp Web.
+
+Documentação complementar:
+
+- `docs/inbound-attendance.md`
+- `docs/midia-recebida.md`
+
+## Não implementado — Atendimento de entrada e leitura de mídia
+
+- Leitura de vídeo e de documento. O provedor de visão recebe imagem, e um quadro solto descreveria o quadro, não o vídeo; PDF exige extração de texto, que é outro caminho. Os dois seguem recebendo o pedido por escrito.
+- Envio de mídia. Continua fora de escopo: o sistema lê o que chega e responde por texto.
+- Estabilidade do download contra mudanças do WhatsApp Web. O contorno depende de módulos internos não documentados e **vai quebrar de novo** quando eles forem renomeados. O sintoma será mídia parando de descer; o endpoint de diagnóstico responde em segundos qual peça caiu.
+
 ## Não implementado nesta etapa — Etapa 9E
 
 - Biblioteca de gráficos. Os gráficos pedidos são barra, série simples e tabela; uma dependência de terceiros acrescentaria bundle, superfície de atualização e ponto de falha no build sem melhorar a leitura.

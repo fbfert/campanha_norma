@@ -3,6 +3,7 @@
 namespace App\Services\ConversationAutomation;
 
 use App\Enums\ContactStatus;
+use App\Models\Conversation;
 use App\Models\ConversationFlowState;
 use App\Services\SystemSettingService;
 use Illuminate\Support\Carbon;
@@ -119,11 +120,26 @@ class ConversationAutomationGuard
      * para sair, quem está inativo e o horário. Nada disso tem a ver com o
      * estado da pesquisa.
      *
+     * @param  ?Conversation  $conversation  A conversa, quando não ha estado de
+     *                                       fluxo de onde tirá-la.
      * @return array{allowed: bool, reason: ?string}
      */
-    public function canSendSafetyNet(?ConversationFlowState $state): array
+    public function canSendSafetyNet(?ConversationFlowState $state, ?Conversation $conversation = null): array
     {
-        $contact = $state?->conversation?->contact;
+        /*
+         | O contato vem da conversa, e não do estado do fluxo.
+         |
+         | Tirá-lo só do estado recusava exatamente a população que a rede de
+         | segurança existe para atender: conversa que nunca entrou em pesquisa
+         | não tem estado, e `sendWithoutFlow` foi escrito justamente para ela.
+         | O aviso era criado, enfileirado, e recusado no último passo com
+         | `contato_nao_identificado` — em conversa com contato identificado.
+         |
+         | Na conversa da Norma Rodrigues, contato 1020, isso se repetiu a cada
+         | cinco minutos: dezenas de "Recebemos sua mensagem" gravados como
+         | falha, e ela sem receber nenhum.
+         */
+        $contact = ($state?->conversation ?? $conversation)?->contact;
 
         if (! $contact) {
             return $this->deny('contato_nao_identificado');

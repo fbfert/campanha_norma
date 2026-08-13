@@ -59,7 +59,12 @@ class SendAutomatedConversationReplyJob implements ShouldQueue
         // o que protege a pessoa — opt-out, contato inativo, horário — e larga
         // o que só descreve o estado da pesquisa.
         if ($state || $this->safetyNet) {
-            $check = $this->safetyNet ? $guard->canSendSafetyNet($state) : $guard->canSend($state);
+            // A conversa vai junto: sem estado de fluxo não ha de onde tirar o
+            // contato, e era assim que o aviso morria em conversa que nunca
+            // entrou em pesquisa — justamente a que mais precisa dele.
+            $check = $this->safetyNet
+                ? $guard->canSendSafetyNet($state, $message->conversation)
+                : $guard->canSend($state);
             if (! $check['allowed']) {
                 $message->update([
                     'status' => ConversationMessageStatus::Failed,

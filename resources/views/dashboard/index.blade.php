@@ -116,6 +116,15 @@
     </div>
     <h2>Atendimento</h2>
     <div class="grid grid-3">
+        @can('inbound_attendance.view')
+            {{-- O mesmo número do topo, clicável, ao lado das outras filas de
+                 atendimento. Um cartão que só mostra zero não pede nada, e é
+                 exatamente isso que se quer ver de manhã. --}}
+            <section class="card">
+                <strong>Aguardando resposta</strong>
+                <h2><a href="{{ route('admin.inbound-attendance.index') }}">{{ $inboundPendingCount ?? 0 }}</a></h2>
+            </section>
+        @endcan
         <section class="card"><strong>Novas mensagens</strong><h2>{{ $inboxMetrics['new'] ?? 0 }}</h2></section>
         <section class="card"><strong>Aguardando operador</strong><h2>{{ $inboxMetrics['waiting_operator'] ?? 0 }}</h2></section>
         <section class="card"><strong>Sem responsável</strong><h2>{{ $inboxMetrics['unassigned'] ?? 0 }}</h2></section>
