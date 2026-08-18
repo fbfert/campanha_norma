@@ -70,6 +70,13 @@ class Breadcrumbs
         'Mensagens / Processamento' => [null, null],
         'Atendimento / Conversas' => [null, null],
         'Mensagens / Processamento / Tentativas' => [null, 'admin.message-processing.index', null],
+        'Inicio / Campanhas por palavra-chave' => ['dashboard', null],
+        'Inicio / Campanhas por palavra-chave / Nova' => ['dashboard', 'admin.keyword-campaigns.index', null],
+        'Inicio / Campanhas por palavra-chave / Editar' => ['dashboard', 'admin.keyword-campaigns.index', null],
+        'Inicio / Campanhas por palavra-chave / Participantes' => ['dashboard', 'admin.keyword-campaigns.index', null],
+        'Inicio / Campanhas por palavra-chave / Conferência' => ['dashboard', 'admin.keyword-campaigns.index', null],
+        'Inicio / Campanhas por palavra-chave / Sorteio' => ['dashboard', 'admin.keyword-campaigns.index', null],
+
         'Inicio / Atendimento de entrada' => ['dashboard', null],
         'Inicio / Atendimento de entrada / Perfis' => ['dashboard', 'admin.inbound-attendance.index', null],
         'Inicio / Atendimento de entrada / Perfis / Novo' => ['dashboard', 'admin.inbound-attendance.index', 'admin.inbound-attendance.profiles.index', null],

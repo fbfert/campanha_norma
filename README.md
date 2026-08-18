@@ -664,6 +664,42 @@ Relatórios analíticos, exportação, governança e retenção. Somente leitura
 - Sete permissões novas separando agregado, conteúdo, identificação, exportação agregada, exportação detalhada, custo e governança.
 - Documentação de fórmulas com numerador, denominador e exclusões de cada taxa.
 
+## Escopo implementado — Etapa 10
+
+Captação por palavra-chave: quem escreve a palavra divulgada vira um inscrito, com prova de origem, lista conferível, congelamento e sorteio auditável. A Etapa 9 fechou o caso de quem escreve por conta própria; esta fecha o de quem escreve **porque foi convidado a escrever**.
+
+- Campanha por palavra-chave com vigência, limite de participantes, alarme de rajada por hora e textos próprios de confirmação, de já inscrito e de fora de vigência.
+- Gatilho avaliado **dentro** de `EvaluateConversationFlowJob`, antes do roteamento e sob a trava por conversa que o job já segura. Registra inscrição também para quem está no meio de uma pesquisa, sem tocar no estágio do fluxo.
+- Casamento determinístico por palavra inteira sobre texto normalizado, sem IA e sem tolerância a erro de digitação, reaproveitando a regra que já existia no roteamento de entrada.
+- Uma mensagem por pessoa: quando a campanha responde, a abertura do atendimento de entrada é suprimida para aquela mensagem.
+- Contato criado a partir da palavra-chave com origem `gatilho` e consentimento **concedido com finalidade registrada** — participar da campanha, e não receber disparo.
+- Barreira de finalidade em `ContactSelectionService`, que antes não filtrava por origem nenhuma: contato de campanha fica fora do lote, e a seleção manual é recusada com o motivo à vista.
+- Limitador global de confirmação com **incremento atômico**, teto por minuto e intervalo mínimo. O excedente é adiado, nunca descartado, e a confirmação não obedece à janela de horário da automação.
+- Elegibilidade de aluno **marcada por importação**, nunca verificada na entrada; fila de conferência humana com marcação em lote.
+- Congelamento condicionado à fila de conferência vazia, com hash estável do conteúdo da lista.
+- Sorteio reproduzível sobre lista congelada, com semente registrada em claro e verificação refeita na tela.
+- Correção da derivação de semente do `RandomSelectionService`, que reduzia a semente a 32 bits, sem alterar o comportamento do sorteio de lote.
+- Cupons importados por CSV, atribuição transacional e código fora de log, de exportação e do histórico em claro.
+- Nome do remetente preenchido no serviço Node, que mandava `sender_name: null` cravado.
+- Comandos `campanhas:reprocessar`, `campanhas:diagnosticar` e `campanhas:quase-casamentos`, nenhum deles agendado.
+- **Pesquisa a partir da inscrição**, opcional por campanha: a campanha aponta para um fluxo conversacional, e a confirmação sai emendada ao pedido de permissão numa mensagem só. Do "sim" em diante quem conduz é o motor da 9A, com interpretação da 9B e continuação da 9C — nenhum código novo, o mesmo caminho que o lote usa. O fluxo só é aberto depois de a confirmação ter saído de verdade, e quem já está em outra pesquisa se inscreve sem ser convidado para uma segunda.
+- Correção: a campanha criava o contato de um número desconhecido e **não o ligava à conversa**, então a confirmação nunca era criada — o caminho principal da etapa ficava inscrito e sem resposta.
+
+Documentação complementar:
+
+- `docs/gatilhos-de-palavra-chave.md`
+
+## Não implementado nesta etapa — Etapa 10
+
+- **Tolerância a erro de digitação.** Distância de edição aproxima palavra errada de palavra certa, mas também aproxima duas palavras legítimas e diferentes, e calibrar o limiar sem dado real é chute. `campanhas:quase-casamentos` existe para transformar esse chute em número depois da primeira campanha.
+- **Casamento sobre áudio transcrito.** Inscrição é ato com consequência, e transcrição automática erra: uma inscrição criada por engano é indistinguível, no banco, de uma de verdade, e quem não se inscreveu não tem como saber que está na lista. É a primeira coisa a reconsiderar se a divulgação for por rádio.
+- **Coleta de CPF** e qualquer identificação além do telefone e do nome de perfil.
+- **Pergunta de nome em dois turnos.** Dobra as mensagens da campanha e perde quem não responde a segunda; participação sem nome é válida.
+- **Integração com a API do portal.** A elegibilidade e os cupons entram por CSV exportado à mão.
+- **Sorteio agendado.** Sortear é ato deliberado de uma pessoa: um sorteio que acontece sozinho é um sorteio que ninguém estava olhando quando aconteceu.
+- **Gatilhos para outras ações além de campanha.** A palavra-chave inscreve; não abre chamado, não agenda nem encaminha.
+- **Enquadramento jurídico automatizado.** O código permite tanto sorteio quanto concurso de mérito, porque quem decide o ganhador é configuração. Qual dos dois vale é decisão de fora do sistema.
+
 ## Escopo implementado — Atendimento de entrada e leitura de mídia
 
 Quem escreve primeiro passa a ser atendido, e a mídia recebida passa a ser vista, ouvida e lida. Até aqui todo fluxo nascia de um lote: quem escrevia por conta própria caía num motor sem estado, que saía calado.

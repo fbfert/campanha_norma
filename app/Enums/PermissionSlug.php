@@ -140,6 +140,18 @@ enum PermissionSlug: string
     case AnalyticsViewCosts = 'analytics.view_costs';
     case AnalyticsViewGovernance = 'analytics.view_governance';
 
+    // Etapa 10. Ver a campanha, administrar a campanha, invalidar participação
+    // e executar o sorteio são separados porque quem acompanha os números não
+    // precisa poder mexer na lista, e mexer na lista antes de um sorteio é a
+    // ação que mais precisa de dono identificado.
+    case KeywordCampaignsView = 'keyword_campaigns.view';
+    case KeywordCampaignsManage = 'keyword_campaigns.manage';
+    case KeywordParticipationsView = 'keyword_participations.view';
+    case KeywordParticipationsInvalidate = 'keyword_participations.invalidate';
+    case KeywordParticipationsExport = 'keyword_participations.export';
+    case KeywordDrawsExecute = 'keyword_draws.execute';
+    case KeywordCouponsManage = 'keyword_coupons.manage';
+
     public function label(): string
     {
         return match ($this) {
@@ -261,6 +273,13 @@ enum PermissionSlug: string
             self::InboundAttendanceView => 'Ver a fila de mensagens aguardando resposta',
             self::InboundAttendanceStart => 'Iniciar conversa automática a partir da fila',
             self::InboundAttendanceManageProfiles => 'Criar e editar perfis de atendimento de entrada',
+            self::KeywordCampaignsView => 'Ver campanhas por palavra-chave',
+            self::KeywordCampaignsManage => 'Criar, editar e congelar campanhas por palavra-chave',
+            self::KeywordParticipationsView => 'Ver participantes de campanha',
+            self::KeywordParticipationsInvalidate => 'Invalidar e conferir participações',
+            self::KeywordParticipationsExport => 'Exportar participantes de campanha',
+            self::KeywordDrawsExecute => 'Executar o sorteio de uma campanha',
+            self::KeywordCouponsManage => 'Importar cupons e ver os códigos',
         };
     }
 }

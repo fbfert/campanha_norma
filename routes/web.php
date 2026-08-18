@@ -15,11 +15,15 @@ use App\Http\Controllers\Admin\ConversationAutomation\ConversationAutomationSett
 use App\Http\Controllers\Admin\ConversationAutomation\ConversationFlowController;
 use App\Http\Controllers\Admin\ConversationAutomation\ConversationFlowQuestionController;
 use App\Http\Controllers\Admin\ConversationAutomation\ConversationFlowStateController;
+use App\Http\Controllers\Admin\Histories\MessageHistoryController;
 use App\Http\Controllers\Admin\InboundAttendance\InboundAttendanceProfileController;
 use App\Http\Controllers\Admin\InboundAttendance\InboundAttendanceQueueController;
-use App\Http\Controllers\Admin\Histories\MessageHistoryController;
 use App\Http\Controllers\Admin\Inbox\ConversationMediaController;
 use App\Http\Controllers\Admin\Inbox\InboxController;
+use App\Http\Controllers\Admin\KeywordCampaigns\KeywordCampaignController;
+use App\Http\Controllers\Admin\KeywordCampaigns\KeywordDrawController;
+use App\Http\Controllers\Admin\KeywordCampaigns\KeywordEligibilityController;
+use App\Http\Controllers\Admin\KeywordCampaigns\KeywordParticipationController;
 use App\Http\Controllers\Admin\Knowledge\KnowledgeBaseController;
 use App\Http\Controllers\Admin\Knowledge\KnowledgeDocumentController;
 use App\Http\Controllers\Admin\Knowledge\KnowledgeTestController;
@@ -171,6 +175,29 @@ Route::middleware(['auth', 'password.changed'])->group(function (): void {
         Route::get('/inbound-attendance', [InboundAttendanceQueueController::class, 'index'])->name('inbound-attendance.index');
         Route::post('/inbound-attendance/start', [InboundAttendanceQueueController::class, 'start'])->name('inbound-attendance.start');
         Route::post('/inbound-attendance/{conversation}/ignore', [InboundAttendanceQueueController::class, 'ignore'])->name('inbound-attendance.ignore');
+
+        // Etapa 10. As rotas de participante ficam sob a campanha porque uma
+        // participação sem a campanha dela não quer dizer nada — e porque é o
+        // que impede invalidar uma inscrição pela URL de outra campanha.
+        Route::get('/keyword-campaigns', [KeywordCampaignController::class, 'index'])->name('keyword-campaigns.index');
+        Route::get('/keyword-campaigns/create', [KeywordCampaignController::class, 'create'])->name('keyword-campaigns.create');
+        Route::post('/keyword-campaigns', [KeywordCampaignController::class, 'store'])->name('keyword-campaigns.store');
+        Route::get('/keyword-campaigns/{campaign}/edit', [KeywordCampaignController::class, 'edit'])->name('keyword-campaigns.edit');
+        Route::put('/keyword-campaigns/{campaign}', [KeywordCampaignController::class, 'update'])->name('keyword-campaigns.update');
+        Route::get('/keyword-campaigns/{campaign}/participations', [KeywordParticipationController::class, 'index'])->name('keyword-campaigns.participations.index');
+        Route::post('/keyword-campaigns/{campaign}/participations/export', [KeywordParticipationController::class, 'export'])->name('keyword-campaigns.participations.export');
+        Route::put('/keyword-campaigns/{campaign}/participations/{participation}/name', [KeywordParticipationController::class, 'updateName'])->name('keyword-campaigns.participations.name');
+        Route::put('/keyword-campaigns/{campaign}/participations/{participation}/invalidate', [KeywordParticipationController::class, 'invalidate'])->name('keyword-campaigns.participations.invalidate');
+        Route::get('/keyword-campaigns/{campaign}/eligibility', [KeywordEligibilityController::class, 'index'])->name('keyword-campaigns.eligibility.index');
+        Route::post('/keyword-campaigns/{campaign}/eligibility/import', [KeywordEligibilityController::class, 'import'])->name('keyword-campaigns.eligibility.import');
+        Route::put('/keyword-campaigns/{campaign}/eligibility/review', [KeywordEligibilityController::class, 'review'])->name('keyword-campaigns.eligibility.review');
+        Route::post('/keyword-campaigns/{campaign}/eligibility/freeze', [KeywordEligibilityController::class, 'freeze'])->name('keyword-campaigns.eligibility.freeze');
+        Route::put('/keyword-campaigns/{campaign}/eligibility/unfreeze', [KeywordEligibilityController::class, 'unfreeze'])->name('keyword-campaigns.eligibility.unfreeze');
+        Route::get('/keyword-campaigns/{campaign}/draws', [KeywordDrawController::class, 'index'])->name('keyword-campaigns.draws.index');
+        Route::post('/keyword-campaigns/{campaign}/draws', [KeywordDrawController::class, 'store'])->name('keyword-campaigns.draws.store');
+        Route::post('/keyword-campaigns/{campaign}/draws/coupons', [KeywordDrawController::class, 'importCoupons'])->name('keyword-campaigns.draws.coupons');
+        Route::post('/keyword-campaigns/{campaign}/draws/deliver', [KeywordDrawController::class, 'deliver'])->name('keyword-campaigns.draws.deliver');
+        Route::post('/keyword-campaigns/{campaign}/draws/{draw}/verify', [KeywordDrawController::class, 'verify'])->name('keyword-campaigns.draws.verify');
 
         Route::get('/ai-insights', [ConversationInsightController::class, 'index'])->name('ai-insights.index');
         Route::get('/ai-insights/{insight}', [ConversationInsightController::class, 'show'])->name('ai-insights.show');

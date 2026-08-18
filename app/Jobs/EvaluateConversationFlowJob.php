@@ -6,6 +6,7 @@ use App\Models\ConversationFlowState;
 use App\Models\ConversationMessage;
 use App\Services\ConversationAutomation\ConversationFlowService;
 use App\Services\InboundAttendance\InboundAttendanceService;
+use App\Services\KeywordCampaigns\KeywordCampaignTrigger;
 use App\Services\SystemSettingService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
@@ -50,6 +51,40 @@ class EvaluateConversationFlowJob implements ShouldQueue
 
         try {
             /*
+             | Etapa 10: a campanha por palavra-chave é avaliada antes de tudo.
+             |
+             | Fica aqui, e não num job irmão despachado ao lado deste, porque
+             | os dois criariam contato para o mesmo número desconhecido em
+             | paralelo — e `contacts.phone_normalized` tem índice, não chave
+             | única. A trava por conversa que este job já segura resolve a
+             | corrida de graça.
+             |
+             | Vem antes da decisão "esta conversa tem fluxo?" de propósito: o
+             | roteamento de entrada só alcança conversa sem estado, e quem está
+             | no meio de uma pesquisa é justamente quem já provou que responde.
+             |
+             | O gatilho não lê nem escreve `conversation_flow_states`, não move
+             | `last_processed_message_id` e não chama o motor. Sem campanha
+             | vigente cadastrada, sai na primeira leitura de cache.
+             */
+            $gatilho = app(KeywordCampaignTrigger::class);
+            $campanhas = $gatilho->avaliar($message);
+            $campanhaAtendeu = $gatilho->algumAtendeu($campanhas);
+
+            /*
+             | Mensagem que era só a palavra-chave para aqui.
+             |
+             | Ela já virou inscrição e já foi respondida. Entregá-la também ao
+             | motor da 9A a transforma em resposta de pesquisa: foi o que
+             | gravou "batata" como opinião sobre o problema mais urgente da
+             | cidade, em 17/08/2026, e fez a pergunta seguinte sair junto da
+             | confirmação.
+             */
+            if ($gatilho->consumiuAMensagem()) {
+                return;
+            }
+
+            /*
              | Conversa sem fluxo é quem escreveu primeiro.
              |
              | O motor da 9A sai calado nesse caso, e sair calado estava certo
@@ -62,7 +97,7 @@ class EvaluateConversationFlowJob implements ShouldQueue
              | antes: `handleIncomingMessage` continua sendo chamado e continua
              | saindo calado.
              */
-            if (! ConversationFlowState::query()->where('conversation_id', $message->conversation_id)->exists()) {
+            if (! $campanhaAtendeu && ! ConversationFlowState::query()->where('conversation_id', $message->conversation_id)->exists()) {
                 app(InboundAttendanceService::class)->handle($message);
             }
 

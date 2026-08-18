@@ -48,6 +48,19 @@ type WhatsAppChat = {
   fetchMessages(options: { limit?: number; fromMe?: boolean }): Promise<WhatsAppMessage[]>;
 };
 
+/**
+ * Só o que o nome do remetente precisa.
+ *
+ * `name` é o nome da agenda do telefone conectado, e existe apenas quando
+ * alguém salvou o número. `pushname` é o nome de perfil, escolhido pela
+ * própria pessoa. O contrato para de crescer aqui de propósito: o objeto
+ * `Contact` da biblioteca traz muito mais, e nada disso é usado.
+ */
+type WhatsAppContact = {
+  name?: string | null;
+  pushname?: string | null;
+};
+
 type WhatsAppMessage = {
   id?: { _serialized?: string; id?: string };
   from?: string;
@@ -62,6 +75,9 @@ type WhatsAppMessage = {
   // Baixa a midia sob demanda. O conteudo vem em base64 e nao e guardado em
   // lugar nenhum do servico.
   downloadMedia?(): Promise<{ data?: string; mimetype?: string; filename?: string } | null>;
+  // O contato de quem escreveu. `client.info.pushname` é o nome da conta
+  // conectada, ou seja, o nosso — o da outra pessoa só vem por aqui.
+  getContact?(): Promise<WhatsAppContact | null | undefined>;
 };
 
 type ChatSnapshot = {
@@ -106,6 +122,15 @@ let packageVersionPromise: Promise<string> | null = null;
  * primeiro tem de ser o download, e nao a conexao com o navegador.
  */
 const DOWNLOAD_TIMEOUT_MS = 20_000;
+
+/**
+ * Limite do nome do remetente.
+ *
+ * É o mesmo `max:120` que `IncomingMessageNormalizerService` valida do outro
+ * lado. Aparar aqui evita que um nome de perfil comprido derrube a mensagem
+ * inteira numa falha de validação.
+ */
+const SENDER_NAME_MAX_LENGTH = 120;
 
 export class WhatsAppClientService implements WhatsAppRuntime {
   private client: WhatsAppClient | null = null;
@@ -1046,6 +1071,54 @@ export class WhatsAppClientService implements WhatsAppRuntime {
     };
   }
 
+  /**
+   * Nome de quem escreveu.
+   *
+   * A agenda vem antes do nome de perfil porque o de perfil é escolhido pela
+   * própria pessoa e muda quando ela quiser; o da agenda foi escrito por nós e
+   * é o que a equipe reconhece na tela.
+   *
+   * Eco de mensagem nossa não resolve nome: ali o contato é a conta conectada,
+   * e gravar o nosso nome como remetente descreveria errado o que aconteceu.
+   */
+  private async resolveSenderName(message: WhatsAppMessage): Promise<string | null> {
+    if (message.fromMe || typeof message.getContact !== 'function') {
+      return null;
+    }
+
+    try {
+      const contact = await message.getContact();
+
+      return this.boundedName(contact?.name) ?? this.boundedName(contact?.pushname);
+    } catch (error) {
+      /*
+       | O nome é enfeite; a mensagem não é.
+       |
+       | `getContact` fala com a página do navegador e falha quando a sessão
+       | está trocando de estado. Deixar essa falha subir custaria a mensagem
+       | recebida, que é o dado que não dá para recuperar depois.
+       */
+      logger.warn({
+        event: 'incoming_sender_name_failed',
+        external_message_id: message.id?._serialized ?? null,
+        error: error instanceof Error ? error.message : String(error),
+      });
+
+      return null;
+    }
+  }
+
+  /**
+   * Apara e limita ao que o Laravel aceita. Vazio depois de aparar é ausência
+   * de nome, e não string vazia: `''` gravado vira um nome em branco na tela,
+   * indistinguível de um nome de verdade que ninguém consegue ler.
+   */
+  private boundedName(value: string | null | undefined): string | null {
+    const trimmed = (value ?? '').trim();
+
+    return trimmed === '' ? null : trimmed.slice(0, SENDER_NAME_MAX_LENGTH);
+  }
+
   private async forwardIncoming(message: WhatsAppMessage): Promise<void> {
     if (!config.incomingMessageEnabled || message.isStatus) {
       return;
@@ -1068,6 +1141,7 @@ export class WhatsAppClientService implements WhatsAppRuntime {
     const recipient = (phoneMap.get(recipientRaw) ?? recipientRaw).replace(/\D/g, '');
     const timestamp = message.timestamp ? new Date(message.timestamp * 1000).toISOString() : new Date().toISOString();
     const type = message.type ?? 'unknown';
+    const senderName = await this.resolveSenderName(message);
 
     const payload: IncomingMessagePayload = {
       event_id: cryptoRandomFallback(),
@@ -1075,7 +1149,7 @@ export class WhatsAppClientService implements WhatsAppRuntime {
       connection_id: 'principal',
       external_message_id: externalId,
       sender_phone: sender,
-      sender_name: null,
+      sender_name: senderName,
       recipient_phone: recipient || this.client?.info?.wid?.user || null,
       message_type: ['chat', 'text'].includes(type) ? 'text' : type,
       text: config.incomingMessageLogBody ? message.body ?? null : message.body ?? null,

@@ -20,6 +20,20 @@ enum ContactSource: string
      */
     case Recebido = 'recebido';
 
+    /**
+     * A pessoa escreveu uma palavra-chave de campanha.
+     *
+     * Separada de `recebido` porque o consentimento é outro. Quem manda "bom
+     * dia" não consentiu com nada, e o atendimento de entrada grava
+     * `not_informed`. Quem escreve uma palavra que só existe no material da
+     * campanha fez um ato inequívoco e específico — e específico é a palavra
+     * importante: consentiu em participar da campanha, não em receber disparo.
+     *
+     * É essa distinção que a barreira de finalidade em `ContactSelectionService`
+     * aplica, deixando estes contatos fora da seleção padrão de lote.
+     */
+    case Gatilho = 'gatilho';
+
     case Outro = 'outro';
 
     public function label(): string
@@ -32,6 +46,7 @@ enum ContactSource: string
             self::Indicacao => 'Indicação',
             self::ListaExistente => 'Lista existente',
             self::Recebido => 'Mensagem recebida',
+            self::Gatilho => 'Palavra-chave de campanha',
             self::Outro => 'Outro',
         };
     }

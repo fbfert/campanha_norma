@@ -15,7 +15,6 @@ use App\Models\Conversation;
 use App\Models\User;
 use App\Observers\ConversationObserver;
 use App\Services\Ai\AiProviderSettings;
-use App\Services\WhatsApp\MetaSettings;
 use App\Services\Ai\Providers\OpenAiCompatibleTranscriber;
 use App\Services\InboundAttendance\InboundAttendanceQueue;
 use App\Services\Knowledge\GroundingValidator;
@@ -23,6 +22,7 @@ use App\Services\Knowledge\KnowledgeProviderManager;
 use App\Services\Knowledge\LocalKnowledgeRetriever;
 use App\Services\ResponseGeneration\AiConversationResponseGenerator;
 use App\Services\SystemSettingService;
+use App\Services\WhatsApp\MetaSettings;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
@@ -174,6 +174,13 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('analytics.export_detailed', fn (User $user): bool => $user->hasPermission('analytics.export_detailed'));
         Gate::define('analytics.view_costs', fn (User $user): bool => $user->hasPermission('analytics.view_costs'));
         Gate::define('analytics.view_governance', fn (User $user): bool => $user->hasPermission('analytics.view_governance'));
+        Gate::define('keyword_campaigns.view', fn (User $user): bool => $user->hasPermission('keyword_campaigns.view'));
+        Gate::define('keyword_campaigns.manage', fn (User $user): bool => $user->hasPermission('keyword_campaigns.manage'));
+        Gate::define('keyword_participations.view', fn (User $user): bool => $user->hasPermission('keyword_participations.view'));
+        Gate::define('keyword_participations.invalidate', fn (User $user): bool => $user->hasPermission('keyword_participations.invalidate'));
+        Gate::define('keyword_participations.export', fn (User $user): bool => $user->hasPermission('keyword_participations.export'));
+        Gate::define('keyword_draws.execute', fn (User $user): bool => $user->hasPermission('keyword_draws.execute'));
+        Gate::define('keyword_coupons.manage', fn (User $user): bool => $user->hasPermission('keyword_coupons.manage'));
 
         // O provedor configurado pela tela sobrescreve o do arquivo de
         // ambiente. Fica dentro de try porque este boot também roda antes de a

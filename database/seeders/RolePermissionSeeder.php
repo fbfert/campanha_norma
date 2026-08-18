@@ -98,6 +98,15 @@ class RolePermissionSeeder extends Seeder
                 PermissionSlug::AnalyticsViewAggregates,
                 PermissionSlug::AnalyticsViewContent,
                 PermissionSlug::AnalyticsExportAggregates,
+                // Etapa 10. O operador acompanha a campanha e cuida da lista:
+                // confere elegibilidade, corrige nome e invalida com motivo.
+                // Não congela, não sorteia e não vê código de cupom — as três
+                // ações que decidem quem ganha o prêmio ficam com o
+                // administrador.
+                PermissionSlug::KeywordCampaignsView,
+                PermissionSlug::KeywordParticipationsView,
+                PermissionSlug::KeywordParticipationsInvalidate,
+                PermissionSlug::KeywordParticipationsExport,
             ]],
             'consulta' => ['Consulta', 'Acesso somente para consulta.', [
                 PermissionSlug::DashboardView,
@@ -118,6 +127,10 @@ class RolePermissionSeeder extends Seeder
                 PermissionSlug::KnowledgeView,
                 // Consulta ve número, nunca texto e nunca quem escreveu.
                 PermissionSlug::AnalyticsViewAggregates,
+                // Etapa 10. Consulta acompanha o andamento da campanha e a
+                // lista de inscritos, sem poder alterar nenhum dos dois.
+                PermissionSlug::KeywordCampaignsView,
+                PermissionSlug::KeywordParticipationsView,
             ]],
         ];
 

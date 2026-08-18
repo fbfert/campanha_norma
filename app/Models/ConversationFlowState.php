@@ -94,4 +94,18 @@ class ConversationFlowState extends Model
     {
         return $this->expires_at !== null && $this->expires_at->isPast();
     }
+
+    /**
+     * Há uma pesquisa acontecendo de verdade nesta conversa?
+     *
+     * Existir um estado não é o mesmo que existir pesquisa. Das 69 conversas
+     * com estado na base em 17/08/2026, 67 estavam com o prazo vencido e 2
+     * concluídas: nenhuma pessoa estava respondendo nada. Tratar "tem estado"
+     * como "está no meio de uma pesquisa" fecharia a porta para quase toda a
+     * base, e em silêncio.
+     */
+    public function estaViva(): bool
+    {
+        return ! $this->current_stage->isTerminal() && ! $this->isExpired();
+    }
 }

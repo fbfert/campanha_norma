@@ -5,7 +5,7 @@ namespace App\Services\InboundAttendance;
 use App\Models\ConversationMessage;
 use App\Models\InboundAttendanceProfile;
 use App\Services\SystemSettingService;
-use Illuminate\Support\Str;
+use App\Services\Text\WholeWordMatcher;
 
 /**
  * Escolhe o perfil que vai atender a mensagem, pelo que ela diz.
@@ -23,7 +23,10 @@ use Illuminate\Support\Str;
  */
 class InboundAttendanceRouter
 {
-    public function __construct(private readonly SystemSettingService $settings) {}
+    public function __construct(
+        private readonly SystemSettingService $settings,
+        private readonly WholeWordMatcher $matcher,
+    ) {}
 
     /**
      * Mensagem que não é de gente esperando resposta.
@@ -107,13 +110,15 @@ class InboundAttendanceRouter
 
     /**
      * Caixa, acento, pontuação e emoji fora; o texto original é preservado.
+     *
+     * A regra passou a morar em `WholeWordMatcher` na Etapa 10, porque a
+     * campanha por palavra-chave precisa exatamente da mesma comparação e duas
+     * cópias divergiriam na primeira correção feita em uma só. O método
+     * continua aqui porque as telas do atendimento de entrada o chamam.
      */
     public function normalize(string $value): string
     {
-        $value = Str::lower(Str::ascii(trim($value)));
-        $value = preg_replace('/[^a-z0-9\s]/u', ' ', $value) ?? '';
-
-        return trim(preg_replace('/\s+/', ' ', $value) ?? '');
+        return $this->matcher->normalize($value);
     }
 
     /**
@@ -121,6 +126,6 @@ class InboundAttendanceRouter
      */
     private function contains(string $haystack, string $needle): bool
     {
-        return (bool) preg_match('/(?:^|\s)'.preg_quote($needle, '/').'(?:$|\s)/', $haystack);
+        return $this->matcher->contains($haystack, $needle);
     }
 }

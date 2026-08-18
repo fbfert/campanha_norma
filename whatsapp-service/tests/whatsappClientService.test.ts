@@ -308,3 +308,139 @@ describe('recuperacao de pagina morta', () => {
     expect(reiniciou).toBe(false);
   });
 });
+
+/**
+ * O nome de quem escreve só existe no objeto de contato da mensagem.
+ * `client.info.pushname` é o nome da conta conectada, ou seja, o nosso.
+ */
+describe('nome do remetente na mensagem recebida', () => {
+  function buildIncomingService(getContact?: () => Promise<any>) {
+    const enviados: any[] = [];
+    const service = new WhatsAppClientService(undefined, {
+      send: async (payload: any) => {
+        enviados.push(payload);
+      },
+    } as any);
+
+    (service as any).client = {
+      info: { wid: { user: '554991888242' }, pushname: 'Conta Teste' },
+      getContactLidAndPhone: async () => [],
+    };
+    (service as any).statusValue = ConnectionStatus.Connected;
+
+    const message: any = {
+      id: { _serialized: 'msg-1' },
+      from: '5549991613378@c.us',
+      to: '554991888242@c.us',
+      body: 'sorteio',
+      type: 'chat',
+      timestamp: 1_760_000_000,
+      fromMe: false,
+    };
+
+    if (getContact) {
+      message.getContact = getContact;
+    }
+
+    return { service, message, enviados };
+  }
+
+  it('prefere o nome da agenda ao nome de perfil', async () => {
+    const { service, message, enviados } = buildIncomingService(async () => ({
+      name: 'Maria da Silva',
+      pushname: 'mari ✨',
+    }));
+
+    await (service as any).forwardIncoming(message);
+
+    expect(enviados).toHaveLength(1);
+    expect(enviados[0].sender_name).toBe('Maria da Silva');
+  });
+
+  it('cai para o nome de perfil quando o número não está na agenda', async () => {
+    const { service, message, enviados } = buildIncomingService(async () => ({
+      name: null,
+      pushname: 'mari ✨',
+    }));
+
+    await (service as any).forwardIncoming(message);
+
+    expect(enviados[0].sender_name).toBe('mari ✨');
+  });
+
+  it('fica sem nome quando não há agenda nem perfil', async () => {
+    const { service, message, enviados } = buildIncomingService(async () => ({}));
+
+    await (service as any).forwardIncoming(message);
+
+    expect(enviados[0].sender_name).toBeNull();
+  });
+
+  /**
+   * Nome em branco é ausência de nome. Gravar `''` produz uma linha com nome
+   * vazio na tela, que ninguém distingue de um nome que não carregou.
+   */
+  it('nome só com espaço vira ausência de nome', async () => {
+    const { service, message, enviados } = buildIncomingService(async () => ({
+      name: '   ',
+      pushname: '  ',
+    }));
+
+    await (service as any).forwardIncoming(message);
+
+    expect(enviados[0].sender_name).toBeNull();
+  });
+
+  it('apara e limita o nome ao que a validação do Laravel aceita', async () => {
+    const { service, message, enviados } = buildIncomingService(async () => ({
+      name: `  ${'a'.repeat(200)}  `,
+    }));
+
+    await (service as any).forwardIncoming(message);
+
+    expect(enviados[0].sender_name).toHaveLength(120);
+  });
+
+  /**
+   * O caso que justifica o `try`: a mensagem recebida é o dado que não dá para
+   * recuperar depois, e o nome é enfeite.
+   */
+  it('falha ao obter o contato não perde a mensagem', async () => {
+    const { service, message, enviados } = buildIncomingService(async () => {
+      throw new Error('Evaluation failed: session closed');
+    });
+
+    await (service as any).forwardIncoming(message);
+
+    expect(enviados).toHaveLength(1);
+    expect(enviados[0].sender_name).toBeNull();
+    expect(enviados[0].external_message_id).toBe('msg-1');
+  });
+
+  it('mensagem sem o objeto de contato não quebra o encaminhamento', async () => {
+    const { service, message, enviados } = buildIncomingService();
+
+    await (service as any).forwardIncoming(message);
+
+    expect(enviados).toHaveLength(1);
+    expect(enviados[0].sender_name).toBeNull();
+  });
+
+  /**
+   * Eco de mensagem nossa: o contato ali é a conta conectada, e gravar o nosso
+   * nome como remetente descreveria errado o que aconteceu.
+   */
+  it('eco de mensagem enviada não resolve nome', async () => {
+    let consultou = false;
+    const { service, message, enviados } = buildIncomingService(async () => {
+      consultou = true;
+      return { name: 'Conta Teste' };
+    });
+    message.fromMe = true;
+
+    await (service as any).forwardIncoming(message);
+
+    expect(consultou).toBe(false);
+    expect(enviados[0].sender_name).toBeNull();
+  });
+});

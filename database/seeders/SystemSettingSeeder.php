@@ -242,6 +242,26 @@ class SystemSettingSeeder extends Seeder
             // Teste que sai para um eleitor não é teste: é uma mensagem de
             // campanha mandada por engano, e não há como recolher.
             ['group' => 'whatsapp', 'key' => 'whatsapp.test_recipient_phone', 'value' => '5549991613378', 'type' => 'string', 'description' => 'Único telefone que pode receber mensagem de teste', 'is_public' => false],
+            /*
+             | Etapa 10: o teto global das confirmações de campanha.
+             |
+             | Divulgação bem-sucedida gera centenas de mensagens recebidas em
+             | minutos. Sem teto, o sistema responderia todas no ritmo que o
+             | worker drenar — e, pelo provedor WhatsApp Web, que é sessão não
+             | oficial, esse é o comportamento que mais rápido leva um número a
+             | bloqueio. Um número bloqueado interrompe a operação inteira, não
+             | apenas a campanha.
+             |
+             | O excedente é adiado, nunca descartado: ninguém perde a
+             | confirmação por ter escrito no minuto errado.
+             |
+             | Separado do limitador de lote de propósito. O de lote protege o
+             | ritmo de um disparo que nós escolhemos começar; este protege o
+             | ritmo de uma resposta que quem escolhe é quem escreve.
+             */
+            ['group' => 'keyword_campaigns', 'key' => 'keyword_campaigns.confirmation_max_per_minute', 'value' => '20', 'type' => 'integer', 'description' => 'Máximo de confirmações de campanha enviadas por minuto, somando todas as campanhas', 'is_public' => false],
+            ['group' => 'keyword_campaigns', 'key' => 'keyword_campaigns.confirmation_min_interval_seconds', 'value' => '2', 'type' => 'integer', 'description' => 'Intervalo mínimo entre duas confirmações de campanha, em segundos', 'is_public' => false],
+            ['group' => 'keyword_campaigns', 'key' => 'keyword_campaigns.send_queue', 'value' => 'keyword-campaigns-send', 'type' => 'string', 'description' => 'Fila de envio das respostas de campanha', 'is_public' => false],
             ['group' => 'ai', 'key' => 'ai.enabled', 'value' => '0', 'type' => 'boolean', 'description' => 'Chave mestra da infraestrutura de IA. Sozinha não habilita nenhuma ação', 'is_public' => false],
             ['group' => 'ai', 'key' => 'ai.analysis_enabled', 'value' => '0', 'type' => 'boolean', 'description' => 'Habilitar análise da Etapa 9B: classificação e extração', 'is_public' => false],
             ['group' => 'ai', 'key' => 'ai.response_generation_enabled', 'value' => '0', 'type' => 'boolean', 'description' => 'Reservado para a Etapa 9C. Não implementado: deve permanecer desligado', 'is_public' => false],
