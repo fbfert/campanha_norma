@@ -67,6 +67,32 @@ página e referenciado por `<use>`.
 Ícone novo entra no sprite antes de ser usado — `<use>` apontando para um id que
 não existe não desenha nada e não gera erro em lugar nenhum.
 
+### A tela cabe no celular
+
+Abaixo de 860px a barra de navegação vira uma gaveta, aberta por um botão
+"Menu" no topo e fechada ao tocar fora. A gaveta é feita com **caixa de
+seleção**, não com JavaScript, pelo mesmo motivo que não há CDN aqui: o sistema
+precisa abrir com a internet ruim, e menu que depende de script é menu que às
+vezes não abre.
+
+Três regras que vieram de defeitos reais:
+
+- **Filho de `.content` recebe `min-width: 0`.** O padrão de `min-width` num
+  item de grid é `auto`, então ele não encolhe abaixo do próprio conteúdo — um
+  card com tabela larga dentro empurrava a página inteira e fazia o documento
+  rolar de lado. Em qualquer largura, não só nas pequenas: eram 1342px de
+  rolagem numa janela de 1280.
+- **Conteúdo largo rola dentro do próprio quadro.** Tabela vai em
+  `.table-wrap`, que tem `overflow-x: auto`; no celular a tabela ganha
+  `min-width` para rolar de lado em vez de espremer as colunas até uma letra
+  por linha.
+- **Campo de texto não mora em célula de tabela.** Ele estica a coluna e, com
+  ela, a tabela inteira. Vai atrás de um `<details>`, como em
+  `.row-actions`.
+
+Ao criar tela nova, confira nas duas larguras. O que se mede é simples: o
+documento não pode rolar na horizontal.
+
 ---
 
 ## 2. Acentuação

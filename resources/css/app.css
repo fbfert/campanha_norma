@@ -136,6 +136,10 @@
     --shadow: 0 1px 3px rgba(25, 23, 19, .07), 0 1px 2px rgba(25, 23, 19, .04);
     --shadow-lg: 0 12px 28px rgba(25, 23, 19, .14);
 
+    /* Véu atrás da gaveta de navegação. O mesmo preto quente do texto, para
+       escurecer sem esfriar a tela. */
+    --scrim: rgba(25, 23, 19, .5);
+
     /* Ritmo */
     --space-1: 4px;
     --space-2: 8px;
@@ -387,6 +391,41 @@ a {
     min-width: 0;
 }
 
+/* --- Gaveta de navegação ------------------------------------------------ */
+
+/*
+    A caixa de seleção é o estado da gaveta. Fica fora da tela em vez de
+    `display: none` porque elemento escondido assim não recebe foco, e sem
+    foco o menu deixaria de existir para quem navega por teclado.
+*/
+.nav-switch {
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+    position: absolute;
+    width: 1px;
+}
+
+/*
+    Some no desktop: lá a barra está sempre à vista.
+
+    Duas classes de propósito. O rótulo também é `.btn`, e `.btn` declara
+    `display: inline-flex` mais adiante no arquivo — com uma classe só as duas
+    regras empatavam em especificidade e vencia a última, deixando o botão
+    Menu visível no desktop.
+*/
+.btn.nav-toggle {
+    display: none;
+}
+
+.nav-scrim {
+    background: var(--scrim);
+    display: none;
+    inset: 0;
+    position: fixed;
+    z-index: 39;
+}
+
 .topbar {
     align-items: center;
     background: var(--surface);
@@ -422,6 +461,17 @@ a {
     display: grid;
     gap: var(--space-4);
     padding: var(--space-5);
+}
+
+/*
+    Filho de grid não encolhe abaixo do próprio conteúdo: o padrão de
+    `min-width` é `auto`, não zero. Sem esta linha, um card com uma tabela
+    larga dentro empurra a página inteira, e o documento passa a rolar na
+    horizontal — em qualquer largura de tela, não só nas pequenas. Era o que
+    acontecia aqui: 1342px de rolagem numa janela de 1280.
+*/
+.content > * {
+    min-width: 0;
 }
 
 .card {
@@ -591,6 +641,33 @@ tbody tr:hover td {
     overflow-x: auto;
 }
 
+/*
+    Ações de linha guardadas atrás de um detalhe.
+
+    Campo de texto dentro de célula estica a coluna e, com ela, a tabela
+    inteira. Fechado, o que a coluna ocupa é a palavra "Ações"; o formulário
+    aparece quando alguém pede por ele.
+*/
+.row-actions > details > summary {
+    color: var(--accent);
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.row-actions-panel {
+    display: grid;
+    gap: var(--space-3);
+    min-width: 220px;
+    padding-top: var(--space-2);
+}
+
+.row-actions-panel form {
+    display: grid;
+    gap: var(--space-1);
+}
+
 /* --- Avisos ------------------------------------------------------------- */
 
 .alert {
@@ -666,7 +743,7 @@ tbody tr:hover td {
 }
 
 .conversation-workspace {
-    grid-template-columns: 250px minmax(0, 1fr) 320px;
+    grid-template-columns: minmax(0, 1fr) 320px;
 }
 
 .conversation-list {
@@ -674,8 +751,7 @@ tbody tr:hover td {
     gap: var(--space-2);
 }
 
-.conversation-list-item,
-.conversation-selected {
+.conversation-list-item {
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: var(--radius);
@@ -693,11 +769,6 @@ tbody tr:hover td {
 
 .conversation-list-item.unread {
     border-left: 3px solid var(--accent);
-}
-
-.conversation-selected {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px var(--accent-soft);
 }
 
 .conversation-list-top,
@@ -724,10 +795,18 @@ tbody tr:hover td {
     margin-top: var(--space-2);
 }
 
-.conversation-panel,
 .conversation-chat,
 .conversation-details {
     min-width: 0;
+}
+
+/*
+    O voltar abraça o próprio texto, como os outros botões da coluna. Filho
+    direto de um grid estica pela faixa inteira, e ele ficaria com o dobro da
+    largura dos botões logo abaixo.
+*/
+.conversation-details > .btn {
+    justify-self: start;
 }
 
 .conversation-chat {
@@ -750,6 +829,18 @@ tbody tr:hover td {
 .conversation-reply {
     border-bottom: 0;
     border-top: 1px solid var(--border);
+}
+
+.conversation-reply-actions {
+    align-items: center;
+    justify-content: space-between;
+}
+
+.conversation-reply-actions > span {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
 }
 
 .conversation-timeline {
@@ -1193,7 +1284,9 @@ tbody tr:hover td {
     overflow-y: auto;
     padding: var(--space-3);
     position: absolute;
-    width: 280px;
+    /* Em tela estreita os 280px fixos passavam da borda direita e o painel
+       ficava cortado pela metade. */
+    width: min(280px, calc(100vw - var(--space-6)));
     z-index: 20;
 }
 
@@ -1237,13 +1330,123 @@ tbody tr:hover td {
         grid-template-columns: 1fr;
     }
 
+    /*
+        A navegação vira gaveta, e não empilha acima do conteúdo.
+
+        Empilhada — que era o comportamento anterior — a barra inteira, com
+        oito grupos, ficava entre o topo da tela e a primeira linha de
+        conteúdo: no celular, toda página começava com um rolar longo até
+        chegar ao que se foi ver.
+
+        A gaveta é de caixa de seleção, e não de JavaScript, pelo mesmo motivo
+        que não há CDN aqui: o sistema precisa abrir com a internet ruim, e
+        menu que depende de script é menu que às vezes não abre.
+    */
     .sidebar {
+        bottom: 0;
+        left: 0;
         max-height: none;
-        position: static;
+        position: fixed;
+        top: 0;
+        transform: translateX(-100%);
+        transition: transform var(--transition);
+        width: min(300px, 86vw);
+        z-index: 40;
+    }
+
+    .nav-switch:checked ~ .sidebar {
+        box-shadow: var(--shadow-lg, 0 18px 40px rgba(0, 0, 0, .28));
+        transform: translateX(0);
+    }
+
+    .btn.nav-toggle {
+        display: inline-flex;
+    }
+
+    .nav-switch:checked ~ .nav-scrim {
+        display: block;
+    }
+
+    .nav-switch:focus-visible ~ .main .btn.nav-toggle {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
     }
 
     .content {
         padding: var(--space-4);
+    }
+
+    /*
+        O topo fica com o essencial. Nome e papel do usuário saem: são
+        identificação, não ação, e ocupavam duas linhas inteiras num aparelho
+        onde o título da tela já não cabia.
+    */
+    .topbar {
+        align-items: center;
+        display: grid;
+        gap: var(--space-2) var(--space-3);
+        grid-template-columns: auto 1fr;
+        padding: var(--space-3) var(--space-4);
+    }
+
+    .topbar-identity {
+        display: none;
+    }
+
+    /*
+        Título e trilha descem para uma segunda fileira, inteira só deles.
+
+        Disputando a primeira com o botão Menu e os botões de conta, o título
+        era espremido até virar "Su…" e a trilha quebrava em cinco linhas —
+        174px de topo antes de a tela começar.
+    */
+    .topbar > div:first-of-type {
+        grid-column: 1 / -1;
+        grid-row: 2;
+        min-width: 0;
+    }
+
+    /*
+        Posição explícita nas duas. Deixando o posicionamento automático, o
+        título — que ocupa a linha inteira — empurrava os botões de conta para
+        uma terceira fileira, e o botão Menu ficava sozinho e centralizado numa
+        coluna larga demais.
+    */
+    .btn.nav-toggle {
+        grid-column: 1;
+        grid-row: 1;
+        justify-self: start;
+    }
+
+    .topbar .actions {
+        grid-column: 2;
+        grid-row: 1;
+        justify-content: flex-end;
+    }
+
+    .topbar strong {
+        display: block;
+        font-size: 15px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    /* A trilha cabe em uma linha ou não cabe: quebrada ela ocupa mais altura
+       do que o conteúdo que anuncia. O caminho completo continua na gaveta. */
+    .breadcrumb-trail {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    /*
+        Tabela estreita demais não é tabela: é uma coluna de uma letra por
+        linha. Abaixo desta largura ela passa a rolar de lado dentro do
+        próprio quadro, e o corpo da página nunca rola na horizontal.
+    */
+    .table-wrap > table {
+        min-width: 620px;
     }
 
     .grid-2,
@@ -1256,16 +1459,30 @@ tbody tr:hover td {
         grid-template-columns: 1fr;
     }
 
-    .conversation-panel-list {
-        display: block;
+    /*
+        No celular a coluna de detalhes deixa de ser uma caixa e passa a
+        entregar os filhos direto ao grid da tela. São duas coisas de uma vez:
+        o "Voltar para conversas" pode subir para antes do chat, e os cards
+        continuam escondidos até alguém tocar em Detalhes.
+
+        Sem isso, o voltar ia parar no fim da página — depois de toda a
+        conversa —, e um link de voltar que exige rolar até o fim não é um
+        link de voltar.
+    */
+    .conversation-details {
+        display: contents;
     }
 
-    .conversation-details {
+    .conversation-details > .btn {
+        order: -1;
+    }
+
+    .conversation-details > section {
         display: none;
     }
 
-    .conversation-details.open {
-        display: grid;
+    .conversation-details.open > section {
+        display: block;
     }
 
     .details-toggle {

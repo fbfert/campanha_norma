@@ -10,12 +10,22 @@
 <body>
     @include('components.layouts.partials.icons')
     <div class="app-shell">
-        <aside class="sidebar">
+        {{-- Estado da gaveta de navegação. Caixa de seleção, e não script:
+             o sistema precisa abrir com a internet ruim, e menu que depende
+             de JavaScript é menu que às vezes não abre. No desktop a barra
+             está sempre à vista e isto não faz nada. --}}
+        <input class="nav-switch" type="checkbox" id="menu-principal">
+        <aside class="sidebar" id="navegacao-principal">
             <h1>{{ $systemName ?? config('app.name') }}</h1>
             @include('components.layouts.partials.nav')
         </aside>
+        {{-- Tocar fora fecha a gaveta. --}}
+        <label class="nav-scrim" for="menu-principal" aria-hidden="true"></label>
         <div class="main">
             <header class="topbar">
+                <label class="btn ghost nav-toggle" for="menu-principal" aria-controls="navegacao-principal">
+                    <x-icon name="layers" size="16" />Menu
+                </label>
                 <div>
                     <strong>{{ $title ?? 'Painel' }}</strong>
                     {{-- O mapa das trilhas vive em App\Support\Breadcrumbs, e não
@@ -43,8 +53,11 @@
                             {{ $inboundPendingCount }} {{ $inboundPendingCount === 1 ? 'mensagem aguarda resposta' : 'mensagens aguardam resposta' }}
                         </a>
                     @endif
-                    <span>{{ auth()->user()->name }}</span>
-                    <span class="muted">{{ auth()->user()->roles->pluck('name')->join(', ') }}</span>
+                    {{-- Identificação, não ação: sai da tela pequena, onde
+                         ocupava duas linhas e empurrava os botões para baixo.
+                         O nome continua na tela de perfil. --}}
+                    <span class="topbar-identity">{{ auth()->user()->name }}</span>
+                    <span class="muted topbar-identity">{{ auth()->user()->roles->pluck('name')->join(', ') }}</span>
                     <a class="btn ghost" href="{{ route('profile.show') }}"><x-icon name="user" size="16" />Perfil</a>
                     <form method="post" action="{{ route('logout') }}">
                         @csrf

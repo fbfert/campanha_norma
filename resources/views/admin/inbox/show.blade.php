@@ -42,14 +42,12 @@
         @php
             $displayPhone = $conversation->whatsappPhoneDigits();
         @endphp
-        <aside class="conversation-panel conversation-panel-list">
-            <a class="btn ghost" href="{{ route('admin.conversations.index') }}">Voltar para conversas</a>
-            <div class="conversation-selected">
-                <strong>{{ $conversation->contact?->name ?? 'Contato não identificado' }}</strong>
-                <span class="muted">{{ $conversation->last_message_at?->format($dateTimeFormat) ?? 'Sem mensagens' }}</span>
-            </div>
-        </aside>
-
+        {{-- A coluna da esquerda saiu.
+             Ela repetia o que já está à vista: o nome do contato encabeça o
+             chat ao lado, e a data da última mensagem está no card Detalhes.
+             Uma coluna inteira de 250px para dizer duas vezes a mesma coisa
+             tirava largura de onde a conversa acontece. O voltar foi para o
+             topo da coluna de detalhes. --}}
         <section class="conversation-chat">
             <header class="conversation-chat-header">
                 <div>
@@ -79,12 +77,16 @@
                             <p class="alert error">{{ $replyBlockReason }}</p>
                         @endif
                         <textarea id="reply_body" name="body" rows="4" maxlength="4096" required x-model="body" x-on:keydown.ctrl.enter="$el.form.requestSubmit()" @disabled($replyBlocked)></textarea>
-                        <div class="actions" style="justify-content:space-between;align-items:center;">
-                            <span class="muted" style="display:flex;align-items:center;gap:8px;">
+                        {{-- Os estilos saíram do atributo e viraram classe: o grupo
+                             da direita era um flex sem quebra, e em tela estreita
+                             "Enviar resposta" ficava cortado pela borda. Regra de
+                             quebra de linha não cabe num atributo `style`. --}}
+                        <div class="actions conversation-reply-actions">
+                            <span class="muted">
                                 <x-emoji-picker target="reply_body" />
                                 <span><span x-text="body.length"></span>/4096 caracteres. Ctrl + Enter envia.</span>
                             </span>
-                            <span style="display:flex;align-items:center;gap:8px;">
+                            <span>
                                 <span class="muted" x-show="refreshMessage" x-cloak x-text="refreshMessage"></span>
                                 <button class="btn ghost" type="button" x-on:click="poll(true)" :disabled="refreshing">
                                     <span x-show="!refreshing">Atualizar mensagens</span>
@@ -114,6 +116,8 @@
         </section>
 
         <aside class="conversation-details" x-bind:class="{ 'open': detailsOpen }">
+            <a class="btn ghost" href="{{ route('admin.conversations.index') }}">Voltar para conversas</a>
+
             @include('admin.inbox._ai_panel', ['conversation' => $conversation])
 
             <section class="card">

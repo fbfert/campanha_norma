@@ -41,6 +41,7 @@ use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Queue;
+use Illuminate\Support\Str;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
@@ -380,9 +381,19 @@ class ConversationResponseGenerationTest extends TestCase
         $this->assertStringContainsString('Aprovar todas pendentes (1)', $html, 'Aprovar "todas" sem dizer quantas e o que vira carimbo.');
         $this->assertStringContainsString('confirm(', $html);
 
-        // Seleção por caixa de marcação continua fora: ela convida a marcar
-        // tudo sem ler, que e um passo além do que foi pedido.
-        $this->assertStringNotContainsString('type="checkbox"', $html);
+        /*
+         | Seleção por caixa de marcação continua fora: ela convida a marcar
+         | tudo sem ler, que e um passo além do que foi pedido.
+         |
+         | A verificação olha só o conteúdo da tela, e não o documento inteiro.
+         | Global, ela também proibia caixa de marcação no layout — e quebrou no
+         | dia em que a navegação virou uma gaveta de caixa de seleção, que não
+         | tem relação nenhuma com aprovar sugestão em massa.
+         */
+        $conteudo = Str::between($html, '<main class="content">', '</main>');
+
+        $this->assertNotSame('', trim($conteudo), 'O conteúdo da tela não foi encontrado no HTML.');
+        $this->assertStringNotContainsString('type="checkbox"', $conteudo);
     }
 
     // =========================================================================

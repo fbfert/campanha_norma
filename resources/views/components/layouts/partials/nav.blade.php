@@ -19,6 +19,7 @@
     $atendimentoAtivo = request()->routeIs('admin.inbox.*', 'admin.conversations.*', 'admin.reply-suggestions.*', 'admin.inbound-attendance.*');
     $pesquisaAtiva = request()->routeIs('admin.conversation-automation.*', 'admin.conversation-flows.*')
         || request()->routeIs('admin.analytics.dashboard', 'admin.analytics.topics', 'admin.analytics.geography', 'admin.analytics.demands', 'admin.analytics.questions');
+    $campanhasAtivo = request()->routeIs('admin.keyword-campaigns.*');
     $contatosAtivo = request()->routeIs('admin.contacts.*', 'admin.tags.*');
     $enviosAtivo = request()->routeIs('admin.message-templates.*', 'admin.message-batches.*', 'admin.campaigns.*', 'admin.message-processing.*', 'admin.histories.*', 'admin.reports.*', 'admin.report-exports.*');
     $inteligenciaAtiva = request()->routeIs('admin.ai-insights.*', 'admin.insight-topics.*', 'admin.knowledge.*', 'admin.ai-monitoring.*', 'admin.ai-provider.*', 'admin.analytics.ai-quality');
@@ -71,6 +72,13 @@
             @endcan
         </details>
     @endif
+
+    @can('keyword_campaigns.view')
+        <details class="nav-group" @if($campanhasAtivo) open @endif>
+            <summary><x-icon name="megaphone" />Campanhas</summary>
+            <a href="{{ route('admin.keyword-campaigns.index') }}" @class(['active' => request()->routeIs('admin.keyword-campaigns.*')])><x-icon name="megaphone" /><span>Palavra-chave</span></a>
+        </details>
+    @endcan
 
     @can('contacts.view')
         <details class="nav-group" @if($contatosAtivo) open @endif>
