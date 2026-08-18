@@ -7,6 +7,15 @@ return [
         'url' => env('WHATSAPP_SERVICE_URL', 'http://127.0.0.1:3100'),
         'token' => env('WHATSAPP_SERVICE_TOKEN'),
         'timeout' => (int) env('WHATSAPP_SERVICE_TIMEOUT', 15),
+
+        /*
+         | Prazo do download de mídia, maior que o geral de propósito.
+         |
+         | O serviço Node dá 20 segundos ao download. Com o prazo geral de 15, o
+         | cliente desistia antes do servidor e gravava "o serviço não respondeu
+         | a tempo" — descrevendo o Laravel, não o WhatsApp.
+         */
+        'media_timeout' => (int) env('WHATSAPP_SERVICE_MEDIA_TIMEOUT', 30), // ortografia:ignorar - nome de variável de ambiente, que não leva acento
         'connect_timeout' => (int) env('WHATSAPP_SERVICE_CONNECT_TIMEOUT', 5),
     ],
 

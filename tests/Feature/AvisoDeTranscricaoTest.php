@@ -122,5 +122,45 @@ class AvisoDeTranscricaoTest extends TestCase
             'status' => $status,
             'text' => $status === TranscriptionStatus::Succeeded ? 'Falta praça no bairro.' : null,
         ]);
+
+        /*
+         | A resposta é a este áudio.
+         |
+         | É o que o motor faz de verdade: `runDeterministicFlow` grava
+         | `last_processed_message_id` antes de decidir o que responder. Sem
+         | isto o cenário não descrevia "responder a um áudio", e sim "existir
+         | um áudio em algum lugar da conversa" — que era exatamente o defeito.
+         */
+        $state->forceFill(['last_processed_message_id' => $audio->id])->save();
+    }
+
+    /**
+     * Texto respondido não vira "recebi seu áudio" por causa de áudio antigo.
+     *
+     * Foi o que aconteceu na conversa 425, em 17/08/2026: o aviso saiu colado a
+     * uma pergunta da pesquisa que respondia a um "sim" digitado, e o áudio era
+     * de cinco dias antes. O sistema afirmou ter recebido um áudio que ninguém
+     * mandou — e aviso de privacidade que erra o fato ensina a desconfiar do
+     * resto.
+     */
+    public function test_audio_antigo_nao_faz_a_resposta_a_um_texto_avisar(): void
+    {
+        $state = $this->conversa();
+        $this->comTranscricao($state);
+
+        // Agora a pessoa escreve, e é a esta mensagem que se responde.
+        $texto = ConversationMessage::factory()->create([
+            'conversation_id' => $state->conversation_id,
+            'direction' => 'incoming',
+            'message_type' => 'text',
+            'body' => 'sim',
+        ]);
+        $state->forceFill(['last_processed_message_id' => $texto->id])->save();
+
+        $mensagem = app(ConversationAutomatedReplyService::class)
+            ->queue($state->refresh(), 'O que mais precisa melhorar por aí?', 'automated_question_queued');
+
+        $this->assertStringNotContainsString('converti em texto', (string) $mensagem->body);
+        $this->assertStringContainsString('O que mais precisa melhorar por aí?', (string) $mensagem->body);
     }
 }

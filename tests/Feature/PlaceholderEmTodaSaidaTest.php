@@ -68,15 +68,20 @@ class PlaceholderEmTodaSaidaTest extends TestCase
         $this->assertStringContainsString('Lages', $mensagem->body);
     }
 
+    /**
+     * A cidade saiu deste teste porque ganhou substituto em 17/08/2026. O que
+     * ele protege continua valendo para os campos sem genérico possível: um
+     * e-mail em branco não vira "seu e-mail".
+     */
     public function test_campo_vazio_interrompe_o_envio_em_vez_de_mandar_a_chave_crua(): void
     {
-        $conversa = $this->conversa(['first_name' => 'Paulo', 'city' => null]);
+        $conversa = $this->conversa(['first_name' => 'Paulo', 'email' => null]);
 
         $this->expectException(ValidationException::class);
 
         app(ConversationReplyService::class)->createPending(
             conversation: $conversa,
-            body: 'O que precisa melhorar em {cidade}?',
+            body: 'Confirma o retorno em {email}?',
             origin: ConversationMessageOrigin::Manual,
         );
     }

@@ -59,12 +59,18 @@ class PlaceholderNaPerguntaDoFluxoTest extends TestCase
         ]);
     }
 
+    /**
+     * Campo sem substituto continua impedindo o envio.
+     *
+     * A cidade saiu deste caso e ganhou o seu, logo abaixo: quem entra por
+     * campanha nasce sem cidade, e recusar deixava a pessoa sem a pergunta.
+     */
     public function test_campo_vazio_no_contato_impede_o_envio(): void
     {
-        $state = $this->estado(['first_name' => 'Mariana', 'city' => null]);
+        $state = $this->estado(['first_name' => null, 'city' => 'Lages']);
 
         $mensagem = app(ConversationAutomatedReplyService::class)
-            ->queue($state, 'O que precisa melhorar em {cidade}?', 'automated_question_queued');
+            ->queue($state, 'Oi {primeiro_nome}, o que precisa melhorar?', 'automated_question_queued');
 
         $this->assertNull($mensagem, 'Enviar a chave literal para o cidadão e pior que não enviar.');
         $this->assertDatabaseMissing('conversation_messages', ['conversation_id' => $state->conversation_id, 'direction' => 'outgoing']);
@@ -143,5 +149,24 @@ class PlaceholderNaPerguntaDoFluxoTest extends TestCase
         $user->roles()->attach(Role::query()->where('slug', 'administrador')->firstOrFail());
 
         return $user->refresh()->load('roles.permissions');
+    }
+
+    /**
+     * Cidade em branco não impede mais: a pergunta sai com "sua cidade".
+     *
+     * Em 17/08/2026 uma pessoa se inscreveu por palavra-chave, disse "Pode" ao
+     * pedido de permissão e não recebeu pergunta nenhuma — as perguntas do
+     * fluxo usam {cidade} e a inscrição só traz nome e telefone.
+     */
+    public function test_cidade_em_branco_sai_com_o_substituto(): void
+    {
+        $state = $this->estado(['first_name' => 'Mariana', 'city' => null]);
+
+        $mensagem = app(ConversationAutomatedReplyService::class)
+            ->queue($state, 'O que precisa melhorar em {cidade}?', 'automated_question_queued');
+
+        $this->assertNotNull($mensagem);
+        $this->assertStringContainsString('sua cidade', (string) $mensagem->body);
+        $this->assertStringNotContainsString('{cidade}', (string) $mensagem->body);
     }
 }

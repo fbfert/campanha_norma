@@ -107,8 +107,17 @@ class MessageAuthoringModuleTest extends TestCase
         $this->assertStringNotContainsString('<b>', $renderer->render('Oi {nome}', $contact)['message']);
         $this->assertSame('Texto livre', $renderer->render('Texto livre', $contact)['message']);
 
-        $missing = $renderer->render('Oi {cidade}', Contact::factory()->create(['city' => null]));
+        // Campo sem substituto continua bloqueando: não há genérico que sirva
+        // para um e-mail, e mandar a chave crua é pior que não mandar.
+        $missing = $renderer->render('Retorno em {email}', Contact::factory()->create(['email' => null]));
         $this->assertNotEmpty($missing['errors']);
+        $this->assertSame(['email'], $missing['missing']);
+
+        // A cidade tem substituto desde 17/08/2026: quem entra por campanha
+        // nasce sem ela, e a frase funciona sem o nome da cidade.
+        $semCidade = $renderer->render('Oi {cidade}', Contact::factory()->create(['city' => null]));
+        $this->assertSame('Oi sua cidade', $semCidade['message']);
+        $this->assertSame([], $semCidade['missing']);
     }
 
     public function test_lote_cria_snapshots_exclui_nao_aptos_e_preserva_ordem(): void
@@ -120,18 +129,30 @@ class MessageAuthoringModuleTest extends TestCase
         $doNot = Contact::factory()->create(['do_not_contact' => true]);
         $noPhone = Contact::factory()->create(['phone_normalized' => null]);
         $noCity = Contact::factory()->create(['city' => null]);
+        $noEmail = Contact::factory()->create(['email' => null]);
 
         $this->actingAs($operator)->post(route('admin.message-batches.store'), $this->batchPayload([
-            'contact_ids' => [$valid->id, $inactive->id, $blocked->id, $doNot->id, $noPhone->id, $noCity->id, $valid->id],
-            'message_body' => 'Oi {primeiro_nome}, como esta {cidade}?',
+            'contact_ids' => [$valid->id, $inactive->id, $blocked->id, $doNot->id, $noPhone->id, $noCity->id, $noEmail->id, $valid->id],
+            'message_body' => 'Oi {primeiro_nome}, como esta {cidade}? Retorno em {email}',
         ]))->assertRedirect();
 
         $batch = MessageBatch::firstOrFail();
-        $this->assertSame(6, $batch->selection_total);
-        $this->assertSame(1, $batch->eligible_total);
+        $this->assertSame(7, $batch->selection_total);
+        $this->assertSame(2, $batch->eligible_total);
         $this->assertSame(5, $batch->ineligible_total);
         $this->assertDatabaseHas('message_batch_recipients', ['message_batch_id' => $batch->id, 'contact_id' => $valid->id, 'eligibility_status' => 'eligible']);
-        $this->assertDatabaseHas('message_batch_recipients', ['message_batch_id' => $batch->id, 'contact_id' => $noCity->id, 'eligibility_status' => 'excluded']);
+
+        /*
+         | Sem cidade deixou de excluir.
+         |
+         | Desde 17/08/2026 a cidade tem substituto: a mensagem sai dizendo
+         | "sua cidade". Isto vale para o lote também, e não só para a
+         | pesquisa — quem antes ficava de fora do disparo agora recebe.
+         */
+        $this->assertDatabaseHas('message_batch_recipients', ['message_batch_id' => $batch->id, 'contact_id' => $noCity->id, 'eligibility_status' => 'eligible']);
+
+        // Campo sem substituto continua excluindo.
+        $this->assertDatabaseHas('message_batch_recipients', ['message_batch_id' => $batch->id, 'contact_id' => $noEmail->id, 'eligibility_status' => 'excluded']);
 
         $positions = $batch->recipients()->pluck('random_position')->all();
         $this->assertCount(count($positions), array_unique($positions));

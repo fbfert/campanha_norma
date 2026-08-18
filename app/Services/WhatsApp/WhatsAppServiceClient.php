@@ -81,10 +81,35 @@ class WhatsAppServiceClient
     {
         $path = '/api/conversations/'.rawurlencode($externalChatId).'/messages/'.rawurlencode($externalMessageId).'/media';
 
-        return $this->send('get', $path.($options === [] ? '' : '?'.http_build_query($options)));
+        return $this->send(
+            'get',
+            $path.($options === [] ? '' : '?'.http_build_query($options)),
+            timeout: $this->mediaTimeout(),
+        );
     }
 
-    private function request(): PendingRequest
+    /**
+     * O download precisa de mais prazo que o resto.
+     *
+     * O serviço Node dá 20 segundos ao download (`DOWNLOAD_TIMEOUT_MS`), e o
+     * prazo geral deste cliente é 15. Quem desistia primeiro era o cliente: um
+     * download que terminaria em 18 segundos era gravado como
+     * `ATTACHMENT_UNAVAILABLE` com "o serviço não respondeu a tempo" — uma
+     * mensagem que descreve o Laravel, e não o WhatsApp, e que mandava procurar
+     * defeito no lugar errado.
+     *
+     * A margem existe para o Node conseguir devolver o próprio erro, que diz o
+     * que de fato aconteceu, em vez de a conexão morrer antes.
+     */
+    private function mediaTimeout(): int
+    {
+        return max(
+            (int) config('whatsapp.service.timeout'),
+            (int) config('whatsapp.service.media_timeout', 30),
+        );
+    }
+
+    private function request(?int $timeout = null): PendingRequest
     {
         $token = (string) config('whatsapp.service.token');
 
@@ -92,14 +117,14 @@ class WhatsAppServiceClient
             ->withToken($token)
             ->acceptJson()
             ->asJson()
-            ->timeout((int) config('whatsapp.service.timeout'))
+            ->timeout($timeout ?? (int) config('whatsapp.service.timeout'))
             ->connectTimeout((int) config('whatsapp.service.connect_timeout'));
     }
 
-    private function send(string $method, string $path, array $payload = []): array
+    private function send(string $method, string $path, array $payload = [], ?int $timeout = null): array
     {
         try {
-            $request = $this->request();
+            $request = $this->request($timeout);
 
             if ($payload !== []) {
                 // json_encode()/Guzzle's default JSON encoding escapes unicode as \uXXXX,

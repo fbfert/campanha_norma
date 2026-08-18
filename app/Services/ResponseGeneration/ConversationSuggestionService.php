@@ -23,6 +23,7 @@ use App\Services\Conversations\ConversationEventService;
 use App\Services\Conversations\ConversationReplyService;
 use App\Services\Knowledge\KnowledgeGuard;
 use App\Services\SystemSettingService;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -233,10 +234,12 @@ class ConversationSuggestionService
             $conversation = $fresh->conversation;
             // O aviso de transcrição vale para os dois caminhos de saída: a
             // pessoa que mandou áudio precisa saber que ele virou texto,
-            // independentemente de quem escreveu a resposta.
+            // independentemente de quem escreveu a resposta. Ele acompanha a
+            // resposta à mensagem que veio em áudio — que aqui é a mensagem que
+            // originou a sugestão.
             $text = $this->automated->applyTransparency(
                 $fresh->flow,
-                $this->automated->applyTranscriptionNotice($conversation, $fresh->outgoingText()),
+                $this->automated->applyTranscriptionNotice($fresh->sourceMessage, $fresh->outgoingText()),
             );
 
             $message = $this->replies->createPending(
@@ -440,7 +443,7 @@ class ConversationSuggestionService
     /**
      * Alguma mensagem do bloco foi entendida com clareza?
      *
-     * @param  \Illuminate\Support\Collection<int, \App\Models\ConversationMessageClassification>  $classificacoes
+     * @param  Collection<int, ConversationMessageClassification>  $classificacoes
      */
     private function blockUnderstood($classificacoes): bool
     {
@@ -523,7 +526,7 @@ class ConversationSuggestionService
      * Classificações das mensagens que a pessoa escreveu desde a última
      * resposta enviada — o bloco que esta geração responde de uma vez.
      *
-     * @return \Illuminate\Support\Collection<int, ConversationMessageClassification>
+     * @return Collection<int, ConversationMessageClassification>
      */
     private function groupedClassifications(ConversationMessage $message)
     {

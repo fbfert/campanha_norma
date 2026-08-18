@@ -789,6 +789,13 @@ Correções e melhorias aplicadas após a entrada em produção, fora do escopo 
 - Migalha de navegação (breadcrumb) com links funcionais para as páginas anteriores, em todas as telas administrativas.
 - Seleção de contatos em campanhas com busca dinamica, filtros adicionais e contador ao vivo (`CampaignContactPicker`, componente Livewire), substituindo a lista estatica anterior.
 - Limpeza pontual de conversas vazias (sem contato, sem mensagem, sem telefone identificável) criadas por sincronizações anteriores com resolução de `@lid` malsucedida.
+- **Administração responsiva.** Abaixo de 860px a barra de navegação virava uma pilha de oito grupos acima do conteúdo, e toda página começava com um rolar longo. Passou a ser uma gaveta, feita com caixa de seleção e sem JavaScript — menu que depende de script é menu que às vezes não abre.
+- Correção de rolagem horizontal em **toda** a área administrativa, em qualquer largura: filho de grid não encolhe abaixo do próprio conteúdo (`min-width` padrão é `auto`), e um card com tabela larga empurrava a página inteira. Eram 1342px de rolagem numa janela de 1280.
+- Topo da tela reorganizado em duas fileiras no celular: título espremido virava reticências e a trilha quebrava em cinco linhas, ocupando 174px antes de a tela começar.
+- Tela de conversa: a coluna da esquerda saiu. Ela repetia o nome do contato, que encabeça o chat, e a data da última mensagem, que está no card de detalhes — 250px para dizer duas vezes a mesma coisa. O "Voltar para conversas" foi para o topo da coluna de detalhes.
+- Aviso de transcrição de áudio corrigido: ele conferia se a **conversa** já tivera algum áudio, e saía colado a uma resposta a texto dizendo "Recebi seu áudio" dias depois. Passou a acompanhar a resposta à mensagem que de fato veio em áudio.
+- Prazo próprio para o download de mídia (`WHATSAPP_SERVICE_MEDIA_TIMEOUT`, 30s). O serviço Node dá 20s ao download e o cliente geral desistia em 15: qualquer mídia entre os dois prazos era gravada como indisponível com "o serviço não respondeu a tempo" — descrevendo o Laravel, não o WhatsApp.
+- Substituto para a cidade ausente: `{cidade}` sem valor vira "sua cidade" em vez de bloquear o envio. Vale para lote e para pesquisa — contato que antes ficava de fora do disparo passa a receber. A recusa continua para nome, telefone, e-mail, estado e país, onde não existe palavra genérica que sirva.
 
 ## Não implementado nesta etapa — Etapa 1
 

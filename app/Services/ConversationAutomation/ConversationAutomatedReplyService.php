@@ -5,7 +5,6 @@ namespace App\Services\ConversationAutomation;
 use App\Enums\ConversationMessageOrigin;
 use App\Enums\TranscriptionStatus;
 use App\Jobs\SendAutomatedConversationReplyJob;
-use App\Models\Conversation;
 use App\Models\ConversationEvent;
 use App\Models\ConversationFlow;
 use App\Models\ConversationFlowState;
@@ -65,7 +64,16 @@ class ConversationAutomatedReplyService
             return null;
         }
 
-        $body = trim($this->applyTransparency($state->flow, $this->applyTranscriptionNotice($conversation, $render['message'])));
+        /*
+         | A mensagem que originou esta resposta é a última que o motor
+         | processou: `runDeterministicFlow` grava `last_processed_message_id`
+         | antes de decidir o que responder.
+         */
+        $gatilho = $state->last_processed_message_id
+            ? ConversationMessage::find($state->last_processed_message_id)
+            : null;
+
+        $body = trim($this->applyTransparency($state->flow, $this->applyTranscriptionNotice($gatilho, $render['message'])));
 
         if ($body === '') {
             return null;
@@ -130,12 +138,24 @@ class ConversationAutomatedReplyService
      * dizer "seus áudios são transcritos" para quem so escreveu seria ruído — e
      * ruído em aviso de privacidade ensina a ignorar aviso de privacidade.
      *
-     * Sai uma vez por conversa, junto da primeira resposta depois da primeira
-     * transcrição. Repetir a cada áudio viraria assinatura.
+     * O aviso acompanha a resposta À MENSAGEM DE ÁUDIO, e não uma resposta
+     * qualquer numa conversa que um dia teve áudio.
+     *
+     * A verificação era por conversa, e o texto diz "Recebi seu áudio". Na
+     * conversa 425, em 17/08/2026, esse aviso saiu colado a uma pergunta da
+     * pesquisa respondendo a um "sim" digitado — o áudio era de cinco dias
+     * antes. Do lado de quem lê, o sistema afirmou ter recebido um áudio que
+     * ninguém mandou, e aviso de privacidade que erra o fato não protege
+     * ninguém: ensina a desconfiar do resto.
+     *
+     * Continua saindo uma vez por conversa. Repetir a cada áudio viraria
+     * assinatura.
      */
-    public function applyTranscriptionNotice(?Conversation $conversation, string $body): string
+    public function applyTranscriptionNotice(?ConversationMessage $trigger, string $body): string
     {
-        if (! $conversation) {
+        $conversation = $trigger?->conversation;
+
+        if (! $trigger || ! $conversation) {
             return $body;
         }
 
@@ -145,12 +165,13 @@ class ConversationAutomatedReplyService
             return $body;
         }
 
-        $temTranscricao = MessageTranscription::query()
-            ->where('conversation_id', $conversation->id)
+        // É esta mensagem que virou texto, e não uma qualquer da conversa.
+        $veioDeAudio = MessageTranscription::query()
+            ->where('conversation_message_id', $trigger->id)
             ->where('status', TranscriptionStatus::Succeeded)
             ->exists();
 
-        if (! $temTranscricao) {
+        if (! $veioDeAudio) {
             return $body;
         }
 
