@@ -5,6 +5,8 @@ namespace App\Services\KeywordCampaigns;
 use App\Enums\ConversationMessageDirection;
 use App\Models\ConversationMessage;
 use App\Models\KeywordCampaign;
+use App\Services\ConversationAutomation\ReactionClassifier;
+use App\Services\ConversationAutomation\ReactionTargetResolver;
 use App\Services\Conversations\ConversationEventService;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
@@ -48,6 +50,8 @@ class KeywordCampaignTrigger
         private readonly ParticipationRegistrar $registrar,
         private readonly CampaignReplyService $replies,
         private readonly ConversationEventService $events,
+        private readonly ReactionClassifier $reactions,
+        private readonly ReactionTargetResolver $reactionTargets,
     ) {}
 
     /**
@@ -74,9 +78,14 @@ class KeywordCampaignTrigger
             return [];
         }
 
+        $this->consumiuAMensagem = false;
+
+        if ($message->isReaction()) {
+            return $this->avaliarReacao($message, $campanhas);
+        }
+
         $texto = $this->matcher->textoParaCasamento($message);
         $resultados = [];
-        $this->consumiuAMensagem = false;
 
         foreach ($campanhas as $campanha) {
             $palavra = $this->matcher->match($texto, $campanha->keywordList());
@@ -106,6 +115,86 @@ class KeywordCampaignTrigger
             if ($this->matcher->mensagemEhSoAPalavra($texto, $campanha->keywordList())) {
                 $this->consumiuAMensagem = true;
             }
+        }
+
+        return $resultados;
+    }
+
+    /**
+     * A inscrição que nasce de uma reação.
+     *
+     * Aqui o casamento não é contra o que a pessoa escreveu — ela não escreveu
+     * nada. É contra o texto da MENSAGEM NOSSA em que ela reagiu: se aquela
+     * mensagem é a que trazia a palavra-chave da campanha, o 👍 dado nela é
+     * resposta ao convite, e não emoji solto.
+     *
+     * Isto afrouxa a regra de `docs/gatilhos-de-palavra-chave.md`, que exige a
+     * palavra escrita e por isso deixa áudio transcrito de fora. A diferença
+     * que justifica o afrouxamento é a prova: transcrição é a máquina supondo o
+     * que foi dito, e pode inscrever quem não pediu; a reação é um toque da
+     * própria pessoa, num alvo que fica gravado, sobre um texto que ela leu.
+     * Reconstruir a inscrição depois é ler as duas linhas lado a lado.
+     *
+     * O que continua valendo igual: reação numa mensagem recebida não conta,
+     * reação numa mensagem nossa que não fala da campanha não conta, e reação
+     * negativa não inscreve ninguém.
+     *
+     * @param  Collection<int, KeywordCampaign>  $campanhas
+     * @return list<EnrollmentResult>
+     */
+    private function avaliarReacao(ConversationMessage $message, Collection $campanhas): array
+    {
+        /*
+         | Reagir 👎 no convite também inscreve.
+         |
+         | Inscrição e pesquisa são dois consentimentos, e não um. Quem reage no
+         | convite respondeu ao convite: entra na campanha. O que a reação
+         | negativa diz é sobre a OUTRA coisa — que ela não quer responder à
+         | pesquisa —, e quem trata disso é `CampaignReplyService`, que nesse
+         | caso manda a confirmação sem o convite e não abre fluxo nenhum.
+         |
+         | Emoji fora das listas não é resposta a nada, e não inscreve: um 🍕 no
+         | convite é alguém achando graça, não alguém se inscrevendo.
+         */
+        if (! $this->reactions->isAnswer($message->body)) {
+            return [];
+        }
+
+        $alvo = $this->reactionTargets->alvo($message);
+
+        if (! $alvo) {
+            return [];
+        }
+
+        $texto = $this->matcher->textoParaCasamento($alvo);
+
+        if (blank($texto)) {
+            return [];
+        }
+
+        $resultados = [];
+
+        foreach ($campanhas as $campanha) {
+            $palavra = $this->matcher->match($texto, $campanha->keywordList());
+
+            if ($palavra === null) {
+                continue;
+            }
+
+            $resultado = $this->registrar->registrar($campanha, $message, $palavra);
+            $resultados[] = $resultado;
+
+            $this->registrarEvento($message, $campanha, $palavra, $resultado);
+            $this->replies->responder($campanha, $message, $resultado);
+
+            /*
+             | Reação nunca é conteúdo para o motor da 9A.
+             |
+             | Diferente do texto, onde só a palavra sozinha é consumida: ali
+             | "falta saúde no bairro" é a resposta da pessoa e precisa passar.
+             | Um emoji não é resposta a pergunta aberta nenhuma.
+             */
+            $this->consumiuAMensagem = true;
         }
 
         return $resultados;

@@ -113,6 +113,40 @@ class ConfiguracaoDaAutomacaoTest extends TestCase
             ->assertSee("sim\npode\nclaro", false);
     }
 
+    /**
+     * As listas de reação são editáveis pela mesma tela, e pelo mesmo motivo
+     * que as de expressão: o teclado de emoji do WhatsApp muda a cada versão, e
+     * quem acompanha isso é quem lê as conversas, não quem faz o deploy.
+     */
+    public function test_reacoes_sao_editaveis_pela_tela(): void
+    {
+        $admin = $this->userWithRole('administrador');
+
+        $this->actingAs($admin)->put(route('admin.conversation-automation.settings.update'), $this->payload([
+            'positive_reactions' => "👍\n\n❤️\n👍",
+            'negative_reactions' => "👎",
+        ]))->assertSessionHasNoErrors();
+
+        $this->assertSame('👍|❤️', app(SystemSettingService::class)->get('conversation_automation.positive_reactions'));
+        $this->assertSame('👎', app(SystemSettingService::class)->get('conversation_automation.negative_reactions'));
+    }
+
+    /**
+     * Esvaziar a lista devolve o sistema ao comportamento anterior: reagir para
+     * de significar alguma coisa. É a única forma de desligar a leitura de
+     * reação sem deploy, e por isso o campo não pode ser obrigatório.
+     */
+    public function test_lista_de_reacao_pode_ser_esvaziada(): void
+    {
+        $this->actingAs($this->userWithRole('administrador'))
+            ->put(route('admin.conversation-automation.settings.update'), $this->payload([
+                'positive_reactions' => '',
+            ]))
+            ->assertSessionHasNoErrors();
+
+        $this->assertSame('', app(SystemSettingService::class)->get('conversation_automation.positive_reactions'));
+    }
+
     public function test_gravacao_preserva_grupo_tipo_e_visibilidade_da_chave(): void
     {
         $this->actingAs($this->userWithRole('administrador'))
@@ -160,6 +194,8 @@ class ConfiguracaoDaAutomacaoTest extends TestCase
             'yes_expressions' => "sim\npode",
             'no_expressions' => "não\nagora não",
             'opt_out_expressions' => "sair\nparar",
+            'positive_reactions' => "👍",
+            'negative_reactions' => "👎",
         ], $overrides);
     }
 

@@ -104,7 +104,18 @@ class MetaWebhookTranslator
             // Não existe grupo na Cloud API.
             'is_group' => false,
             'has_media' => $this->hasMedia($tipo),
-            'quoted_external_message_id' => $mensagem['context']['id'] ?? null,
+            /*
+             | A Cloud API põe o alvo da reação em outro lugar.
+             |
+             | Citação vem em `context.id`; reação vem em
+             | `reaction.message_id`. Ler só o primeiro descartava a mensagem
+             | reagida, e sem ela a reação chegava aqui como um emoji pairando
+             | sobre coisa nenhuma — impossível saber se respondia à pergunta de
+             | permissão ou a uma mensagem de três semanas atrás.
+             */
+            'quoted_external_message_id' => $tipo === 'reaction'
+                ? ($mensagem['reaction']['message_id'] ?? null)
+                : ($mensagem['context']['id'] ?? null),
             'metadata' => array_filter([
                 'type' => $tipo,
                 'media_id' => $mensagem[$tipo]['id'] ?? null,

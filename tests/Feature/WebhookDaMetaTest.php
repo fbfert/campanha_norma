@@ -191,7 +191,14 @@ class WebhookDaMetaTest extends TestCase
         });
     }
 
-    /** Reação é um emoji, e é o que a pessoa disse. */
+    /**
+     * Reação é um emoji, e é o que a pessoa disse.
+     *
+     * O alvo vem em `reaction.message_id`, e não em `context.id`: ler só o
+     * segundo descartava a mensagem reagida, e sem ela a reação chega como um
+     * emoji pairando sobre coisa nenhuma — impossível saber se responde à
+     * pergunta de permissão ou a uma mensagem de três semanas atrás.
+     */
     public function test_reacao_vira_o_emoji(): void
     {
         $payload = $this->payload();
@@ -206,6 +213,11 @@ class WebhookDaMetaTest extends TestCase
         $this->enviar($payload)->assertOk();
 
         Queue::assertPushed(ProcessIncomingMessageJob::class, fn (ProcessIncomingMessageJob $job): bool => $this->payloadDoJob($job)['text'] === '👍');
+
+        Queue::assertPushed(
+            ProcessIncomingMessageJob::class,
+            fn (ProcessIncomingMessageJob $job): bool => $this->payloadDoJob($job)['quoted_external_message_id'] === 'wamid.ANTERIOR',
+        );
     }
 
     /**

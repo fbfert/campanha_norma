@@ -123,6 +123,49 @@ class CampanhaAbrePesquisaTest extends TestCase
             ->all();
     }
 
+    /**
+     * O mesmo caminho, quando a pessoa reage em vez de escrever.
+     *
+     * O convite da campanha é uma mensagem NOSSA que traz a palavra-chave, e é
+     * nela que a reação precisa cair: o casamento é feito contra o texto do
+     * convite, e não contra o emoji.
+     */
+    private function receberReacao(string $emoji, string $telefone = '5549999990001'): ConversationMessage
+    {
+        $conversa = Conversation::firstOrCreate(
+            ['provider' => 'web', 'external_chat_id' => "{$telefone}@c.us"],
+            Conversation::factory()->make(['contact_id' => null])->only([
+                'contact_id', 'connection_id', 'status', 'priority',
+                'last_message_direction', 'last_message_at', 'last_incoming_message_at',
+                'unread_count', 'is_archived',
+            ]),
+        );
+
+        $convite = ConversationMessage::factory()->create([
+            'conversation_id' => $conversa->id,
+            'direction' => ConversationMessageDirection::Outgoing,
+            'status' => ConversationMessageStatus::Sent,
+            'message_type' => 'text',
+            'body' => 'Reaja aqui para concorrer ao SORTEIO de uma bolsa de curso.',
+            'external_message_id' => 'convite-'.uniqid(),
+        ]);
+
+        $reacao = ConversationMessage::factory()->create([
+            'conversation_id' => $conversa->id,
+            'sender_phone_snapshot' => $telefone,
+            'sender_name_snapshot' => 'Maria da Silva',
+            'direction' => ConversationMessageDirection::Incoming,
+            'message_type' => ConversationMessage::TYPE_REACTION,
+            'body' => $emoji,
+            'has_media' => false,
+            'quoted_message_id' => $convite->external_message_id,
+        ]);
+
+        EvaluateConversationFlowJob::dispatchSync($reacao->id);
+
+        return $reacao;
+    }
+
     // -------------------------------------------------------------------------
 
     /**
@@ -497,5 +540,87 @@ class CampanhaAbrePesquisaTest extends TestCase
             });
             $mock->shouldReceive('provider')->andReturn($provedor);
         });
+    }
+
+    // -------------------------------------------------------------------------
+    // Reação no convite
+    // -------------------------------------------------------------------------
+
+    public function test_reacao_positiva_inscreve_e_convida_para_a_pesquisa(): void
+    {
+        KeywordCampaign::factory()->create([
+            'conversation_flow_id' => $this->fluxo()->id,
+            'confirmation_text' => 'Inscrição confirmada! Boa sorte.',
+        ]);
+
+        $reacao = $this->receberReacao('👍');
+
+        $saidas = $this->saidas();
+
+        $this->assertSame(1, KeywordCampaignParticipation::count());
+        // A primeira saída é o convite que ela reagiu; a segunda é a resposta.
+        $this->assertStringContainsString('Inscrição confirmada!', end($saidas));
+        $this->assertStringContainsString('Posso te fazer uma pergunta rápida?', end($saidas));
+
+        $estado = ConversationFlowState::where('conversation_id', $reacao->conversation_id)->firstOrFail();
+        $this->assertSame(ConversationFlowStage::WaitingPermission, $estado->current_stage);
+    }
+
+    /**
+     * Inscrição e pesquisa são dois consentimentos, e não um.
+     *
+     * Quem reage no convite respondeu ao convite: entra na campanha e recebe a
+     * confirmação. O que a reação negativa diz é sobre a OUTRA coisa — que ela
+     * não quer responder à pesquisa. Emendar o convite ali seria perguntar de
+     * novo a quem acabou de dizer que não, na mesma mensagem.
+     */
+    public function test_reacao_negativa_inscreve_confirma_e_nao_abre_pesquisa(): void
+    {
+        KeywordCampaign::factory()->create([
+            'conversation_flow_id' => $this->fluxo()->id,
+            'confirmation_text' => 'Inscrição confirmada! Boa sorte.',
+        ]);
+
+        $reacao = $this->receberReacao('👎');
+
+        $saidas = $this->saidas();
+
+        $this->assertSame(1, KeywordCampaignParticipation::count(), 'A inscrição fica de pé.');
+        $this->assertStringContainsString('Inscrição confirmada!', end($saidas));
+        $this->assertStringNotContainsString('Posso te fazer uma pergunta rápida?', end($saidas));
+
+        $this->assertFalse(
+            ConversationFlowState::where('conversation_id', $reacao->conversation_id)->exists(),
+            'A pesquisa não pode abrir para quem acabou de recusá-la.',
+        );
+    }
+
+    /**
+     * Recusar a pesquisa nunca cancela a inscrição.
+     *
+     * As duas coisas são independentes, e o mesmo vale para quem escreveu a
+     * palavra, foi convidada e disse não depois.
+     */
+    public function test_recusa_depois_da_inscricao_encerra_a_pesquisa_e_mantem_a_inscricao(): void
+    {
+        KeywordCampaign::factory()->create(['conversation_flow_id' => $this->fluxo()->id]);
+
+        $inscricao = $this->receber();
+
+        $nao = ConversationMessage::factory()->create([
+            'conversation_id' => $inscricao->conversation_id,
+            'contact_id' => $inscricao->contact_id,
+            'sender_phone_snapshot' => '5549999990001',
+            'direction' => ConversationMessageDirection::Incoming,
+            'message_type' => 'text',
+            'body' => 'não quero',
+        ]);
+
+        EvaluateConversationFlowJob::dispatchSync($nao->id);
+
+        $estado = ConversationFlowState::where('conversation_id', $inscricao->conversation_id)->firstOrFail();
+
+        $this->assertSame(ConversationFlowStage::PermissionDenied, $estado->current_stage);
+        $this->assertSame(1, KeywordCampaignParticipation::count(), 'Recusar a pesquisa não tira ninguém do sorteio.');
     }
 }

@@ -217,7 +217,7 @@ class InboxController extends Controller
             // `medium` e `transcriptions` vêm junto: sem eles, a linha do tempo
             // faz duas consultas por mensagem só para decidir se mostra a
             // imagem ou o motivo de não ter conseguido.
-            'conversation' => $conversation->load(['contact', 'assignee', 'messages.creator', 'messages.medium', 'messages.transcriptions', 'events', 'notes.user', 'tags', 'flowState']),
+            'conversation' => $conversation->load(['contact', 'assignee', 'messages.creator', 'messages.medium', 'messages.transcriptions', 'messages.reacted', 'events', 'notes.user', 'tags', 'flowState']),
             'users' => User::where('status', 'active')->orderBy('name')->get(),
             'tags' => ConversationTag::where('is_active', true)->orderBy('name')->get(),
             'contacts' => Contact::orderBy('name')->limit(100)->get(),
@@ -234,7 +234,7 @@ class InboxController extends Controller
         $afterId = $request->integer('after_id');
 
         $messages = $conversation->messages()
-            ->with(['creator', 'medium', 'transcriptions'])
+            ->with(['creator', 'medium', 'transcriptions', 'reacted'])
             ->where('id', '>', $afterId)
             ->latest('id')
             ->get();

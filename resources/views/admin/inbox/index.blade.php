@@ -100,7 +100,7 @@
                     @if(! $displayPhone && $conversation->whatsappIdentifierForDisplay())
                         <div class="muted">ID WhatsApp: {{ $conversation->whatsappIdentifierForDisplay() }}</div>
                     @endif
-                    <div class="conversation-preview">@can('inbox.view_message_content'){{ Str::limit($last?->body ?: ($last?->has_media ? '[midia]' : 'Sem mensagens'), 90) }}@else Conteúdo protegido @endcan</div>
+                    <div class="conversation-preview">@can('inbox.view_message_content'){{ Str::limit($last?->previewText() ?: 'Sem mensagens', 90) }}@else Conteúdo protegido @endcan</div>
                     <div class="conversation-meta">
                         <span class="badge {{ $conversation->status === \App\Enums\ConversationStatus::WaitingOperator ? 'awaiting-operator' : '' }}">{{ $conversation->status->label() }}</span>
                         <span class="badge">{{ $conversation->priority->label() }}</span>

@@ -712,14 +712,23 @@ Quem escreve primeiro passa a ser atendido, e a mídia recebida passa a ser vist
 - Mídia recebida guardada em disco privado, sob demanda e com retenção de 90 dias; imagem, figurinha, áudio e vídeo aparecem na conversa por rota autenticada.
 - Descrição de imagem por visão e transcrição de áudio, ambas gravadas como texto extraído por máquina e distinguíveis do que a pessoa escreveu.
 - Download de mídia por caminho próprio no serviço Node, contornando o passo de resolução que o whatsapp-web.js perdeu contra a build atual do WhatsApp Web.
+- Reação lida nos dois provedores, com o alvo gravado: reagir 👍 na mensagem que perguntou autoriza a pesquisa e inscreve na campanha; reagir 👎 inscreve do mesmo jeito e recusa apenas a pesquisa, que não é aberta. Não existe opt-out por reação &mdash; descadastro não pode nascer de um toque errado no teclado de emoji.
+- Consentimento gravado quando a pessoa autoriza a pesquisa, escrevendo ou reagindo, com a frase exata que o pediu dentro de `consent_text`. "Sim" ouvido pela máquina autoriza a pergunta mas não consente: consentimento criado por engano de transcrição é indistinguível, no banco, de um de verdade.
+- Inscrição e pesquisa como consentimentos independentes: recusar a pesquisa nunca tira ninguém do sorteio.
 
 Documentação complementar:
 
 - `docs/inbound-attendance.md`
 - `docs/midia-recebida.md`
+- `docs/reacoes-na-conversa.md`
 
 ## Não implementado — Atendimento de entrada e leitura de mídia
 
+- Opt-out por reação. Descadastro é irreversível para quem o sofre, e um toque errado no teclado de emoji não pode produzi-lo. Quem quer sair escreve "sair", que continua tendo prioridade absoluta.
+- Reação como resposta a pergunta aberta. A pergunta pede texto, e gravar um emoji como opinião produziria dado indistinguível de dado real.
+- Remoção de reação. O evento chega, e é descartado: a pergunta seguinte já saiu e a inscrição já existe, então retirar o emoji não desfaria nada.
+- Reação trazida pela sincronização. Ela lê mensagens, e reação não é mensagem para o whatsapp-web.js; só o evento ao vivo entra.
+- Consentimento a partir de áudio transcrito. A transcrição autoriza a pergunta, mas não grava `consent_status`: é a mesma linha que a inscrição por palavra-chave traça contra a suposição da máquina.
 - Leitura de vídeo e de documento. O provedor de visão recebe imagem, e um quadro solto descreveria o quadro, não o vídeo; PDF exige extração de texto, que é outro caminho. Os dois seguem recebendo o pedido por escrito.
 - Envio de mídia. Continua fora de escopo: o sistema lê o que chega e responde por texto.
 - Estabilidade do download contra mudanças do WhatsApp Web. O contorno depende de módulos internos não documentados e **vai quebrar de novo** quando eles forem renomeados. O sintoma será mídia parando de descer; o endpoint de diagnóstico responde em segundos qual peça caiu.

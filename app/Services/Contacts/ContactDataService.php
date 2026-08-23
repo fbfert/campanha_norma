@@ -121,6 +121,42 @@ class ContactDataService
         $this->audit->log('contact.status_changed', 'Status do contato alterado.', $contact, $old, ['status' => $status->value]);
     }
 
+    /**
+     * Registra consentimento concedido por um ato da pessoa na conversa.
+     *
+     * Só sobe de `not_informed` ou `pending`. `granted` já é o destino, e
+     * `revoked` é uma decisão que a pessoa tomou — sobrescrevê-la a partir de
+     * um emoji seria devolver à base alguém que pediu para sair, e ninguém
+     * ficaria sabendo. `not_required` também fica intacto: quem marcou aquilo
+     * sabia por quê.
+     *
+     * `$text` guarda a finalidade, com a frase exata a que a pessoa respondeu.
+     * É o que sustenta o consentimento depois: sem ela, o banco diria apenas
+     * que alguém consentiu, sem dizer com o quê.
+     */
+    public function setConsentGranted(Contact $contact, string $source, string $text, ?string $date = null): bool
+    {
+        if (! in_array($contact->consent_status, [ConsentStatus::NotInformed, ConsentStatus::Pending], true)) {
+            return false;
+        }
+
+        $old = $contact->only(['consent_status', 'consent_source', 'consent_text', 'consent_at']);
+
+        $contact->forceFill([
+            'consent_status' => ConsentStatus::Granted,
+            'consent_source' => $source,
+            'consent_text' => $text,
+            'consent_at' => $date ?? now()->toDateString(),
+        ])->save();
+
+        $new = $contact->only(['consent_status', 'consent_source', 'consent_text', 'consent_at']);
+
+        $this->history->record($contact, ContactHistoryAction::Updated, 'Consentimento registrado a partir da conversa.', $old, $new);
+        $this->audit->log('contact.consent_granted', 'Consentimento registrado a partir da conversa.', $contact, $old, $new);
+
+        return true;
+    }
+
     public function setDoNotContact(Contact $contact, bool $value, ?string $reason = null): void
     {
         if ($value && ($this->settings->get('contacts.require_do_not_contact_reason', '1') === '1') && blank($reason)) {

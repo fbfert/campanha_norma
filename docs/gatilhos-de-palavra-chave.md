@@ -68,6 +68,28 @@ não se inscreveu não tem como saber que está na lista.
 
 Se a divulgação for por rádio, é a primeira coisa a reconsiderar.
 
+### Reação, sim — e por quê
+
+Reagir com 👍 na mensagem que traz a palavra-chave **inscreve**. É a única
+exceção à regra acima, e ela não contradiz o motivo dela.
+
+O que desqualifica o áudio é a suposição: transcrição é a máquina adivinhando o
+que foi dito, e ela erra. A reação não tem suposição nenhuma no caminho — o ato
+é da própria pessoa, o alvo fica gravado em `quoted_message_id`, e o texto sobre
+o qual ela reagiu é um texto que ela leu.
+
+Continua valendo igual: reação numa mensagem nossa que não fala da campanha não
+inscreve, e reação na própria mensagem da pessoa não inscreve.
+
+Reação **negativa inscreve do mesmo jeito**. Inscrição e pesquisa são dois
+consentimentos, e não um: quem reage no convite respondeu ao convite e entra na
+lista; o 👎 diz apenas que ela não quer responder à pesquisa, então a
+confirmação sai sem o convite emendado e nenhum fluxo é aberto. Pelo mesmo
+motivo, recusar a pesquisa depois — reagindo ou escrevendo — nunca cancela a
+inscrição.
+
+Emoji fora das listas não inscreve. Detalhes em `docs/reacoes-na-conversa.md`.
+
 ---
 
 ## O casamento

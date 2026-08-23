@@ -18,6 +18,7 @@ use App\Services\Conversations\ConversationEventService;
 use App\Services\Conversations\ReplyInterruptionService;
 use App\Services\ResponseGeneration\ResponseModeResolver;
 use App\Services\SystemSettingService;
+use Illuminate\Support\Str;
 use Throwable;
 
 /**
@@ -29,6 +30,8 @@ class ConversationFlowService
         private readonly SystemSettingService $settings,
         private readonly ConversationAutomationGuard $guard,
         private readonly PermissionResponseClassifier $classifier,
+        private readonly ReactionClassifier $reactions,
+        private readonly ReactionTargetResolver $reactionTargets,
         private readonly ConversationQuestionSelector $selector,
         private readonly ConversationFlowStateMachine $machine,
         private readonly ConversationAutomatedReplyService $replies,
@@ -146,6 +149,21 @@ class ConversationFlowService
             return null;
         }
 
+        /*
+         | Reação passa por uma porta própria antes do estágio.
+         |
+         | Ela só responde alguma coisa quando foi feita na mensagem que
+         | perguntou, e só no estágio em que a pergunta era de permissão. Um 👍
+         | no meio de uma pesquisa não é a resposta à pergunta aberta — a
+         | pergunta pedia texto, e gravar o emoji como opinião produziria o
+         | mesmo tipo de dado inventado que "batata" produziu em 17/08/2026.
+         */
+        if ($message->isReaction() && ($motivo = $this->reactionBlockReason($state, $message)) !== null) {
+            $this->recordBlocked($state, $message, $motivo);
+
+            return $motivo;
+        }
+
         match ($state->current_stage) {
             ConversationFlowStage::WaitingPermission => $this->handlePermissionReply($state, $message),
             ConversationFlowStage::WaitingAnswer, ConversationFlowStage::QuestionSelected => $this->handleAnswer($state, $message),
@@ -170,12 +188,24 @@ class ConversationFlowService
 
     private function handlePermissionReply(ConversationFlowState $state, ConversationMessage $message): void
     {
-        $result = $this->classifier->classify($message->readableText());
+        /*
+         | Reação e texto são classificados por serviços diferentes.
+         |
+         | `PermissionResponseClassifier` transforma emoji em separador antes de
+         | comparar, e faz isso de propósito. Mandar um 👍 para lá devolveria
+         | texto vazio, ou seja, `Ambiguous`: a pessoa teria respondido e o
+         | sistema registraria que não entendeu.
+         */
+        $result = $message->isReaction()
+            ? $this->reactions->classify($message->body)
+            : $this->classifier->classify($message->readableText());
+
         $classification = $result['classification'];
 
         $metadata = [
             'reason' => $result['reason'],
             'matched' => $result['matched'],
+            'por_reacao' => $message->isReaction(),
         ];
 
         match ($classification) {
@@ -188,6 +218,8 @@ class ConversationFlowService
 
     private function applyGranted(ConversationFlowState $state, ConversationMessage $message, array $metadata): void
     {
+        $this->registrarConsentimentoDaPermissao($state, $message);
+
         $this->machine->transition(
             $state,
             ConversationFlowStage::PermissionGranted,
@@ -552,6 +584,88 @@ class ConversationFlowService
         }
 
         return app(ResponseModeResolver::class)->forFlow($flow)->generates();
+    }
+
+    /**
+     * Por que esta reação não decide nada? `null` quando ela decide.
+     *
+     * Duas condições, e as duas precisam valer. O estágio tem de ser o de
+     * permissão, porque é a única pergunta nossa que se responde com sim ou
+     * não; e a reação tem de ter sido feita na última mensagem nossa, que é a
+     * mensagem que fez a pergunta.
+     */
+    private function reactionBlockReason(ConversationFlowState $state, ConversationMessage $message): ?string
+    {
+        if ($state->current_stage !== ConversationFlowStage::WaitingPermission) {
+            return 'reacao_fora_do_estagio';
+        }
+
+        if ($this->reactionTargets->alvoQuePerguntou($message) === null) {
+            return 'reacao_fora_do_alvo';
+        }
+
+        return null;
+    }
+
+    /**
+     * O consentimento que nasce de autorizar a pesquisa.
+     *
+     * Vale igual para quem escreveu "sim" e para quem reagiu 👍. Os dois são o
+     * mesmo ato: a pessoa leu uma mensagem que dizia para que serviria, e
+     * concordou. Tratar só a reação seria dizer que tocar num emoji registra
+     * mais do que escrever a palavra, o que é o contrário do que a diferença
+     * entre os dois sugere.
+     *
+     * A finalidade fica escrita com a frase exata a que ela respondeu — o texto
+     * da mensagem que perguntou. É o que separa este registro de um "consentiu"
+     * solto no banco: daqui a seis meses ainda dá para dizer com o que ela
+     * concordou, palavra por palavra.
+     *
+     * Não mexe em quem já revogou nem em quem já consentiu: `setConsentGranted`
+     * recusa esses casos e devolve `false`.
+     */
+    private function registrarConsentimentoDaPermissao(ConversationFlowState $state, ConversationMessage $message): void
+    {
+        $contact = $state->conversation?->contact;
+
+        if (! $contact) {
+            return;
+        }
+
+        /*
+         | Transcrição não consente por ninguém.
+         |
+         | `handlePermissionReply` lê `readableText()`, então um áudio
+         | transcrito como "sim" autoriza a pergunta — e isso continua valendo,
+         | porque o custo de errar ali é uma pergunta a mais numa conversa que a
+         | pessoa abriu. Consentimento é outra coisa: ele fica gravado no
+         | cadastro, sustenta disparo futuro, e um consentimento criado por
+         | engano de transcrição é indistinguível, no banco, de um de verdade.
+         |
+         | É a mesma linha que `KeywordMatcherService` traça para a inscrição.
+         */
+        if (! $message->isReaction() && blank($message->body)) {
+            return;
+        }
+
+        $pergunta = $message->isReaction()
+            ? $this->reactionTargets->alvo($message)
+            : $message->ultimaMensagemNossaAntes();
+
+        $texto = trim((string) $pergunta?->body);
+
+        $ato = $message->isReaction()
+            ? 'Reagiu com '.trim((string) $message->body)
+            : 'Respondeu "'.Str::limit(trim((string) $message->body), 120).'"';
+
+        $this->contacts->setConsentGranted(
+            $contact,
+            $message->isReaction() ? 'reacao_na_conversa' : 'resposta_na_conversa',
+            $texto !== ''
+                ? "{$ato} à mensagem que pedia autorização para a pesquisa: \"{$texto}\""
+                : "{$ato} à mensagem que pedia autorização para a pesquisa.",
+            ($message->received_at ?? now())->toDateString(),
+        );
     }
 
     private function recordBlocked(ConversationFlowState $state, ?ConversationMessage $message, ?string $reason): void

@@ -156,6 +156,14 @@ Ordem de avaliação:
 
 As listas ficam em `system_settings`, separadas por barra vertical, editáveis sem deploy.
 
+### Reação
+
+Um 👍 na pergunta de permissão vale como `permission_yes`, e um 👎 vale como `permission_no`. A classificação de emoji é feita por `ReactionClassifier`, e não pelo classificador de texto: este último transforma emoji em separador antes de comparar, de propósito, então uma reação chegaria lá como texto vazio, ou seja, `ambiguous`.
+
+Autorizar a pesquisa grava `consent_status = granted` no contato, com a frase exata que pediu a autorização dentro de `consent_text`. Vale para os dois caminhos: `resposta_na_conversa` quando ela escreveu, `reacao_na_conversa` quando ela reagiu. Áudio transcrito como "sim" autoriza a pergunta e **não** consente — consentimento criado por engano de transcrição é indistinguível, no banco, de um de verdade.
+
+**Não existe opt-out por reação.** Descadastro é irreversível para quem o sofre, e um toque errado no teclado de emoji não pode produzi-lo. As listas ficam em `conversation_automation.positive_reactions` e `conversation_automation.negative_reactions`, e reagir só decide alguma coisa quando a reação foi feita na mensagem que perguntou. O documento completo é `docs/reacoes-na-conversa.md`.
+
 **Atenção ao editar `opt_out_expressions`.** Uma expressão colocada ali marca o contato como não contatar e interrompe lotes pendentes. Termos que indicam assunto sensível, e não pedido de interrupção, devem ficar em `ai.expressions.sensitive_report` (Etapa 9B), nunca aqui. A palavra `denuncia` estava indevidamente na lista de opt-out e foi movida: quem escrevia "quero fazer uma denuncia" era removido da base em vez de ser encaminhado para atendimento humano.
 
 ## Filas

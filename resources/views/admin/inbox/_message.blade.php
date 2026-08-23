@@ -70,7 +70,24 @@
             @endif
         @endif
 
-        @if(filled($message->body))
+        @if($message->isReaction())
+            {{--
+                Reação não é mensagem escrita, e mostrá-la como parágrafo faria
+                dela um emoji solto: indistinguível de alguém que mandou só um
+                emoji, e sem dizer em que mensagem a pessoa reagiu — que é
+                justamente o que decide se aquilo respondeu alguma coisa.
+            --}}
+            @php $reagida = $message->reactedTo(); @endphp
+            <p class="message-reaction">
+                <span class="message-reaction-emoji">{{ $message->body }}</span>
+                <span class="muted"><x-icon name="reply" size="16" />Reagiu a esta mensagem</span>
+            </p>
+            @if($reagida)
+                <blockquote class="message-reacted">{{ \Illuminate\Support\Str::limit((string) $reagida->body, 200) }}</blockquote>
+            @else
+                <p class="muted">A mensagem reagida não está nesta conversa &mdash; ela é anterior à sincronização.</p>
+            @endif
+        @elseif(filled($message->body))
             <p>{{ $message->body }}</p>
         @endif
 
@@ -90,7 +107,7 @@
             </p>
         @endif
 
-        @if(! $message->has_media && blank($message->body))
+        @if(! $message->has_media && ! $message->isReaction() && blank($message->body))
             <p class="muted">Mensagem sem conteúdo.</p>
         @endif
     @else

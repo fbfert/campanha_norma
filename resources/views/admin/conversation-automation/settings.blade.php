@@ -173,6 +173,28 @@
         </section>
 
         <section class="card" style="margin-top:16px;">
+            <h2>Reações</h2>
+            <p class="muted">
+                Um emoji por linha. Vale apenas a reação feita <strong>na mensagem que fez a pergunta</strong>:
+                um emoji numa mensagem antiga não responde a nada. Tom de pele e variação de desenho são
+                ignorados, então 👍 cobre 👍🏻 até 👍🏿.
+            </p>
+            <p class="alert warning">
+                Não existe lista de opt-out por reação. Descadastro não pode nascer de um toque errado no
+                teclado de emoji &mdash; quem quer sair escreve, e a lista de opt-out acima continua tendo
+                prioridade sobre tudo.
+            </p>
+            <div>
+                <label for="positive_reactions">Positivas — autorizam a pergunta e inscrevem na campanha</label>
+                <textarea id="positive_reactions" name="positive_reactions" rows="4" maxlength="4000">{{ old('positive_reactions', $form['positive_reactions']) }}</textarea>
+            </div>
+            <div style="margin-top:12px;">
+                <label for="negative_reactions">Negativas — encerram com agradecimento</label>
+                <textarea id="negative_reactions" name="negative_reactions" rows="4" maxlength="4000">{{ old('negative_reactions', $form['negative_reactions']) }}</textarea>
+            </div>
+        </section>
+
+        <section class="card" style="margin-top:16px;">
             <button class="btn" type="submit">Salvar configuração</button>
         </section>
     </form>

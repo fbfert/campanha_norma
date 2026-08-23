@@ -97,7 +97,22 @@ class EvaluateConversationFlowJob implements ShouldQueue
              | antes: `handleIncomingMessage` continua sendo chamado e continua
              | saindo calado.
              */
-            if (! $campanhaAtendeu && ! ConversationFlowState::query()->where('conversation_id', $message->conversation_id)->exists()) {
+            /*
+             | Reação não abre atendimento.
+             |
+             | O atendimento de entrada existe para quem escreveu primeiro, e
+             | um 👍 numa mensagem nossa não é alguém puxando assunto: é alguém
+             | acusando o recebimento do que já foi dito. Abrir a saudação ali
+             | seria começar uma conversa que a pessoa acabou de encerrar — e,
+             | logo depois de um disparo, seria uma saudação para cada emoji,
+             | no mesmo minuto, que é o volume que derruba o número.
+             |
+             | Reagir continua tendo efeito onde reagir quer dizer alguma
+             | coisa: na pergunta de permissão e na mensagem da campanha.
+             */
+            if (! $campanhaAtendeu
+                && ! $message->isReaction()
+                && ! ConversationFlowState::query()->where('conversation_id', $message->conversation_id)->exists()) {
                 app(InboundAttendanceService::class)->handle($message);
             }
 

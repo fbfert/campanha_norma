@@ -103,6 +103,22 @@ class SystemSettingSeeder extends Seeder
             ['group' => 'conversation_automation', 'key' => 'conversation_automation.yes_expressions', 'value' => 'sim|claro|pode|pode sim|pode perguntar|manda|manda ai|pergunte|pergunta|quero|aceito|ok|okay|beleza|blz|positivo|com certeza|certeza|sim pode|vamos|bora|topo|de boa|tudo bem|sem problema', 'type' => 'string', 'description' => 'Expressões positivas separadas por barra vertical', 'is_public' => false],
             ['group' => 'conversation_automation', 'key' => 'conversation_automation.no_expressions', 'value' => 'não|não quero|não posso|agora não|não obrigado|não obrigada|prefiro não|sem interesse|não tenho interesse|deixa|deixa pra la|talvez depois|depois|não gosto|negativo', 'type' => 'string', 'description' => 'Expressões negativas separadas por barra vertical', 'is_public' => false],
             ['group' => 'conversation_automation', 'key' => 'conversation_automation.opt_out_expressions', 'value' => 'sair|parar|pare|cancelar|descadastrar|me descadastre|remover|remova|me remova|remova meu contato|remova meu número|retire meu número|retire meu contato|tire meu número|não quero receber mensagens|não quero receber mais mensagens|não quero mais mensagens|não quero mais receber|não me mande mais|não me mande mais mensagens|não envie mais|para de me mandar|não perturbe|me tire da lista|sair da lista|bloquear|spam|stop|unsubscribe', 'type' => 'string', 'description' => 'Expressões de opt-out separadas por barra vertical', 'is_public' => false],
+            /*
+             | Reações que valem como resposta.
+             |
+             | Reagir é a resposta mais barata que o WhatsApp oferece, e por
+             | isso é a que muita gente dá: um 👍 no convite é um "sim" que o
+             | sistema não enxergava. As listas ficam aqui, e não no código,
+             | porque o teclado de emoji do WhatsApp muda a cada versão e quem
+             | acompanha isso é quem lê as conversas, não quem faz o deploy.
+             |
+             | Não existe lista de opt-out por reação, e a falta é deliberada:
+             | descadastro é irreversível para quem o sofre, e um toque errado
+             | no emoji não pode tirar ninguém da base. Quem quer sair escreve
+             | "sair", que continua tendo prioridade sobre tudo.
+             */
+            ['group' => 'conversation_automation', 'key' => 'conversation_automation.positive_reactions', 'value' => '👍|👌|👏|🙏|❤|🧡|💛|💚|💙|💜|🖤|🤍|🤎|💖|💗|💓|💕|😀|😃|😄|😁|😊|🙂|😉|🥰|😍|🤩|✅|✔|☑|🎉|🎊|🔥|💪|🤝|👊|🫡|😂|🤣', 'type' => 'string', 'description' => 'Reações que valem como resposta positiva, separadas por barra vertical', 'is_public' => false],
+            ['group' => 'conversation_automation', 'key' => 'conversation_automation.negative_reactions', 'value' => '👎|😡|🤬|😠|😤|🙄|😒|😞|😔|😢|😭|💔|❌|✖|🚫|⛔|🙅|🤦|🥱|😴', 'type' => 'string', 'description' => 'Reações que valem como resposta negativa, separadas por barra vertical', 'is_public' => false],
             ['group' => 'conversation_automation', 'key' => 'conversation_automation.thank_you_text', 'value' => 'Muito obrigado pela sua contribuição! Sua opinião foi registrada.', 'type' => 'string', 'description' => 'Texto padrão de agradecimento final', 'is_public' => false],
             ['group' => 'conversation_automation', 'key' => 'conversation_automation.permission_denied_text', 'value' => 'Tudo bem, obrigado pela atenção!', 'type' => 'string', 'description' => 'Texto padrão para recusa de participação', 'is_public' => false],
             ['group' => 'conversation_automation', 'key' => 'conversation_automation.opt_out_text', 'value' => 'Você não recebera mais mensagens. Obrigado.', 'type' => 'string', 'description' => 'Texto padrão de confirmação de opt-out', 'is_public' => false],

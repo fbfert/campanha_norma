@@ -49,10 +49,12 @@ class ConversationAutomationSettings
         'yes_expressions' => 'string',
         'no_expressions' => 'string',
         'opt_out_expressions' => 'string',
+        'positive_reactions' => 'string',
+        'negative_reactions' => 'string',
     ];
 
     /** Chaves guardadas como lista separada por barra vertical. */
-    private const LISTS = ['yes_expressions', 'no_expressions', 'opt_out_expressions'];
+    private const LISTS = ['yes_expressions', 'no_expressions', 'opt_out_expressions', 'positive_reactions', 'negative_reactions'];
 
     public function __construct(private readonly SystemSettingService $settings) {}
 

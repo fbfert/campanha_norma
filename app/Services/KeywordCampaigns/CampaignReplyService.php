@@ -7,6 +7,7 @@ use App\Enums\KeywordEnrollmentOutcome;
 use App\Jobs\EnviarConfirmacaoDeCampanhaJob;
 use App\Models\ConversationMessage;
 use App\Models\KeywordCampaign;
+use App\Services\ConversationAutomation\ReactionClassifier;
 use App\Services\Conversations\ConversationReplyService;
 use App\Services\SystemSettingService;
 
@@ -22,6 +23,7 @@ class CampaignReplyService
     public function __construct(
         private readonly ConversationReplyService $replies,
         private readonly CampaignSurveyStarter $surveys,
+        private readonly ReactionClassifier $reactions,
         private readonly SystemSettingService $settings,
     ) {}
 
@@ -127,6 +129,10 @@ class CampaignReplyService
      *   apenas existente: pesquisa encerrada ou com o prazo vencido é reaberta,
      *   senão a campanha alcançaria só quem nunca foi abordado — que na base de
      *   17/08/2026 eram 60 conversas de 129.
+     * - inscrição que veio de uma reação NEGATIVA. Ela é sobre a pesquisa, não
+     *   sobre a campanha: a pessoa entra na lista e recebe a confirmação, e o
+     *   convite não sai. Convidar assim mesmo seria perguntar de novo a quem
+     *   acabou de dizer que não — no mesmo minuto, na mesma mensagem.
      */
     private function conviteDaPesquisa(
         KeywordCampaign $campaign,
@@ -142,6 +148,10 @@ class CampaignReplyService
         }
 
         if ($this->surveys->temPesquisaViva($inbound->conversation_id)) {
+            return null;
+        }
+
+        if ($inbound->isReaction() && $this->reactions->isNegative($inbound->body)) {
             return null;
         }
 

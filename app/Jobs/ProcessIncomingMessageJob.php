@@ -221,13 +221,29 @@ class ProcessIncomingMessageJob implements ShouldQueue
     }
 
     /**
-     * Somente mensagens recebidas de texto entram na avaliação do fluxo.
+     * Texto escrito e reação entram na avaliação do fluxo.
+     *
+     * A reação entrou aqui porque sem isso ela não chegava a lugar nenhum:
+     * não é texto, não tem mídia, e por isso escapava dos quatro ramos do
+     * roteamento acima. Quem respondia 👍 ao convite ficava esperando uma
+     * pergunta que nunca saía, enquanto a conversa dela subia para o topo da
+     * fila de pendentes como se tivesse escrito alguma coisa.
+     *
+     * Quem decide se aquele emoji significa alguma coisa não é este método: é
+     * `ReactionClassifier`, adiante, e só depois de conferir que a reação foi
+     * feita na mensagem que fez a pergunta.
      */
     private function shouldEvaluateFlow(ConversationMessageDirection $direction, ConversationMessage $message): bool
     {
-        return $direction === ConversationMessageDirection::Incoming
-            && $message->message_type === 'text'
-            && filled($message->body);
+        if ($direction !== ConversationMessageDirection::Incoming) {
+            return false;
+        }
+
+        if ($message->isReaction()) {
+            return filled($message->body);
+        }
+
+        return $message->message_type === 'text' && filled($message->body);
     }
 
     /**

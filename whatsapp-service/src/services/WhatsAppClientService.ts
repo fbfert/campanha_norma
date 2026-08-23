@@ -80,6 +80,26 @@ type WhatsAppMessage = {
   getContact?(): Promise<WhatsAppContact | null | undefined>;
 };
 
+/**
+ * A reação, como o whatsapp-web.js entrega.
+ *
+ * `msgId` é a mensagem reagida, e é o campo que sustenta a regra de negócio do
+ * outro lado: só vale reagir na mensagem que fez a pergunta. `reaction` vem
+ * string vazia quando a pessoa REMOVE a reação — o evento é o mesmo.
+ *
+ * `orphan` é diferente de zero quando a mensagem reagida não está no armazém
+ * local, o que acontece com reação antiga trazida na ressincronização.
+ */
+type WhatsAppReaction = {
+  id?: { _serialized?: string; id?: string };
+  msgId?: { _serialized?: string; id?: string; fromMe?: boolean; remote?: string };
+  senderId?: string;
+  reaction?: string;
+  timestamp?: number;
+  orphan?: number;
+  orphanReason?: string | null;
+};
+
 type ChatSnapshot = {
   external_chat_id: string;
   phone: string | null;
@@ -994,6 +1014,10 @@ export class WhatsAppClientService implements WhatsAppRuntime {
         void this.forwardIncoming(msg);
       }
     });
+
+    client.on('message_reaction', (reaction: unknown) => {
+      void this.forwardReaction(reaction as WhatsAppReaction);
+    });
   }
 
   private normalizeChat(chat: WhatsAppChat | ChatSnapshot): NormalizedConversation {
@@ -1162,6 +1186,120 @@ export class WhatsAppClientService implements WhatsAppRuntime {
       metadata: {
         type,
         has_media: Boolean(message.hasMedia),
+      },
+    };
+
+    await this.incoming.send(payload);
+  }
+
+  /**
+   * A reação, a caminho do Laravel.
+   *
+   * Reação não é mensagem para o whatsapp-web.js: ela chega por outro evento,
+   * com outro objeto, e por isso nunca passou por `forwardIncoming`. Até aqui
+   * o sistema simplesmente não sabia que existiam — quem respondia 👍 ao
+   * convite ficava, do nosso lado, sem ter respondido nada.
+   *
+   * O que sai daqui é o mesmo envelope de uma mensagem recebida, com
+   * `message_type` igual a `reaction` e o emoji no corpo. O campo que muda
+   * tudo é `quoted_external_message_id`: ele carrega a mensagem reagida, e é
+   * sobre ele que o Laravel decide se a reação responde a alguma pergunta
+   * nossa ou se é só um 👍 solto numa mensagem antiga.
+   */
+  private async forwardReaction(reaction: WhatsAppReaction): Promise<void> {
+    if (!config.incomingMessageEnabled) {
+      return;
+    }
+
+    const reactionId = reaction.id?._serialized ?? reaction.id?.id ?? null;
+    const targetId = reaction.msgId?._serialized ?? reaction.msgId?.id ?? null;
+    const remote = reaction.msgId?.remote ?? '';
+    const senderRaw = reaction.senderId ?? remote;
+    const emoji = (reaction.reaction ?? '').trim();
+
+    /*
+     | Sem a mensagem reagida não há reação que valha.
+     |
+     | A regra do outro lado é que só conta reagir na mensagem que perguntou.
+     | Sem `msgId` não dá para conferir isso, e uma reação sem alvo entraria na
+     | conversa como um emoji solto pairando sobre coisa nenhuma.
+     */
+    if (!reactionId || !targetId || !senderRaw) {
+      logger.warn({ event: 'reaction_incomplete_ignored', reaction_id: reactionId, target_id: targetId });
+      return;
+    }
+
+    if (remote.endsWith('@g.us') || senderRaw.endsWith('@g.us')) {
+      logger.info({ event: 'reaction_group_ignored', reaction_id: reactionId });
+      return;
+    }
+
+    /*
+     | Reação órfã é reação sem alvo conhecido.
+     |
+     | Ela aparece quando o WhatsApp Web ressincroniza histórico e entrega
+     | reações a mensagens que não estão no armazém local. Deixá-la passar
+     | criaria, semanas depois de uma campanha, uma inscrição datada de hoje
+     | para um 👍 dado lá atrás.
+     */
+    if (Number(reaction.orphan ?? 0) !== 0) {
+      logger.info({ event: 'reaction_orphan_ignored', reaction_id: reactionId, reason: reaction.orphanReason ?? null });
+      return;
+    }
+
+    /*
+     | Remoção de reação não é encaminhada, e isso é escolha.
+     |
+     | O mesmo evento dispara quando a pessoa tira o emoji, e aí `reaction` vem
+     | vazio. Encaminhar produziria uma segunda linha na conversa dizendo que
+     | alguém tirou um emoji, e não desfaria nada: a pergunta seguinte já foi
+     | enviada, a inscrição já existe. Um consentimento que se retira se retira
+     | escrevendo, e "sair" continua valendo.
+     */
+    if (emoji === '') {
+      logger.info({ event: 'reaction_removed_ignored', reaction_id: reactionId, target_id: targetId });
+      return;
+    }
+
+    const ownUser = this.client?.info?.wid?.user ?? null;
+    const phoneMap = await this.resolvePhones([senderRaw]);
+    const sender = (phoneMap.get(senderRaw) ?? senderRaw).replace(/\D/g, '');
+
+    /*
+     | Reação nossa não é resposta de ninguém.
+     |
+     | O evento dispara também quando a equipe reage a uma mensagem recebida
+     | pelo celular. Sem esta linha, um 👍 nosso numa resposta viraria
+     | opt-in da pessoa com quem estamos falando.
+     */
+    if (ownUser && sender === ownUser.replace(/\D/g, '')) {
+      logger.info({ event: 'reaction_from_me_ignored', reaction_id: reactionId });
+      return;
+    }
+
+    const payload: IncomingMessagePayload = {
+      event_id: cryptoRandomFallback(),
+      provider: 'web',
+      connection_id: 'principal',
+      external_message_id: reactionId,
+      sender_phone: sender,
+      sender_name: null,
+      recipient_phone: ownUser,
+      message_type: 'reaction',
+      text: emoji,
+      sent_at: reaction.timestamp ? new Date(reaction.timestamp * 1000).toISOString() : new Date().toISOString(),
+      received_at: new Date().toISOString(),
+      is_from_me: false,
+      is_group: false,
+      has_media: false,
+      quoted_external_message_id: targetId,
+      metadata: {
+        type: 'reaction',
+        has_media: false,
+        reaction: {
+          emoji,
+          target_from_me: Boolean(reaction.msgId?.fromMe),
+        },
       },
     };
 

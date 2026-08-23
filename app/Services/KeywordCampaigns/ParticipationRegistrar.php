@@ -159,8 +159,8 @@ class ParticipationRegistrar
             'status' => ContactStatus::Active,
             'source' => ContactSource::Gatilho,
             'consent_status' => ConsentStatus::Granted,
-            'consent_source' => 'gatilho_palavra_chave',
-            'consent_text' => "Escreveu a palavra-chave da campanha \"{$campaign->name}\" no WhatsApp. A finalidade é a participação nessa campanha, e não o recebimento de disparo posterior.",
+            'consent_source' => $message->isReaction() ? 'reacao_na_campanha' : 'gatilho_palavra_chave',
+            'consent_text' => $this->textoDoConsentimento($campaign, $message),
             'consent_at' => ($message->received_at ?? now())->toDateString(),
             'country' => (string) $this->settings->get('contacts.default_country', 'BR'),
             'has_replied' => true,
@@ -173,10 +173,33 @@ class ParticipationRegistrar
         $this->history->record(
             $contact,
             ContactHistoryAction::Created,
-            "Contato criado pela campanha \"{$campaign->name}\", a partir de mensagem com palavra-chave.",
+            $message->isReaction()
+                ? "Contato criado pela campanha \"{$campaign->name}\", a partir de reação na mensagem do convite."
+                : "Contato criado pela campanha \"{$campaign->name}\", a partir de mensagem com palavra-chave.",
         );
 
         return $contact;
+    }
+
+    /**
+     * A finalidade, escrita com o ato que a produziu.
+     *
+     * Escrever a palavra e reagir à mensagem são atos diferentes, e o registro
+     * precisa dizer qual foi: seis meses depois, "consentiu" sozinho não
+     * sustenta nada, e a diferença entre digitar uma palavra e tocar num emoji
+     * é exatamente o que alguém vai querer conferir.
+     */
+    private function textoDoConsentimento(KeywordCampaign $campaign, ConversationMessage $message): string
+    {
+        $finalidade = 'A finalidade é a participação nessa campanha, e não o recebimento de disparo posterior.';
+
+        if ($message->isReaction()) {
+            $emoji = trim((string) $message->body);
+
+            return "Reagiu com {$emoji} à mensagem que convidava para a campanha \"{$campaign->name}\" no WhatsApp. {$finalidade}";
+        }
+
+        return "Escreveu a palavra-chave da campanha \"{$campaign->name}\" no WhatsApp. {$finalidade}";
     }
 
     /**

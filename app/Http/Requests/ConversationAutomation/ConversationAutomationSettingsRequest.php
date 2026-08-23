@@ -35,6 +35,10 @@ class ConversationAutomationSettingsRequest extends FormRequest
             'yes_expressions' => ['required', 'string', 'max:4000'],
             'no_expressions' => ['required', 'string', 'max:4000'],
             'opt_out_expressions' => ['required', 'string', 'max:4000'],
+            // As listas de reação podem ficar vazias: sem elas, reagir volta a
+            // não significar nada, que é como o sistema funcionava antes.
+            'positive_reactions' => ['nullable', 'string', 'max:4000'],
+            'negative_reactions' => ['nullable', 'string', 'max:4000'],
         ];
     }
 
