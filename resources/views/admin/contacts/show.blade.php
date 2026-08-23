@@ -21,6 +21,7 @@
         <div class="actions">
             <a class="btn ghost" href="{{ route('admin.contacts.index') }}">Voltar</a>
             @can('contacts.update')<a class="btn" href="{{ route('admin.contacts.edit', $contact) }}">Editar</a>@endcan
+            @can('cleanup.view')<a class="btn secondary" href="{{ route('admin.cleanup.show', $contact) }}"><x-icon name="trash" size="16" />Limpar participações</a>@endcan
             @can('contacts.delete')<form method="post" action="{{ route('admin.contacts.destroy', $contact) }}" onsubmit="return confirm('O contato será removido das listagens normais. O histórico será preservado. Esta ação não elimina imediatamente os dados.')">@csrf @method('delete')<button class="btn danger" type="submit">Excluir</button></form>@endcan
         </div>
     </section>

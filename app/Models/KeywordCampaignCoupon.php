@@ -3,10 +3,12 @@
 namespace App\Models;
 
 use App\Enums\KeywordCouponStatus;
+use App\Support\MantemChaveDeLixeira;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * Um cupom do prêmio.
@@ -17,7 +19,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class KeywordCampaignCoupon extends Model
 {
-    use HasFactory;
+    use HasFactory, MantemChaveDeLixeira, SoftDeletes;
 
     protected $fillable = [
         'keyword_campaign_id',

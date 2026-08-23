@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\Ai\InsightTopicController;
 use App\Http\Controllers\Admin\Analytics\AnalyticsController;
 use App\Http\Controllers\Admin\Analytics\AnalyticsExportController;
 use App\Http\Controllers\Admin\AuditLogController;
+use App\Http\Controllers\Admin\Cleanup\CleanupController;
 use App\Http\Controllers\Admin\Contacts\ContactBulkController;
 use App\Http\Controllers\Admin\Contacts\ContactController;
 use App\Http\Controllers\Admin\Contacts\ContactImportController;
@@ -298,6 +299,19 @@ Route::middleware(['auth', 'password.changed'])->group(function (): void {
         Route::post('/maintenance/recover-stuck', [MaintenanceController::class, 'recoverStuck'])->name('maintenance.recover-stuck');
         Route::post('/maintenance/cleanup', [MaintenanceController::class, 'cleanup'])->name('maintenance.cleanup');
         Route::post('/maintenance/apply-retention', [MaintenanceController::class, 'applyRetention'])->name('maintenance.apply-retention');
+
+        /*
+         | A lixeira vem antes de `/cleanup/{contact}` de propósito.
+         |
+         | Registrada depois, `/cleanup/trash` casaria com o parâmetro de
+         | contato e o roteador iria procurar um contato chamado "trash" —
+         | 404 numa tela que existe, e do tipo que ninguém entende ao ver.
+         */
+        Route::get('/cleanup', [CleanupController::class, 'index'])->name('cleanup.index');
+        Route::get('/cleanup/trash', [CleanupController::class, 'trash'])->name('cleanup.trash');
+        Route::post('/cleanup/trash/{operation}/restore', [CleanupController::class, 'restore'])->name('cleanup.restore');
+        Route::get('/cleanup/{contact}', [CleanupController::class, 'show'])->name('cleanup.show');
+        Route::post('/cleanup/{contact}', [CleanupController::class, 'store'])->name('cleanup.store');
 
         Route::get('/whatsapp/meta', [MetaSettingsController::class, 'edit'])->name('whatsapp.meta-settings');
         Route::put('/whatsapp/meta', [MetaSettingsController::class, 'update'])->name('whatsapp.meta-settings.update');

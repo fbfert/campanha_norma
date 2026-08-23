@@ -23,7 +23,7 @@
     $contatosAtivo = request()->routeIs('admin.contacts.*', 'admin.tags.*');
     $enviosAtivo = request()->routeIs('admin.message-templates.*', 'admin.message-batches.*', 'admin.campaigns.*', 'admin.message-processing.*', 'admin.histories.*', 'admin.reports.*', 'admin.report-exports.*');
     $inteligenciaAtiva = request()->routeIs('admin.ai-insights.*', 'admin.insight-topics.*', 'admin.knowledge.*', 'admin.ai-monitoring.*', 'admin.ai-provider.*', 'admin.analytics.ai-quality');
-    $sistemaAtivo = request()->routeIs('admin.whatsapp.*', 'admin.users.*', 'admin.settings.*', 'admin.message-settings.*', 'admin.analytics.governance', 'admin.monitoring.*', 'admin.maintenance.*', 'admin.audit-logs.*');
+    $sistemaAtivo = request()->routeIs('admin.whatsapp.*', 'admin.users.*', 'admin.settings.*', 'admin.message-settings.*', 'admin.analytics.governance', 'admin.monitoring.*', 'admin.maintenance.*', 'admin.cleanup.*', 'admin.audit-logs.*');
     $manualAtivo = request()->routeIs('manual.*');
 @endphp
 
@@ -143,7 +143,7 @@
         </details>
     @endif
 
-    @if(auth()->user()->can('whatsapp.connection.view') || auth()->user()->can('view-settings') || auth()->user()->can('view-users') || auth()->user()->can('monitoring.view'))
+    @if(auth()->user()->can('whatsapp.connection.view') || auth()->user()->can('view-settings') || auth()->user()->can('view-users') || auth()->user()->can('monitoring.view') || auth()->user()->can('cleanup.view'))
         <details class="nav-group" @if($sistemaAtivo) open @endif>
             <summary><x-icon name="settings" />Sistema</summary>
             @can('whatsapp.connection.view')
@@ -172,6 +172,9 @@
             @endcan
             @can('maintenance.view')
                 <a href="{{ route('admin.maintenance.index') }}" @class(['active' => request()->routeIs('admin.maintenance.*')])><x-icon name="wrench" /><span>Manutenção</span></a>
+            @endcan
+            @can('cleanup.view')
+                <a href="{{ route('admin.cleanup.index') }}" @class(['active' => request()->routeIs('admin.cleanup.*')])><x-icon name="trash" /><span>Limpeza</span></a>
             @endcan
             @can('view-audit')
                 <a href="{{ route('admin.audit-logs.index') }}" @class(['active' => request()->routeIs('admin.audit-logs.*')])><x-icon name="scroll" /><span>Auditoria</span></a>

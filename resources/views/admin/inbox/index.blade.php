@@ -74,6 +74,7 @@
                  outros seis campos. Quem abre esta tela quer saber quem está
                  esperando por nós, e isso merece um clique. --}}
             <label><input type="checkbox" name="awaiting_operator" value="1" @checked(request()->boolean('awaiting_operator'))> Aguardando operador</label>
+            <label><input type="checkbox" name="paused_flow" value="1" @checked(request()->boolean('paused_flow'))> Pesquisa pausada</label>
             <label><input type="checkbox" name="unread" value="1" @checked(request()->boolean('unread'))> Somente não lidas</label>
             <label><input type="checkbox" name="no_contact" value="1" @checked(request()->boolean('no_contact'))> Sem contato associado</label>
             <label><input type="checkbox" name="do_not_contact" value="1" @checked(request()->boolean('do_not_contact'))> Não contatar</label>
@@ -105,9 +106,11 @@
                         <span class="badge">{{ $conversation->priority->label() }}</span>
                         <span>{{ $conversation->assignee?->name ?? 'Sem responsável' }}</span>
                         @if($conversation->unread_count > 0)<span class="unread-pill">{{ $conversation->unread_count }}</span>@endif
+                        @if($conversation->flowState?->is_paused)<span class="badge">pesquisa pausada</span>@endif
                     </div>
                     @if($conversation->contact?->do_not_contact)<div class="conversation-warning">Não contatar</div>@endif
                 </a>
+                @include('admin.inbox._retomar-fluxo', ['conversation' => $conversation])
             @empty
                 <div class="card">Nenhuma conversa encontrada.</div>
             @endforelse

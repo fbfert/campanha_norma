@@ -152,6 +152,17 @@ enum PermissionSlug: string
     case KeywordDrawsExecute = 'keyword_draws.execute';
     case KeywordCouponsManage = 'keyword_coupons.manage';
 
+    /*
+     | A Limpeza remove participação de gente real, e a lixeira devolve.
+     |
+     | São três permissões e não uma porque ver o que existe, mandar embora e
+     | trazer de volta são decisões de peso diferente: quem apura um pedido de
+     | remoção precisa da primeira sem precisar das outras duas.
+     */
+    case CleanupView = 'cleanup.view';
+    case CleanupExecute = 'cleanup.execute';
+    case CleanupRestore = 'cleanup.restore';
+
     public function label(): string
     {
         return match ($this) {
@@ -221,6 +232,9 @@ enum PermissionSlug: string
             self::MaintenanceCleanupLogs => 'Limpar logs e arquivos temporários',
             self::MaintenanceApplyRetention => 'Aplicar retenção de dados',
             self::MaintenanceRunCommands => 'Executar comandos de manutenção',
+            self::CleanupView => 'Visualizar a Limpeza',
+            self::CleanupExecute => 'Executar limpeza de participações',
+            self::CleanupRestore => 'Restaurar limpeza da lixeira',
             self::InboxView => 'Visualizar caixa de entrada',
             self::InboxViewAll => 'Visualizar todas as conversas',
             self::InboxViewMessageContent => 'Visualizar conteúdo de conversas',

@@ -19,6 +19,7 @@ class SettingsUpdateRequest extends FormRequest
             'system.date_format' => ['required', 'string', 'max:20'],
             'system.datetime_format' => ['required', 'string', 'max:30'],
             'system.records_per_page' => ['required', 'integer', 'min:5', 'max:100'],
+            'retention.cleanup_trash_days' => ['required', 'integer', 'min:1', 'max:365'],
         ];
     }
 }

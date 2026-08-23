@@ -6,15 +6,18 @@ use App\Enums\ConversationMessageDirection;
 use App\Enums\ConversationMessageOrigin;
 use App\Enums\ConversationMessageStatus;
 use App\Enums\TranscriptionStatus;
+use App\Support\MantemChaveDeLixeira;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ConversationMessage extends Model
 {
-    use HasFactory;
+    use HasFactory, MantemChaveDeLixeira, SoftDeletes;
 
     protected $fillable = [
         'conversation_id',
@@ -87,7 +90,7 @@ class ConversationMessage extends Model
      * provedor, que uma mídia não pôde ser recuperada — e dizer isso, em vez de
      * apontar um `<img>` para um arquivo que não existe.
      */
-    public function medium(): \Illuminate\Database\Eloquent\Relations\HasOne
+    public function medium(): HasOne
     {
         return $this->hasOne(ConversationMessageMedium::class, 'conversation_message_id');
     }
@@ -138,9 +141,9 @@ class ConversationMessage extends Model
      * As consultas de histórico filtravam `body` não nulo, o que descartava
      * silenciosamente todo áudio e toda imagem do contexto mandado ao modelo.
      */
-    public function scopeWithReadableText(\Illuminate\Database\Eloquent\Builder $query): \Illuminate\Database\Eloquent\Builder
+    public function scopeWithReadableText(Builder $query): Builder
     {
-        return $query->where(function (\Illuminate\Database\Eloquent\Builder $query): void {
+        return $query->where(function (Builder $query): void {
             $query
                 ->whereNotNull('body')
                 ->orWhereHas('transcriptions', fn ($sub) => $sub->where('status', TranscriptionStatus::Succeeded));

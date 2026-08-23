@@ -141,7 +141,9 @@ class GovernanceReportService
     {
         return [
             'suggestions_pending' => (int) ConversationReplySuggestion::query()->where('status', 'pending')->count(),
-            'insights_unreviewed' => (int) DB::table('conversation_insights')->where('requires_human_review', true)->where('reviewed', false)->count(),
+            // `whereNull` explícito: consulta crua não passa pelo escopo de
+            // exclusão suave, e a Limpeza precisa sumir da governança na hora.
+            'insights_unreviewed' => (int) DB::table('conversation_insights')->whereNull('deleted_at')->where('requires_human_review', true)->where('reviewed', false)->count(),
             'documents_processing' => (int) KnowledgeDocument::query()->where('status', KnowledgeDocumentStatus::Processing->value)->count(),
             'states_waiting_human' => (int) ConversationFlowState::query()->where('current_stage', ConversationFlowStage::WaitingHuman->value)->count(),
         ];

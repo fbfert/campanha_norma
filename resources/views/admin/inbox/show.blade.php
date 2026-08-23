@@ -118,6 +118,8 @@
         <aside class="conversation-details" x-bind:class="{ 'open': detailsOpen }">
             <a class="btn ghost" href="{{ route('admin.conversations.index') }}">Voltar para conversas</a>
 
+            @include('admin.inbox._retomar-fluxo', ['conversation' => $conversation])
+
             @include('admin.inbox._ai_panel', ['conversation' => $conversation])
 
             <section class="card">

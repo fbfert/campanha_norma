@@ -10,14 +10,17 @@ use App\Enums\ConversationPriority;
 use App\Enums\ConversationStatus;
 use App\Enums\ConversationSyncStatus;
 use App\Exceptions\WhatsApp\WhatsAppServiceException;
+use App\Jobs\DescribeIncomingImageJob;
 use App\Models\Conversation;
 use App\Models\ConversationFlowState;
 use App\Models\ConversationMessage;
 use App\Models\ConversationSyncRun;
+use App\Services\Ai\ImageDescriptionService;
 use App\Services\AuditLogger;
 use App\Services\ConversationAutomation\UnreadableMediaResponder;
 use App\Services\InboundAttendance\InboundAttendanceService;
 use App\Services\IncomingMessages\ContactMatcherService;
+use App\Services\KeywordCampaigns\KeywordCampaignTrigger;
 use App\Services\SystemSettingService;
 use App\Services\WhatsApp\WhatsAppProviderManager;
 use Carbon\Carbon;
@@ -294,7 +297,6 @@ class ConversationSyncService
         'ciphertext',
     ];
 
-
     private function syncMessage(ConversationSyncRun $run, Conversation $conversation, array $message, array $chat, mixed $contact): void
     {
         if (blank($message['external_message_id'] ?? null)) {
@@ -391,10 +393,10 @@ class ConversationSyncService
                 // devolvidas com um pedido para escrever. O recorte de idade e
                 // de última mensagem é o mesmo: descrever trinta dias de fotos
                 // importadas custaria por imagem e não serviria a ninguém.
-                $vision = app(\App\Services\Ai\ImageDescriptionService::class);
+                $vision = app(ImageDescriptionService::class);
 
                 DB::afterCommit($vision->enabled() && $vision->handles($record)
-                    ? fn () => \App\Jobs\DescribeIncomingImageJob::dispatch($record->id)
+                    ? fn () => DescribeIncomingImageJob::dispatch($record->id)
                     : fn () => app(UnreadableMediaResponder::class)
                         ->askForText($record, 'conversation_automation.media_reply_text'));
             }
@@ -409,17 +411,55 @@ class ConversationSyncService
              | apresentar hoje uma pesquisa a quem escreveu há três semanas é
              | falar do passado.
              */
-            if ($this->startInboundAttendance($record, $occurredAt)) {
-                DB::afterCommit(fn () => app(InboundAttendanceService::class)->handle($record));
+            if ($this->mereceTratamentoAoVivo($record, $occurredAt)) {
+                DB::afterCommit(fn () => $this->tratarMensagemRecuperada($record));
             }
         });
     }
 
     /**
+     * O que a mensagem recuperada teria recebido se tivesse entrado ao vivo.
+     *
+     * A ordem é a mesma do `EvaluateConversationFlowJob`, e não por simetria.
+     *
+     * O gatilho de campanha morava só naquele job, que a sincronização nunca
+     * chama. Quem escrevia a palavra-chave com o caminho ao vivo fora do ar
+     * tinha a mensagem recuperada e a conversa aberta na fila — e nenhuma
+     * inscrição. O buraco não avisava: sem erro, sem log, sem linha em lugar
+     * nenhum. Aconteceu de verdade, com quem escreveu "batata" numa campanha
+     * vigente em 19/08/2026 e ficou de fora da lista até alguém perguntar.
+     *
+     * `consumiuAMensagem` vem antes do atendimento pelo mesmo motivo do job:
+     * mensagem que era só a palavra-chave já virou inscrição e já foi
+     * respondida, e entregá-la de novo a transformaria em resposta de pesquisa.
+     *
+     * Está fora do método que grava para poder ser exercitado direto: o
+     * `RefreshDatabase` da suíte segura a transação aberta até o fim do teste,
+     * e o que estivesse só dentro de `DB::afterCommit` nunca rodaria.
+     */
+    private function tratarMensagemRecuperada(ConversationMessage $record): void
+    {
+        $gatilho = app(KeywordCampaignTrigger::class);
+        $resultados = $gatilho->avaliar($record);
+
+        if ($gatilho->consumiuAMensagem()) {
+            return;
+        }
+
+        if (! $gatilho->algumAtendeu($resultados)) {
+            app(InboundAttendanceService::class)->handle($record);
+        }
+    }
+
+    /**
      * Esta mensagem de texto é a última palavra da conversa e ainda espera
      * retorno, e a conversa nunca entrou em fluxo nenhum.
+     *
+     * O nome deixou de citar o atendimento de entrada quando o gatilho de
+     * campanha passou a usar o mesmo recorte: são dois tratamentos que só valem
+     * para quem escreveu agora e continua esperando.
      */
-    private function startInboundAttendance(ConversationMessage $mensagem, CarbonInterface $ocorridaEm): bool
+    private function mereceTratamentoAoVivo(ConversationMessage $mensagem, CarbonInterface $ocorridaEm): bool
     {
         if ($mensagem->direction !== ConversationMessageDirection::Incoming || $mensagem->message_type !== 'text') {
             return false;

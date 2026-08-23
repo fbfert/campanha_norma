@@ -125,6 +125,9 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('maintenance.cleanup_logs', fn (User $user): bool => $user->hasPermission('maintenance.cleanup_logs'));
         Gate::define('maintenance.apply_retention', fn (User $user): bool => $user->hasPermission('maintenance.apply_retention'));
         Gate::define('maintenance.run_commands', fn (User $user): bool => $user->hasPermission('maintenance.run_commands'));
+        Gate::define('cleanup.view', fn (User $user): bool => $user->hasPermission('cleanup.view'));
+        Gate::define('cleanup.execute', fn (User $user): bool => $user->hasPermission('cleanup.execute'));
+        Gate::define('cleanup.restore', fn (User $user): bool => $user->hasPermission('cleanup.restore'));
         Gate::define('inbox.view', fn (User $user): bool => $user->hasPermission('inbox.view'));
         Gate::define('inbox.view_all', fn (User $user): bool => $user->hasPermission('inbox.view_all'));
         Gate::define('inbox.view_message_content', fn (User $user): bool => $user->hasPermission('inbox.view_message_content'));

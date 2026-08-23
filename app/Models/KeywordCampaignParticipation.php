@@ -4,10 +4,12 @@ namespace App\Models;
 
 use App\Enums\KeywordParticipationEligibility;
 use App\Enums\KeywordParticipationStatus;
+use App\Support\MantemChaveDeLixeira;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * A inscrição de uma pessoa numa campanha.
@@ -19,7 +21,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class KeywordCampaignParticipation extends Model
 {
-    use HasFactory;
+    use HasFactory, MantemChaveDeLixeira, SoftDeletes;
 
     protected $fillable = [
         'keyword_campaign_id',

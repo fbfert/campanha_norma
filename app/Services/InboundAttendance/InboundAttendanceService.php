@@ -355,7 +355,7 @@ class InboundAttendanceService
             return false;
         }
 
-        $threshold = (float) $this->settings->get('ai.response.safety_net_min_confidence', 0.92);
+        $threshold = (float) $this->settings->get('ai.response.safety_net_min_confidence', 0.90);
 
         if ($suggestion->confidence === null || (float) $suggestion->confidence < $threshold) {
             return false;

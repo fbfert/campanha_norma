@@ -3,13 +3,15 @@
 namespace App\Models;
 
 use App\Enums\WhatsAppTestMessageStatus;
+use App\Support\MantemChaveDeLixeira;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class WhatsAppTestMessage extends Model
 {
-    use HasFactory;
+    use HasFactory, MantemChaveDeLixeira, SoftDeletes;
 
     protected $table = 'whatsapp_test_messages';
 

@@ -49,7 +49,11 @@ class MergeEchoedOutgoingMessagesCommand extends Command
         $janela = max(1, (int) $this->option('window'));
         $aplicar = (bool) $this->option('apply');
 
+        // Consulta crua não conhece exclusão suave: sem estes dois filtros o
+        // comando voltaria a mesclar mensagem que a Limpeza já tirou do ar.
         $pares = DB::table('conversation_messages as original')
+            ->whereNull('original.deleted_at')
+            ->whereNull('eco.deleted_at')
             ->join('conversation_messages as eco', function ($join) use ($janela): void {
                 $join->on('original.conversation_id', '=', 'eco.conversation_id')
                     ->on('original.body', '=', 'eco.body')

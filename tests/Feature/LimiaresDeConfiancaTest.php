@@ -58,7 +58,7 @@ class LimiaresDeConfiancaTest extends TestCase
             ]))
             ->assertSessionHasErrors('ai_response_safety_net_min_confidence');
 
-        $this->assertSame('0.92', app(SystemSettingService::class)->get('ai.response.safety_net_min_confidence'));
+        $this->assertSame('0.90', app(SystemSettingService::class)->get('ai.response.safety_net_min_confidence'));
     }
 
     public function test_administrador_altera_e_a_mudanca_e_auditada(): void

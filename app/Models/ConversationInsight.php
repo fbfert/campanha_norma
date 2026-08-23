@@ -4,17 +4,19 @@ namespace App\Models;
 
 use App\Enums\InsightSentiment;
 use App\Enums\InsightUrgency;
+use App\Support\MantemChaveDeLixeira;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * Dado derivado e versionado. Nunca substitui a mensagem original.
  */
 class ConversationInsight extends Model
 {
-    use HasFactory;
+    use HasFactory, MantemChaveDeLixeira, SoftDeletes;
 
     protected $fillable = [
         'conversation_id',

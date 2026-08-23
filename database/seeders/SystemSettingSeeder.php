@@ -51,6 +51,7 @@ class SystemSettingSeeder extends Seeder
             ['group' => 'retention', 'key' => 'retention.processing_events_days', 'value' => '365', 'type' => 'integer', 'description' => 'Retenção de eventos de processamento em dias', 'is_public' => false],
             ['group' => 'retention', 'key' => 'retention.export_files_hours', 'value' => '24', 'type' => 'integer', 'description' => 'Retenção de arquivos exportados em horas', 'is_public' => false],
             ['group' => 'retention', 'key' => 'retention.import_files_days', 'value' => '30', 'type' => 'integer', 'description' => 'Retenção de arquivos importados em dias', 'is_public' => false],
+            ['group' => 'retention', 'key' => 'retention.cleanup_trash_days', 'value' => '30', 'type' => 'integer', 'description' => 'Dias que uma limpeza fica na lixeira antes do expurgo', 'is_public' => false],
             ['group' => 'retention', 'key' => 'retention.keep_message_history', 'value' => '1', 'type' => 'boolean', 'description' => 'Preservar histórico de mensagens', 'is_public' => false],
             ['group' => 'retention', 'key' => 'retention.keep_contact_snapshots', 'value' => '1', 'type' => 'boolean', 'description' => 'Preservar snapshots de contatos', 'is_public' => false],
             ['group' => 'monitoring', 'key' => 'monitoring.worker_warning_minutes', 'value' => '5', 'type' => 'integer', 'description' => 'Alerta de worker sem heartbeat em minutos', 'is_public' => false],
@@ -147,7 +148,7 @@ class SystemSettingSeeder extends Seeder
              | as mensalidades atrasadas. Desfazer isso não exige julgamento
              | humano: exige dizer que não é sobre isso, junto com a pergunta.
              */
-            ['group' => 'conversation_automation', 'key' => 'conversation_automation.school_matter_expressions', 'value' => 'mensalidade|mensalidades|boleto|atrasada|atrasadas|matrícula|matricula|rematrícula|pagamento|parcela|débito|debito|cobrança|cobranca|financeiro|secretaria', 'type' => 'string', 'description' => 'Termos que indicam que a pessoa entendeu a abordagem como assunto da escola', 'is_public' => false], // ortografia:ignorar - compara com o que a pessoa escreveu, e gente escreve sem acento
+            ['group' => 'conversation_automation', 'key' => 'conversation_automation.school_matter_expressions', 'value' => 'mensalidade|mensalidades|boleto|atrasada|atrasadas|matrícula|matricula|rematrícula|pagamento|parcela|débito|debito|cobrança|cobranca|financeiro|secretaria|é do polo|e do polo|qual polo|que polo|é do rainbow|e do rainbow', 'type' => 'string', 'description' => 'Termos que indicam que a pessoa entendeu a abordagem como assunto da escola', 'is_public' => false], // ortografia:ignorar - compara com o que a pessoa escreveu, e gente escreve sem acento
             ['group' => 'conversation_automation', 'key' => 'conversation_automation.school_matter_reply', 'value' => 'Oi! Não é sobre a escola, não — pode ficar tranquila. Aqui é do polo Rainbow, mas hoje falando em nome da prof Norma.', 'type' => 'string', 'description' => 'Esclarecimento enviado junto com a pergunta quando a pessoa confunde com assunto da escola', 'is_public' => false],
             ['group' => 'conversation_automation', 'key' => 'conversation_automation.reask_prefix', 'value' => 'Sobre o que te perguntei:', 'type' => 'string', 'description' => 'Frase que abre a pergunta refeita', 'is_public' => false],
             ['group' => 'conversation_automation', 'key' => 'conversation_automation.unanswered_ack_min_exchanges', 'value' => '5', 'type' => 'integer', 'description' => 'Idas e voltas completas exigidas para usar o aviso institucional', 'is_public' => false],
@@ -329,7 +330,7 @@ class SystemSettingSeeder extends Seeder
             // A rede de segurança contorna o autoenvio comum, que pode estar
             // desligado de propósito. Contornar exige ser mais exigente, não
             // menos: por isso o limiar próprio, acima do normal.
-            ['group' => 'ai', 'key' => 'ai.response.safety_net_min_confidence', 'value' => '0.92', 'type' => 'string', 'description' => 'Confiança mínima para a rede de segurança responder sem aprovação', 'is_public' => false],
+            ['group' => 'ai', 'key' => 'ai.response.safety_net_min_confidence', 'value' => '0.90', 'type' => 'string', 'description' => 'Confiança mínima para a rede de segurança responder sem aprovação', 'is_public' => false],
             ['group' => 'ai', 'key' => 'ai.response.auto_send_when_assigned', 'value' => '0', 'type' => 'boolean', 'description' => 'Permitir autoenvio em conversa atribuída a uma pessoa', 'is_public' => false],
             ['group' => 'ai', 'key' => 'ai.response.max_followups', 'value' => '2', 'type' => 'integer', 'description' => 'Máximo de perguntas de aprofundamento', 'is_public' => false],
             ['group' => 'ai', 'key' => 'ai.response.debounce_seconds', 'value' => '20', 'type' => 'integer', 'description' => 'Espera antes de gerar, para agrupar mensagens consecutivas', 'is_public' => false],

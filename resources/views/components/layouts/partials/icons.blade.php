@@ -52,6 +52,7 @@
         <g id="i-phone"><rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M10.5 18.5h3"/></g>
         <g id="i-shield"><path d="M12 3 5 6v5.5c0 4.3 3 8.1 7 9.5 4-1.4 7-5.2 7-9.5V6z"/><path d="m9.2 12 2 2 3.6-3.6"/></g>
         <g id="i-pulse"><path d="M20.5 12h-3l-2 5-4-11-2 6H4"/><path d="M12 20.5S4 15 4 9.8A4.3 4.3 0 0 1 12 7a4.3 4.3 0 0 1 8 2.8"/></g>
+        <g id="i-trash"><path d="M4 7h16"/><path d="M10 4h4a1 1 0 0 1 1 1v2H9V5a1 1 0 0 1 1-1z"/><path d="M6 7v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7"/><path d="M10 11v6"/><path d="M14 11v6"/></g>
         <g id="i-wrench"><path d="M15.5 3.5a5 5 0 0 0-4.6 7L3.5 17.9a2 2 0 0 0 2.8 2.8l7.4-7.4a5 5 0 0 0 6.2-6.6l-2.9 2.9-2.6-.7-.7-2.6z"/></g>
         <g id="i-scroll"><path d="M6 4h11a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M5 6a2 2 0 0 1 4 0v2H5z"/><path d="M10 11h6"/><path d="M10 15h4"/></g>
         <g id="i-bell"><path d="M18 9a6 6 0 1 0-12 0c0 5-2 6-2 6h16s-2-1-2-6"/><path d="M13.7 19a2 2 0 0 1-3.4 0"/></g>

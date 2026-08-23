@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Admin\Inbox;
 
-use App\Services\Conversations\SyncFailureNotice;
 use App\Enums\ContactStatus;
 use App\Enums\ConversationPriority;
 use App\Enums\ConversationStatus;
@@ -25,6 +24,7 @@ use App\Services\Conversations\ConversationEventService;
 use App\Services\Conversations\ConversationResolverService;
 use App\Services\Conversations\ManualReplyService;
 use App\Services\Conversations\ReplyInterruptionService;
+use App\Services\Conversations\SyncFailureNotice;
 use App\Services\SystemSettingService;
 use App\Services\WhatsApp\WhatsAppProviderManager;
 use Illuminate\Http\JsonResponse;
@@ -42,10 +42,21 @@ class InboxController extends Controller
         abort_unless($request->user()->can('inbox.view'), 403);
         $audit->log('inbox.viewed', 'Conversas visualizadas.');
 
-        $query = Conversation::with(['contact', 'assignee', 'latestMessage', 'tags'])
+        $query = Conversation::with(['contact', 'assignee', 'latestMessage', 'tags', 'flowState'])
             ->when($request->filled('status'), fn ($query) => $query->where('status', $request->string('status')))
             ->when($request->filled('priority'), fn ($query) => $query->where('priority', $request->string('priority')))
             ->when($request->boolean('awaiting_operator'), fn ($query) => $query->where('status', ConversationStatus::WaitingOperator))
+            /*
+             | Quem começou a responder e parou no meio.
+             |
+             | A automação pausa a conversa quando não sabe seguir sozinha, e
+             | responder ao contato não desfaz isso: a pesquisa dele fica parada
+             | até alguém retomar. Sem este filtro elas ficam espalhadas pela
+             | listagem inteira, misturadas com todo o resto — no dia em que ele
+             | foi escrito havia doze, dez delas paradas fazia mais de uma semana,
+             | e ninguém sabia.
+             */
+            ->when($request->boolean('paused_flow'), fn ($query) => $query->whereHas('flowState', fn ($state) => $state->where('is_paused', true)))
             ->when($request->boolean('unread'), fn ($query) => $query->where('unread_count', '>', 0))
             ->when($request->boolean('no_contact'), fn ($query) => $query->whereNull('contact_id'))
             ->when($request->boolean('archived'), fn ($query) => $query->where('is_archived', true))
@@ -206,7 +217,7 @@ class InboxController extends Controller
             // `medium` e `transcriptions` vêm junto: sem eles, a linha do tempo
             // faz duas consultas por mensagem só para decidir se mostra a
             // imagem ou o motivo de não ter conseguido.
-            'conversation' => $conversation->load(['contact', 'assignee', 'messages.creator', 'messages.medium', 'messages.transcriptions', 'events', 'notes.user', 'tags']),
+            'conversation' => $conversation->load(['contact', 'assignee', 'messages.creator', 'messages.medium', 'messages.transcriptions', 'events', 'notes.user', 'tags', 'flowState']),
             'users' => User::where('status', 'active')->orderBy('name')->get(),
             'tags' => ConversationTag::where('is_active', true)->orderBy('name')->get(),
             'contacts' => Contact::orderBy('name')->limit(100)->get(),

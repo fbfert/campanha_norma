@@ -130,6 +130,20 @@ class PendingReplyResolver
      * A rede de segurança contorna o autoenvio comum, que pode estar desligado
      * de propósito. Contornar exige ser mais exigente, não menos: só passa
      * texto em que o próprio modelo declarou confiança alta e não pediu ajuda.
+     *
+     * A exigência maior vem das outras três portas acima — revisão pedida,
+     * atendimento humano pedido, texto vazio — e não do limiar de confiança.
+     * O limiar não é um dial fino: a confiança que o modelo declara é
+     * quantizada. Em 483 sugestões geradas, os valores foram 0.900 (205),
+     * 0.950 (247) e 1.000 (18), e nada entre eles. Qualquer limiar dentro da
+     * faixa aberta 0.900–0.950 tem o mesmo efeito de 0.950 e nenhum outro.
+     *
+     * O limiar era 0.92, escolhido como "um pouco acima de 0.90". Na prática
+     * valia 0.950 e descartava em bloco os 205 textos da faixa 0.900 — 42% de
+     * tudo que a IA já tinha escrito. Cada um desses descartes virou "Obrigado
+     * por escrever! Já te respondo." para alguém que tinha escrito de verdade,
+     * e a conversa saía da fila logo em seguida, porque o aviso é de saída.
+     * Trinta pessoas ficaram assim entre 19 e 21/08/2026.
      */
     private function assess(ConversationReplySuggestion $sugestao): ?string
     {
@@ -145,7 +159,7 @@ class PendingReplyResolver
             return 'sugestao_sem_texto';
         }
 
-        $limiar = (float) $this->settings->get('ai.response.safety_net_min_confidence', 0.92);
+        $limiar = (float) $this->settings->get('ai.response.safety_net_min_confidence', 0.90);
 
         if ($sugestao->confidence === null || (float) $sugestao->confidence < $limiar) {
             return 'confianca_insuficiente';

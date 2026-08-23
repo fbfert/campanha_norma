@@ -12,6 +12,7 @@ Schedule::command('messages:dispatch-pending')->everyMinute()->withoutOverlappin
 Schedule::command('monitoring:check')->everyFiveMinutes()->withoutOverlapping();
 Schedule::command('reports:expire-exports')->hourly()->withoutOverlapping();
 Schedule::command('maintenance:cleanup')->daily()->withoutOverlapping();
+Schedule::command('cleanup:purge-expired')->dailyAt('03:30')->withoutOverlapping();
 Schedule::command('reports:rebuild-metrics')->dailyAt('02:00')->withoutOverlapping();
 Schedule::command('inbox:recover-stuck')->everyFiveMinutes()->withoutOverlapping();
 Schedule::command('inbox:sync-unread-counts')->hourly()->withoutOverlapping();

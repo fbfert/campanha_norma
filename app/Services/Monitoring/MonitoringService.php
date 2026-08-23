@@ -5,11 +5,15 @@ namespace App\Services\Monitoring;
 use App\Enums\MonitoringHealthStatus;
 use App\Models\ConversationMessage;
 use App\Models\ConversationSyncRun;
+use App\Models\KeywordCampaign;
+use App\Models\KeywordCampaignParticipation;
 use App\Models\MessageBatch;
 use App\Models\MessageBatchRecipient;
 use App\Models\SchedulerHeartbeat;
 use App\Models\WorkerHeartbeat;
+use App\Services\KeywordCampaigns\KeywordMatcherService;
 use App\Services\SystemSettingService;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Redis;
@@ -33,6 +37,8 @@ class MonitoringService
             'stuck_messages' => $this->stuckMessages(),
             'conversation_sync' => $this->conversationSync(),
             'inconsistent_batches' => $this->inconsistentBatches(),
+            'migrations' => $this->migrations(),
+            'campaign_enrollments' => $this->campaignEnrollments(),
         ];
     }
 
@@ -173,6 +179,124 @@ class MonitoringService
             'messages_imported' => $last?->messages_imported,
             'error_code' => $last?->error_code,
         ]);
+    }
+
+    /**
+     * Código no ar exigindo migração que ninguém rodou.
+     *
+     * É crítico e não aviso, porque não degrada nada: derruba. Um modelo que
+     * ganha exclusão suave passa a pedir `deleted_at` em toda consulta, e sem a
+     * coluna o sistema inteiro responde 500 — inclusive as telas que nada têm a
+     * ver com a mudança.
+     *
+     * Aconteceu em 19/08/2026. O código foi para o ar às 12h01, a migração só
+     * rodou às 14h52, e nesse intervalo o monitoramento seguiu dizendo que
+     * estava tudo bem: nenhum diagnóstico olhava para isto. Três horas fora do
+     * ar, descobertas por alguém reparando, não pelo sistema avisando.
+     */
+    public function migrations(): array
+    {
+        try {
+            $migrator = app('migrator');
+
+            if (! $migrator->getRepository()->repositoryExists()) {
+                return $this->item(MonitoringHealthStatus::Unknown, 'Histórico de migrações ainda não existe.');
+            }
+
+            /*
+             | A diferença é feita aqui porque `pendingMigrations` é protegido.
+             |
+             | `getMigrationFiles` devolve o mapa nome => caminho, e `getRan`
+             | devolve os nomes já aplicados: o que sobra da diferença é o que
+             | falta rodar. Chamar o método do framework seria mais curto e
+             | quebraria na primeira atualização que mudasse a visibilidade.
+             */
+            $arquivos = $migrator->getMigrationFiles($migrator->paths() ?: [database_path('migrations')]);
+            $pendentes = array_values(array_diff(array_keys($arquivos), $migrator->getRepository()->getRan()));
+
+            if ($pendentes === []) {
+                return $this->item(MonitoringHealthStatus::Healthy, 'Banco no mesmo ponto do código.');
+            }
+
+            return $this->item(
+                MonitoringHealthStatus::Critical,
+                count($pendentes).' '.(count($pendentes) === 1 ? 'migração pendente' : 'migrações pendentes')
+                    .': rode `php artisan migrate` antes de qualquer outra coisa.',
+                ['pendentes' => $pendentes],
+            );
+        } catch (Throwable) {
+            return $this->item(MonitoringHealthStatus::Unknown, 'Não foi possível conferir as migrações.');
+        }
+    }
+
+    /**
+     * Gente que escreveu a palavra-chave e não está na lista.
+     *
+     * A inscrição é projeção da mensagem, então a diferença entre as duas é
+     * calculável — e enquanto ninguém a calculava, ela era invisível. O gatilho
+     * mora no caminho ao vivo; mensagem recuperada por outro caminho não
+     * passava por ele, e a pessoa entrava no sistema sem entrar na campanha.
+     * Sem erro, sem log, sem linha em lugar nenhum.
+     *
+     * É aviso e não crítico: a lista é recuperável a qualquer momento com
+     * `campanhas:reprocessar`, e nada se perde enquanto a campanha corre.
+     *
+     * O resultado fica em cache curto porque a varredura lê mensagem por
+     * mensagem para casar palavra inteira, e o monitoramento roda de cinco em
+     * cinco minutos.
+     */
+    public function campaignEnrollments(): array
+    {
+        $faltando = Cache::remember('monitoring.campaign_enrollments', now()->addMinutes(15), function (): array {
+            $matcher = app(KeywordMatcherService::class);
+            $porCampanha = [];
+
+            foreach (KeywordCampaign::query()->get() as $campanha) {
+                if (! $campanha->estaVigente()) {
+                    continue;
+                }
+
+                $palavras = $campanha->keywords ?? [];
+
+                if ($palavras === []) {
+                    continue;
+                }
+
+                $sem = ConversationMessage::query()
+                    ->where('direction', 'incoming')
+                    ->whereBetween('received_at', [$campanha->starts_at, now()])
+                    ->whereNotExists(fn ($sub) => $sub->selectRaw('1')
+                        ->from('keyword_campaign_participations')
+                        ->whereColumn('keyword_campaign_participations.conversation_message_id', 'conversation_messages.id')
+                        ->where('keyword_campaign_participations.keyword_campaign_id', $campanha->id))
+                    ->get()
+                    ->filter(fn (ConversationMessage $m): bool => $matcher->match($matcher->textoParaCasamento($m), $palavras) !== null)
+                    ->reject(fn (ConversationMessage $m): bool => KeywordCampaignParticipation::query()
+                        ->where('keyword_campaign_id', $campanha->id)
+                        ->where('contact_id', $m->contact_id)
+                        ->exists())
+                    ->count();
+
+                if ($sem > 0) {
+                    $porCampanha[$campanha->name] = $sem;
+                }
+            }
+
+            return $porCampanha;
+        });
+
+        if ($faltando === []) {
+            return $this->item(MonitoringHealthStatus::Healthy, 'Toda palavra-chave escrita virou inscrição.');
+        }
+
+        $total = array_sum($faltando);
+
+        return $this->item(
+            MonitoringHealthStatus::Warning,
+            $total.' '.($total === 1 ? 'pessoa escreveu a palavra e não está na lista' : 'pessoas escreveram a palavra e não estão na lista')
+                .': rode `campanhas:reprocessar` para recuperar.',
+            ['por_campanha' => $faltando],
+        );
     }
 
     private function threshold(int|float $minutes, string $warningKey, string $criticalKey): MonitoringHealthStatus
