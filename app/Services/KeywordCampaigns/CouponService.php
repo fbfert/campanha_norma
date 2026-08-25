@@ -45,6 +45,38 @@ class CouponService
     }
 
     /**
+     * Cupons digitados à mão, um por linha.
+     *
+     * Mesmo caminho da importação por arquivo, e de propósito: a idempotência,
+     * o corte de 120 caracteres e a auditoria sem código em claro valem igual
+     * para quem digita e para quem sobe planilha. O que muda é só a origem
+     * registrada, para o histórico dizer de onde o cupom veio.
+     *
+     * @return array{importados: int, repetidos: int}
+     */
+    public function cadastrarAMao(KeywordCampaign $campaign, string $texto, ?User $usuario = null): array
+    {
+        return $this->importarCodigos($campaign, $this->separarLinhas($texto), $usuario, 'manual');
+    }
+
+    /**
+     * Uma linha, um código. Vírgula e ponto e vírgula também separam: quem
+     * copia de uma planilha cola tudo numa linha só, e recusar isso seria
+     * transformar um acerto de formatação em erro de tela.
+     *
+     * @return list<string>
+     */
+    public function separarLinhas(string $texto): array
+    {
+        $pedacos = preg_split('/[\r\n,;]+/', $texto) ?: [];
+
+        return array_values(array_filter(
+            array_map(static fn (string $pedaco): string => trim($pedaco), $pedacos),
+            static fn (string $pedaco): bool => $pedaco !== '',
+        ));
+    }
+
+    /**
      * Idempotente pela chave única do banco, não por consulta prévia.
      *
      * Reimportar o mesmo arquivo não duplica nada, e duas importações
@@ -54,7 +86,7 @@ class CouponService
      * @param  list<string>  $codigos
      * @return array{importados: int, repetidos: int}
      */
-    public function importarCodigos(KeywordCampaign $campaign, array $codigos, ?User $usuario = null): array
+    public function importarCodigos(KeywordCampaign $campaign, array $codigos, ?User $usuario = null, string $origem = 'arquivo'): array
     {
         $importados = 0;
         $repetidos = 0;
@@ -92,7 +124,7 @@ class CouponService
             "{$importados} ".($importados === 1 ? 'cupom importado' : 'cupons importados')." na campanha \"{$campaign->name}\".",
             $campaign,
             null,
-            ['importados' => $importados, 'repetidos' => $repetidos],
+            ['importados' => $importados, 'repetidos' => $repetidos, 'origem' => $origem],
             $usuario,
         );
 

@@ -55,6 +55,52 @@ class KeywordDrawController extends Controller
         return back()->with('success', $recado);
     }
 
+    /**
+     * Cupons digitados à mão, um por linha — um para cada ganhador.
+     *
+     * Existe porque nem todo prêmio vem de planilha: são três códigos que
+     * alguém leu de um e-mail, e obrigar a montar um CSV para isso é obrigar a
+     * criar um arquivo com cupom dentro só para poder apagá-lo depois.
+     *
+     * O caminho é o mesmo da importação: idempotente, sem código no log.
+     */
+    public function storeCoupons(Request $request, KeywordCampaign $campaign, CouponService $coupons): RedirectResponse
+    {
+        abort_unless($request->user()->can('keyword_coupons.manage'), 403);
+
+        $validado = $request->validate([
+            'codigos' => ['required', 'string', 'max:20000'],
+        ], [
+            'codigos.required' => 'Escreva ao menos um código, um por linha.',
+        ], ['codigos' => 'códigos']);
+
+        $codigos = $coupons->separarLinhas($validado['codigos']);
+
+        if ($codigos === []) {
+            return back()
+                ->withErrors(['codigos' => 'Escreva ao menos um código, um por linha.'])
+                ->withInput();
+        }
+
+        // O mesmo teto do sorteio: o que não pode ser sorteado de uma vez
+        // também não precisa ser cadastrado de uma vez.
+        if (count($codigos) > 1000) {
+            return back()
+                ->withErrors(['codigos' => 'São '.count($codigos).' códigos de uma vez, e o limite é 1000. Para um lote desse tamanho, use a importação por arquivo.'])
+                ->withInput();
+        }
+
+        $resultado = $coupons->cadastrarAMao($campaign, $validado['codigos'], $request->user());
+
+        $recado = "{$resultado['importados']} ".($resultado['importados'] === 1 ? 'cupom cadastrado.' : 'cupons cadastrados.');
+
+        if ($resultado['repetidos'] > 0) {
+            $recado .= " {$resultado['repetidos']} já existiam e foram ignorados.";
+        }
+
+        return back()->with('success', $recado);
+    }
+
     public function store(Request $request, KeywordCampaign $campaign, DrawService $draws): RedirectResponse
     {
         abort_unless($request->user()->can('keyword_draws.execute'), 403);

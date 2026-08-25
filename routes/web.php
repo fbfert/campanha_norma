@@ -197,6 +197,7 @@ Route::middleware(['auth', 'password.changed'])->group(function (): void {
         Route::get('/keyword-campaigns/{campaign}/draws', [KeywordDrawController::class, 'index'])->name('keyword-campaigns.draws.index');
         Route::post('/keyword-campaigns/{campaign}/draws', [KeywordDrawController::class, 'store'])->name('keyword-campaigns.draws.store');
         Route::post('/keyword-campaigns/{campaign}/draws/coupons', [KeywordDrawController::class, 'importCoupons'])->name('keyword-campaigns.draws.coupons');
+        Route::post('/keyword-campaigns/{campaign}/draws/coupons/manual', [KeywordDrawController::class, 'storeCoupons'])->name('keyword-campaigns.draws.coupons.manual');
         Route::post('/keyword-campaigns/{campaign}/draws/deliver', [KeywordDrawController::class, 'deliver'])->name('keyword-campaigns.draws.deliver');
         Route::post('/keyword-campaigns/{campaign}/draws/{draw}/verify', [KeywordDrawController::class, 'verify'])->name('keyword-campaigns.draws.verify');
 

@@ -306,6 +306,108 @@ class SorteioAuditavelECuponsTest extends TestCase
         $this->assertSame('SEGREDO-123', app(CouponService::class)->revelar($cupom));
     }
 
+    /**
+     * Nem todo prêmio vem de planilha: três códigos lidos de um e-mail devem
+     * poder ser digitados sem obrigar ninguém a criar um arquivo com cupom
+     * dentro só para apagá-lo depois.
+     */
+    public function test_cupons_cadastrados_a_mao_entram_no_estoque(): void
+    {
+        $campanha = KeywordCampaign::factory()->create();
+
+        $this->actingAs($this->usuario())
+            ->post(route('admin.keyword-campaigns.draws.coupons.manual', $campanha), [
+                'codigos' => "CURSO-AAA\nCURSO-BBB\nCURSO-CCC",
+            ])
+            ->assertSessionHasNoErrors()
+            ->assertRedirect();
+
+        $this->assertSame(3, app(CouponService::class)->disponiveis($campanha));
+    }
+
+    /**
+     * A idempotência é a mesma da importação, e vem da chave única do banco:
+     * quem digita duas vezes não ganha dois prêmios.
+     */
+    public function test_cadastro_a_mao_nao_duplica_codigo_existente(): void
+    {
+        $campanha = KeywordCampaign::factory()->create();
+        app(CouponService::class)->importarCodigos($campanha, ['CURSO-AAA'], $this->usuario());
+
+        app(CouponService::class)->cadastrarAMao($campanha, "CURSO-AAA\nCURSO-BBB", $this->usuario());
+
+        $this->assertSame(2, $campanha->coupons()->count());
+    }
+
+    /**
+     * Quem copia de uma planilha cola tudo numa linha só. Recusar isso seria
+     * transformar um acerto de formatação em erro de tela.
+     */
+    public function test_cadastro_a_mao_aceita_virgula_e_ponto_e_virgula(): void
+    {
+        $campanha = KeywordCampaign::factory()->create();
+
+        app(CouponService::class)->cadastrarAMao($campanha, ' CURSO-AAA, CURSO-BBB; CURSO-CCC ', $this->usuario());
+
+        $this->assertSame(3, $campanha->coupons()->count());
+        $this->assertSame(
+            ['CURSO-AAA', 'CURSO-BBB', 'CURSO-CCC'],
+            $campanha->coupons()->orderBy('id')->get()
+                ->map(fn (KeywordCampaignCoupon $cupom): string => app(CouponService::class)->revelar($cupom))
+                ->all(),
+        );
+    }
+
+    public function test_cadastro_a_mao_recusa_texto_sem_codigo_nenhum(): void
+    {
+        $campanha = KeywordCampaign::factory()->create();
+
+        $this->actingAs($this->usuario())
+            ->post(route('admin.keyword-campaigns.draws.coupons.manual', $campanha), [
+                'codigos' => "  \n , ; \n ",
+            ])
+            ->assertSessionHasErrors('codigos');
+
+        $this->assertSame(0, $campanha->coupons()->count());
+    }
+
+    /**
+     * Cupom é valor, e a permissão de administrar cupons é o que separa quem
+     * pode criá-lo de quem só olha o sorteio.
+     */
+    public function test_cadastro_a_mao_exige_permissao_de_cupons(): void
+    {
+        $campanha = KeywordCampaign::factory()->create();
+        $usuario = User::factory()->create(['status' => 'active', 'must_change_password' => false]);
+
+        $this->actingAs($usuario)
+            ->post(route('admin.keyword-campaigns.draws.coupons.manual', $campanha), [
+                'codigos' => 'CURSO-AAA',
+            ])
+            ->assertForbidden();
+
+        $this->assertSame(0, $campanha->coupons()->count());
+    }
+
+    public function test_codigo_cadastrado_a_mao_nao_aparece_na_auditoria(): void
+    {
+        $campanha = KeywordCampaign::factory()->create();
+
+        app(CouponService::class)->cadastrarAMao($campanha, 'SEGREDO-123', $this->usuario());
+
+        $registros = AuditLog::where('action', 'keyword_campaign.coupons_imported')->get();
+
+        $this->assertNotEmpty($registros);
+
+        foreach ($registros as $registro) {
+            $this->assertStringNotContainsString('SEGREDO-123', json_encode($registro->toArray()));
+        }
+
+        // A origem fica registrada: o histórico diz de onde o cupom veio sem
+        // dizer qual é o cupom.
+        $this->assertSame('manual', $registros->first()->new_values['origem'] ?? null);
+    }
+
     public function test_codigo_nao_aparece_na_auditoria_da_importacao(): void
     {
         $campanha = KeywordCampaign::factory()->create();

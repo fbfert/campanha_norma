@@ -44,6 +44,30 @@
         </section>
     @endcan
 
+    @can('keyword_coupons.manage')
+        <section class="card" style="margin-top:16px;">
+            <h2>Cadastrar cupons à mão</h2>
+            <p class="muted">
+                Um código por linha, um cupom para cada ganhador. Vírgula e ponto e vírgula também separam, para o
+                caso de colar tudo de uma vez. Serve para o prêmio que veio em um e-mail e não em planilha: montar
+                um arquivo só para isso é criar um arquivo com cupom dentro para ter de apagar depois.
+            </p>
+            <p class="muted">
+                Cadastrar o mesmo código duas vezes não duplica nada, e vale a mesma regra da importação: o código
+                não aparece em log, em exportação nem no histórico da conversa.
+            </p>
+            <form method="post" action="{{ route('admin.keyword-campaigns.draws.coupons.manual', $campaign) }}">
+                @csrf
+                <label for="codigos">Códigos</label>
+                <textarea id="codigos" name="codigos" rows="6" maxlength="20000" required
+                          placeholder="CURSO-AAA&#10;CURSO-BBB&#10;CURSO-CCC">{{ old('codigos') }}</textarea>
+                <div class="actions" style="margin-top:12px;">
+                    <button class="btn" type="submit"><x-icon name="plus" size="16" />Cadastrar cupons</button>
+                </div>
+            </form>
+        </section>
+    @endcan
+
     @can('keyword_draws.execute')
         <section class="card" style="margin-top:16px;">
             <h2>Executar o sorteio</h2>
