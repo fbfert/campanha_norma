@@ -39,6 +39,7 @@ class KeywordCampaign extends Model
         'already_enrolled_text',
         'survey_invite_text',
         'out_of_window_text',
+        'coupon_text',
         'frozen_at',
         'frozen_by',
         'frozen_list_hash',

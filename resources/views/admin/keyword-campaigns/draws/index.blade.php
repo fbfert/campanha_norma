@@ -110,6 +110,38 @@
         </section>
     @endcan
 
+    @can('keyword_coupons.manage')
+        <section class="card" style="margin-top:16px;">
+            <h2>Entregar os cupons</h2>
+            <p class="muted">
+                A mensagem que o ganhador vai ler. <code>{codigo}</code> é obrigatório e vira o cupom no momento do {{-- ortografia:ignorar - {codigo} é nome de placeholder, comparado pelo código e por isso sem acento --}}
+                envio; <code>{nome}</code> é opcional e vira o nome conferido na tela de elegibilidade.
+            </p>
+            <p class="muted">
+                O que fica gravado aqui é o molde, nunca o código. Escreva o que a pessoa precisa fazer com o cupom
+                depois de recebê-lo: "seu código de acesso é {codigo}" não diz onde usá-lo, e quem ganhou vai {{-- ortografia:ignorar - {codigo} é nome de placeholder, comparado pelo código e por isso sem acento --}}
+                perguntar isso na mesma conversa.
+            </p>
+            <form method="post" action="{{ route('admin.keyword-campaigns.draws.deliver', $campaign) }}">
+                @csrf
+                <label for="mensagem">Mensagem ao ganhador</label>
+                <textarea id="mensagem" name="mensagem" rows="4" maxlength="4000" required>{{ old('mensagem', $mensagemDoCupom) }}</textarea>
+                <p class="muted">
+                    @if($cuponsAEntregar === 0)
+                        Nenhum cupom esperando entrega. A mensagem fica salva para o próximo sorteio.
+                    @else
+                        <strong>{{ $cuponsAEntregar }}</strong>
+                        {{ $cuponsAEntregar === 1 ? 'cupom espera entrega' : 'cupons esperam entrega' }}.
+                        O envio passa pelo mesmo teto das confirmações.
+                    @endif
+                </p>
+                <div class="actions" style="margin-top:12px;">
+                    <button class="btn" type="submit"><x-icon name="send" size="16" />Entregar os cupons</button>
+                </div>
+            </form>
+        </section>
+    @endcan
+
     <section class="card" style="margin-top:16px;">
         <h2>Sorteios executados</h2>
         @forelse($draws as $sorteio)
@@ -159,17 +191,15 @@
                     </table>
                 </div>
 
+                {{-- Refazer a conta é por sorteio; a entrega não é, e por isso
+                     saiu daqui para um card próprio: o botão entregava os cupons
+                     pendentes da campanha inteira, repetido embaixo de cada
+                     sorteio como se fosse daquele. --}}
                 <div class="actions" style="margin-top:12px;">
                     <form method="post" action="{{ route('admin.keyword-campaigns.draws.verify', [$campaign, $sorteio]) }}">
                         @csrf
                         <button class="btn ghost" type="submit"><x-icon name="refresh" size="16" />Refazer a conta</button>
                     </form>
-                    @can('keyword_coupons.manage')
-                        <form method="post" action="{{ route('admin.keyword-campaigns.draws.deliver', $campaign) }}">
-                            @csrf
-                            <button class="btn" type="submit"><x-icon name="send" size="16" />Entregar os cupons</button>
-                        </form>
-                    @endcan
                 </div>
             </div>
         @empty

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Jobs\EntregarCupomDeCampanhaJob;
 use App\Models\KeywordCampaign;
 use App\Models\KeywordCampaignDraw;
+use App\Services\KeywordCampaigns\CouponMessage;
 use App\Services\KeywordCampaigns\CouponService;
 use App\Services\KeywordCampaigns\DrawService;
 use Illuminate\Http\RedirectResponse;
@@ -22,7 +23,7 @@ use Illuminate\View\View;
  */
 class KeywordDrawController extends Controller
 {
-    public function index(Request $request, KeywordCampaign $campaign, CouponService $coupons): View
+    public function index(Request $request, KeywordCampaign $campaign, CouponService $coupons, CouponMessage $mensagens): View
     {
         abort_unless($request->user()->can('keyword_campaigns.view'), 403);
 
@@ -33,6 +34,11 @@ class KeywordDrawController extends Controller
             'cuponsTotal' => $campaign->coupons()->count(),
             // O código só é revelado a quem tem a permissão própria.
             'podeVerCodigos' => (bool) $request->user()->can('keyword_coupons.manage'),
+            'mensagemDoCupom' => $mensagens->texto($campaign),
+            'cuponsAEntregar' => $campaign->coupons()
+                ->whereNotNull('keyword_campaign_participation_id')
+                ->whereNull('delivered_at')
+                ->count(),
         ]);
     }
 
@@ -154,17 +160,63 @@ class KeywordDrawController extends Controller
         return back()->withErrors(['sorteio' => 'A verificação não reproduziu o resultado registrado.']);
     }
 
-    public function deliver(Request $request, KeywordCampaign $campaign, CouponService $coupons): RedirectResponse
+    /**
+     * Entrega os cupons, com a mensagem que o ganhador vai ler.
+     *
+     * A mensagem é conferida e gravada antes de qualquer job sair. Enfileirar
+     * primeiro e validar depois deixaria metade do lote entregue com um texto
+     * que a outra metade não vai receber — e mensagem entregue não volta.
+     */
+    public function deliver(Request $request, KeywordCampaign $campaign, CouponService $coupons, CouponMessage $mensagens): RedirectResponse
     {
         abort_unless($request->user()->can('keyword_coupons.manage'), 403);
+
+        $validado = $request->validate([
+            'mensagem' => ['required', 'string', 'max:4000'],
+        ], [
+            'mensagem.required' => 'Escreva a mensagem que o ganhador vai receber.',
+        ], ['mensagem' => 'mensagem']);
+
+        $texto = trim($validado['mensagem']);
+        $erros = $mensagens->erros($texto);
+
+        if ($erros !== []) {
+            return back()->withErrors(['mensagem' => $erros])->withInput();
+        }
 
         $pendentes = $campaign->coupons()
             ->whereNotNull('keyword_campaign_participation_id')
             ->whereNull('delivered_at')
-            ->pluck('id');
+            ->with('participation.contact')
+            ->get();
 
-        foreach ($pendentes as $couponId) {
-            EntregarCupomDeCampanhaJob::dispatch((int) $couponId);
+        /*
+         | Quem seria saudado pelo nome precisa ter nome, e isso é conferido
+         | aqui, antes de enfileirar.
+         |
+         | Descobrir no meio da fila que um ganhador não tem nome deixaria a
+         | escolha entre mandar "Parabéns, !" e não mandar nada — e as duas são
+         | ruins depois que metade do lote já saiu.
+         */
+        $semNome = $mensagens->ganhadoresSemNome(
+            $texto,
+            $pendentes->map(fn ($cupom) => $cupom->participation)->filter(),
+        );
+
+        if ($semNome !== []) {
+            return back()->withErrors(['mensagem' => count($semNome).' '
+                .(count($semNome) === 1 ? 'ganhador não tem nome cadastrado' : 'ganhadores não têm nome cadastrado')
+                .' e a mensagem usa {nome}: '.implode(', ', array_slice($semNome, 0, 5))
+                .(count($semNome) > 5 ? ' e outros' : '')
+                .'. Tire o {nome} da mensagem ou complete o cadastro na conferência.'])->withInput();
+        }
+
+        // Gravada na campanha: reenviar depois de uma falha manda o mesmo
+        // texto, e não o padrão de fábrica.
+        $campaign->update(['coupon_text' => $texto]);
+
+        foreach ($pendentes as $cupom) {
+            EntregarCupomDeCampanhaJob::dispatch((int) $cupom->id);
         }
 
         return back()->with('success', $pendentes->count().' '

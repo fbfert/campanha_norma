@@ -11,6 +11,7 @@ use App\Services\AuditLogger;
 use App\Services\Conversations\ConversationEventService;
 use App\Services\Conversations\ConversationReplyService;
 use App\Services\KeywordCampaigns\ConfirmationThrottle;
+use App\Services\KeywordCampaigns\CouponMessage;
 use App\Services\KeywordCampaigns\CouponService;
 use App\Services\SystemSettingService;
 use App\Services\WhatsApp\WhatsAppProviderManager;
@@ -49,6 +50,7 @@ class EntregarCupomDeCampanhaJob implements ShouldQueue
         ConversationReplyService $replies,
         ConversationEventService $events,
         AuditLogger $audit,
+        CouponMessage $mensagens,
     ): void {
         $cupom = KeywordCampaignCoupon::with('campaign', 'participation.contact', 'participation.message.conversation')
             ->find($this->couponId);
@@ -84,7 +86,19 @@ class EntregarCupomDeCampanhaJob implements ShouldQueue
         }
 
         $codigo = $coupons->revelar($cupom);
-        $texto = "Parabéns! Você foi sorteado. Seu código de acesso é: {$codigo}";
+
+        /*
+         | O molde vem da campanha; o código entra aqui e em nenhum outro lugar.
+         |
+         | `montar` devolve o texto já com o cupom dentro, e esse retorno não
+         | pode ser gravado: ele existe só até ser entregue ao provedor, algumas
+         | linhas abaixo.
+         */
+        $texto = $mensagens->montar(
+            $mensagens->texto($cupom->campaign),
+            $codigo,
+            $participacao->displayName(),
+        );
 
         /*
          | A linha do histórico não guarda o código.

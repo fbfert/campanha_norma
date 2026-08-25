@@ -594,6 +594,216 @@ class SorteioAuditavelECuponsTest extends TestCase
         $this->assertSame([$aluno->id], array_map('intval', $draw->result));
     }
 
+    /**
+     * Frase de código não serve para prêmio nenhum: o cupom pode ser um curso,
+     * um ingresso ou um desconto, e cada um pede uma instrução diferente do que
+     * fazer com o código depois de recebê-lo.
+     */
+    public function test_mensagem_configurada_chega_ao_ganhador_com_o_codigo(): void
+    {
+        $enviadas = [];
+        $this->fakeProvedorCapturando($enviadas);
+
+        $campanha = $this->campanhaPronta(inscritos: 3, cupons: 3);
+        $campanha->update(['coupon_text' => 'Você ganhou! Use {codigo} em norma.com.br/resgate.']);  // ortografia:ignorar - {codigo} é nome de placeholder, comparado pelo código e por isso sem acento
+        $campanha->coupons()->first()->update(['code' => 'SEGREDO-123']);
+        $this->draws()->sortear($campanha, 1, $this->usuario());
+
+        $cupom = KeywordCampaignCoupon::whereNotNull('keyword_campaign_participation_id')->firstOrFail();
+        EntregarCupomDeCampanhaJob::dispatchSync($cupom->id);
+
+        $this->assertSame(
+            ['Você ganhou! Use '.$cupom->getAttributeValue('code').' em norma.com.br/resgate.'],
+            $enviadas,
+        );
+    }
+
+    /**
+     * Campanha existente tem o campo nulo, e precisa continuar mandando
+     * exatamente o que mandava antes de a mensagem virar configurável.
+     */
+    public function test_campanha_sem_texto_usa_o_padrao_de_antes(): void
+    {
+        $enviadas = [];
+        $this->fakeProvedorCapturando($enviadas);
+
+        $campanha = $this->campanhaPronta(inscritos: 3, cupons: 3);
+        $this->assertNull($campanha->coupon_text);
+        $this->draws()->sortear($campanha, 1, $this->usuario());
+
+        $cupom = KeywordCampaignCoupon::whereNotNull('keyword_campaign_participation_id')->firstOrFail();
+        EntregarCupomDeCampanhaJob::dispatchSync($cupom->id);
+
+        $this->assertStringStartsWith('Parabéns! Você foi sorteado.', $enviadas[0]);
+        $this->assertStringContainsString($cupom->getAttributeValue('code'), $enviadas[0]);
+    }
+
+    /**
+     * A trava que importa: "parabéns, você ganhou" sem o código é um prêmio que
+     * não foi entregue, e o ganhador não tem como saber que faltou alguma
+     * coisa. O cupom fica marcado como entregue e o erro só aparece quando a
+     * pessoa reclama.
+     */
+    public function test_entrega_recusa_mensagem_sem_o_codigo(): void
+    {
+        $campanha = $this->campanhaPronta(inscritos: 3, cupons: 3);
+        $this->draws()->sortear($campanha, 1, $this->usuario());
+
+        $this->actingAs($this->usuario())
+            ->post(route('admin.keyword-campaigns.draws.deliver', $campanha), [
+                'mensagem' => 'Parabéns, você foi sorteado!',
+            ])
+            ->assertSessionHasErrors('mensagem');
+
+        $this->assertNull($campanha->fresh()->coupon_text);
+        $this->assertSame(0, KeywordCampaignCoupon::whereNotNull('delivered_at')->count());
+    }
+
+    public function test_entrega_recusa_placeholder_que_a_mensagem_nao_conhece(): void
+    {
+        $campanha = $this->campanhaPronta(inscritos: 3, cupons: 3);
+        $this->draws()->sortear($campanha, 1, $this->usuario());
+
+        $this->actingAs($this->usuario())
+            ->post(route('admin.keyword-campaigns.draws.deliver', $campanha), [
+                'mensagem' => 'Ganhou {codigo}, aí em {cidade}.',  // ortografia:ignorar - {codigo} é nome de placeholder, comparado pelo código e por isso sem acento
+            ])
+            ->assertSessionHasErrors('mensagem');
+
+        $this->assertNull($campanha->fresh()->coupon_text);
+    }
+
+    /**
+     * Descobrir no meio da fila que um ganhador não tem nome deixaria a escolha
+     * entre mandar "Parabéns, !" e não mandar nada — e as duas são ruins depois
+     * que metade do lote já saiu.
+     */
+    public function test_entrega_recusa_nome_quando_um_ganhador_nao_tem_nome(): void
+    {
+        $campanha = $this->campanhaPronta(inscritos: 3, cupons: 3);
+        $this->draws()->sortear($campanha, 3, $this->usuario());
+
+        KeywordCampaignParticipation::where('keyword_campaign_id', $campanha->id)
+            ->update(['captured_name' => null, 'reviewed_name' => null]);
+
+        $this->actingAs($this->usuario())
+            ->post(route('admin.keyword-campaigns.draws.deliver', $campanha), [
+                'mensagem' => 'Parabéns, {nome}! Seu código é {codigo}.',  // ortografia:ignorar - {codigo} é nome de placeholder, comparado pelo código e por isso sem acento
+            ])
+            ->assertSessionHasErrors('mensagem');
+
+        $this->assertNull($campanha->fresh()->coupon_text);
+        $this->assertSame(0, KeywordCampaignCoupon::whereNotNull('delivered_at')->count());
+    }
+
+    public function test_nome_do_ganhador_entra_na_mensagem(): void
+    {
+        $enviadas = [];
+        $this->fakeProvedorCapturando($enviadas);
+
+        $campanha = $this->campanhaPronta(inscritos: 1, cupons: 1);
+        KeywordCampaignParticipation::where('keyword_campaign_id', $campanha->id)
+            ->update(['reviewed_name' => 'Maria Ganhadora']);
+        $this->draws()->sortear($campanha, 1, $this->usuario());
+
+        $this->actingAs($this->usuario())
+            ->post(route('admin.keyword-campaigns.draws.deliver', $campanha), [
+                'mensagem' => 'Parabéns, {nome}! Seu código é {codigo}.',  // ortografia:ignorar - {codigo} é nome de placeholder, comparado pelo código e por isso sem acento
+            ])
+            ->assertSessionHasNoErrors();
+
+        $this->assertStringStartsWith('Parabéns, Maria Ganhadora! Seu código é ', $enviadas[0]);
+    }
+
+    /**
+     * Gravada na campanha: reenviar depois de uma falha manda o mesmo texto, e
+     * não o padrão de fábrica.
+     */
+    public function test_mensagem_fica_salva_na_campanha(): void
+    {
+        $this->fakeProvedor();
+
+        $campanha = $this->campanhaPronta(inscritos: 3, cupons: 3);
+        $this->draws()->sortear($campanha, 1, $this->usuario());
+
+        $this->actingAs($this->usuario())
+            ->post(route('admin.keyword-campaigns.draws.deliver', $campanha), [
+                'mensagem' => 'Use {codigo} em norma.com.br/resgate.',  // ortografia:ignorar - {codigo} é nome de placeholder, comparado pelo código e por isso sem acento
+            ])
+            ->assertSessionHasNoErrors();
+
+        $this->assertSame('Use {codigo} em norma.com.br/resgate.', $campanha->fresh()->coupon_text);  // ortografia:ignorar - {codigo} é nome de placeholder, comparado pelo código e por isso sem acento
+    }
+
+    /**
+     * O molde é gravado; o código, não. Guardar a mensagem em banco não pode
+     * virar um caminho novo para o cupom vazar.
+     */
+    public function test_mensagem_salva_guarda_o_molde_e_nao_o_codigo(): void
+    {
+        $enviadas = [];
+        $this->fakeProvedorCapturando($enviadas);
+
+        $campanha = $this->campanhaPronta(inscritos: 3, cupons: 3);
+        $campanha->coupons()->first()->update(['code' => 'SEGREDO-123']);
+        $this->draws()->sortear($campanha, 1, $this->usuario());
+
+        $this->actingAs($this->usuario())
+            ->post(route('admin.keyword-campaigns.draws.deliver', $campanha), [
+                'mensagem' => 'Use {codigo} para entrar.',  // ortografia:ignorar - {codigo} é nome de placeholder, comparado pelo código e por isso sem acento
+            ])
+            ->assertSessionHasNoErrors();
+
+        $cupom = KeywordCampaignCoupon::whereNotNull('keyword_campaign_participation_id')->firstOrFail();
+
+        $this->assertStringNotContainsString(
+            (string) $cupom->getAttributeValue('code'),
+            (string) $campanha->fresh()->coupon_text,
+        );
+
+        foreach (ConversationMessage::where('direction', 'outgoing')->get() as $mensagem) {
+            $this->assertStringNotContainsString(
+                (string) $cupom->getAttributeValue('code'),
+                (string) $mensagem->body,
+            );
+        }
+    }
+
+    public function test_entrega_exige_permissao_de_cupons(): void
+    {
+        $campanha = $this->campanhaPronta(inscritos: 3, cupons: 3);
+        $usuario = User::factory()->create(['status' => 'active', 'must_change_password' => false]);
+
+        $this->actingAs($usuario)
+            ->post(route('admin.keyword-campaigns.draws.deliver', $campanha), [
+                'mensagem' => 'Use {codigo}.',  // ortografia:ignorar - {codigo} é nome de placeholder, comparado pelo código e por isso sem acento
+            ])
+            ->assertForbidden();
+    }
+
+    /**
+     * Guarda o texto que foi para o provedor.
+     *
+     * O corpo gravado no histórico é a referência, de propósito — então
+     * conferir a mensagem que o ganhador leu exige olhar o que saiu daqui.
+     *
+     * @param  list<string>  $enviadas
+     */
+    private function fakeProvedorCapturando(array &$enviadas): void
+    {
+        $this->mock(WhatsAppProviderManager::class, function ($mock) use (&$enviadas): void {
+            $provedor = \Mockery::mock(WhatsAppProvider::class);
+            $provedor->shouldReceive('sendMessage')->andReturnUsing(
+                function (string $telefone, string $texto) use (&$enviadas): SendResult {
+                    $enviadas[] = $texto;
+
+                    return new SendResult('pedido-1', 'sent', 'externo-1', CarbonImmutable::now());
+                },
+            );
+            $mock->shouldReceive('provider')->andReturn($provedor);
+        });
+    }
+
     private function fakeProvedor(): void
     {
         $this->mock(WhatsAppProviderManager::class, function ($mock): void {

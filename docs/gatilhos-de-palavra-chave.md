@@ -297,6 +297,40 @@ vezes.
 O registro de auditoria guarda a origem (`arquivo` ou `manual`) e as contagens.
 Nunca um código.
 
+### A mensagem que o ganhador recebe
+
+Configurável na própria tela de sorteio, em `coupon_text` da campanha. Campo
+nulo manda o texto que saía fixo antes de a mensagem existir, para campanha
+antiga não mudar de comportamento.
+
+Dois marcadores, na mesma sintaxe do catálogo de placeholders do resto do
+sistema:
+
+| Marcador | Obrigatório | Vira |
+| --- | --- | --- |
+| `{codigo}` | sim | o código do cupom, no momento do envio |
+| `{nome}` | não | o nome conferido na tela de elegibilidade |
+
+Só estes dois, de propósito. O catálogo geral oferece cidade, estado, e-mail e
+país, e quem se inscreve por palavra-chave nasce sem nenhum deles — a campanha
+só tem nome e telefone. Oferecer um campo que sempre chega vazio é oferecer uma
+frase quebrada para o ganhador.
+
+**Duas travas, ambas antes de qualquer job sair:**
+
+1. Mensagem sem `{codigo}` é recusada. "Parabéns, você ganhou" sem o código é um
+   prêmio que não foi entregue, e o ganhador não tem como saber que faltou
+   alguma coisa: o cupom fica marcado como entregue e o erro só aparece quando a
+   pessoa reclama.
+2. Se o texto usa `{nome}` e algum ganhador não tem nome cadastrado, a entrega é
+   recusada, dizendo quais são. Descobrir isso no meio da fila deixaria a
+   escolha entre mandar "Parabéns, !" e não mandar nada — e as duas são ruins
+   depois que metade do lote já saiu.
+
+O que fica gravado é o **molde**, com `{codigo}` no lugar do código. O código
+entra na variável que vai ao provedor e em lugar nenhum além dela: é isso que
+permite guardar a mensagem em banco sem guardar o prêmio junto.
+
 ### Entregar
 
 Cupom é valor. O código:
@@ -304,10 +338,15 @@ Cupom é valor. O código:
 - não aparece em log, em mensagem de erro nem em evento de auditoria;
 - não sai na exportação de participantes;
 - não é gravado em claro no histórico — o que fica lá é a referência do cupom;
+- não é gravado no molde da mensagem;
 - só aparece na tela para quem tem `keyword_coupons.manage`.
 
 O modelo esconde `code` de toda serialização; quem precisa dele chama
 `CouponService::revelar()` explicitamente.
+
+O botão de entrega vale para a campanha inteira, e não para um sorteio: ele
+enfileira todo cupom atribuído e ainda não entregue. Por isso mora num card
+próprio, e não embaixo de cada sorteio.
 
 O envio passa pelo mesmo teto global das confirmações.
 
