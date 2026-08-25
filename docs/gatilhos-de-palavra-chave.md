@@ -342,13 +342,30 @@ Cupom é valor. O código:
 - só aparece na tela para quem tem `keyword_coupons.manage`.
 
 O modelo esconde `code` de toda serialização; quem precisa dele chama
-`CouponService::revelar()` explicitamente.
+`CouponService::revelar()` explicitamente. Na listagem, essa chamada acontece no
+controlador, onde a permissão já foi conferida — sem ela a view recebe um mapa
+vazio e não tem o que vazar.
 
 O botão de entrega vale para a campanha inteira, e não para um sorteio: ele
 enfileira todo cupom atribuído e ainda não entregue. Por isso mora num card
 próprio, e não embaixo de cada sorteio.
 
 O envio passa pelo mesmo teto global das confirmações.
+
+### Acompanhar os cupons
+
+O topo da tela conta as três situações — disponíveis, atribuídos esperando
+entrega, entregues — e o card **"Cupons"** lista um a um, com código (para quem
+administra), referência, ganhador, telefone e as duas datas.
+
+Os usados aparecem primeiro. Quem abre a tela depois do sorteio quer saber para
+quem o prêmio foi; quem abre antes quer saber se tem cupom bastante, e para isso
+o contador do topo já responde sem descer a página.
+
+A distinção que importa é entre **atribuído** e **entregue**: o primeiro é o
+prêmio que ainda pode falhar no envio, e é exatamente o que alguém precisa achar
+quando o ganhador diz que não recebeu nada. As duas situações têm cores
+diferentes na lista por causa disso.
 
 ---
 

@@ -17,8 +17,15 @@
         @endif
         <p>
             Cupons: <strong>{{ $cuponsEmEstoque }}</strong>
-            {{ $cuponsEmEstoque === 1 ? 'disponível' : 'disponíveis' }} de {{ $cuponsTotal }}.
+            {{ $cuponsEmEstoque === 1 ? 'disponível' : 'disponíveis' }},
+            <strong>{{ $cuponsAEntregar }}</strong>
+            {{ $cuponsAEntregar === 1 ? 'atribuído esperando entrega' : 'atribuídos esperando entrega' }},
+            <strong>{{ $cuponsEntregues }}</strong>
+            {{ $cuponsEntregues === 1 ? 'entregue' : 'entregues' }} — de {{ $cuponsTotal }} no total.
         </p>
+        @if($cuponsTotal > 0)
+            <p class="muted"><a href="#cupons">Ver os cupons um a um</a></p>
+        @endif
     </section>
 
     @can('keyword_coupons.manage')
@@ -141,6 +148,58 @@
             </form>
         </section>
     @endcan
+
+    <section class="card" style="margin-top:16px;" id="cupons">
+        <h2>Cupons</h2>
+        @if($cuponsTotal === 0)
+            <p class="muted">Nenhum cupom cadastrado ainda.</p>
+        @else
+            <p class="muted">
+                Os usados aparecem primeiro: quem abre esta tela depois do sorteio quer saber para quem o prêmio foi.
+                @unless($podeVerCodigos)
+                    O código só aparece para quem administra cupons; aqui cada cupom é identificado pela referência.
+                @endunless
+            </p>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Situação</th>
+                            @if($podeVerCodigos)
+                                <th>Código</th>
+                            @endif
+                            <th>Referência</th>
+                            <th>Ganhador</th>
+                            <th>Telefone</th>
+                            <th>Atribuído em</th>
+                            <th>Entregue em</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($cupons as $cupom)
+                            <tr>
+                                <td>
+                                    @php($situacao = $cupom->status)
+                                    <span class="badge @if($cupom->delivered_at) coupon-delivered @elseif($cupom->keyword_campaign_participation_id) coupon-assigned @endif">
+                                        {{ $situacao->label() }}
+                                    </span>
+                                </td>
+                                @if($podeVerCodigos)
+                                    <td><code>{{ $codigos[$cupom->id] ?? '—' }}</code></td>
+                                @endif
+                                <td><code>{{ $cupom->reference }}</code></td>
+                                <td>{{ $cupom->participation?->displayName() ?? '—' }}</td>
+                                <td>{{ $cupom->participation?->contact?->phone_normalized ?? '—' }}</td>
+                                <td>{{ $cupom->assigned_at?->format('d/m/Y H:i') ?? '—' }}</td>
+                                <td>{{ $cupom->delivered_at?->format('d/m/Y H:i') ?? '—' }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+            {{ $cupons->links() }}
+        @endif
+    </section>
 
     <section class="card" style="margin-top:16px;">
         <h2>Sorteios executados</h2>

@@ -682,6 +682,7 @@ Captação por palavra-chave: quem escreve a palavra divulgada vira um inscrito,
 - Cupons importados por CSV, atribuição transacional e código fora de log, de exportação e do histórico em claro.
 - **Cupom cadastrado à mão**, um código por linha, para o prêmio que veio em um e-mail e não em planilha. Mesmo caminho da importação, e por isso mesma idempotência pela chave única do banco e mesma auditoria sem código em claro; o registro passa a guardar a origem, `arquivo` ou `manual`.
 - **Mensagem do cupom configurável por campanha**, com `{codigo}` obrigatório e `{nome}` opcional. Campo nulo manda o texto que saía fixo antes. Duas travas antes de qualquer job sair: mensagem sem o código é recusada, e `{nome}` com ganhador sem nome cadastrado também — descobrir isso no meio da fila deixaria a escolha entre mandar "Parabéns, !" e não mandar nada. O que fica gravado é o molde, nunca o código.
+- **Lista de cupons na tela de sorteio**, com as três situações contadas no topo e cada cupom identificado por código (para quem administra) ou referência. Usados primeiro, e `atribuído` separado de `entregue` por cor: o primeiro é o prêmio que ainda pode falhar no envio.
 - **"Marcar todos" na fila de conferência**, que alterna e vale só para a página na tela — a fila é paginada, e marcar o que não se vê seria conferir às cegas quem ninguém leu.
 - Nome do remetente preenchido no serviço Node, que mandava `sender_name: null` cravado.
 - Comandos `campanhas:reprocessar`, `campanhas:diagnosticar` e `campanhas:quase-casamentos`, nenhum deles agendado.

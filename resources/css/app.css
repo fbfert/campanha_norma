@@ -369,6 +369,25 @@ a {
     color: var(--danger-text);
 }
 
+/*
+ | As três situações do cupom precisam se separar de relance.
+ |
+ | Numa lista de mil, "atribuído" e "entregue" são a diferença entre o prêmio
+ | que ainda pode falhar no envio e o que já chegou — e é justamente o primeiro
+ | que alguém precisa encontrar quando o ganhador diz que não recebeu nada.
+ */
+.badge.coupon-delivered {
+    background: var(--success-soft);
+    border: 1px solid var(--success-border);
+    color: var(--success-text);
+}
+
+.badge.coupon-assigned {
+    background: var(--warning-soft);
+    border: 1px solid var(--warning-border);
+    color: var(--warning-text);
+}
+
 .nav-badge {
     background: var(--alert-badge);
     color: var(--text-inverse);

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin\KeywordCampaigns;
 use App\Http\Controllers\Controller;
 use App\Jobs\EntregarCupomDeCampanhaJob;
 use App\Models\KeywordCampaign;
+use App\Models\KeywordCampaignCoupon;
 use App\Models\KeywordCampaignDraw;
 use App\Services\KeywordCampaigns\CouponMessage;
 use App\Services\KeywordCampaigns\CouponService;
@@ -27,14 +28,51 @@ class KeywordDrawController extends Controller
     {
         abort_unless($request->user()->can('keyword_campaigns.view'), 403);
 
+        // O código só é revelado a quem tem a permissão própria.
+        $podeVerCodigos = (bool) $request->user()->can('keyword_coupons.manage');
+
+        /*
+         | Usado antes de disponível, e não por ordem de cadastro.
+         |
+         | Quem abre esta tela depois do sorteio quer saber para quem o prêmio
+         | foi; quem abre antes quer saber se tem cupom bastante, e para isso o
+         | contador do topo já responde sem descer a página.
+         |
+         | `CASE WHEN` em vez do booleano direto: a mesma expressão passa em
+         | MySQL e em SQLite, e a suíte roda no segundo.
+         */
+        $cupons = $campaign->coupons()
+            ->with('participation.contact')
+            ->orderByRaw('CASE WHEN keyword_campaign_participation_id IS NULL THEN 1 ELSE 0 END')
+            ->orderBy('id')
+            ->paginate(100)
+            ->withQueryString();
+
+        /*
+         | A revelação acontece aqui, onde a permissão foi conferida, e não na
+         | view.
+         |
+         | O modelo esconde `code` de toda serialização justamente para o código
+         | não escapar por um caminho que ninguém revisou. Montar o mapa no
+         | controlador é o que garante que a view nunca tem o que vazar quando a
+         | permissão falta: sem ela o mapa chega vazio.
+         */
+        $codigos = $podeVerCodigos
+            ? collect($cupons->items())->mapWithKeys(
+                fn (KeywordCampaignCoupon $cupom): array => [$cupom->id => $coupons->revelar($cupom)],
+            )->all()
+            : [];
+
         return view('admin.keyword-campaigns.draws.index', [
             'campaign' => $campaign,
             'draws' => $campaign->draws()->with('executor')->orderByDesc('id')->get(),
             'cuponsEmEstoque' => $coupons->disponiveis($campaign),
             'cuponsTotal' => $campaign->coupons()->count(),
-            // O código só é revelado a quem tem a permissão própria.
-            'podeVerCodigos' => (bool) $request->user()->can('keyword_coupons.manage'),
+            'podeVerCodigos' => $podeVerCodigos,
             'mensagemDoCupom' => $mensagens->texto($campaign),
+            'cupons' => $cupons,
+            'codigos' => $codigos,
+            'cuponsEntregues' => $campaign->coupons()->whereNotNull('delivered_at')->count(),
             'cuponsAEntregar' => $campaign->coupons()
                 ->whereNotNull('keyword_campaign_participation_id')
                 ->whereNull('delivered_at')

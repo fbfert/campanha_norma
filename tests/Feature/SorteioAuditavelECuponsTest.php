@@ -487,6 +487,86 @@ class SorteioAuditavelECuponsTest extends TestCase
         $this->assertSame(1, ConversationMessage::where('direction', 'outgoing')->count());
     }
 
+    /**
+     * Contador não responde "para quem foi o prêmio". Depois do sorteio, a
+     * pergunta deixa de ser quantos sobraram e passa a ser quem recebeu o quê.
+     */
+    public function test_tela_lista_os_cupons_usados_e_os_disponiveis(): void
+    {
+        $campanha = $this->campanhaPronta(inscritos: 3, cupons: 3);
+        KeywordCampaignParticipation::where('keyword_campaign_id', $campanha->id)
+            ->update(['reviewed_name' => 'Maria Ganhadora']);
+        $this->draws()->sortear($campanha, 1, $this->usuario());
+
+        $usado = $campanha->coupons()->whereNotNull('keyword_campaign_participation_id')->firstOrFail();
+        $livre = $campanha->coupons()->disponivel()->firstOrFail();
+
+        $this->actingAs($this->usuario())
+            ->get(route('admin.keyword-campaigns.draws.index', $campanha))
+            ->assertOk()
+            ->assertSee('Maria Ganhadora')
+            ->assertSee($usado->reference)
+            ->assertSee($livre->reference)
+            ->assertSee('Atribuído')
+            ->assertSee('Disponível');
+    }
+
+    /**
+     * O mapa de códigos é montado no controlador, onde a permissão foi
+     * conferida. Sem ela a view não recebe o que vazar.
+     */
+    public function test_listagem_de_cupons_nao_entrega_codigo_a_quem_nao_administra(): void
+    {
+        $campanha = $this->campanhaPronta(inscritos: 3, cupons: 3);
+        $campanha->coupons()->first()->update(['code' => 'SEGREDO-123']);
+        $this->draws()->sortear($campanha, 1, $this->usuario());
+
+        $resposta = $this->actingAs($this->usuario('operador'))
+            ->get(route('admin.keyword-campaigns.draws.index', $campanha))
+            ->assertOk();
+
+        $this->assertStringNotContainsString('SEGREDO-123', $resposta->getContent());
+
+        // A referência continua aparecendo: ela existe para identificar o cupom
+        // sem entregá-lo.
+        $resposta->assertSee($campanha->coupons()->first()->reference);
+    }
+
+    public function test_listagem_de_cupons_mostra_o_codigo_a_quem_administra(): void
+    {
+        $campanha = $this->campanhaPronta(inscritos: 3, cupons: 3);
+        $campanha->coupons()->first()->update(['code' => 'SEGREDO-123']);
+
+        $this->actingAs($this->usuario())
+            ->get(route('admin.keyword-campaigns.draws.index', $campanha))
+            ->assertOk()
+            ->assertSee('SEGREDO-123');
+    }
+
+    /**
+     * Entregue e atribuído são a diferença entre o prêmio que já chegou e o que
+     * ainda pode falhar no envio — e é o segundo que alguém procura quando o
+     * ganhador diz que não recebeu nada.
+     */
+    public function test_listagem_separa_o_cupom_entregue_do_apenas_atribuido(): void
+    {
+        $this->fakeProvedor();
+
+        $campanha = $this->campanhaPronta(inscritos: 3, cupons: 3);
+        $this->draws()->sortear($campanha, 2, $this->usuario());
+
+        $primeiro = $campanha->coupons()->whereNotNull('keyword_campaign_participation_id')->orderBy('id')->firstOrFail();
+        EntregarCupomDeCampanhaJob::dispatchSync($primeiro->id);
+
+        $this->actingAs($this->usuario())
+            ->get(route('admin.keyword-campaigns.draws.index', $campanha))
+            ->assertOk()
+            ->assertSee('Entregue')
+            ->assertSee('Atribuído')
+            ->assertSee('coupon-delivered', escape: false)
+            ->assertSee('coupon-assigned', escape: false);
+    }
+
     public function test_tela_de_sorteio_esconde_o_codigo_de_quem_nao_administra_cupons(): void
     {
         $campanha = $this->campanhaPronta(inscritos: 3, cupons: 3);
