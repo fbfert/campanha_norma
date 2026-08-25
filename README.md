@@ -680,6 +680,8 @@ Captação por palavra-chave: quem escreve a palavra divulgada vira um inscrito,
 - Sorteio reproduzível sobre lista congelada, com semente registrada em claro e verificação refeita na tela.
 - Correção da derivação de semente do `RandomSelectionService`, que reduzia a semente a 32 bits, sem alterar o comportamento do sorteio de lote.
 - Cupons importados por CSV, atribuição transacional e código fora de log, de exportação e do histórico em claro.
+- **Cupom cadastrado à mão**, um código por linha, para o prêmio que veio em um e-mail e não em planilha. Mesmo caminho da importação, e por isso mesma idempotência pela chave única do banco e mesma auditoria sem código em claro; o registro passa a guardar a origem, `arquivo` ou `manual`.
+- **"Marcar todos" na fila de conferência**, que alterna e vale só para a página na tela — a fila é paginada, e marcar o que não se vê seria conferir às cegas quem ninguém leu.
 - Nome do remetente preenchido no serviço Node, que mandava `sender_name: null` cravado.
 - Comandos `campanhas:reprocessar`, `campanhas:diagnosticar` e `campanhas:quase-casamentos`, nenhum deles agendado.
 - **Pesquisa a partir da inscrição**, opcional por campanha: a campanha aponta para um fluxo conversacional, e a confirmação sai emendada ao pedido de permissão numa mensagem só. Do "sim" em diante quem conduz é o motor da 9A, com interpretação da 9B e continuação da 9C — nenhum código novo, o mesmo caminho que o lote usa. O fluxo só é aberto depois de a confirmação ter saído de verdade, e quem já está em outra pesquisa se inscreve sem ser convidado para uma segunda.

@@ -231,6 +231,12 @@ A campanha é entre alunos, mas a entrada não verifica nada. A conferência
 3. O nono dígito não atrapalha: as duas formas do número são testadas.
 4. O que não casar fica na fila de conferência, onde um humano marca em lote.
 
+Na fila, o botão **"Marcar todos"** alterna entre marcar e desmarcar a página
+inteira. Ele marca só o que está na tela: a fila é paginada de 100 em 100, e
+marcar o que não se vê seria conferir às cegas quem ninguém leu. O rótulo muda
+junto com o estado, porque marcar tudo sem poder desmarcar obriga a recarregar a
+página para desfazer um clique.
+
 A importação é idempotente. Quem um humano já marcou como não aluno continua não
 aluno: o arquivo é um retrato do portal num instante, e a decisão humana veio de
 olhar o caso.
@@ -271,6 +277,25 @@ linguagem, refaz esta conta com a semente e a lista publicadas.
 
 O primeiro sorteado é o ganhador; os seguintes formam a fila de suplentes.
 Sortear é sempre um ato deliberado, com confirmação na tela. Não há agendamento.
+
+### De onde vem o cupom
+
+Duas portas, e as duas caem no mesmo `CouponService::importarCodigos()`:
+
+- **Importar cupons** — CSV ou XLSX com a coluna `codigo`, `code`, `cupom` ou
+  `coupon`; um arquivo de uma coluna só é lido como lista de códigos.
+- **Cadastrar cupons à mão** — um código por linha, para o prêmio que veio em um
+  e-mail e não em planilha. Vírgula e ponto e vírgula também separam, porque
+  quem copia de uma planilha cola tudo numa linha só. O teto é 1000 de uma vez;
+  acima disso, use o arquivo.
+
+As duas são idempotentes, e a idempotência vem da chave única do banco, não de
+uma consulta prévia — a verificação feita antes do `insert` perde a corrida
+entre dois processos, e aqui perder a corrida significa dar o mesmo prêmio duas
+vezes.
+
+O registro de auditoria guarda a origem (`arquivo` ou `manual`) e as contagens.
+Nunca um código.
 
 ### Entregar
 
