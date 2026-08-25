@@ -78,7 +78,11 @@
     <section class="card" style="margin-top:16px;">
         <h2>Fila de conferência</h2>
         @can('keyword_participations.invalidate')
-            <form method="post" action="{{ route('admin.keyword-campaigns.eligibility.review', $campaign) }}">
+            {{-- Alpine, e não um script solto na view: o sistema já carrega Alpine
+                 pelo bundle, e marcar caixas não merece um arquivo de JavaScript
+                 próprio nem uma tag de script que nenhum teste alcança. --}}
+            <form method="post" action="{{ route('admin.keyword-campaigns.eligibility.review', $campaign) }}"
+                  x-data="{ todas: false }">
                 @csrf
                 @method('put')
                 <div class="table-wrap">
@@ -95,7 +99,11 @@
                         <tbody>
                             @forelse($pendentes as $participacao)
                                 <tr>
-                                    <td><input type="checkbox" name="participations[]" value="{{ $participacao->id }}"></td>
+                                    <td>
+                                        <input type="checkbox" name="participations[]" value="{{ $participacao->id }}"
+                                               class="selecao-pendente"
+                                               aria-label="Selecionar {{ $participacao->displayName() ?? 'inscrição '.$participacao->id }}">
+                                    </td>
                                     <td>{{ $participacao->displayName() ?? '—' }}</td>
                                     <td>{{ $participacao->contact?->phone_normalized ?? '—' }}</td>
                                     <td>{{ $participacao->matched_keyword }}</td>
@@ -110,6 +118,15 @@
 
                 @if($pendentes->isNotEmpty())
                     <div class="actions" style="margin-top:12px;">
+                        {{-- Marcar todos marca só o que está nesta página: marcar o que
+                             não se vê seria conferir às cegas quem ninguém leu. O texto
+                             de partida vem do servidor, para a tela dizer o que o botão
+                             faz mesmo antes de o Alpine subir. --}}
+                        <button class="btn ghost" type="button"
+                                x-on:click="todas = ! todas; $el.closest('form').querySelectorAll('.selecao-pendente').forEach(caixa => caixa.checked = todas)">
+                            <x-icon name="check" size="16" />
+                            <span x-text="todas ? 'Desmarcar todos' : 'Marcar todos'">Marcar todos</span>
+                        </button>
                         <label for="eligibility">Marcar as selecionadas como</label>
                         <select id="eligibility" name="eligibility">
                             <option value="aluno_confirmado">Aluno confirmado</option>

@@ -383,6 +383,27 @@ class ElegibilidadeECongelamentoTest extends TestCase
             ->assertSee('Maria Pendente');
     }
 
+    /**
+     * Marcar todos vale para a página que está na tela, e não para a fila
+     * inteira: a paginação esconde o resto, e conferir quem ninguém leu é o
+     * contrário do que esta tela existe para fazer.
+     */
+    public function test_tela_de_conferencia_oferece_marcar_todos(): void
+    {
+        $campanha = KeywordCampaign::factory()->create();
+        $this->inscrito($campanha, '5549999990001');
+
+        $resposta = $this->actingAs($this->usuario('operador'))
+            ->get(route('admin.keyword-campaigns.eligibility.index', $campanha))
+            ->assertOk()
+            ->assertSee('Marcar todos');
+
+        $html = $resposta->getContent();
+
+        $this->assertStringContainsString('selecao-pendente', $html); // ortografia:ignorar - classe de CSS, que é identificador e não leva acento
+        $this->assertStringContainsString('querySelectorAll(\'.selecao-pendente\')', $html); // ortografia:ignorar - classe de CSS, que é identificador e não leva acento
+    }
+
     public function test_conferencia_em_lote_pela_tela(): void
     {
         $campanha = KeywordCampaign::factory()->create();
