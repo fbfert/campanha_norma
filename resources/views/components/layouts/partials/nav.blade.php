@@ -18,7 +18,8 @@
 @php
     $atendimentoAtivo = request()->routeIs('admin.inbox.*', 'admin.conversations.*', 'admin.reply-suggestions.*', 'admin.inbound-attendance.*');
     $pesquisaAtiva = request()->routeIs('admin.conversation-automation.*', 'admin.conversation-flows.*')
-        || request()->routeIs('admin.analytics.dashboard', 'admin.analytics.topics', 'admin.analytics.geography', 'admin.analytics.demands', 'admin.analytics.questions');
+        || request()->routeIs('admin.analytics.dashboard', 'admin.analytics.topics', 'admin.analytics.geography', 'admin.analytics.demands', 'admin.analytics.questions')
+        || request()->routeIs('admin.analytics.cidade-tema', 'admin.analytics.posicionamento');
     $campanhasAtivo = request()->routeIs('admin.keyword-campaigns.*');
     $contatosAtivo = request()->routeIs('admin.contacts.*', 'admin.tags.*');
     $enviosAtivo = request()->routeIs('admin.message-templates.*', 'admin.message-batches.*', 'admin.campaigns.*', 'admin.message-processing.*', 'admin.histories.*', 'admin.reports.*', 'admin.report-exports.*');
@@ -68,6 +69,8 @@
                 <a href="{{ route('admin.analytics.topics') }}" @class(['active' => request()->routeIs('admin.analytics.topics')])><x-icon name="tag" /><span>Temas mais citados</span></a>
                 <a href="{{ route('admin.analytics.geography') }}" @class(['active' => request()->routeIs('admin.analytics.geography')])><x-icon name="map" /><span>Geografia</span></a>
                 <a href="{{ route('admin.analytics.demands') }}" @class(['active' => request()->routeIs('admin.analytics.demands')])><x-icon name="megaphone" /><span>Demandas</span></a>
+                <a href="{{ route('admin.analytics.cidade-tema') }}" @class(['active' => request()->routeIs('admin.analytics.cidade-tema')])><x-icon name="map" /><span>Cidade e tema</span></a>
+                <a href="{{ route('admin.analytics.posicionamento') }}" @class(['active' => request()->routeIs('admin.analytics.posicionamento')])><x-icon name="scroll" /><span>Posicionamento</span></a>
                 <a href="{{ route('admin.analytics.questions') }}" @class(['active' => request()->routeIs('admin.analytics.questions')])><x-icon name="question" /><span>Qualidade das perguntas</span></a>
             @endcan
         </details>

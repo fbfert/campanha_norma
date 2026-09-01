@@ -142,6 +142,8 @@ class Breadcrumbs
         'Inicio / Relatorios / Demandas' => ['dashboard', 'admin.analytics.dashboard', null],
         'Inicio / Relatorios / Qualidade da IA' => ['dashboard', 'admin.analytics.dashboard', null],
         'Inicio / Relatorios / Qualidade das perguntas' => ['dashboard', 'admin.analytics.dashboard', null],
+        'Inicio / Relatorios / Cidade e tema' => ['dashboard', 'admin.analytics.dashboard', null],
+        'Inicio / Relatorios / Posicionamento' => ['dashboard', 'admin.analytics.dashboard', null],
         'Inicio / Relatorios / Governanca' => ['dashboard', null, null],
         'Inicio / Configuracoes / Provedor de IA' => ['dashboard', null, null],
         'Inicio / Sistema / Meta API' => ['dashboard', null, null],

@@ -661,6 +661,23 @@ tbody tr:hover td {
 }
 
 /*
+    Linha de tabela que e o achado, e nao mais um dado.
+
+    Na pauta de posicionamento, tema sem nenhum documento aprovado e o motivo
+    de a tela existir. Deixa-lo com a mesma cor das outras linhas obrigaria a
+    ler a coluna de contagem linha a linha para achar os zeros.
+
+    Cor de aviso, e nao de erro: nao ha nada quebrado: ha trabalho por fazer.
+*/
+tr.row-alert {
+    background: var(--warning-soft);
+}
+
+tr.row-alert td {
+    border-bottom-color: var(--warning-border);
+}
+
+/*
     Ações de linha guardadas atrás de um detalhe.
 
     Campo de texto dentro de célula estica a coluna e, com ela, a tabela

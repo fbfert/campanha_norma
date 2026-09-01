@@ -222,6 +222,8 @@ Route::middleware(['auth', 'password.changed'])->group(function (): void {
         Route::get('/analytics/demandas', [AnalyticsController::class, 'demands'])->name('analytics.demands');
         Route::get('/analytics/qualidade-ia', [AnalyticsController::class, 'aiQuality'])->name('analytics.ai-quality');
         Route::get('/analytics/perguntas', [AnalyticsController::class, 'questions'])->name('analytics.questions');
+        Route::get('/analytics/cidade-tema', [AnalyticsController::class, 'localityByTopic'])->name('analytics.cidade-tema');
+        Route::get('/analytics/posicionamento', [AnalyticsController::class, 'positioning'])->name('analytics.posicionamento');
         Route::get('/analytics/governanca', [AnalyticsController::class, 'governance'])->name('analytics.governance');
         Route::post('/analytics/exportar', [AnalyticsExportController::class, 'store'])->name('analytics.export');
 
