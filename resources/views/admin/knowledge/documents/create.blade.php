@@ -58,6 +58,21 @@
                 </div>
             </div>
 
+            {{-- Opcional, e usado apenas pela pauta de posicionamento: ela lista os
+                 temas que a população citou e ainda não têm nenhum documento aprovado
+                 apontando para eles. A recuperação não lê este campo — o que decide a
+                 resposta oficial continua sendo a base, nunca a opinião coletada. --}}
+            <div>
+                <label for="insight_topic_id">Responde a que tema da população</label>
+                <select id="insight_topic_id" name="insight_topic_id">
+                    <option value="">Nenhum</option>
+                    @foreach($topics as $topic)
+                        <option value="{{ $topic->id }}" @selected(old('insight_topic_id') == $topic->id)>{{ $topic->name }}</option>
+                    @endforeach
+                </select>
+                <p class="muted">Deixa a pauta de posicionamento saber que este tema já tem posição escrita. Não altera a busca nem a resposta.</p>
+            </div>
+
             <div>
                 <label for="file">Arquivo</label>
                 <input id="file" name="file" type="file" required>

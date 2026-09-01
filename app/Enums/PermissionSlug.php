@@ -140,6 +140,11 @@ enum PermissionSlug: string
     case AnalyticsViewCosts = 'analytics.view_costs';
     case AnalyticsViewGovernance = 'analytics.view_governance';
 
+    // Subetapa 9F. Uma permissão só, e ela nunca basta sozinha: a pauta exige
+    // esta mais a de identificação e a de conteúdo, porque o dossiê expõe nome,
+    // cidade e o texto que a pessoa escreveu. Três exposições, três permissões.
+    case ResponseAgendaView = 'response_agenda.view';
+
     // Etapa 10. Ver a campanha, administrar a campanha, invalidar participação
     // e executar o sorteio são separados porque quem acompanha os números não
     // precisa poder mexer na lista, e mexer na lista antes de um sorteio é a
@@ -284,6 +289,7 @@ enum PermissionSlug: string
             self::AnalyticsExportDetailed => 'Exportar dados detalhados com conteúdo',
             self::AnalyticsViewCosts => 'Ver custos de IA nos relatórios',
             self::AnalyticsViewGovernance => 'Ver relatório de governança',
+            self::ResponseAgendaView => 'Ver a pauta de resposta individual',
             self::InboundAttendanceView => 'Ver a fila de mensagens aguardando resposta',
             self::InboundAttendanceStart => 'Iniciar conversa automática a partir da fila',
             self::InboundAttendanceManageProfiles => 'Criar e editar perfis de atendimento de entrada',

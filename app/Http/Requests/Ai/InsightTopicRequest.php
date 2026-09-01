@@ -23,6 +23,8 @@ class InsightTopicRequest extends FormRequest
                 Rule::unique('insight_topics', 'slug')->ignore($topicId),
             ],
             'description' => ['nullable', 'string', 'max:1000'],
+            'response_guidance' => ['nullable', 'string', 'max:4000'],
+            'red_lines' => ['nullable', 'string', 'max:4000'],
             'synonyms' => ['nullable', 'string', 'max:2000'],
             'color' => ['nullable', 'string', 'max:20'],
             'display_order' => ['required', 'integer', 'min:0', 'max:9999'],

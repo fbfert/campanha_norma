@@ -407,6 +407,16 @@ class SystemSettingSeeder extends Seeder
             ['group' => 'analytics', 'key' => 'analytics.export_expiration_hours', 'value' => '24', 'type' => 'integer', 'description' => 'Horas até a exportação analítica expirar', 'is_public' => false],
             ['group' => 'analytics', 'key' => 'analytics.content_retention_days', 'value' => '0', 'type' => 'integer', 'description' => 'Dias de retenção de conteúdo antes da anonimização. Zero desliga', 'is_public' => false],
             ['group' => 'analytics', 'key' => 'analytics.queue', 'value' => 'analytics-exports', 'type' => 'string', 'description' => 'Fila das exportações analíticas', 'is_public' => false],
+
+            // Subetapa 9F. Os três pesos ordenam a fila de resposta, e são
+            // configuração porque nenhum deles foi calibrado com dado real:
+            // cravá-los no código transformaria três chutes em regra
+            // permanente. Pontuação ordena e nunca descarta — toda pessoa da
+            // fila é para responder, e o peso só decide quem vem antes.
+            ['group' => 'pauta', 'key' => 'pauta.priority_weight_urgency', 'value' => '3', 'type' => 'integer', 'description' => 'Peso da urgência na ordenação da pauta', 'is_public' => false],
+            ['group' => 'pauta', 'key' => 'pauta.priority_weight_length', 'value' => '1', 'type' => 'integer', 'description' => 'Peso do tamanho da resposta na ordenação da pauta', 'is_public' => false],
+            ['group' => 'pauta', 'key' => 'pauta.priority_weight_emerging', 'value' => '2', 'type' => 'integer', 'description' => 'Peso de o tema ser emergente na ordenação da pauta', 'is_public' => false],
+            ['group' => 'pauta', 'key' => 'pauta.answered_lookback_days', 'value' => '30', 'type' => 'integer', 'description' => 'Dias considerados ao detectar resposta já enviada', 'is_public' => false],
         ];
 
         foreach ($settings as $setting) {

@@ -16,6 +16,8 @@ class InsightTopic extends Model
         'name',
         'slug',
         'description',
+        'response_guidance',
+        'red_lines',
         'synonyms',
         'color',
         'display_order',

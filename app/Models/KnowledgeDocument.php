@@ -19,6 +19,7 @@ class KnowledgeDocument extends Model
         'knowledge_base_id',
         'title',
         'type',
+        'insight_topic_id',
         'source',
         'source_url',
         'document_date',
@@ -76,6 +77,18 @@ class KnowledgeDocument extends Model
     public function chunks(): HasMany
     {
         return $this->hasMany(KnowledgeChunk::class)->orderBy('chunk_index');
+    }
+
+    /**
+     * O tema da população a que este documento oficial responde.
+     *
+     * Existe para a pauta de posicionamento da 9F, e apenas para ela. A
+     * recuperação da 9D não lê esta relação: a opinião coletada não decide o
+     * que a campanha responde.
+     */
+    public function topic(): BelongsTo
+    {
+        return $this->belongsTo(InsightTopic::class, 'insight_topic_id');
     }
 
     public function supersedes(): BelongsTo

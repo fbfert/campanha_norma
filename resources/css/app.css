@@ -105,6 +105,17 @@
        e confundir-se com o resto da interface derrotaria o aviso. */
     --ai-mark: #4f46e5;
 
+    /*
+        Impressao. Preto puro sobre branco puro, e nao o creme da tela.
+
+        Papel nao tem retroiluminacao: o fundo quente que assenta o texto na
+        tela vira cinza sujo na folha, e a tinta de fundo ainda seria gasta a
+        cada pagina. O cinza do texto secundario tambem escurece, porque o
+        contraste que basta na tela nao basta impresso.
+    */
+    --print-bg: #ffffff;
+    --print-text: #000000;
+    --print-muted: #333333;
     /* Cor de tema ou etiqueta sem cor própria cadastrada. */
     --tag-default: #64748b;
 
@@ -658,6 +669,23 @@ tbody tr:hover td {
 
 .table-wrap {
     overflow-x: auto;
+}
+
+/*
+    Linha de tabela que e o achado, e nao mais um dado.
+
+    Na pauta de posicionamento, tema sem nenhum documento aprovado e o motivo
+    de a tela existir. Deixa-lo com a mesma cor das outras linhas obrigaria a
+    ler a coluna de contagem linha a linha para achar os zeros.
+
+    Cor de aviso, e nao de erro: nao ha nada quebrado: ha trabalho por fazer.
+*/
+tr.row-alert {
+    background: var(--warning-soft);
+}
+
+tr.row-alert td {
+    border-bottom-color: var(--warning-border);
 }
 
 /*
@@ -1556,4 +1584,204 @@ tbody tr:hover td {
 
 [x-cloak] {
     display: none !important;
+}
+
+/*
+    Folha de impressao.
+
+    O PDF sai do proprio navegador: layout em Blade, regras aqui e um botao que
+    chama a impressao. Zero dependencia nova, e abre com internet ruim — que e
+    a mesma razao pela qual a 9E recusou biblioteca de grafico.
+
+    As cores saem dos tokens declarados no :root, como em qualquer outra regra
+    do sistema. No papel elas viram preto sobre branco, mas continuam vindo do
+    mesmo lugar.
+*/
+.folha {
+    background: var(--surface);
+    color: var(--text);
+    margin: 0;
+}
+
+.folha-conteudo {
+    max-width: 46rem;
+    margin: 0 auto;
+    padding: 24px 16px 48px;
+}
+
+.folha-acoes {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 24px;
+}
+
+.folha-capa {
+    border-bottom: 3px solid var(--text);
+    padding-bottom: 20px;
+    margin-bottom: 28px;
+}
+
+.folha-capa dl {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 2px 16px;
+    margin: 16px 0;
+}
+
+.folha-capa dt {
+    font-weight: 600;
+}
+
+.folha-capa dd {
+    margin: 0;
+}
+
+.folha-aviso {
+    color: var(--text-muted);
+}
+
+/*
+    A marca d'agua nomeia quem gerou e quando.
+
+    Documento nominal que vaza precisa ter origem, pelo mesmo motivo que a
+    exportacao detalhada da 9E carrega sal proprio: sem isso, uma captura de
+    tela circula sem dono e nao ha o que apurar.
+*/
+.folha-marca {
+    color: var(--text-muted);
+    font-size: .75rem;
+    border-top: 1px solid var(--border);
+    padding-top: 6px;
+    margin-top: 24px;
+}
+
+@page {
+    size: A4;
+    margin: 16mm 14mm 18mm;
+}
+
+@media print {
+    /*
+        Fora navegacao e controle: no papel eles nao levam a lugar nenhum, e
+        ocupam a area util da folha.
+    */
+    .sidebar,
+    .topbar,
+    .nav-scrim,
+    .nav-switch,
+    .breadcrumb-trail,
+    .folha-acoes,
+    .actions,
+    .btn {
+        display: none !important;
+    }
+
+    body,
+    .folha {
+        background: var(--print-bg);
+        color: var(--print-text);
+    }
+
+    .folha-conteudo {
+        max-width: none;
+        padding: 0;
+    }
+
+    /*
+        Cartao nao parte ao meio. Um dossie dividido entre duas paginas obriga
+        quem le a virar a folha no meio de uma frase da pessoa.
+    */
+    .card,
+    .folha-capa {
+        break-inside: avoid;
+        page-break-inside: avoid;
+        border: none;
+        box-shadow: none;
+        background: var(--print-bg);
+        padding: 0;
+        margin: 0 0 16px;
+    }
+
+    /* Um dossie por pagina. */
+    .folha-pessoa {
+        break-after: page;
+        page-break-after: always;
+    }
+
+    .folha-pessoa:last-of-type {
+        break-after: auto;
+        page-break-after: auto;
+    }
+
+    /* Linha de tabela inteira ou nada. */
+    tr {
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+
+    thead {
+        display: table-header-group;
+    }
+
+    /*
+        O endereco do link nao e impresso. Em papel ele nao clica, e a lista de
+        URLs longas entre parenteses quebra a leitura de cada frase.
+    */
+    a {
+        color: var(--print-text);
+        text-decoration: none;
+    }
+
+    a[href]::after {
+        content: none !important;
+    }
+
+    .alert,
+    .alert-error {
+        border: 1px solid var(--print-text);
+        background: var(--print-bg);
+        color: var(--print-text);
+    }
+
+    .muted {
+        color: var(--print-muted);
+    }
+}
+
+/*
+    Bloco que so existe no papel.
+
+    A capa obrigatoria do painel impresso nao faz sentido na tela: ali o
+    periodo e o fluxo ja estao nos filtros, a vista e editaveis. No papel eles
+    somem, e um documento com numeros sobre opiniao da populacao que circula
+    sem dizer o periodo e sem dizer que nao e pesquisa registrada e lido como
+    pesquisa registrada.
+*/
+.so-impressa {
+    display: none;
+}
+
+@media print {
+    .so-impressa {
+        display: block;
+    }
+}
+
+/*
+    Telefone ao lado do nome, no caderno impresso.
+
+    Vai inteiro, e nao mascarado como na caixa de entrada: o caderno existe
+    para alguem responder aquela pessoa, e numero mascarado nao disca. Menor e
+    mais claro que o nome porque e dado de contato, e nao o titulo da pagina.
+*/
+.folha-telefone {
+    font-size: .7em;
+    font-weight: 400;
+    color: var(--text-muted);
+}
+
+@media print {
+    .folha-telefone {
+        color: var(--print-muted);
+    }
 }

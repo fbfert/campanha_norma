@@ -9,8 +9,10 @@ use App\Services\Analytics\DemandMetricsService;
 use App\Services\Analytics\GeographyMetricsService;
 use App\Services\Analytics\GovernanceReportService;
 use App\Services\Analytics\ParticipationMetricsService;
+use App\Services\Analytics\PositioningGapService;
 use App\Services\Analytics\QuestionQualityMetricsService;
 use App\Services\Analytics\SmallGroupSuppressor;
+use App\Services\Analytics\TopicByLocalityService;
 use App\Services\Analytics\TopicMetricsService;
 use App\Services\SystemSettingService;
 use Illuminate\Http\Request;
@@ -132,6 +134,50 @@ class AnalyticsController extends Controller
         return view('admin.analytics.governance', [
             'report' => $governance->report($from, $to),
         ] + $this->context($from, $to, null));
+    }
+
+    /**
+     * Localidade e região cruzadas com tema.
+     *
+     * O recorte que a 9E não entregou, e o que mais sofre com a supressão:
+     * cruzar dois eixos divide os mesmos registros por muito mais células.
+     */
+    public function localityByTopic(Request $request, TopicByLocalityService $cross): View
+    {
+        $this->authorizeAggregates($request);
+        [$from, $to] = $this->period($request);
+        $flowId = $this->flowId($request);
+
+        $byLocality = $cross->matrix($from, $to, $flowId);
+
+        return view('admin.analytics.locality-topic', [
+            'byLocality' => $byLocality,
+            'byRegion' => $cross->byRegion($from, $to, $flowId),
+            // A amostra da capa soma quem declarou e quem não declarou:
+            // impressa, ela é a única pista do tamanho do que se está lendo.
+            'amostra' => $byLocality['total'] + $byLocality['without_locality'],
+        ] + $this->context($from, $to, $flowId));
+    }
+
+    /**
+     * Sobre o que a campanha ainda não tem posição escrita.
+     *
+     * Agregado: conta menções e documentos, e não mostra quem falou. Continua
+     * sob a permissão de agregado, sem permissão nova — permissão que não
+     * separa nada só dificulta a administração.
+     */
+    public function positioning(Request $request, PositioningGapService $gaps): View
+    {
+        $this->authorizeAggregates($request);
+        [$from, $to] = $this->period($request);
+        $flowId = $this->flowId($request);
+
+        $buracos = $gaps->gaps($from, $to, $flowId);
+
+        return view('admin.analytics.positioning', [
+            'gaps' => $buracos,
+            'amostra' => array_sum(array_column($buracos, 'mentions')),
+        ] + $this->context($from, $to, $flowId));
     }
 
     private function authorizeAggregates(Request $request): void

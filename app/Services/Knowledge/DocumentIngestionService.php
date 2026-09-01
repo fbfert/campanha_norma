@@ -74,6 +74,9 @@ class DocumentIngestionService
             'knowledge_base_id' => $base->id,
             'title' => $attributes['title'],
             'type' => $attributes['type'],
+            // Opcional, e usado só pela pauta de posicionamento da 9F. A
+            // recuperação não lê este campo.
+            'insight_topic_id' => $attributes['insight_topic_id'] ?? null,
             'source' => $attributes['source'] ?? null,
             'source_url' => $attributes['source_url'] ?? null,
             'document_date' => $attributes['document_date'] ?? null,
@@ -214,7 +217,7 @@ class DocumentIngestionService
      * contexto com repetição e produz citação em duplicata. Quem envia não tem
      * como saber disso olhando a tela de uma base só.
      *
-     * @return \Illuminate\Support\Collection<int, KnowledgeDocument>
+     * @return Collection<int, KnowledgeDocument>
      */
     public function duplicatesInOtherBases(KnowledgeDocument $document): Collection
     {

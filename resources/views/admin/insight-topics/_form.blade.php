@@ -48,3 +48,20 @@
     <label for="description">Descrição</label>
     <textarea id="description" name="description" rows="2">{{ old('description', $topic->description) }}</textarea>
 </div>
+
+{{-- Os dois campos que transformam o dossiê da pauta de "resumo do que o
+     eleitor disse" em roteiro que protege quem responde. Nenhum passo
+     automático preenche isto: é trabalho de quem entende de campanha, uma vez
+     por tema, e sem ele o dossiê sai vazio justamente na parte que mais
+     importa. --}}
+<div style="margin-top:12px;">
+    <label for="response_guidance">O que a campanha defende sobre este tema</label>
+    <textarea id="response_guidance" name="response_guidance" rows="3">{{ old('response_guidance', $topic->response_guidance) }}</textarea>
+    <p class="muted">Aparece no dossiê da pauta de resposta, como apoio de quem vai responder. Deixe em branco enquanto não houver posição escrita.</p>
+</div>
+
+<div style="margin-top:12px;">
+    <label for="red_lines">Linha vermelha — o que não prometer</label>
+    <textarea id="red_lines" name="red_lines" rows="3">{{ old('red_lines', $topic->red_lines) }}</textarea>
+    <p class="muted">Aparece em destaque forte no dossiê. Promessa dita pela própria candidata, na voz dela, não tem retratação possível.</p>
+</div>
