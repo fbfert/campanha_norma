@@ -10,7 +10,10 @@
         {{-- Um dossiê por página. A quebra é regra de impressão, e não margem
              inventada aqui: no navegador as páginas continuam rolando. --}}
         <section class="card folha-pessoa">
-            <h2>{{ $dossie['name'] ?? 'Sem nome cadastrado' }}</h2>
+            <h2>
+                {{ $dossie['name'] ?? 'Sem nome cadastrado' }}
+                <span class="folha-telefone">{{ $dossie['phone'] ?: 'sem telefone cadastrado' }}</span>
+            </h2>
             <p class="muted">
                 {{ $dossie['city'] ?? 'cidade não cadastrada' }}
                 @if($dossie['declared_locality'])

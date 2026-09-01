@@ -187,6 +187,40 @@ class PainelDeRelatoriosTest extends TestCase
         $this->assertNotNull($dossie['city']);
     }
 
+    /**
+     * O caderno impresso traz o telefone ao lado do nome.
+     *
+     * Ele vai inteiro, e não mascarado como na caixa de entrada: quem abre o
+     * caderno vai responder àquela pessoa, e número mascarado não disca. A
+     * exposição já está paga pelas três permissões que o módulo exige.
+     */
+    public function test_o_caderno_mostra_o_telefone_ao_lado_do_nome(): void
+    {
+        $insight = $this->insight();
+        $insight->contact->update(['phone_normalized' => '5549991613378']);
+
+        $this->actingAs($this->comPapel('administrador'))
+            ->get(route('admin.pauta.caderno'))
+            ->assertOk()
+            ->assertSee('5549991613378')
+            ->assertDontSee('*****');
+    }
+
+    /**
+     * Sem telefone cadastrado o caderno diz isso, em vez de deixar o espaço em
+     * branco: quem lê precisa saber que não vai conseguir responder por ali.
+     */
+    public function test_o_caderno_diz_quando_nao_ha_telefone(): void
+    {
+        $insight = $this->insight();
+        $insight->contact->update(['phone_normalized' => null, 'phone' => null]);
+
+        $this->actingAs($this->comPapel('administrador'))
+            ->get(route('admin.pauta.caderno'))
+            ->assertOk()
+            ->assertSee('sem telefone cadastrado');
+    }
+
     // -------------------------------------------------------------- Determinismo
 
     public function test_gerar_o_mesmo_dossie_duas_vezes_produz_o_mesmo_texto(): void

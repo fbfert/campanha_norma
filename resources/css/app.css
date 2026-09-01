@@ -1766,3 +1766,22 @@ tr.row-alert td {
         display: block;
     }
 }
+
+/*
+    Telefone ao lado do nome, no caderno impresso.
+
+    Vai inteiro, e nao mascarado como na caixa de entrada: o caderno existe
+    para alguem responder aquela pessoa, e numero mascarado nao disca. Menor e
+    mais claro que o nome porque e dado de contato, e nao o titulo da pagina.
+*/
+.folha-telefone {
+    font-size: .7em;
+    font-weight: 400;
+    color: var(--text-muted);
+}
+
+@media print {
+    .folha-telefone {
+        color: var(--print-muted);
+    }
+}

@@ -74,6 +74,7 @@ decide quando o dossiê avisa para conferir a mensagem original.
 | Bloco | Origem exata |
 |---|---|
 | Nome e cidade | `contacts.first_name` (ou `name`), `contacts.city`, `contacts.state` |
+| Telefone | `contacts.phone_normalized`, com reserva em `contacts.phone` |
 | A frase da pessoa | `conversation_messages.body` da mensagem de origem, **literal** |
 | Localidade declarada | `conversation_insights.locality_text` |
 | Tema, urgência, sentimento | `insight_topics.name`, `conversation_insights.urgency`, `.sentiment` |
@@ -177,6 +178,12 @@ detalhada da 9E carrega sal próprio.
 
 O caderno herda os filtros da fila e a ordem de prioridade: quem imprime imprime
 o que está vendo.
+
+**O telefone aparece ao lado do nome, inteiro.** Não é mascarado como na caixa de
+entrada: o caderno existe para alguém responder àquela pessoa, e número
+mascarado não disca. A exposição já está paga pelas três permissões que o módulo
+exige. Quando o contato não tem número, o caderno diz isso em vez de deixar o
+espaço em branco — quem lê precisa saber que não vai conseguir responder por ali.
 
 ### O caderno pela linha de comando
 

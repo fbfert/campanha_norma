@@ -117,6 +117,10 @@ class ResponseAgendaService
         return [
             'insight' => $insight,
             'name' => $insight->contact?->first_name ?: $insight->contact?->name,
+            // O número vai inteiro, e não mascarado como no inbox: quem abre o
+            // caderno vai responder àquela pessoa, e número mascarado não disca.
+            // A exposição já está paga pelas três permissões que o módulo exige.
+            'phone' => $insight->contact?->phone_normalized ?: $insight->contact?->phone,
             'city' => $insight->contact?->city,
             'state' => $insight->contact?->state,
             'sentence' => $this->sentence($insight),
