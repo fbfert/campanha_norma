@@ -83,6 +83,64 @@ class ResponseAgendaController extends Controller
     }
 
     /**
+     * O caderno inteiro, um dossiê por página, no layout de impressão.
+     *
+     * Mesma permissão da pauta, e a geração fica na auditoria: documento
+     * nominal que vaza precisa ter origem. A marca-d'água em cada página nomeia
+     * quem gerou e quando, pelo mesmo motivo que a exportação detalhada da 9E
+     * carrega sal próprio.
+     */
+    public function notebook(Request $request): View
+    {
+        $this->authorizeAgenda($request);
+
+        [$de, $ate] = $this->period($request);
+        $fluxoId = $this->flowId($request);
+
+        $fila = $this->agenda->queue($de, $ate, $fluxoId, [
+            'topic_id' => $request->integer('tema') ?: null,
+            'city' => $request->string('cidade')->toString() ?: null,
+            'state' => in_array($request->string('estado')->toString(), ['pendente', 'respondida'], true)
+                ? $request->string('estado')->toString()
+                : null,
+        ]);
+
+        $dossies = ConversationInsight::query()
+            ->whereIn('id', array_column($fila, 'insight_id'))
+            ->get()
+            // A ordem é a da fila, e não a do banco: o caderno impresso segue a
+            // mesma prioridade que a tela mostra, senão quem imprime perde a
+            // ordenação que veio olhar.
+            ->sortBy(fn (ConversationInsight $insight): int => array_search(
+                $insight->id,
+                array_column($fila, 'insight_id'),
+                true,
+            ))
+            ->map(fn (ConversationInsight $insight): array => $this->agenda->dossier($insight))
+            ->values();
+
+        $this->audit->log(
+            'response_agenda.notebook_generated',
+            'Caderno de resposta gerado para impressão.',
+            null,
+            null,
+            [
+                'from' => $de->toDateString(),
+                'to' => $ate->toDateString(),
+                'flow' => $fluxoId,
+                'dossies' => $dossies->count(),
+            ],
+        );
+
+        return view('admin.pauta.caderno', [
+            'dossies' => $dossies,
+            'periodo' => $de->format('d/m/Y').' a '.$ate->format('d/m/Y'),
+            'fluxo' => $fluxoId === null ? null : ConversationFlow::find($fluxoId)?->name,
+            'amostra' => $dossies->count(),
+        ] + $this->context($de, $ate, $fluxoId));
+    }
+
+    /**
      * Marca à mão que a pessoa já foi respondida.
      *
      * A marcação **não envia nada**: não manda mensagem, não abre conversa com

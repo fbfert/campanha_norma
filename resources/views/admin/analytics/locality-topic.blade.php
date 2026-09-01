@@ -1,5 +1,12 @@
 <x-layouts.app title="Cidade e tema" breadcrumbs="Inicio / Relatorios / Cidade e tema">
     @include('admin.analytics.partials.filters')
+    @include('admin.analytics.partials.print-cover', ['printTitle' => 'Cidade e tema'])
+
+    <div class="card actions" x-data>
+        <button class="btn" type="button" x-on:click="window.print()">
+            <x-icon name="download" size="16" /> Imprimir ou salvar em PDF
+        </button>
+    </div>
 
     <section class="card">
         <h2>O que esta tela responde</h2>

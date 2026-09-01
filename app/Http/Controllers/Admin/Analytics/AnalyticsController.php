@@ -148,9 +148,14 @@ class AnalyticsController extends Controller
         [$from, $to] = $this->period($request);
         $flowId = $this->flowId($request);
 
+        $byLocality = $cross->matrix($from, $to, $flowId);
+
         return view('admin.analytics.locality-topic', [
-            'byLocality' => $cross->matrix($from, $to, $flowId),
+            'byLocality' => $byLocality,
             'byRegion' => $cross->byRegion($from, $to, $flowId),
+            // A amostra da capa soma quem declarou e quem não declarou:
+            // impressa, ela é a única pista do tamanho do que se está lendo.
+            'amostra' => $byLocality['total'] + $byLocality['without_locality'],
         ] + $this->context($from, $to, $flowId));
     }
 
@@ -167,8 +172,11 @@ class AnalyticsController extends Controller
         [$from, $to] = $this->period($request);
         $flowId = $this->flowId($request);
 
+        $buracos = $gaps->gaps($from, $to, $flowId);
+
         return view('admin.analytics.positioning', [
-            'gaps' => $gaps->gaps($from, $to, $flowId),
+            'gaps' => $buracos,
+            'amostra' => array_sum(array_column($buracos, 'mentions')),
         ] + $this->context($from, $to, $flowId));
     }
 

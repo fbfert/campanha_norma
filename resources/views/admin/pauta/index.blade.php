@@ -49,6 +49,10 @@
         </div>
         <div class="actions">
             <button class="btn" type="submit"><x-icon name="search" size="16" /> Filtrar</button>
+            {{-- O caderno herda os mesmos filtros: quem imprime imprime o que está vendo. --}}
+            <a class="btn ghost" href="{{ route('admin.pauta.caderno', request()->query()) }}">
+                <x-icon name="download" size="16" /> Imprimir ou salvar em PDF
+            </a>
         </div>
     </form>
 

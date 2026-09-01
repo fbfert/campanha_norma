@@ -237,6 +237,7 @@ Route::middleware(['auth', 'password.changed'])->group(function (): void {
          | registro de auditoria, e nada mais.
          */
         Route::get('/pauta', [ResponseAgendaController::class, 'index'])->name('pauta.index');
+        Route::get('/pauta/caderno', [ResponseAgendaController::class, 'notebook'])->name('pauta.caderno');
         Route::get('/pauta/{insight}', [ResponseAgendaController::class, 'show'])->name('pauta.show');
         Route::post('/pauta/{insight}/respondida', [ResponseAgendaController::class, 'markAnswered'])->name('pauta.responder');
 
