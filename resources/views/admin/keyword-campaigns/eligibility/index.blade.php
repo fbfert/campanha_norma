@@ -118,10 +118,9 @@
 
                 @if($pendentes->isNotEmpty())
                     <div class="actions" style="margin-top:12px;">
-                        {{-- Marcar todos marca só o que está nesta página: marcar o que
-                             não se vê seria conferir às cegas quem ninguém leu. O texto
-                             de partida vem do servidor, para a tela dizer o que o botão
-                             faz mesmo antes de o Alpine subir. --}}
+                        {{-- O botão marca as caixas que estão na tela. O texto de partida
+                             vem do servidor, para a tela dizer o que o botão faz mesmo
+                             antes de o Alpine subir. --}}
                         <button class="btn ghost" type="button"
                                 x-on:click="todas = ! todas; $el.closest('form').querySelectorAll('.selecao-pendente').forEach(caixa => caixa.checked = todas)">
                             <x-icon name="check" size="16" />
@@ -134,6 +133,20 @@
                         </select>
                         <button class="btn" type="submit">Conferir selecionadas</button>
                     </div>
+
+                    {{-- Marcar as caixas alcança só esta página; a fila inteira é uma
+                         escolha à parte, e não um efeito colateral de um botão. Ela diz
+                         o número que vai conferir porque conferir a fila inteira é
+                         conferir também quem ninguém leu, e quem decide isso precisa
+                         ver o tamanho da decisão antes de tomá-la. --}}
+                    @if($pendentes->hasPages())
+                        <p style="margin-top:12px;">
+                            <label>
+                                <input type="checkbox" name="fila_inteira" value="1">
+                                Aplicar às {{ $totalPendente }} da fila inteira, e não só às desta página
+                            </label>
+                        </p>
+                    @endif
                 @endif
             </form>
         @else

@@ -384,9 +384,9 @@ class ElegibilidadeECongelamentoTest extends TestCase
     }
 
     /**
-     * Marcar todos vale para a página que está na tela, e não para a fila
-     * inteira: a paginação esconde o resto, e conferir quem ninguém leu é o
-     * contrário do que esta tela existe para fazer.
+     * Marcar todos vale para a página que está na tela: a paginação esconde o
+     * resto. A fila inteira é uma segunda escolha, explícita, e não um efeito
+     * colateral deste botão.
      */
     public function test_tela_de_conferencia_oferece_marcar_todos(): void
     {
@@ -402,6 +402,69 @@ class ElegibilidadeECongelamentoTest extends TestCase
 
         $this->assertStringContainsString('selecao-pendente', $html); // ortografia:ignorar - classe de CSS, que é identificador e não leva acento
         $this->assertStringContainsString('querySelectorAll(\'.selecao-pendente\')', $html); // ortografia:ignorar - classe de CSS, que é identificador e não leva acento
+    }
+
+    /**
+     * A fila inteira é conferida sem depender da paginação: quem marca a opção
+     * alcança também quem ficou nas páginas seguintes, que é o caso de uma
+     * divulgação grande em que todo mundo da fila é aluno.
+     */
+    public function test_conferencia_alcanca_a_fila_inteira_quando_pedida(): void
+    {
+        $campanha = KeywordCampaign::factory()->create();
+
+        for ($i = 1; $i <= 3; $i++) {
+            $this->inscrito($campanha, '554999999'.str_pad((string) $i, 4, '0', STR_PAD_LEFT));
+        }
+
+        $this->actingAs($this->usuario('operador'))
+            ->put(route('admin.keyword-campaigns.eligibility.review', $campanha), [
+                'fila_inteira' => '1',
+                'eligibility' => 'aluno_confirmado',
+            ])
+            ->assertSessionHasNoErrors();
+
+        $this->assertSame(0, $campanha->pendentesDeConferencia()->count());
+        $this->assertSame(3, $campanha->participations()->elegivelParaSorteio()->count());
+    }
+
+    /**
+     * A fila inteira desta campanha é a fila desta campanha. Sem filtro por
+     * campanha, a opção viraria um botão de conferir o sistema inteiro.
+     */
+    public function test_fila_inteira_nao_alcanca_outra_campanha(): void
+    {
+        $campanha = KeywordCampaign::factory()->create();
+        $outra = KeywordCampaign::factory()->create();
+        $this->inscrito($campanha, '5549999990001');
+        $deOutra = $this->inscrito($outra, '5549999990002');
+
+        $this->actingAs($this->usuario('operador'))
+            ->put(route('admin.keyword-campaigns.eligibility.review', $campanha), [
+                'fila_inteira' => '1',
+                'eligibility' => 'aluno_confirmado',
+            ])
+            ->assertSessionHasNoErrors();
+
+        $this->assertSame(KeywordParticipationEligibility::NaoVerificada, $deOutra->fresh()->eligibility);
+    }
+
+    /**
+     * Sem seleção e sem a fila inteira não há o que conferir, e a tela diz isso
+     * em vez de responder "0 inscrições conferidas".
+     */
+    public function test_conferencia_sem_selecao_recusa(): void
+    {
+        $campanha = KeywordCampaign::factory()->create();
+        $this->inscrito($campanha, '5549999990001');
+
+        $this->actingAs($this->usuario('operador'))
+            ->put(route('admin.keyword-campaigns.eligibility.review', $campanha), [
+                'eligibility' => 'aluno_confirmado',
+            ])
+            ->assertSessionHasErrors('participations');
+
+        $this->assertSame(1, $campanha->pendentesDeConferencia()->count());
     }
 
     public function test_conferencia_em_lote_pela_tela(): void

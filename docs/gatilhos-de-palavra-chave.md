@@ -237,6 +237,14 @@ marcar o que não se vê seria conferir às cegas quem ninguém leu. O rótulo m
 junto com o estado, porque marcar tudo sem poder desmarcar obriga a recarregar a
 página para desfazer um clique.
 
+Quando a fila passa de uma página, aparece ao lado a opção **"Aplicar às N da
+fila inteira"**, e ela é uma segunda escolha, não um efeito colateral do botão:
+marcar caixas alcança o que está à vista, e a fila inteira alcança também quem
+ninguém leu. Por isso o rótulo diz o número — quem confere a fila inteira precisa
+ver o tamanho da decisão antes de tomá-la. A lista de identificadores sai do
+banco, filtrada por esta campanha, e não das caixas marcadas; sem seleção e sem a
+opção, a tela recusa em vez de responder "0 inscrições conferidas".
+
 A importação é idempotente. Quem um humano já marcou como não aluno continua não
 aluno: o arquivo é um retrato do portal num instante, e a decisão humana veio de
 olhar o caso.

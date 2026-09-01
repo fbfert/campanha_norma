@@ -71,25 +71,41 @@ class KeywordEligibilityController extends Controller
 
     /**
      * Conferência em lote. Um por um não escala numa divulgação de mil pessoas.
+     *
+     * A seleção da tela alcança só a página que está à vista — a paginação
+     * esconde o resto. Quem precisa da fila inteira pede a fila inteira, por
+     * `fila_inteira`, e a lista de identificadores sai do banco em vez de sair
+     * de caixas que ninguém marcou.
      */
     public function review(Request $request, KeywordCampaign $campaign, CampaignFreezer $freezer): RedirectResponse
     {
         abort_unless($request->user()->can('keyword_participations.invalidate'), 403);
 
         $validado = $request->validate([
-            'participations' => ['required', 'array', 'min:1'],
+            'participations' => ['required_without:fila_inteira', 'array'],
             'participations.*' => ['integer'],
+            'fila_inteira' => ['nullable', 'boolean'],
             'eligibility' => ['required', Rule::in([
                 KeywordParticipationEligibility::AlunoConfirmado->value,
                 KeywordParticipationEligibility::NaoAluno->value,
             ])],
         ], [
-            'participations.required' => 'Selecione ao menos uma inscrição.',
+            'participations.required_without' => 'Selecione ao menos uma inscrição, ou marque a fila inteira.',
         ], ['participations' => 'inscrições', 'eligibility' => 'elegibilidade']);
+
+        $ids = $request->boolean('fila_inteira')
+            ? $campaign->pendentesDeConferencia()->orderBy('id')->pluck('id')->map(fn ($id): int => (int) $id)->all()
+            : array_map('intval', $validado['participations'] ?? []);
+
+        if ($ids === []) {
+            return back()->withErrors([
+                'participations' => 'Nenhuma inscrição para conferir: a fila já está vazia.',
+            ]);
+        }
 
         $total = $freezer->conferirEmLote(
             $campaign,
-            array_map('intval', $validado['participations']),
+            $ids,
             KeywordParticipationEligibility::from($validado['eligibility']),
             $request->user(),
         );
