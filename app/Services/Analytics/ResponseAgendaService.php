@@ -2,12 +2,15 @@
 
 namespace App\Services\Analytics;
 
+use App\Enums\ConversationMessageDirection;
 use App\Enums\InsightUrgency;
 use App\Enums\KnowledgeBaseStatus;
 use App\Enums\KnowledgeDocumentStatus;
 use App\Models\ConversationInsight;
+use App\Models\ConversationMessage;
 use App\Services\SystemSettingService;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -58,9 +61,10 @@ class ResponseAgendaService
             ->get();
 
         $emergentes = $this->emergingTopicIds($from, $to, $flowId);
+        $detectadas = $this->detectedAnswers($insights);
 
-        $linhas = $insights->map(function (ConversationInsight $insight) use ($emergentes): array {
-            $marca = $this->answeredMark($insight);
+        $linhas = $insights->map(function (ConversationInsight $insight) use ($emergentes, $detectadas): array {
+            $marca = $this->answeredMark($insight, $detectadas[$insight->id] ?? null);
 
             return [
                 'insight_id' => $insight->id,
@@ -108,7 +112,7 @@ class ResponseAgendaService
 
         $limiar = (float) $this->settings->get('analytics.low_confidence_threshold', 0.70);
         $tema = $insight->topic;
-        $marca = $this->answeredMark($insight);
+        $marca = $this->answeredMark($insight, $this->detectedAnswers(collect([$insight]))[$insight->id] ?? null);
 
         return [
             'insight' => $insight,
@@ -174,12 +178,14 @@ class ResponseAgendaService
      * Quem marcou a resposta, e por qual caminho.
      *
      * A marcação manual tem precedência: ela é a afirmação de uma pessoa. A
-     * detecção pela sincronização entra na subetapa seguinte, e é evidência
-     * forte, não prova — por isso a fila mostra qual das duas marcou.
+     * detecção afirma que saiu um áudio naquela conversa depois do insight, o
+     * que é evidência forte e não prova — por isso a fila mostra qual das duas
+     * marcou, com a data. Origem diferente é confiança diferente, e quem lê
+     * precisa saber a diferença.
      *
      * @return array{source: string, at: Carbon|null, by: string|null}|null
      */
-    public function answeredMark(ConversationInsight $insight): ?array
+    public function answeredMark(ConversationInsight $insight, ?Carbon $detectada = null): ?array
     {
         if ($insight->answered_at !== null) {
             return [
@@ -189,7 +195,81 @@ class ResponseAgendaService
             ];
         }
 
+        if ($detectada !== null) {
+            return ['source' => 'sincronizacao', 'at' => $detectada, 'by' => null];
+        }
+
         return null;
+    }
+
+    /**
+     * Respostas detectadas pelo que a sincronização já grava.
+     *
+     * Se a candidata gravar o áudio na mesma conta pareada ao sistema, ele
+     * chega na próxima sincronização como saída com mídia, e a fila se marca
+     * sozinha. Nenhum botão, nenhuma disciplina exigida dela — e disciplina é o
+     * que não sobrevive à terceira semana de campanha.
+     *
+     * **Condição:** se ela responder de outro número, isto não funciona. Por
+     * isso a marcação manual existe de qualquer forma, e por isso o aviso da
+     * condição está na tela da fila, não só na documentação. Condição que só o
+     * manual conhece é condição que ninguém conhece.
+     *
+     * **Proibição:** a regra não pode usar `conversation_messages.origin`. A
+     * coluna tem valor padrão `manual` e o serviço de sincronização não a
+     * preenche ao criar a mensagem — uma mensagem vinda do WhatsApp Web fica
+     * gravada como `manual`. Filtrar por `sync` pareceria mais preciso e não
+     * casaria com nada, em silêncio. O que a sincronização escreve de verdade é
+     * direção, mídia e instante de envio, e é sobre isso que a regra decide.
+     *
+     * Nada aqui é fila nem agendamento: é consulta sobre o que já está gravado.
+     *
+     * @param  Collection<int, ConversationInsight>  $insights
+     * @return array<int, Carbon>
+     */
+    public function detectedAnswers($insights): array
+    {
+        $conversas = $insights->pluck('conversation_id')->filter()->unique()->values()->all();
+
+        if ($conversas === []) {
+            return [];
+        }
+
+        $dias = max(1, (int) $this->settings->get('pauta.answered_lookback_days', 30));
+
+        $saidas = ConversationMessage::query()
+            ->whereIn('conversation_id', $conversas)
+            ->where('direction', ConversationMessageDirection::Outgoing)
+            ->where('has_media', true)
+            ->whereNotNull('sent_at')
+            ->orderBy('sent_at')
+            ->get(['conversation_id', 'sent_at'])
+            ->groupBy('conversation_id');
+
+        $detectadas = [];
+
+        foreach ($insights as $insight) {
+            $nascimento = $insight->created_at;
+
+            if ($nascimento === null) {
+                continue;
+            }
+
+            $limite = $nascimento->copy()->addDays($dias);
+
+            foreach ($saidas->get($insight->conversation_id, collect()) as $saida) {
+                // Depois do insight e dentro da janela. Saída anterior responde
+                // a outra coisa, e saída fora da janela é uma conversa que
+                // continuou por outro motivo.
+                if ($saida->sent_at->gt($nascimento) && $saida->sent_at->lte($limite)) {
+                    $detectadas[$insight->id] = $saida->sent_at;
+
+                    break;
+                }
+            }
+        }
+
+        return $detectadas;
     }
 
     /**

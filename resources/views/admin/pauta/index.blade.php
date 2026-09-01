@@ -62,6 +62,12 @@
             A ordem é por relevância, e não por escassez: toda pessoa da fila é para responder, e a
             pontuação só decide quem vem antes. Nada é descartado por prioridade baixa.
         </p>
+        {{-- Condição que só o manual conhece é condição que ninguém conhece. --}}
+        <p class="muted">
+            A marcação automática só funciona se a resposta sair <strong>do mesmo número pareado ao
+            sistema</strong>: o áudio chega pela sincronização e a linha se marca sozinha. Respondendo de
+            outro número, nada é detectado e vale apenas a marcação à mão, no dossiê de cada pessoa.
+        </p>
 
         @if($fila === [])
             <p class="muted">Nenhuma pessoa nesta combinação de filtros. Isso é ausência de registro, não falha do relatório.</p>
@@ -89,14 +95,20 @@
                                 <td>{{ $linha['topic'] ?? 'sem tema' }}</td>
                                 <td>{{ $linha['urgency']?->label() ?? '—' }}</td>
                                 <td>{{ $linha['excerpt'] }}</td>
+                                {{-- A origem aparece porque origem diferente é confiança
+                                     diferente: a marcação manual afirma que alguém
+                                     respondeu; a detecção afirma que saiu um áudio naquela
+                                     conversa, que é evidência forte e não prova. --}}
                                 <td>
                                     @if($linha['answered'])
                                         respondida
                                         @if($linha['answered_at'])
                                             em {{ $linha['answered_at']->format('d/m/Y') }}
                                         @endif
-                                        @if($linha['answered_by'])
-                                            (marcada por {{ $linha['answered_by'] }})
+                                        @if($linha['answered_source'] === 'manual')
+                                            — marcada à mão{{ $linha['answered_by'] ? ' por '.$linha['answered_by'] : '' }}
+                                        @else
+                                            — detectada pela sincronização
                                         @endif
                                     @else
                                         pendente
