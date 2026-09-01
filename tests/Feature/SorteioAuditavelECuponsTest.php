@@ -591,6 +591,31 @@ class SorteioAuditavelECuponsTest extends TestCase
             ->assertSee('SEGREDO-123');
     }
 
+    /**
+     * Quem foi sorteado é ganhador, ponto.
+     *
+     * A tela chamava o primeiro de ganhador e o resto de suplente, enquanto
+     * `CouponService::atribuirAosGanhadores()` entregava cupom a todos e o
+     * sorteio recusava executar sem cupom para todos. O rótulo era a única
+     * parte do sistema que discordava, e era a parte que a pessoa lia.
+     */
+    public function test_tela_de_sorteio_trata_todos_os_sorteados_como_ganhadores(): void
+    {
+        $campanha = $this->campanhaPronta(inscritos: 5, cupons: 3);
+        $this->draws()->sortear($campanha, 3, $this->usuario());
+
+        $this->actingAs($this->usuario())
+            ->get(route('admin.keyword-campaigns.draws.index', $campanha))
+            ->assertOk()
+            ->assertSee('1º ganhador')
+            ->assertSee('2º ganhador')
+            ->assertSee('3º ganhador')
+            ->assertDontSee('suplente');
+
+        // E o sistema faz o que a tela diz: um cupom para cada sorteado.
+        $this->assertSame(3, $campanha->coupons()->whereNotNull('keyword_campaign_participation_id')->count());
+    }
+
     public function test_operador_nao_executa_sorteio(): void
     {
         $campanha = $this->campanhaPronta(inscritos: 3, cupons: 3);

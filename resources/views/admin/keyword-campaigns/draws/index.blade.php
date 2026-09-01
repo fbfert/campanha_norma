@@ -93,7 +93,7 @@
                     <div>
                         <label for="quantity">Quantos ganhadores</label>
                         <input id="quantity" name="quantity" type="number" min="1" max="1000" value="{{ old('quantity', 1) }}" required>
-                        <p class="muted">O primeiro sorteado é o ganhador; os seguintes formam a fila de suplentes.</p>
+                        <p class="muted">Todos os sorteados são ganhadores, e cada um recebe um cupom — por isso o sorteio recusa executar sem cupom para todos. A ordem fica registrada porque faz parte da conta que pode ser refeita, e não porque classifique alguém.</p>
                     </div>
                     <div>
                         <label for="seed">Semente</label>
@@ -232,7 +232,11 @@
                         <tbody>
                             @foreach($sorteio->participacoesSorteadas() as $posicao => $participacao)
                                 <tr>
-                                    <td>{{ $posicao + 1 }}{{ $posicao === 0 ? 'º (ganhador)' : 'º (suplente)' }}</td>
+                                    {{-- A ordem é a do sorteio, e serve para refazer a conta. Ela não
+                                         classifica ninguém: o cupom vai para todos os sorteados, e o
+                                         rótulo antigo, que rebaixava do segundo em diante, era a tela
+                                         contradizendo o que o sistema já fazia. --}}
+                                    <td>{{ $posicao + 1 }}º ganhador</td>
                                     <td>{{ $participacao->displayName() ?? '—' }}</td>
                                     <td>{{ $participacao->contact?->phone_normalized ?? '—' }}</td>
                                     @if($podeVerCodigos)

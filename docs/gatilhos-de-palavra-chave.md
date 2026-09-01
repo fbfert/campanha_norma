@@ -283,8 +283,11 @@ A ordenação é por `sha256(semente|id)`, e não por gerador pseudoaleatório. 
 diferença que importa não é estatística: é que qualquer pessoa, em qualquer
 linguagem, refaz esta conta com a semente e a lista publicadas.
 
-O primeiro sorteado é o ganhador; os seguintes formam a fila de suplentes.
-Sortear é sempre um ato deliberado, com confirmação na tela. Não há agendamento.
+Todos os sorteados são ganhadores, e `CouponService::atribuirAosGanhadores()`
+entrega um cupom a cada um — por isso o sorteio recusa executar sem cupom para
+todos. A ordem registrada serve para refazer a conta, não para separar ganhador
+de suplente. Sortear é sempre um ato deliberado, com confirmação na tela. Não há
+agendamento.
 
 ### De onde vem o cupom
 

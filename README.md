@@ -678,6 +678,7 @@ Captação por palavra-chave: quem escreve a palavra divulgada vira um inscrito,
 - Elegibilidade de aluno **marcada por importação**, nunca verificada na entrada; fila de conferência humana com marcação em lote.
 - Congelamento condicionado à fila de conferência vazia, com hash estável do conteúdo da lista.
 - Sorteio reproduzível sobre lista congelada, com semente registrada em claro e verificação refeita na tela.
+- **Todos os sorteados são ganhadores**, e a tela passa a dizer isso. `CouponService::atribuirAosGanhadores()` sempre entregou um cupom a cada sorteado, e o sorteio sempre recusou executar sem cupom para todos; o rótulo que chamava o primeiro de ganhador e o resto de suplente era a única parte do sistema que discordava — e era a parte que a pessoa lia. A ordem continua registrada porque é ela que alguém de fora refaz com a semente e a lista, não porque classifique alguém.
 - Correção da derivação de semente do `RandomSelectionService`, que reduzia a semente a 32 bits, sem alterar o comportamento do sorteio de lote.
 - Cupons importados por CSV, atribuição transacional e código fora de log, de exportação e do histórico em claro.
 - **Cupom cadastrado à mão**, um código por linha, para o prêmio que veio em um e-mail e não em planilha. Mesmo caminho da importação, e por isso mesma idempotência pela chave única do banco e mesma auditoria sem código em claro; o registro passa a guardar a origem, `arquivo` ou `manual`.

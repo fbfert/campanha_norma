@@ -52,8 +52,9 @@ class KeywordCampaignDraw extends Model
      * As participações sorteadas, na ordem do sorteio.
      *
      * O `whereIn` devolve em ordem de banco, e a ordem é parte do resultado:
-     * o primeiro é o ganhador e os seguintes são a fila de suplentes. Por isso
-     * a reordenação pelo que está gravado, e não pelo que o banco devolveu.
+     * é ela que alguém de fora refaz com a semente e a lista. Todos os sorteados
+     * são ganhadores — a ordem não separa ganhador de suplente. Por isso a
+     * reordenação pelo que está gravado, e não pelo que o banco devolveu.
      *
      * @return Collection<int, KeywordCampaignParticipation>
      */
