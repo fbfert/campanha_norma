@@ -664,6 +664,44 @@ Relatórios analíticos, exportação, governança e retenção. Somente leitura
 - Sete permissões novas separando agregado, conteúdo, identificação, exportação agregada, exportação detalhada, custo e governança.
 - Documentação de fórmulas com numerador, denominador e exclusões de cada taxa.
 
+## Escopo implementado — Subetapa 9F
+
+Painel de relatórios e pauta de resposta. A 9E resolveu o dado e parou na tela; a 9F acrescenta a camada de documento, o recorte que faltava e o caminho de volta para quem respondeu. **Somente leitura: nenhuma tela desta subetapa envia mensagem, agenda envio, grava áudio ou liga automação.** O contrato `WhatsAppProvider` não foi tocado e o serviço Node não foi tocado.
+
+- **Cruzamento de localidade declarada e região por tema**, com supressão de célula pequena aplicada no serviço. Célula suprimida continua na tabela, marcada — removê-la faria a soma das colunas visíveis não bater com o total da linha, e quem lesse concluiria que falta registro. Zero nunca é suprimido, e a tela explica na abertura por que cruzar dois eixos derruba tanta célula: é a regra da 9E funcionando, não falta de dado.
+- **Insights sem localidade declarada contados à parte**, nunca distribuídos nem somados a "outros": quem não disse onde mora não mora em nenhuma linha da tabela.
+- **Pauta de posicionamento**, que responde sobre o que a campanha ainda não escreveu: tema citado no período sem nenhum documento aprovado, em base ativa associada ao fluxo. Indexar não aprova, e documento aprovado em base desligada não responde a ninguém. Ordenada pelo que mais apareceu — o buraco mais caro primeiro.
+- **Caderno de resposta**, um dossiê nominal por pessoa, com a frase literal da mensagem, os campos que a interpretação já extraiu, a orientação escrita do tema e a linha vermelha do tema. Existe também como comando (`relatorios:caderno`), em HTML autocontido, que veio antes de qualquer tela.
+- **Roteiro montado por composição determinística, sem nenhuma chamada de IA.** A 9B já extrai o que um briefing precisaria, e isso não é matéria-prima: já é o briefing. Citação literal é mais forte que paráfrase, e um modelo que parafraseia introduz afirmação que ninguém escreveu dentro de um documento que será lido como o que a pessoa disse.
+- **Linha vermelha por tema, em destaque forte, e dita mesmo quando falta.** Promessa na voz da própria candidata não tem retratação possível. Seção ausente em silêncio seria lida como "não há nada a evitar aqui", que é o contrário do que a ausência significa.
+- **Fila ordenada por relevância, e não por escassez.** Duzentas respostas cabem em atendimento individual: a pontuação ordena e nunca descarta — toda pessoa da fila é para responder, e o peso só decide quem vem antes. Os três pesos são configuração porque nenhum foi calibrado com dado real.
+- **Marcação de resposta já enviada por detecção**, sobre o que a sincronização já grava: saída com mídia, na mesma conversa, posterior ao insight e dentro da janela configurada. Quem responde do número pareado não precisa apertar nada — e disciplina é o que não sobrevive à terceira semana de campanha. A condição está na tela, não só na documentação.
+- **Marcação manual como reserva**, com precedência sobre a detecção. A fila mostra qual das duas marcou, com a data: origem diferente é confiança diferente.
+- **Dois módulos separados, com permissões separadas.** O painel suprime grupo pequeno; o dossiê expõe uma pessoa. As regras são opostas, e mantê-las no mesmo código é onde o vazamento nasce. A pauta exige três permissões juntas — a dela, a de identificação e a de conteúdo — porque expõe nome, cidade e o texto da pessoa.
+- **Duas colunas de texto em `insight_topics`** para orientação e linha vermelha, no cadastro de temas que já existe. Nenhuma tabela nova, nenhum CRUD novo, e some junto com o tema desativado.
+- **Coluna opcional em `knowledge_documents`** ligando documento aprovado ao tema que responde, usada só pela pauta de posicionamento. Teste barra o nome dela no recuperador da 9D e no objeto de consulta: usá-la para escolher o que recuperar faria a opinião coletada decidir a resposta oficial.
+- **Impressão e PDF pelo próprio navegador**, com layout de impressão, regras `@media print` a partir dos tokens do `:root` e capa obrigatória. O aviso de que o material é escuta de demanda e não pesquisa eleitoral registrada vai na capa, não em rodapé: rodapé de página impressa não é lido.
+- **Marca-d'água de origem em cada página do caderno** e registro da geração na auditoria. Documento nominal que vaza precisa ter origem, pelo mesmo motivo que a exportação detalhada da 9E carrega sal próprio.
+- **Teste que afirma que ler a pauta não cria nenhuma execução de modelo**, e teste que varre os controllers do módulo e falha se o contrato de envio, um despacho de job ou a fila aparecerem. Restrição declarada em prosa é convenção, e convenção não impede nada.
+- **Teste que afirma que o dossiê não sofre supressão nenhuma**, para ninguém "consertar" depois uma ausência que é deliberada.
+- Correção de dois defeitos que só apareciam contra o banco de verdade: o enum de urgência convertido na consulta agregada, e o agrupamento por expressão repetida recusado pelo `ONLY_FULL_GROUP_BY` do MySQL.
+
+Documentação complementar:
+
+- `docs/painel-de-relatorios.md`
+- `docs/analytics-formulas.md`, seção da 9F
+- `docs/tests/painel-manual-etapa-9f.md`
+
+## Não implementado nesta etapa — Subetapa 9F
+
+- **Envio de áudio ou de qualquer mídia.** O contrato do provedor continua com texto, e a 9F não o alterou. Quem responde grava pelo WhatsApp dela, à mão.
+- **Gravação de áudio no sistema.** Nada de captura pelo navegador, nada de arquivo de áudio guardado. Um sistema que grava a voz da candidata passa a ter um acervo que precisa ser protegido, retido e apagado, e nada disso foi desenhado.
+- **Geração de texto por IA para o roteiro.** Decidido, e não adiado: promessa dita na própria voz da candidata não tem "foi o sistema". Se o roteiro parecer seco depois de usado, existe caminho pela 9C, que já tem validador determinístico barrando promessa, pedido de voto, urgência artificial e intimidade simulada.
+- **Disparo em massa a partir da pauta.** A fila é para atendimento individual. Um botão de responder todo mundo transformaria escuta em campanha de envio, que é exatamente a barreira de finalidade que a Etapa 10 levantou.
+- **Agendamento de resposta.** Responder é ato de uma pessoa, e resposta que sai sozinha é resposta que ninguém estava olhando quando saiu.
+- **Mapa geográfico.** Desenhar mapa com célula suprimida ou mostra o que a supressão esconde ou mente sobre a cobertura. Tabela com "suprimido" escrito é honesta; mancha em mapa não é.
+- **Biblioteca de gráficos.** Pela mesma razão da 9E: o que estas telas pedem é tabela, e uma dependência de terceiros acrescentaria peso, superfície de atualização e um ponto de falha no build sem melhorar a leitura.
+- **Correção da normalização de localidade.** `InsightExtractionService` grava `locality_normalized` como nulo mesmo quando a pessoa declarou onde mora — defeito antigo, que afeta também a tela de geografia da 9E. A 9F contorna lendo a declaração crua, e corrigir a extração com o histórico preenchido é trabalho de outra subetapa.
 ## Escopo implementado — Etapa 10
 
 Captação por palavra-chave: quem escreve a palavra divulgada vira um inscrito, com prova de origem, lista conferível, congelamento e sorteio auditável. A Etapa 9 fechou o caso de quem escreve por conta própria; esta fecha o de quem escreve **porque foi convidado a escrever**.
