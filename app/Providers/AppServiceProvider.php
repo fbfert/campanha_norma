@@ -177,6 +177,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('analytics.export_detailed', fn (User $user): bool => $user->hasPermission('analytics.export_detailed'));
         Gate::define('analytics.view_costs', fn (User $user): bool => $user->hasPermission('analytics.view_costs'));
         Gate::define('analytics.view_governance', fn (User $user): bool => $user->hasPermission('analytics.view_governance'));
+        Gate::define('response_agenda.view', fn (User $user): bool => $user->hasPermission('response_agenda.view'));
         Gate::define('keyword_campaigns.view', fn (User $user): bool => $user->hasPermission('keyword_campaigns.view'));
         Gate::define('keyword_campaigns.manage', fn (User $user): bool => $user->hasPermission('keyword_campaigns.manage'));
         Gate::define('keyword_participations.view', fn (User $user): bool => $user->hasPermission('keyword_participations.view'));

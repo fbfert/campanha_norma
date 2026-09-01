@@ -88,7 +88,7 @@ class CadernoDeRespostaTest extends TestCase
 
     public function test_avisa_quando_a_confianca_esta_abaixo_do_limiar(): void
     {
-        $this->insight(nome: 'Rita', cidade: 'Seara', frase: 'Falta remédio.', confianca: 0.30);
+        $this->insight(nome: 'Rita', cidade: 'Seara', frase: 'Falta remédio.', confianca: 0.30); // ortografia:ignorar - argumento nomeado, que é identificador e não leva acento
 
         $this->artisan('relatorios:caderno', ['--saida' => $this->saida])->assertSuccessful();
 
@@ -100,7 +100,7 @@ class CadernoDeRespostaTest extends TestCase
 
     public function test_nao_avisa_quando_a_confianca_esta_acima_do_limiar(): void
     {
-        $this->insight(nome: 'Rita', cidade: 'Seara', frase: 'Falta remédio.', confianca: 0.95);
+        $this->insight(nome: 'Rita', cidade: 'Seara', frase: 'Falta remédio.', confianca: 0.95); // ortografia:ignorar - argumento nomeado, que é identificador e não leva acento
 
         $this->artisan('relatorios:caderno', ['--saida' => $this->saida])->assertSuccessful();
 
@@ -114,13 +114,13 @@ class CadernoDeRespostaTest extends TestCase
      */
     public function test_ordena_por_urgencia_e_depois_por_tamanho(): void
     {
-        $this->insight(nome: 'Baixa', cidade: 'A', frase: 'Curta.', urgencia: InsightUrgency::Low);
-        $this->insight(nome: 'AltaCurta', cidade: 'B', frase: 'Urgente.', urgencia: InsightUrgency::High);
+        $this->insight(nome: 'Baixa', cidade: 'A', frase: 'Curta.', urgencia: InsightUrgency::Low); // ortografia:ignorar - argumento nomeado, que é identificador e não leva acento
+        $this->insight(nome: 'AltaCurta', cidade: 'B', frase: 'Urgente.', urgencia: InsightUrgency::High); // ortografia:ignorar - argumento nomeado, que é identificador e não leva acento
         $this->insight(
             nome: 'AltaLonga',
             cidade: 'C',
             frase: 'Urgente e com muito mais detalhe do que a outra mensagem urgente deste caderno.',
-            urgencia: InsightUrgency::High,
+            urgencia: InsightUrgency::High, // ortografia:ignorar - argumento nomeado, que é identificador e não leva acento
         );
 
         $this->artisan('relatorios:caderno', ['--saida' => $this->saida])->assertSuccessful();

@@ -45,6 +45,8 @@ class ConversationInsight extends Model
         'reviewed',
         'reviewed_by',
         'reviewed_at',
+        'answered_at',
+        'answered_by',
         'extraction_version',
         'prompt_version',
         'ai_run_id',
@@ -61,6 +63,7 @@ class ConversationInsight extends Model
             'requires_human_review' => 'boolean',
             'reviewed' => 'boolean',
             'reviewed_at' => 'datetime',
+            'answered_at' => 'datetime',
             'extraction_version' => 'integer',
         ];
     }
@@ -98,6 +101,17 @@ class ConversationInsight extends Model
     public function reviewer(): BelongsTo
     {
         return $this->belongsTo(User::class, 'reviewed_by');
+    }
+
+    /**
+     * Quem marcou à mão que já respondeu.
+     *
+     * Nulo não significa pendente: a resposta pode ter sido detectada pela
+     * sincronização, que não tem autor porque ninguém apertou nada.
+     */
+    public function answeredBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'answered_by');
     }
 
     public function topicLinks(): HasMany

@@ -25,12 +25,12 @@ use Illuminate\Support\Collection;
  */
 class RelatoriosCadernoCommand extends Command
 {
-    protected $signature = 'relatorios:caderno
-        {--de= : Início do período (AAAA-MM-DD)}
-        {--ate= : Fim do período (AAAA-MM-DD)}
-        {--fluxo= : Restringe a um fluxo conversacional}
-        {--por= : Nome de quem está gerando o caderno}
-        {--saida=storage/app/private/caderno.html : Arquivo de saída}';
+    protected $signature = 'relatorios:caderno'
+        .' {--de= : Início do período (AAAA-MM-DD)}'
+        .' {--ate= : Fim do período (AAAA-MM-DD)}' // ortografia:ignorar - "ate" nomeia a opção, e identificador não leva acento
+        .' {--fluxo= : Restringe a um fluxo conversacional}'
+        .' {--por= : Nome de quem está gerando o caderno}'
+        .' {--saida=storage/app/private/caderno.html : Arquivo de saída}'; // ortografia:ignorar - "saida" nomeia a opção e o caminho
 
     protected $description = 'Gera o caderno de resposta em HTML, uma página por pessoa.';
 
@@ -167,26 +167,7 @@ class RelatoriosCadernoCommand extends Command
         <meta charset="utf-8">
         <title>Caderno de resposta — {$this->escapar($periodo)}</title>
         <style>
-        @page { size: A4; margin: 18mm 16mm 22mm; }
-        body { font: 12pt/1.5 Georgia, "Times New Roman", serif; color: #1a1a1a; background: #fff; margin: 0; padding: 24px; }
-        .capa { max-width: 40em; margin: 0 auto 32px; padding-bottom: 24px; border-bottom: 3px solid #1a1a1a; }
-        .capa h1 { font-size: 22pt; margin: 0 0 4px; }
-        .capa dl { display: grid; grid-template-columns: max-content 1fr; gap: 2px 12px; margin: 16px 0 0; }
-        .capa dt { font-weight: bold; }
-        .capa dd { margin: 0; }
-        .alerta { border: 2px solid #8a1c1c; background: #fbeaea; color: #6b1414; padding: 10px 14px; margin: 16px 0; }
-        .pessoa { max-width: 40em; margin: 0 auto 40px; padding-bottom: 32px; border-bottom: 1px solid #bbb; break-inside: avoid; page-break-inside: avoid; break-after: page; page-break-after: always; }
-        .pessoa:last-of-type { break-after: auto; page-break-after: auto; border-bottom: none; }
-        .pessoa h2 { font-size: 16pt; margin: 0 0 2px; }
-        .lugar { color: #555; margin: 0 0 16px; }
-        blockquote { font-size: 14pt; border-left: 4px solid #1a1a1a; margin: 0 0 20px; padding: 4px 0 4px 16px; }
-        h3 { font-size: 11pt; text-transform: uppercase; letter-spacing: .06em; color: #555; margin: 20px 0 6px; }
-        .campos { margin: 0; }
-        .campos dt { font-weight: bold; margin-top: 8px; }
-        .campos dd { margin: 0; }
-        .vazio { border: 1px dashed #999; color: #777; padding: 18px 14px; font-style: italic; }
-        .rodape { max-width: 40em; margin: 0 auto; color: #555; font-size: 10pt; border-top: 1px solid #bbb; padding-top: 8px; }
-        @media print { body { padding: 0; } .rodape { position: fixed; bottom: 0; left: 0; right: 0; } }
+        {$this->estilo()}
         </style>
         </head>
         <body>
@@ -256,6 +237,18 @@ class RelatoriosCadernoCommand extends Command
         é trabalho humano, e é o que impede uma promessa dita no áudio.</p>
         </section>
         HTML;
+    }
+
+    /**
+     * O estilo do caderno, embutido no arquivo gerado.
+     *
+     * Ele mora fora deste código porque o caderno abre num navegador que não
+     * conhece a folha de estilo do sistema, e porque CSS escrito dentro de um
+     * heredoc de PHP não é lido por ninguém que vá ajustá-lo.
+     */
+    private function estilo(): string
+    {
+        return trim((string) file_get_contents(resource_path('caderno/caderno.css')));
     }
 
     private function escapar(?string $texto): string

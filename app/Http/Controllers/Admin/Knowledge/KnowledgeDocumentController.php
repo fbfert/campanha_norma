@@ -7,6 +7,7 @@ use App\Enums\KnowledgeDocumentType;
 use App\Exceptions\Knowledge\KnowledgeProviderException;
 use App\Http\Controllers\Controller;
 use App\Jobs\IndexKnowledgeDocumentJob;
+use App\Models\InsightTopic;
 use App\Models\KnowledgeBase;
 use App\Models\KnowledgeDocument;
 use App\Services\AuditLogger;
@@ -43,6 +44,7 @@ class KnowledgeDocumentController extends Controller
             'types' => KnowledgeDocumentType::cases(),
             'acceptedMimeTypes' => $this->ingestion->acceptedMimeTypes(),
             'maxFileSizeKb' => $this->ingestion->maxFileSizeKb(),
+            'topics' => InsightTopic::query()->where('is_active', true)->orderBy('name')->get(),
             'candidates' => $base->documents()
                 ->whereIn('status', [KnowledgeDocumentStatus::Approved->value, KnowledgeDocumentStatus::Ready->value])
                 ->orderBy('title')
@@ -57,6 +59,7 @@ class KnowledgeDocumentController extends Controller
         $data = $request->validate([
             'title' => ['required', 'string', 'max:255'],
             'type' => ['required', Rule::enum(KnowledgeDocumentType::class)],
+            'insight_topic_id' => ['nullable', 'integer', 'exists:insight_topics,id'],
             'source' => ['nullable', 'string', 'max:255'],
             'source_url' => ['nullable', 'url', 'max:2048'],
             'document_date' => ['nullable', 'date'],
