@@ -36,6 +36,7 @@ use App\Http\Controllers\Admin\MessageTemplates\MessageTemplateController;
 use App\Http\Controllers\Admin\Monitoring\MonitoringController;
 use App\Http\Controllers\Admin\Reports\ReportController;
 use App\Http\Controllers\Admin\Reports\ReportExportController;
+use App\Http\Controllers\Admin\ResponseAgenda\ResponseAgendaController;
 use App\Http\Controllers\Admin\ResponseGeneration\ReplySuggestionController;
 use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\UserController;
@@ -226,6 +227,18 @@ Route::middleware(['auth', 'password.changed'])->group(function (): void {
         Route::get('/analytics/posicionamento', [AnalyticsController::class, 'positioning'])->name('analytics.posicionamento');
         Route::get('/analytics/governanca', [AnalyticsController::class, 'governance'])->name('analytics.governance');
         Route::post('/analytics/exportar', [AnalyticsExportController::class, 'store'])->name('analytics.export');
+
+        /*
+         | Pauta de resposta: nominal, e por isso fora do bloco analítico.
+         |
+         | As três permissões são conferidas no controller, juntas, porque o
+         | dossiê expõe nome, cidade e o texto da pessoa. Nenhuma destas
+         | rotas envia mensagem: a de POST grava a marca de respondida e o
+         | registro de auditoria, e nada mais.
+         */
+        Route::get('/pauta', [ResponseAgendaController::class, 'index'])->name('pauta.index');
+        Route::get('/pauta/{insight}', [ResponseAgendaController::class, 'show'])->name('pauta.show');
+        Route::post('/pauta/{insight}/respondida', [ResponseAgendaController::class, 'markAnswered'])->name('pauta.responder');
 
         Route::get('/reply-suggestions', [ReplySuggestionController::class, 'index'])->name('reply-suggestions.index');
         // Antes da rota de detalhe: `descartar-obsoletas` seria capturado como

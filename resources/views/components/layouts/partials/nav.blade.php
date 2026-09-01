@@ -20,6 +20,7 @@
     $pesquisaAtiva = request()->routeIs('admin.conversation-automation.*', 'admin.conversation-flows.*')
         || request()->routeIs('admin.analytics.dashboard', 'admin.analytics.topics', 'admin.analytics.geography', 'admin.analytics.demands', 'admin.analytics.questions')
         || request()->routeIs('admin.analytics.cidade-tema', 'admin.analytics.posicionamento');
+    $pautaAtiva = request()->routeIs('admin.pauta.*');
     $campanhasAtivo = request()->routeIs('admin.keyword-campaigns.*');
     $contatosAtivo = request()->routeIs('admin.contacts.*', 'admin.tags.*');
     $enviosAtivo = request()->routeIs('admin.message-templates.*', 'admin.message-batches.*', 'admin.campaigns.*', 'admin.message-processing.*', 'admin.histories.*', 'admin.reports.*', 'admin.report-exports.*');
@@ -75,6 +76,13 @@
             @endcan
         </details>
     @endif
+
+    @can('response_agenda.view')
+        <details class="nav-group" @if($pautaAtiva) open @endif>
+            <summary><x-icon name="reply" />Pauta de resposta</summary>
+            <a href="{{ route('admin.pauta.index') }}" @class(['active' => request()->routeIs('admin.pauta.*')])><x-icon name="reply" /><span>Quem responder</span></a>
+        </details>
+    @endcan
 
     @can('keyword_campaigns.view')
         <details class="nav-group" @if($campanhasAtivo) open @endif>
